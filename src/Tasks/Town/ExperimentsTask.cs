@@ -33,10 +33,12 @@ public class ExperimentsTask : BotTask
         yield return new WaitForSeconds(3);
         var resources = GetResourceTypes();
         var experiments = new Experiments();
-        yield return experiments.Claim(resources);
+        // Claiming is free and always safe regardless of resource_type opt-in - only Start()
+        // (which spends a real resource) is gated by it. See Experiments.Claim's doc comment.
+        yield return experiments.Claim();
         yield return new WaitForSeconds(1);
         yield return experiments.Start(resources);
-        NextRunTime = experiments.NextRunTime(resources);
+        NextRunTime = experiments.NextRunTime();
 
         yield return Alchemist.Close;
         yield return TownScreen.Close;
