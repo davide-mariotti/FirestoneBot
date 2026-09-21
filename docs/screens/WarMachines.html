@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Macchine da Guerra</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Macchine da Guerra</div>
+  <h1>🤖 Macchine da Guerra</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Radice: <code>WarMachines</code> (script <code>WarMachinesViewController</code>) — schermata di collezione/potenziamento delle macchine da guerra, con anteprima 3D, elenco a scorrimento e quattro sottomenu (Garage, Officina, Blueprint, Rarità).</p>
+</header>
+<main>
+
+<section>
+  <h2>Sfondo scenico</h2>
+  <p class="region-path">Path: <code>bg/tiles/*</code>, <code>bg/clouds/*</code>, <code>bg/mountains/*</code>, <code>bg/bgLeft</code>, <code>bg/bgRight</code>, <code>bg/birdsSpine</code>, <code>bg/hookSpine</code>, <code>bg/grassSpine</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/tiles/sky, bg/tiles/ground</td><td>decorazione — Image</td><td>Sfondo statico (cielo e terreno) della scena.</td></tr>
+      <tr><td class="path">bg/tiles/TileTopLeft, TileTopRight, TileBottomLeft, TileBottomRight</td><td>decorazione — Image</td><td>Tessere agli angoli con effetto parallax (<code>MenuVfxEntityComponent</code>), nessuna interazione.</td></tr>
+      <tr><td class="path">bg/clouds/cloud, cloud (1), cloud (2), cloud (3)</td><td>decorazione — Image</td><td>Nuvole in movimento continuo (<code>CloudMovement</code>) sullo sfondo.</td></tr>
+      <tr><td class="path">bg/mountains/mountain1..4, mountainPeak</td><td>decorazione — Image</td><td>Catena montuosa di sfondo con effetto parallax.</td></tr>
+      <tr><td class="path">bg/bgLeft, bg/bgRight</td><td>decorazione — Image</td><td>Fondali laterali della scena.</td></tr>
+      <tr><td class="path">bg/birdsSpine</td><td>decorazione — Spine</td><td>Animazione di uccelli in volo, con leggero movimento (<code>CloudMovement</code>).</td></tr>
+      <tr><td class="path">bg/hookSpine</td><td>decorazione — Spine</td><td>Animazione di un gancio/gru sullo sfondo (elemento scenico dell'officina).</td></tr>
+      <tr><td class="path">bg/grassSpine</td><td>decorazione — Spine</td><td>Animazione di erba in primo piano.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Anteprima della macchina da guerra selezionata</h2>
+  <p class="region-path">Path: <code>bg/warMachinePreview/*</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/warMachinePreview/backVfx</td><td>decorazione — Spine</td><td>Effetto Spine dietro al modello della macchina.</td></tr>
+      <tr><td class="path">bg/warMachinePreview/backVfx/Renderer0, Renderer1</td><td>grafica — SkeletonSubmeshGraphic</td><td>Sotto-mesh di rendering dello skeleton Spine; <code>Renderer1</code> è <span class="tag tag-off">inattivo</span> di default (secondo materiale usato solo se necessario).</td></tr>
+      <tr><td class="path">bg/warMachinePreview/standardLevelProgress</td><td>componente — StandardLevelProgressInteraction</td><td>Gestisce la barra di progresso di "livello standard" (pre-rarità) della macchina in anteprima.</td></tr>
+      <tr><td class="path">.../standardLevelProgress/bg/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome della macchina da guerra selezionata.</td></tr>
+      <tr><td class="path">.../standardLevelProgress/bg/progressBarBg/progressBarMask/progressBarFill</td><td>barra di progresso — Image</td><td>Riempimento della barra di avanzamento verso il prossimo livello.</td></tr>
+      <tr><td class="path">.../standardLevelProgress/bg/progressBarBg/progressText</td><td><span class="tag tag-txt">testo</span></td><td>Testo numerico del progresso (es. "x/y").</td></tr>
+      <tr><td class="path">.../standardLevelProgress/starsParent/star0..star4</td><td>icona ×5</td><td>Le 5 stelle che indicano il livello di potenziamento/rarità raggiunto.</td></tr>
+      <tr><td class="path">.../standardLevelProgress/levelBg/levelDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Livello".</td></tr>
+      <tr><td class="path">.../standardLevelProgress/levelBg/level</td><td><span class="tag tag-txt">testo</span></td><td>Numero di livello attuale.</td></tr>
+      <tr><td class="path">bg/warMachinePreview/frontVfx</td><td>decorazione — Spine</td><td>Effetto Spine davanti al modello (primo piano).</td></tr>
+      <tr><td class="path">bg/warMachinePreview/rarityBg</td><td>badge — Image <span class="tag tag-off">inattivo</span></td><td>Badge col nome della rarità corrente, disattivo nel prefab: probabilmente visibile solo per macchine di rarità superiore alla base.</td></tr>
+      <tr><td class="path">bg/warMachinePreview/rarityBg/rarity</td><td><span class="tag tag-txt">testo</span></td><td>Nome della rarità (es. Comune/Raro/Epico).</td></tr>
+      <tr><td class="path">bg/warMachinePreview/info/powerIcon</td><td>immagine</td><td>Icona "potenza".</td></tr>
+      <tr><td class="path">bg/warMachinePreview/info/power</td><td><span class="tag tag-txt">testo</span></td><td>Valore di potenza della macchina in anteprima.</td></tr>
+      <tr><td class="path">bg/warMachinePreview/warMachineAnimateButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tocca il modello 3D/Spine in anteprima, probabilmente per farlo animare (idle/reazione); nome non del tutto esplicito, verificare dal vivo.</td></tr>
+      <tr><td class="path">.../warMachineAnimateButton/navigation/goBackWm</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Freccia sinistra: mostra la macchina da guerra precedente nella collezione (<code>RepeatAction</code> suggerisce pressione prolungata per scorrere più velocemente).</td></tr>
+      <tr><td class="path">.../warMachineAnimateButton/navigation/goForthWm</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Freccia destra: mostra la macchina da guerra successiva nella collezione.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Header: titolo, contatore risorsa, chat, chiusura</h2>
+  <p class="region-path">Path: <code>menuTitleBg</code>, <code>counters/counterInteraction/*</code>, <code>chat</code>, <code>closeButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">menuTitleBg/menuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della schermata (es. "Macchine da Guerra"), localizzato.</td></tr>
+      <tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore risorsa (probabilmente apre il dettaglio/negozio della valuta usata per i potenziamenti).</td></tr>
+      <tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stessa azione del bottone di sfondo.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della risorsa posseduta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato temporaneamente quando la risorsa aumenta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone "Ottieni di più", nascosto di default: appare probabilmente solo quando la risorsa è insufficiente per un acquisto.</td></tr>
+      <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat/community (<code>ChatInteraction</code>).</td></tr>
+      <tr><td class="path">chat/spineChat</td><td>decorazione — Spine</td><td>Animazione dell'icona chat.</td></tr>
+      <tr><td class="path">chat/notification/bell</td><td>decorazione — Spine</td><td>Campanella animata di notifica.</td></tr>
+      <tr><td class="path">chat/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Contatore messaggi non letti.</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata e torna alla vista precedente.</td></tr>
+      <tr><td class="path">closeButton/icon</td><td>immagine</td><td>Icona "X" del bottone di chiusura.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Elenco a scorrimento delle macchine da guerra</h2>
+  <p class="region-path">Path: <code>warMachinesScrollView/Viewport/grid/*</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">warMachinesScrollView</td><td>contenitore — ScrollRect + Canvas</td><td>Area di scorrimento che contiene la griglia delle macchine da guerra possedute/sbloccabili.</td></tr>
+      <tr><td class="path">warMachinesScrollView/Viewport/grid</td><td>contenitore — GridLayoutGroup</td><td>Dispone gli elementi della collezione in griglia.</td></tr>
+      <tr><td class="path">.../grid/warMachineSquare (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro cliccabile di una macchina da guerra (<code>WarMachineInteractionSquare</code>). Nel dump statico è presente un solo template (indice 0): a runtime la griglia probabilmente ne istanzia una copia per ogni macchina posseduta. Il click apre presumibilmente il dettaglio/anteprima di quella macchina.</td></tr>
+      <tr><td class="path">.../warMachineSquare (0)/highlighted</td><td>overlay — Image <span class="tag tag-off">inattivo</span></td><td>Evidenziazione mostrata quando lo slot è selezionato/in anteprima.</td></tr>
+      <tr><td class="path">.../warMachineSquare (0)/bgFrame, icon</td><td>immagine</td><td>Cornice di sfondo e icona della macchina da guerra.</td></tr>
+      <tr><td class="path">.../warMachineSquare (0)/levelBg/level</td><td><span class="tag tag-txt">testo</span></td><td>Livello della macchina.</td></tr>
+      <tr><td class="path">.../warMachineSquare (0)/starsParent/star0..star4</td><td>icona ×5</td><td>Stelle di rarità/potenziamento della macchina.</td></tr>
+      <tr><td class="path">.../warMachineSquare (0)/notificationCircle</td><td>badge — Image, NotificationAnimation <span class="tag tag-off">inattivo</span></td><td>Badge di notifica (es. componenti pronti per l'upgrade), nascosto finché non c'è nulla da segnalare; contiene <code>bell</code> e <code>amountTMP</code>.</td></tr>
+      <tr><td class="path">.../grid/nextWarMachineUnlock</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot che mostra la prossima macchina da guerra da sbloccare nella collezione; probabilmente apre i requisiti di sblocco.</td></tr>
+      <tr><td class="path">.../grid/nextWarMachineUnlock/icon</td><td>immagine</td><td>Icona/silhouette della macchina non ancora sbloccata.</td></tr>
+      <tr><td class="path">.../grid/allWarMachinesButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre l'elenco completo di tutte le macchine da guerra del gioco (anche quelle non ancora possedute).</td></tr>
+      <tr><td class="path">.../grid/allWarMachinesButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone (es. "Tutte").</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab dei sottomenu</h2>
+  <p class="region-path">Path: <code>submenus/submenuButtons/*</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenus/submenuButtons/garage</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la scheda "Garage" (statistiche generali); attiva <code>garageSubmenu</code>. Scheda selezionata di default all'apertura.</td></tr>
+      <tr><td class="path">submenus/submenuButtons/workshop</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la scheda "Officina" (potenziamento componenti); attiva <code>workshopSubmenu</code>. Badge notifica in <code>notificationCircle/amountTMP</code>.</td></tr>
+      <tr><td class="path">submenus/submenuButtons/blueprintUpgrades</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la scheda "Potenziamenti blueprint"; attiva <code>blueprintUpgradesSubmenu</code>.</td></tr>
+      <tr><td class="path">submenus/submenuButtons/rarityUpgrades</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la scheda "Potenziamento rarità"; attiva <code>rarityUpgradesSubmenu</code>. Badge notifica in <code>notificationCircle/amountTMP</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Garage — statistiche generali (tab di default)</h2>
+  <p class="region-path">Path: <code>submenus/bg/garageSubmenu/*</code> — script <code>EngineerGarageSubmenuViewController</code>; a differenza degli altri tre sottomenu, non risulta <code>(inactive)</code> nel prefab, quindi è la scheda mostrata all'apertura della schermata.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">garageSubmenu/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome della macchina da guerra mostrata.</td></tr>
+      <tr><td class="path">specializationObj/specializationDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Specializzazione".</td></tr>
+      <tr><td class="path">specializationObj/specialization</td><td><span class="tag tag-txt">testo</span></td><td>Valore della specializzazione/ruolo della macchina.</td></tr>
+      <tr><td class="path">helpingLine</td><td>decorazione — Image</td><td>Linea separatrice grafica.</td></tr>
+      <tr><td class="path">mainAttributes/mainAttributes</td><td><span class="tag tag-txt">testo</span></td><td>Titolo sezione "Attributi principali".</td></tr>
+      <tr><td class="path">mainAttributes/attributeGlobal (0), (1), (2)</td><td>gruppo ×3 — AttributeGlobalInteraction</td><td>Tre attributi principali della macchina, ciascuno con icona, valore numerico (<code>value</code>), effetto Spine al variare del valore (<code>valueChagedSpine</code>) e lucchetto (<code>lock</code>) mostrato se l'attributo non è ancora sbloccato.</td></tr>
+      <tr><td class="path">advancedAttributes/advancedAttributes</td><td><span class="tag tag-txt">testo</span></td><td>Titolo sezione "Attributi avanzati".</td></tr>
+      <tr><td class="path">advancedAttributes/attributeGlobal (0)</td><td>gruppo — AttributeGlobalInteraction</td><td>Primo attributo avanzato, stessa struttura di quelli principali.</td></tr>
+      <tr><td class="path">advancedAttributes/attributeGlobal (1)</td><td>gruppo — AttributeGlobalInteraction <span class="tag tag-off">inattivo</span></td><td>Secondo attributo avanzato, disattivo di default: probabilmente sbloccato solo a rarità/livello più alti.</td></tr>
+      <tr><td class="path">ability/abilityDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Abilità".</td></tr>
+      <tr><td class="path">ability/abilityText</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione testuale dell'abilità speciale della macchina.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Officina — potenziamento componenti</h2>
+  <p class="region-path">Path: <code>submenus/bg/workshopSubmenu/*</code> — script <code>EngineerWorkshopSubmenuViewController</code>, nodo <strong>inattivo di default</strong> (si attiva selezionando la scheda "workshop").</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">workshopSubmenu/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo della funzione officina.</td></tr>
+      <tr><td class="path">workshopSubmenu/upgradeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Esegue il potenziamento di livello della macchina, pagando il costo mostrato in <code>currencyIcon</code>/<code>costText</code>.</td></tr>
+      <tr><td class="path">workshopSubmenu/xpReward</td><td><span class="tag tag-txt">testo</span></td><td>Esperienza guadagnata dal potenziamento.</td></tr>
+      <tr><td class="path">workshopSubmenu/wmComponentProgress (0), (1), (2)</td><td>gruppo ×3 — WMComponentProgressInteraction</td><td>Tre indicatori di progresso dei componenti richiesti per il potenziamento successivo, ciascuno con nome, icona e valore (es. "x/y" posseduti).</td></tr>
+      <tr><td class="path">workshopSubmenu/levelDescText</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione del livello attuale/prossimo.</td></tr>
+      <tr><td class="path">workshopSubmenu/warMachineBonus/warMachineBg/warMachineIcon</td><td>immagine</td><td>Icona della macchina da guerra associata al bonus.</td></tr>
+      <tr><td class="path">workshopSubmenu/warMachineBonus/effectDesc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione dell'effetto/bonus di livello.</td></tr>
+      <tr><td class="path">workshopSubmenu/warMachineBonus/effectBg/effect</td><td><span class="tag tag-txt">testo</span></td><td>Valore numerico del bonus.</td></tr>
+      <tr><td class="path">workshopSubmenu/changeQuantityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità di potenziamenti da eseguire in un colpo solo (es. x1/x10/max), pattern comune nei giochi idle.</td></tr>
+      <tr><td class="path">workshopSubmenu/changeQuantityButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta con la quantità selezionata.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Potenziamenti blueprint</h2>
+  <p class="region-path">Path: <code>submenus/bg/blueprintUpgradesSubmenu/*</code> — script <code>EngineerBlueprintUpgradesSubmenuViewController</code>, nodo <strong>inattivo di default</strong>.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">blueprintUpgradesSubmenu/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo della funzione.</td></tr>
+      <tr><td class="path">upgrades/wmBlueprintUpgrade (0), (1), (2)</td><td>gruppo ×3 — WMBlueprintUpgradeInteraction</td><td>Tre potenziamenti blueprint disponibili, ciascuno con nome, icona (<code>iconBg/icon</code>), livello attuale, descrizione dell'effetto (<code>effectBg/effectText</code>) e un bottone di potenziamento con costo (<code>currencyIcon</code>/<code>costText</code>) e quantità (<code>upgradeQuantity</code>).</td></tr>
+      <tr><td class="path">.../wmBlueprintUpgrade (N)/upgradeButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">×3, uno per riga</span></td><td>Applica il potenziamento blueprint corrispondente pagando il costo mostrato.</td></tr>
+      <tr><td class="path">.../wmBlueprintUpgrade (N)/requirementText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Testo del requisito mancante, nascosto di default: appare probabilmente solo quando il potenziamento non è ancora disponibile.</td></tr>
+      <tr><td class="path">milestone/totalLevelsDesc, totalLevelsText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta e valore dei livelli totali raggiunti sommando tutti i potenziamenti blueprint.</td></tr>
+      <tr><td class="path">milestone/milestoneBonusDesc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione del bonus di traguardo (milestone) attuale.</td></tr>
+      <tr><td class="path">milestone/milestoneAttribute</td><td>gruppo — AttributeGlobalInteraction</td><td>Attributo bonus ottenuto al traguardo, stessa struttura degli attributi globali (icona/valore/lucchetto).</td></tr>
+      <tr><td class="path">milestone/helpingLine</td><td>decorazione — Image</td><td>Linea separatrice.</td></tr>
+      <tr><td class="path">milestone/nextMilestoneDesc, nextMilestoneReq</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta e requisito (livelli totali richiesti) per il prossimo traguardo.</td></tr>
+      <tr><td class="path">blueprintUpgradesSubmenu/changeQuantityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità di potenziamenti da applicare in un colpo solo.</td></tr>
+      <tr><td class="path">blueprintUpgradesSubmenu/changeQuantityButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta con la quantità selezionata.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Potenziamento rarità</h2>
+  <p class="region-path">Path: <code>submenus/bg/rarityUpgradesSubmenu/*</code> — script <code>EngineerRarityUpgradeSubmenuViewController</code>, nodo <strong>inattivo di default</strong>.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">rarityUpgradesSubmenu/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo della funzione.</td></tr>
+      <tr><td class="path">arrowParent/arrow</td><td>decorazione — ArrowMover</td><td>Freccia animata tra rarità attuale e successiva, indica la direzione dell'upgrade.</td></tr>
+      <tr><td class="path">rarityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Esegue l'upgrade di rarità pagando il costo mostrato in <code>currencyIcon</code>/<code>costText</code>.</td></tr>
+      <tr><td class="path">currentRarity/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome della rarità attuale (es. Raro).</td></tr>
+      <tr><td class="path">currentRarity/warmachine</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Anteprima della macchina alla rarità attuale (<code>WarMachineInteractionSquare</code>), stessa struttura del riquadro della griglia (icona, livello, stelle, badge notifica); probabilmente apre il dettaglio.</td></tr>
+      <tr><td class="path">currentRarity/attributes/attributeGlobal (0)..(3), seperator</td><td>gruppo ×4 — AttributeGlobalInteraction</td><td>Attributi della macchina alla rarità attuale, separati da linee (<code>seperator</code>); stessa struttura degli attributi globali (icona/valore/lucchetto).</td></tr>
+      <tr><td class="path">rarityUpSpine</td><td>decorazione — Spine</td><td>Effetto animato di "salita di rarità" mostrato durante l'upgrade.</td></tr>
+      <tr><td class="path">nextRarity/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome della rarità successiva.</td></tr>
+      <tr><td class="path">nextRarity/warmachine</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Anteprima della macchina alla rarità successiva, stessa struttura del riquadro corrente.</td></tr>
+      <tr><td class="path">nextRarity/attributes/attributeGlobal (0)..(3), separator</td><td>gruppo ×4 — AttributeGlobalInteraction</td><td>Attributi della macchina alla rarità successiva, per confronto con quelli attuali.</td></tr>
+      <tr><td class="path">requirementsBg/requirementsText</td><td><span class="tag tag-txt">testo</span></td><td>Requisiti mancanti per effettuare l'upgrade di rarità (es. materiali richiesti).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Azioni fisse in basso</h2>
+  <p class="region-path">Path: <code>unlockOfferButton</code>, <code>engineerButton</code>, <code>infoButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Offerta a tempo per sbloccare una macchina da guerra (<code>UnlockOfferButtonInteraction</code>); mostra un countdown in <code>canvasGroup/time</code> e l'icona dell'unità in <code>canvasGroup/unitIcon</code>. Visibile probabilmente solo quando un'offerta è attiva.</td></tr>
+      <tr><td class="path">unlockOfferButton/unlockMechanismSpine, unlockUnitSpine</td><td>decorazione — Spine</td><td>Animazioni del meccanismo di sblocco e dell'unità mostrata nell'offerta.</td></tr>
+      <tr><td class="path">engineerButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Porta alla schermata dell'Ingegnere (vedi <code>Engineer.html</code>); freccia animata (<code>arrowParent/swingingArrow</code>, <code>ArrowMover</code>) usata come richiamo visivo.</td></tr>
+      <tr><td class="path">engineerButton/iconFrame</td><td>immagine</td><td>Cornice dell'icona del bottone.</td></tr>
+      <tr><td class="path">engineerButton/textBg/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone (es. "Ingegnere").</td></tr>
+      <tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il popup informativo sulle macchine da guerra (vedi <code>WarmachinesInfo.html</code>).</td></tr>
+      <tr><td class="path">infoButton/spineInfo</td><td>decorazione — Spine</td><td>Icona animata "i" informativa.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<p class="note">Nodi omessi dal dump originale rispetto ai 363 totali perché puramente decorativi/tecnici e privi di funzione utile all'automazione: i collider extra sotto <code>goBackWm/collider</code>, <code>goForthWm/collider</code>, <code>getMore/collider</code>, <code>chat/collider</code> (aree di collisione aggiuntive, nessun componente proprio oltre a Image); i pochi contenitori vuoti senza componenti (es. <code>warMachineSpinePos</code>, <code>navigation</code>) usati solo come ancore/gruppi di transform. Le liste ripetute (stelle, attributi globali, componenti officina, upgrade blueprint) sono documentate come un'unica riga di gruppo invece che una riga per indice, per leggibilità.</p>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/WarMachines</code>. Nota: il path radice completo non è stato verificato risalendo la gerarchia della scena live — è dedotto per nome/contesto (schermata di collezione/gestione raggiungibile dal menu principale, collegata a <code>Engineer</code> e <code>WarmachinesInfo</code>) dato che il dump è stato estratto staticamente a partire dal solo prefab. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

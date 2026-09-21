@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Biografia Personaggio</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Biografia Personaggio</div>
+  <h1>📜 Biografia Personaggio</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Il prefab radice risulta <strong>inattivo</strong> di default: è un popup che si attiva quando il giocatore consulta la biografia/lore di un personaggio.</p>
+</header>
+<main>
+
+  <section>
+    <h2>Radice del popup</h2>
+    <p class="region-path">Path: <code>Biography</code></p>
+    <table>
+      <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="path">Biography</td>
+          <td><span class="tag tag-off">inattivo</span> Canvas + GraphicRaycaster + <code>BiographyViewController</code></td>
+          <td>Contenitore radice del popup, pilotato dallo script custom <code>BiographyViewController</code>. Nel prefab è disattivato di default: viene attivato dinamicamente all'apertura della biografia di un personaggio.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/background</td>
+          <td><span class="tag tag-btn">BOTTONE</span></td>
+          <td>Sfondo semi-trasparente a schermo intero, cliccabile: probabile "click fuori dal pannello per chiudere il popup".</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Pannello e intestazione</h2>
+    <p class="region-path">Path: <code>Biography/bg</code></p>
+    <table>
+      <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="path">Biography/bg</td>
+          <td>Image</td>
+          <td>Pannello principale del popup (cornice/sfondo del box biografia).</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/titleBg</td>
+          <td>Image</td>
+          <td>Sfondo della barra del titolo in alto al pannello.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/titleBg/title</td>
+          <td><span class="tag tag-txt">testo</span></td>
+          <td>Titolo della schermata (es. "Biografia"), localizzato tramite <code>I2.Loc.Localize</code>.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/line</td>
+          <td>Image</td>
+          <td>Linea divisoria decorativa tra l'intestazione/info personaggio e il testo scorrevole sottostante.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Informazioni personaggio</h2>
+    <p class="region-path">Path: <code>Biography/bg/info</code></p>
+    <table>
+      <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="path">Biography/bg/info</td>
+          <td>Contenitore (nessun componente grafico)</td>
+          <td>Raggruppa icona, nome e titolo del personaggio di cui si sta leggendo la biografia.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/info/iconBg</td>
+          <td>Image</td>
+          <td>Sfondo/cornice del ritratto del personaggio.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/info/iconBg/icon</td>
+          <td>Image</td>
+          <td>Icona/ritratto del personaggio di cui si visualizza la biografia.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/info/name</td>
+          <td><span class="tag tag-txt">testo</span></td>
+          <td>Nome del personaggio, localizzato.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/info/title</td>
+          <td><span class="tag tag-txt">testo</span></td>
+          <td>Titolo/epiteto del personaggio (es. classe o soprannome), localizzato.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Testo della biografia (scroll view)</h2>
+    <p class="region-path">Path: <code>Biography/bg/scroll</code></p>
+    <table>
+      <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="path">Biography/bg/scroll</td>
+          <td>ScrollRect + Image</td>
+          <td>Area scorrevole che ospita il testo della biografia/lore del personaggio.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/scroll/viewport</td>
+          <td>RectMask2D</td>
+          <td>Maschera di ritaglio della scrollview (nasconde il testo che eccede l'area visibile).</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/scroll/viewport/content</td>
+          <td>VerticalLayoutGroup + ContentSizeFitter</td>
+          <td>Contenitore del testo: si ridimensiona automaticamente in base alla lunghezza della biografia.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/scroll/viewport/content/biographyText</td>
+          <td><span class="tag tag-txt">testo</span></td>
+          <td>Testo vero e proprio della biografia/lore del personaggio (nessun componente di localizzazione: probabilmente popolato via script da <code>BiographyViewController</code>).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Chiusura popup</h2>
+    <p class="region-path">Path: <code>Biography/bg/closeButton</code></p>
+    <table>
+      <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="path">Biography/bg/closeButton</td>
+          <td><span class="tag tag-btn">BOTTONE</span></td>
+          <td>Chiude il popup della biografia. Ha anche <code>ButtonAnimation</code> per il feedback visivo al click.</td>
+        </tr>
+        <tr>
+          <td class="path">Biography/bg/closeButton/icon</td>
+          <td>Image</td>
+          <td>Icona (X) mostrata sul pulsante di chiusura.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Biography</code>. Nota: il path della radice è dedotto solo dal nome del GameObject e dal contenuto (popup di lore/biografia personaggio), senza risalire la gerarchia della scena live — potrebbe in realtà essere annidato sotto una schermata di dettaglio personaggio invece che direttamente sotto <code>menus</code>; verificare dal vivo. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

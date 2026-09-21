@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Albero della Vita (TreeOfLife)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Albero della Vita (TreeOfLife)</div>
+  <h1>🌳 Albero della Vita (TreeOfLife)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Il nodo radice <code>TreeOfLife</code> risulta disattivo di default nel prefab: è un popup che viene attivato a runtime dal controller <code>TreeOfLifeViewController</code>. La schermata ha due sotto-tab affiancati nello stesso prefab: <code>submenus/personalTree</code> (albero personale, attivo di default) e <code>submenus/guildTree</code> (albero di gilda, disattivo di default finché non si seleziona il relativo tab).</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale e navigazione</h2>
+  <p class="region-path">Path relativo: <code>TreeOfLife/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenus</td><td>contenitore</td><td>Contiene i due sotto-pannelli <code>personalTree</code> e <code>guildTree</code>, uno visibile alla volta.</td></tr>
+    <tr><td class="path">submenuButtons</td><td>contenitore (Image)</td><td>Barra dei tab in basso/alto per passare tra albero personale e albero di gilda.</td></tr>
+    <tr><td class="path">submenuButtons/personalTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "albero personale" (mostra <code>submenus/personalTree</code>).</td></tr>
+    <tr><td class="path">submenuButtons/personalTree/icon</td><td>immagine</td><td>Icona del tab albero personale.</td></tr>
+    <tr><td class="path">submenuButtons/personalTree/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta localizzata del tab (es. "Personale").</td></tr>
+    <tr><td class="path">submenuButtons/guildTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "albero di gilda" (mostra <code>submenus/guildTree</code>).</td></tr>
+    <tr><td class="path">submenuButtons/guildTree/icon</td><td>immagine</td><td>Icona del tab albero di gilda.</td></tr>
+    <tr><td class="path">submenuButtons/guildTree/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta localizzata del tab (es. "Gilda").</td></tr>
+    <tr><td class="path">submenuButtons/guildTree/lock</td><td>immagine</td><td>Icona lucchetto sul tab gilda; probabilmente visibile solo se il giocatore non appartiene a una gilda (tab bloccato), verificare dal vivo.</td></tr>
+    <tr><td class="path">submenuButtons/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo/titolo generale della barra dei tab; funzione esatta non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Albero della Vita.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>immagine</td><td>Icona (X) del bottone chiudi.</td></tr>
+    <tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo/spiegazione sulla funzione dell'Albero della Vita (<code>HolydayStudios.InfoButtonAnimation</code>).</td></tr>
+    <tr><td class="path">infoButton/spineInfo</td><td>VFX (Spine)</td><td>Animazione Spine dell'icona "i" informativa.</td></tr>
+    <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat globale/gilda; widget comune presente su molte schermate menu (<code>ChatInteraction</code>).</td></tr>
+    <tr><td class="path">chat/collider</td><td>immagine (area click)</td><td>Estende l'area cliccabile del bottone chat.</td></tr>
+    <tr><td class="path">chat/spineChat</td><td>VFX (Spine)</td><td>Animazione Spine dell'icona chat.</td></tr>
+    <tr><td class="path">chat/notification</td><td>immagine</td><td>Badge di notifica messaggi non letti (<code>NotificationAnimation</code>).</td></tr>
+    <tr><td class="path">chat/notification/bell</td><td>VFX (Spine)</td><td>Animazione della campanella di notifica.</td></tr>
+    <tr><td class="path">chat/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di notifiche/messaggi non letti.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Albero personale (personalTree)</h2>
+  <p class="region-path">Path relativo: <code>TreeOfLife/submenus/personalTree</code> — tab mostrato di default all'apertura della schermata.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bgGradient</td><td>immagine</td><td>Sfondo a gradiente decorativo con effetto VFX di menu.</td></tr>
+    <tr><td class="path">talentTree</td><td>contenitore</td><td>Contenitore dei 20 nodi di potenziamento dell'albero personale.</td></tr>
+    <tr><td class="path">talentTree/treeOfLifePersonalUpgrade (0..19)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>20 nodi di potenziamento (template ripetuto, indici 0-19). Clic per acquistare/salire di livello il nodo; <code>ToLPersonalUpgradeInteraction</code> gestisce la logica, <code>EnlargeOnHover</code> ingrandisce il nodo al passaggio del mouse.</td></tr>
+    <tr><td class="path">.../treeOfLifePersonalUpgrade (N)/upgradeIcon</td><td>immagine</td><td>Icona del potenziamento rappresentato dal nodo.</td></tr>
+    <tr><td class="path">.../treeOfLifePersonalUpgrade (N)/levelBg</td><td>immagine</td><td>Sfondo del badge livello del nodo.</td></tr>
+    <tr><td class="path">.../treeOfLifePersonalUpgrade (N)/levelBg/level</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale raggiunto in questo nodo.</td></tr>
+    <tr><td class="path">counters</td><td>contenitore (HorizontalLayoutGroup)</td><td>Layout orizzontale del contatore valuta usata per potenziare l'albero personale.</td></tr>
+    <tr><td class="path">counters/counterInteraction</td><td>script <code>CounterInteraction</code></td><td>Controller del widget contatore valuta.</td></tr>
+    <tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore; funzione esatta non chiara dal nome, verificare dal vivo (possibile apertura shop/dettaglio valuta).</td></tr>
+    <tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona cliccabile della valuta; stessa area funzionale di <code>bg</code>.</td></tr>
+    <tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della valuta posseduta.</td></tr>
+    <tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo/animazione dell'importo appena aggiunto (es. "+50").</td></tr>
+    <tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone per ottenere altra valuta (probabile shop/IAP); disattivo di default, compare solo in certe condizioni (es. valuta insufficiente).</td></tr>
+    <tr><td class="path">counters/counterInteraction/getMore/collider</td><td>immagine (area click)</td><td>Estende l'area cliccabile di <code>getMore</code>.</td></tr>
+    <tr><td class="path">treeLevelBg</td><td>immagine</td><td>Pannello con nome utente, livello e progresso dell'albero personale.</td></tr>
+    <tr><td class="path">treeLevelBg/userName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del giocatore.</td></tr>
+    <tr><td class="path">treeLevelBg/treeLevelText</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale dell'albero personale (localizzato).</td></tr>
+    <tr><td class="path">treeLevelBg/levelProgressBarBg</td><td>immagine</td><td>Sfondo della barra di progresso verso il livello successivo.</td></tr>
+    <tr><td class="path">.../levelProgressBarBg/progressBarMask/levelProgressBarFill</td><td>immagine (mascherata)</td><td>Riempimento della barra di progresso, ritagliato da <code>RectMask2D</code>.</td></tr>
+    <tr><td class="path">treeLevelBg/levelProgressBarBg/levelProgressText</td><td><span class="tag tag-txt">testo</span></td><td>Testo numerico/percentuale del progresso (localizzato).</td></tr>
+    <tr><td class="path">milestonesButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata/popup delle pietre miliari (ricompense a soglie di livello) dell'albero personale; dedotto dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">milestonesButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta localizzata del bottone.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Albero di gilda (guildTree)</h2>
+  <p class="region-path">Path relativo: <code>TreeOfLife/submenus/guildTree</code> — nel dump risulta <code>(inactive)</code> a livello di nodo radice del sotto-tab, perché non è quello mostrato di default (si attiva selezionando <code>submenuButtons/guildTree</code>).</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bgGradient</td><td>immagine</td><td>Sfondo a gradiente decorativo con effetto VFX di menu.</td></tr>
+    <tr><td class="path">talentTree</td><td>contenitore</td><td>Contenitore dei 23 nodi di potenziamento dell'albero di gilda.</td></tr>
+    <tr><td class="path">talentTree/treeOfLifeGuildUpgrade (0..22)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>23 nodi di potenziamento (template ripetuto, indici 0-22). Clic per acquistare/salire di livello il nodo; <code>ToLGuildUpgradeInteraction</code> gestisce la logica, <code>EnlargeOnHover</code> ingrandisce il nodo al passaggio del mouse.</td></tr>
+    <tr><td class="path">.../treeOfLifeGuildUpgrade (N)/upgradeIcon</td><td>immagine</td><td>Icona del potenziamento rappresentato dal nodo.</td></tr>
+    <tr><td class="path">.../treeOfLifeGuildUpgrade (N)/levelBg</td><td>immagine</td><td>Sfondo del badge livello del nodo.</td></tr>
+    <tr><td class="path">.../treeOfLifeGuildUpgrade (N)/levelBg/level</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale raggiunto in questo nodo.</td></tr>
+    <tr><td class="path">info</td><td>immagine</td><td>Riquadro informativo del tab gilda.</td></tr>
+    <tr><td class="path">info/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo informativo/istruzioni sull'albero di gilda (localizzato).</td></tr>
+    <tr><td class="path">counters</td><td>contenitore</td><td>Contenitore del contatore della valuta di gilda usata per i potenziamenti.</td></tr>
+    <tr><td class="path">counters/bankGuildCoinCounterBg</td><td>immagine</td><td>Sfondo del contatore della moneta di gilda depositata in banca.</td></tr>
+    <tr><td class="path">.../bankGuildCoinCounterBg/guildCoin</td><td>script <code>CounterInteraction</code></td><td>Controller del widget contatore moneta di gilda.</td></tr>
+    <tr><td class="path">.../guildCoin/guildBankDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione localizzata (probabile "Banca gilda" o simile).</td></tr>
+    <tr><td class="path">.../guildCoin/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona cliccabile della moneta di gilda; apre probabilmente il dettaglio/banca gilda, verificare dal vivo.</td></tr>
+    <tr><td class="path">.../guildCoin/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale di moneta di gilda posseduta.</td></tr>
+    <tr><td class="path">.../guildCoin/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo/animazione dell'importo appena aggiunto.</td></tr>
+    <tr><td class="path">.../guildCoin/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone per ottenere altra moneta di gilda; disattivo di default, compare solo in certe condizioni.</td></tr>
+    <tr><td class="path">.../guildCoin/getMore/collider</td><td>immagine (area click)</td><td>Estende l'area cliccabile di <code>getMore</code>.</td></tr>
+    <tr><td class="path">treeLevelBg</td><td>immagine</td><td>Pannello con nome gilda, livello e progresso dell'albero di gilda.</td></tr>
+    <tr><td class="path">treeLevelBg/guildName</td><td><span class="tag tag-txt">testo</span></td><td>Nome della gilda del giocatore.</td></tr>
+    <tr><td class="path">treeLevelBg/treeLevelText</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale dell'albero di gilda (localizzato).</td></tr>
+    <tr><td class="path">treeLevelBg/levelProgressBarBg</td><td>immagine</td><td>Sfondo della barra di progresso verso il livello successivo.</td></tr>
+    <tr><td class="path">.../levelProgressBarBg/progressBarMask/levelProgressBarFill</td><td>immagine (mascherata)</td><td>Riempimento della barra di progresso, ritagliato da <code>RectMask2D</code>.</td></tr>
+    <tr><td class="path">treeLevelBg/levelProgressBarBg/levelProgressText</td><td><span class="tag tag-txt">testo</span></td><td>Testo numerico/percentuale del progresso.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/TreeOfLife</code>. Nota: il path radice è dedotto solo dal nome del GameObject e dal contenuto della schermata (popup di menu raggiungibile presumibilmente da Town/Gilda, non legato alla battaglia), senza aver risalito la gerarchia live della scena — da confermare con un'ispezione a runtime. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

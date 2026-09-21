@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Bestie</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Bestie</div>
+  <h1>🐾 Bestie</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale</h2>
+  <p class="region-path">Path relativo alla radice: <code>Beasts/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">Beasts</td><td>Root, script <code>BeastsViewController</code></td><td>Nodo radice del popup, disattivo di default nel prefab (viene attivato quando l'utente apre la schermata Bestie); il controller gestisce presumibilmente la lista, la selezione e il refresh della scheda dettaglio.</td></tr>
+      <tr><td class="path">bg</td><td>Immagine, <code>MenuVfxEntityComponent</code></td><td>Sfondo del popup, con componente per effetti VFX di menu (probabile animazione/particellare di apertura).</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup Bestie.</td></tr>
+      <tr><td class="path">closeButton/icon</td><td>Immagine</td><td>Icona (X) del pulsante di chiusura.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Lista bestie (colonna sinistra)</h2>
+  <p class="region-path">Path relativo: <code>Beasts/beastList/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">beastList</td><td>Immagine</td><td>Pannello contenitore della lista delle bestie possedute.</td></tr>
+      <tr><td class="path">beastList/text</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della sezione lista, localizzato (es. "Bestie").</td></tr>
+      <tr><td class="path">beastList/separator</td><td>Immagine</td><td>Linea separatrice decorativa sotto il titolo.</td></tr>
+      <tr><td class="path">beastList/beastScrollView</td><td><code>ScrollRect</code>, Immagine</td><td>Area scrollabile che contiene gli avatar delle bestie possedute.</td></tr>
+      <tr><td class="path">beastList/beastScrollView/Viewport</td><td><code>RectMask2D</code></td><td>Maschera di ritaglio dello scroll (contenuti fuori area non visibili).</td></tr>
+      <tr><td class="path">beastList/beastScrollView/Viewport/Content</td><td><code>GridLayoutGroup</code>, <code>ContentSizeFitter</code></td><td>Griglia che dispone dinamicamente gli avatar delle bestie sottostanti.</td></tr>
+      <tr><td class="path">Content/BeastAvatar (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Template dell'avatar cliccabile di una bestia nella lista (<code>BeastOnListInteraction</code>); selezionandolo aggiorna la scheda <code>BeastCard</code> a destra. <code>EnlargeOnHover</code> ingrandisce l'avatar al passaggio del mouse, <code>ButtonAnimation</code> gestisce il feedback visivo del click.</td></tr>
+      <tr><td class="path">BeastAvatar (0)/selected</td><td>Immagine <span class="tag tag-off">inattivo</span></td><td>Overlay/bordo di evidenziazione, attivato solo quando questa bestia è quella attualmente selezionata.</td></tr>
+      <tr><td class="path">BeastAvatar (0)/bg</td><td>Immagine</td><td>Sfondo della cella avatar.</td></tr>
+      <tr><td class="path">BeastAvatar (0)/avatar</td><td>Immagine</td><td>Ritratto/icona della bestia.</td></tr>
+      <tr><td class="path">BeastAvatar (0)/level</td><td>Contenitore (nessun componente)</td><td>Raggruppa lo sfondo e il testo del livello mostrati sull'avatar.</td></tr>
+      <tr><td class="path">BeastAvatar (0)/level/lvlBg</td><td>Immagine</td><td>Sfondo/etichetta grafica del livello.</td></tr>
+      <tr><td class="path">BeastAvatar (0)/level/txtLvl</td><td><span class="tag tag-txt">testo</span></td><td>Numero di livello della bestia mostrato sull'avatar.</td></tr>
+    </tbody>
+  </table>
+  <p class="note"><code>BeastAvatar (0)</code> è l'unica istanza presente nel prefab statico: a runtime viene verosimilmente clonata una volta per ogni bestia posseduta dal giocatore.</p>
+</section>
+
+<section>
+  <h2>Scheda bestia selezionata</h2>
+  <p class="region-path">Path relativo: <code>Beasts/BeastCard/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">BeastCard</td><td>Script <code>BeastCardViewController</code></td><td>Scheda di dettaglio della bestia attualmente selezionata nella lista.</td></tr>
+      <tr><td class="path">BeastCard/bg</td><td>Immagine</td><td>Sfondo della scheda.</td></tr>
+      <tr><td class="path">BeastCard/cardBorder</td><td>Immagine</td><td>Cornice grafica della scheda (probabilmente colorata/variante in base alla rarità).</td></tr>
+      <tr><td class="path">BeastCard/beast</td><td>Immagine</td><td>Illustrazione grande della bestia selezionata.</td></tr>
+      <tr><td class="path">BeastCard/top</td><td>Contenitore (nessun componente)</td><td>Barra superiore della scheda con livello e rarità.</td></tr>
+      <tr><td class="path">top/bgTop</td><td>Immagine</td><td>Sfondo della barra superiore.</td></tr>
+      <tr><td class="path">top/frameTop</td><td>Immagine</td><td>Cornice decorativa della barra superiore.</td></tr>
+      <tr><td class="path">top/txtBeastLvl</td><td><span class="tag tag-txt">testo</span></td><td>Livello della bestia selezionata.</td></tr>
+      <tr><td class="path">top/rarityFrame</td><td>Immagine</td><td>Cornice/icona colorata in base alla rarità della bestia.</td></tr>
+      <tr><td class="path">top/txtBeastRarity</td><td><span class="tag tag-txt">testo</span></td><td>Nome della rarità, localizzato (es. "Comune", "Raro", "Epico").</td></tr>
+      <tr><td class="path">BeastCard/bottom</td><td>Contenitore (nessun componente)</td><td>Barra inferiore della scheda con il nome della bestia.</td></tr>
+      <tr><td class="path">bottom/bgBottom</td><td>Immagine</td><td>Sfondo della barra inferiore.</td></tr>
+      <tr><td class="path">bottom/frameBottom</td><td>Immagine</td><td>Cornice decorativa della barra inferiore.</td></tr>
+      <tr><td class="path">bottom/txtBeastName</td><td><span class="tag tag-txt">testo</span></td><td>Nome della bestia selezionata, localizzato.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Bonus/effetti della bestia</h2>
+  <p class="region-path">Path relativo: <code>Beasts/BeastCard/interactions/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">interactions</td><td>Contenitore (nessun componente)</td><td>Raggruppa gli slot dei bonus/statistiche della bestia selezionata.</td></tr>
+      <tr><td class="path">BeastCardEffectInteraction (0…5)</td><td>Script <code>BeastCardEffectInteraction</code></td><td>Sei istanze (indici 0-5), una per ciascun bonus/parametro fornito dalla bestia (es. danno, oro, bottino: non deducibile con certezza dal solo nome, verificare dal vivo). Struttura identica per ognuna, riportata una sola volta di seguito.</td></tr>
+      <tr><td class="path">…/bg</td><td>Immagine</td><td>Sfondo dello slot bonus.</td></tr>
+      <tr><td class="path">…/frame</td><td>Immagine</td><td>Cornice grafica dello slot.</td></tr>
+      <tr><td class="path">…/icon</td><td>Immagine</td><td>Icona che identifica il tipo di bonus.</td></tr>
+      <tr><td class="path">…/value</td><td><span class="tag tag-txt">testo</span></td><td>Valore numerico del bonus.</td></tr>
+      <tr><td class="path">…/valueChangedSpine</td><td><code>Spine.Unity.SkeletonGraphic</code>, <code>MenuVfxEntityComponent</code></td><td>Animazione Spine mostrata quando il valore del bonus cambia (es. dopo un potenziamento).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Contatori risorse e stato bestie</h2>
+  <p class="region-path">Path relativo: <code>Beasts/counters/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">counters</td><td><code>HorizontalLayoutGroup</code></td><td>Barra inferiore con i contatori delle risorse usate per potenziare/sbloccare le bestie.</td></tr>
+      <tr><td class="path">counterInteraction (0)</td><td>Script <code>CounterInteraction</code></td><td>Slot del primo contatore risorsa (probabilmente la valuta/materiale per il livellamento delle bestie; non deducibile con certezza dal nome).</td></tr>
+      <tr><td class="path">counterInteraction (0)/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile dello slot, probabilmente apre un tooltip/dettaglio sulla risorsa.</td></tr>
+      <tr><td class="path">counterInteraction (0)/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona cliccabile della risorsa, stessa funzione del bottone sopra.</td></tr>
+      <tr><td class="path">counterInteraction (0)/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta della risorsa.</td></tr>
+      <tr><td class="path">counterInteraction (0)/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato temporaneamente quando la quantità aumenta.</td></tr>
+      <tr><td class="path">counterInteraction (0)/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone "ottieni di più", inattivo di default: compare probabilmente solo quando la risorsa non basta per l'azione in corso, per rimandare a un negozio/altra schermata.</td></tr>
+      <tr><td class="path">counterInteraction (1)</td><td>Script <code>CounterInteraction</code></td><td>Secondo slot contatore, stessa struttura del primo (probabilmente una seconda risorsa, es. per la rarità).</td></tr>
+      <tr><td class="path">counterInteraction (1)/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile dello slot.</td></tr>
+      <tr><td class="path">counterInteraction (1)/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona cliccabile della risorsa.</td></tr>
+      <tr><td class="path">counterInteraction (1)/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta della risorsa.</td></tr>
+      <tr><td class="path">counterInteraction (1)/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato temporaneamente quando la quantità aumenta.</td></tr>
+      <tr><td class="path">counterInteraction (1)/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone "ottieni di più", inattivo di default, stessa logica condizionale del precedente.</td></tr>
+      <tr><td class="path">beastCounter</td><td>Immagine</td><td>Contatore del numero di bestie possedute.</td></tr>
+      <tr><td class="path">beastCounter/beastImg</td><td>Immagine</td><td>Icona bestia del contatore.</td></tr>
+      <tr><td class="path">beastCounter/beastNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero di bestie possedute (probabilmente nel formato "posseduto/totale").</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Il nodo <code>getMore/collider</code> (semplice Immagine usata come area di click) è stato omesso dalla tabella in quanto puramente decorativo.</p>
+</section>
+
+<section>
+  <h2>Stati condizionali (nessuna bestia / tutte al massimo)</h2>
+  <p class="region-path">Path relativo: <code>Beasts/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">noBeast</td><td>Immagine <span class="tag tag-off">inattivo</span></td><td>Pannello mostrato quando il giocatore non possiede ancora nessuna bestia.</td></tr>
+      <tr><td class="path">noBeast/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo dello stato "nessuna bestia", localizzato.</td></tr>
+      <tr><td class="path">allMaxed</td><td>Immagine <span class="tag tag-off">inattivo</span></td><td>Pannello mostrato quando tutte le bestie possedute sono già al livello/rarità massima.</td></tr>
+      <tr><td class="path">allMaxed/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo dello stato "tutto al massimo", localizzato.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Azioni principali</h2>
+  <p class="region-path">Path relativo: <code>Beasts/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">openIncreaseRarityPopupButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il popup per aumentare la rarità della bestia selezionata.</td></tr>
+      <tr><td class="path">openIncreaseRarityPopupButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone, localizzata (es. "Aumenta rarità").</td></tr>
+      <tr><td class="path">openUpgradePopupButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il popup per potenziare (aumentare di livello) la bestia selezionata.</td></tr>
+      <tr><td class="path">openUpgradePopupButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone, localizzata (es. "Potenzia").</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Beasts</code> (stimato per nome del GameObject, non verificato risalendo la gerarchia della scena live — potrebbe differire; non è escluso che la schermata sia raggiungibile anche da altri punti del menu). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

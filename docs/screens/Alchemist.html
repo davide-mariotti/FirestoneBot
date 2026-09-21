@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Alchimista</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Alchimista</div>
+  <h1>⚗️ Alchimista</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata (693 nodi, 187 bottoni). Radice: <code>Alchemist</code> (script <code>AlchemistViewController</code>): è un popup a schermo intero con due sottomenu a tab (Esperimenti / Trasmutazione), attivato quando il giocatore apre la schermata dell'Alchimista.</p>
+</header>
+<main>
+
+<section>
+  <h2>Header e controlli principali</h2>
+  <p class="region-path">Path: <code>bg/</code>, <code>unlockOfferButton</code>, <code>closeButton</code>, <code>points</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/bgElements/*</td><td>decorazione</td><td>Sfondo della stanza (finestra, scaffali, mattonelle, bagliore del calderone); solo <code>Image</code>/<code>MenuVfxEntityComponent</code>, nessuna interazione.</td></tr>
+      <tr><td class="path">bg/alchemistSpine</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Il personaggio animato (Spine) dell'Alchimista sullo sfondo; toccarlo probabilmente avvia una battuta/animazione di reazione.</td></tr>
+      <tr><td class="path">bg/AlchemistParticles/*, bg/AlchemistExplotion</td><td>VFX</td><td>Sistemi particellari d'ambiente; <code>AlchemistExplotion</code> risulta <span class="tag tag-off">inattivo</span> di default (probabile effetto "esplosione" al completamento di un esperimento).</td></tr>
+      <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Offerta a tempo per sbloccare qualcosa legato all'Alchimista (<code>UnlockOfferButtonInteraction</code>); timer in <code>canvasGroup/time</code>, icona unità in <code>canvasGroup/unitIcon</code> (anch'essa inattiva). Visibile solo quando l'offerta è attiva.</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Alchimista.</td></tr>
+      <tr><td class="path">points/pointTarget, points/alchemistExplosionSpine</td><td>VFX</td><td>Punto di ancoraggio e animazione Spine per effetti (es. volo valuta/ricompensa verso la barra contatori).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra valute (counters)</h2>
+  <p class="region-path">Path: <code>counters/currencyInteraction (Nome)/</code> — x11 valute pooled (Titan, Mythic, Legendary, Epic, Rare, Uncommon, Common, Gem, DragonBlood, StrangeDust, ExoticCoin) + 1 slot generico</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">counters/currencyInteraction (Titan|Mythic|Legendary|Epic|Rare|Uncommon|Common|Gem|DragonBlood|StrangeDust|ExoticCoin)</td><td>contenitore <span class="note">x11 valute</span></td><td>Un contatore per valuta (<code>CounterInteraction</code>, <code>Holy.Pooler.PooledContentBehaviour</code> — riga pooled). Le voci base (Titan…Common) risultano <span class="tag tag-off">inattive</span> di default nel prefab e vengono mostrate solo se il giocatore possiede quella valuta; Gem/DragonBlood/StrangeDust sono attive di default.</td></tr>
+      <tr><td class="path">.../bg, .../icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo e icona cliccabili del contatore (probabilmente aprono il dettaglio/tooltip della valuta).</td></tr>
+      <tr><td class="path">.../quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale posseduta.</td></tr>
+      <tr><td class="path">.../quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato temporaneamente quando la valuta aumenta.</td></tr>
+      <tr><td class="path">.../getMore</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone "Ottieni di più" per aprire lo shop; risulta <span class="tag tag-off">inattivo</span> di default per le valute base (Titan…Common), mentre è attivo di default per Gem/DragonBlood/StrangeDust/ExoticCoin.</td></tr>
+      <tr><td class="path">counters/counterInteraction</td><td>contenitore <span class="tag tag-off">inattivo</span></td><td>Slot contatore generico/pooled (senza nome valuta), stessa struttura (bg/icon/quantity/getMore); usato come template per valute non elencate esplicitamente.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab sottomenu</h2>
+  <p class="region-path">Path: <code>submenus/bg/submenuButtons/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenus/bg/submenuButtons/experiments</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Esperimenti" (tab selezionata di default).</td></tr>
+      <tr><td class="path">submenus/bg/submenuButtons/transmute</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Trasmutazione"; icona <code>lock</code> figlia (inattiva di default) visibile se la funzione non è ancora sbloccata.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Esperimenti</h2>
+  <p class="region-path">Path: <code>submenus/bg/experimentsSubmenu/</code> — script <code>AlchemyExperimentSubmenuViewController</code>, nodo <strong>inattivo di default</strong> (attivo quando la scheda "experiments" è selezionata).</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">experimentsInfoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo sul funzionamento degli esperimenti (<code>HolydayStudios.InfoButtonAnimation</code>).</td></tr>
+      <tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della scheda ("Esperimenti").</td></tr>
+      <tr><td class="path">changeQuantityButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Cambia la quantità/moltiplicatore di esperimenti avviabili insieme (es. x1/x10); testo in <code>text</code>. Compare solo in certe condizioni.</td></tr>
+      <tr><td class="path">head/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo del sottomenu.</td></tr>
+      <tr><td class="path">experiments/alchExperimentType0..2</td><td>contenitore <span class="note">x3, tipi 0-2</span></td><td>Tipo di esperimento avviabile (<code>AlchemyExperimentSlotType</code>): icona (<code>experimentIconBg/experimentIcon</code>) e nome tipo (<code>experimentTypeBg/experimentType</code>).</td></tr>
+      <tr><td class="path">experiments/alchExperimentType0..2/startExperiment</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">x3</span></td><td>Avvia un nuovo esperimento di questo tipo; mostra il costo (<code>cost</code>) e l'icona valuta richiesta.</td></tr>
+      <tr><td class="path">experiments/alchExperimentSlot0..2</td><td>contenitore <span class="note">x3, slot 0-2</span></td><td>Slot che mostra l'esperimento in corso (<code>AlchemyExperimentSlotInteraction</code>): icona, nome (<code>experimentNameBg/experimentName</code>), barra di progresso (<code>progressBarBg/progressBarMask/progressBarFill</code>) e tempo rimanente (<code>timeLeftText</code>). Lo slot <strong>2 risulta interamente inattivo</strong> di default (probabilmente non ancora sbloccato).</td></tr>
+      <tr><td class="path">.../speedUpButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Accelera a pagamento l'esperimento in corso (<code>SpeedUpButtonInteraction</code>); costo in <code>costText</code>. Compare solo mentre un esperimento è attivo e non ancora completo.</td></tr>
+      <tr><td class="path">.../claimButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritira la ricompensa dell'esperimento completato (testo <code>finishDesc</code>). Nello slot 2 (inattivo) anche questo bottone risulta inattivo.</td></tr>
+      <tr><td class="path">multipleExperiments (inattivo)/alchExperimentGems</td><td>contenitore <span class="tag tag-off">inattivo</span></td><td>Riquadro per avviare un esperimento speciale pagando in gemme; stessa struttura icona/tipo dei tipi normali.</td></tr>
+      <tr><td class="path">multipleExperiments/alchExperimentGems/startExperiment</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avvia l'esperimento premium (gemme); costo in <code>costText</code>, descrizione finale in <code>finishDesc</code>.</td></tr>
+      <tr><td class="path">timeBg/timeDesc, timeBg/timeLayout/time</td><td><span class="tag tag-txt">testo</span></td><td>Riepilogo del tempo totale/rimanente relativo agli esperimenti.</td></tr>
+      <tr><td class="path">experimentsProgressButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone di stato/avanzamento generale (testo <code>finishDesc</code>); funzione esatta non chiara dal solo nome, verificare dal vivo (probabile scorciatoia verso l'esperimento più vicino al completamento).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Trasmutazione</h2>
+  <p class="region-path">Path: <code>submenus/bg/transmuteSubmenu/</code> — script <code>AlchemistTransmuteSubmenuViewController</code>, converte forzieri di un livello (equipaggiamento/gioielli/celestiali) in forzieri di livello superiore.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della scheda ("Trasmutazione").</td></tr>
+      <tr><td class="path">transmuteCounters/currencyInteraction (Nome)</td><td>contenitore <span class="note">x11 valute + 1 generico</span></td><td>Stessa barra valute pooled vista in <code>counters/</code> (bg/icon/quantity/quantityAdded/getMore), duplicata qui in una <code>GridLayoutGroup</code> per il contesto trasmutazione.</td></tr>
+      <tr><td class="path">categoryButtons/gear</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Equipaggiamento" (attiva di default).</td></tr>
+      <tr><td class="path">categoryButtons/jewels</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Gioielli"; icona <code>lock</code> figlia (inattiva di default) se non sbloccata.</td></tr>
+      <tr><td class="path">categoryButtons/celestials</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Celestiali"; icona <code>lock</code> figlia risulta <strong>attiva</strong> di default nel prefab (categoria non ancora sbloccata di default).</td></tr>
+      <tr><td class="path">categories/gearCategory/.../head/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della vista categoria (una per gear/jewels/celestials, dentro uno <code>ScrollRect</code>).</td></tr>
+      <tr><td class="path">categories/gearCategory/.../productGrid/alchemistTransmuteGearChest (0..5)</td><td>contenitore <span class="note">x6, livelli 0-5</span></td><td>Riquadro di trasmutazione per un livello di forziere equipaggiamento (<code>AlchemistTransmuteGearChestInteraction</code>). Nel prefab i livelli 2-5 risultano <span class="tag tag-off">inattivi</span> di default (verosimilmente sbloccati progredendo), 0 e 1 sono attivi.</td></tr>
+      <tr><td class="path">.../oldChest</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">x6</span></td><td>Mostra/seleziona la quantità di forzieri "vecchi" posseduti da convertire (<code>GearChestInteraction</code>).</td></tr>
+      <tr><td class="path">.../currency1, .../currency2</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">x6 ciascuno</span></td><td>Componente/costo aggiuntivo richiesto per la trasmutazione (icona + quantità, <code>CurrencyRewardInteraction</code>); probabilmente apre un tooltip.</td></tr>
+      <tr><td class="path">.../newChest</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">x6</span></td><td>Mostra il forziere di destinazione (livello superiore) ottenuto dalla trasmutazione.</td></tr>
+      <tr><td class="path">.../transmuteButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">x6</span></td><td>Esegue la trasmutazione dei forzieri per questo livello (testo in <code>text</code>).</td></tr>
+      <tr><td class="path">categories/jewelsCategory (inattivo)/.../alchemistTransmuteJewelChest (0..5)</td><td>contenitore <span class="note">x6, stessa struttura</span></td><td>Equivalente "Gioielli" della griglia trasmutazione (<code>AlchemistTransmuteJewelChestInteraction</code> / <code>JewelChestInteraction</code>); l'intera categoria <code>jewelsCategory</code> è inattiva di default (non selezionata all'apertura).</td></tr>
+      <tr><td class="path">categories/celestialsCategory (inattivo)/.../alchemistTransmuteCelestialChest (0..5)</td><td>contenitore <span class="note">x6, stessa struttura</span></td><td>Equivalente "Celestiali" della griglia trasmutazione (<code>AlchemistTransmuteCelestialChestInteraction</code> / <code>CelestialChestInteraction</code>); categoria inattiva di default.</td></tr>
+      <tr><td class="path">changeTransmuteQuantity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità/moltiplicatore di trasmutazioni eseguibili insieme (es. x1/x10); testo in <code>text</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Alchemist</code>. Nota: il path radice completo non è stato verificato risalendo la gerarchia della scena live — è dedotto per nome/contesto (popup di gestione raggiungibile dal menu principale, come Ingegnere/Biblioteca) dato che il dump è stato estratto staticamente a partire dal solo prefab. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

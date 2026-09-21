@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Oracolo</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Oracolo</div>
+  <h1>🔮 Oracolo</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice e controller</h2>
+  <p class="region-path">Percorso: <code>Oracle</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">Oracle <em>(radice)</em></td>
+        <td><span class="tag tag-txt">OracleViewController</span> <span class="tag tag-off">inattivo</span></td>
+        <td>Controller principale della schermata. Risulta disattivo nel prefab: viene istanziato/attivato dinamicamente quando il giocatore apre il popup Oracolo (probabilmente dal menu principale, non dalla battaglia — vedi nota in fondo pagina).</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sfondo decorativo</h2>
+  <p class="region-path">Percorso: <code>Oracle/background/bgElements</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bgUp, bgDown</td><td>Image</td><td>Fasce di sfondo statiche, puramente decorative.</td></tr>
+      <tr><td class="path">bgTile</td><td>Image, MenuVfxEntityComponent</td><td>Piastrella di sfondo con aggancio per effetti particellari; decorativo.</td></tr>
+      <tr><td class="path">tiles/ (tilesLeft, runesLeft, columnsLeft, tilesFloorLeft, tilesRight, runesRight, columnsRight, tilesFloorRight)</td><td>Image, MenuVfxEntityComponent</td><td>Scenografia simmetrica sinistra/destra (colonne, rune, pavimento). Nessuna interazione.</td></tr>
+      <tr><td class="path">gate/ (tilesLeft, tilesRight, bgVerticalEnd)</td><td>Image, MenuVfxEntityComponent</td><td>Elemento scenografico "cancello/portale" sullo sfondo. Nessuna interazione.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Contatori valuta (in alto)</h2>
+  <p class="region-path">Percorso: <code>Oracle/counters/counterInteraction (0…4)</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">counters</td>
+        <td>HorizontalLayoutGroup, Canvas, GraphicRaycaster</td>
+        <td>Contenitore che allinea i 5 blocchi contatore valuta.</td>
+      </tr>
+      <tr>
+        <td class="path">counterInteraction (0…4)</td>
+        <td>CounterInteraction</td>
+        <td>Pattern identico ripetuto 5 volte (indici 0-4), un blocco per ogni valuta mostrata in alto. Il nome del nodo non indica quale valuta specifica (oro, gemme, ecc.): verificare dal vivo.</td>
+      </tr>
+      <tr>
+        <td class="path">.../bg <span class="tag tag-btn">BOTTONE</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Sfondo cliccabile del contatore; ipotesi: apre il dettaglio/negozio di quella valuta, verificare dal vivo.</td>
+      </tr>
+      <tr>
+        <td class="path">.../icon <span class="tag tag-btn">BOTTONE</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Icona cliccabile, stessa azione del bottone "bg".</td>
+      </tr>
+      <tr>
+        <td class="path">.../quantity</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Quantità attuale posseduta della valuta.</td>
+      </tr>
+      <tr>
+        <td class="path">.../quantityAdded</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Testo animato "+N" mostrato quando la valuta aumenta.</td>
+      </tr>
+      <tr>
+        <td class="path">.../getMore <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+        <td>Pulsante "ottieni di più"; compare solo per le valute acquistabili/esauribili (condizione dinamica).</td>
+      </tr>
+      <tr>
+        <td class="path">.../getMore/collider</td>
+        <td>Image</td>
+        <td>Area di click decorativa, nessun contenuto proprio.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra azioni principali</h2>
+  <p class="region-path">Percorso: <code>Oracle/</code> (nodi diretti sotto la radice)</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">closeButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Oracolo.</td></tr>
+      <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona del pulsante di chiusura.</td></tr>
+      <tr><td class="path">infoButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo/tutorial sulla schermata (InfoButtonAnimation).</td></tr>
+      <tr><td class="path">infoButton/spineInfo</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione dell'icona info.</td></tr>
+      <tr><td class="path">oracleLevel <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (RankView)</td><td>Mostra livello/rango dell'Oracolo con barra di progresso; il click probabilmente apre il dettaglio del livello o la lista traguardi, verificare dal vivo.</td></tr>
+      <tr><td class="path">oracleLevel/bg</td><td>Image</td><td>Sfondo del blocco livello.</td></tr>
+      <tr><td class="path">oracleLevel/oracleLevelText</td><td><span class="tag tag-txt">testo</span></td><td>Numero di livello corrente.</td></tr>
+      <tr><td class="path">oracleLevel/levelProgressBarBg/progressBarMask/levelProgressBarFill</td><td>Image (mask+fill)</td><td>Barra di avanzamento verso il livello successivo.</td></tr>
+      <tr><td class="path">oracleLevel/levelProgressBarBg/levelProgressText</td><td><span class="tag tag-txt">testo</span></td><td>Valori numerici del progresso (es. "120/500").</td></tr>
+      <tr><td class="path">oracleLevel/virtue</td><td>Image</td><td>Icona della virtù associata al livello.</td></tr>
+      <tr><td class="path">oracle <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (Canvas proprio)</td><td>Figura centrale dell'Oracolo. Funzione esatta del click non chiara dal nome (probabile azione principale/"consulta l'oracolo"): verificare dal vivo.</td></tr>
+      <tr><td class="path">oracle/oracle</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione del personaggio Oracolo.</td></tr>
+      <tr><td class="path">chat <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (ChatInteraction)</td><td>Apre la chat di gioco.</td></tr>
+      <tr><td class="path">chat/collider</td><td>Image</td><td>Area di click, nessun contenuto proprio.</td></tr>
+      <tr><td class="path">chat/spineChat</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione dell'icona chat.</td></tr>
+      <tr><td class="path">chat/notification, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica con conteggio messaggi non letti.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab dei sottomenu</h2>
+  <p class="region-path">Percorso: <code>Oracle/submenuButtons</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenuButtons</td><td>VerticalLayoutGroup</td><td>Contenitore della barra dei tab laterali.</td></tr>
+      <tr><td class="path">oracle <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Oracolo" (progressi/virtù) — apre la vista <code>oracleSubmenu</code>.</td></tr>
+      <tr><td class="path">oracle/icon, oracle/text</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Icona ed etichetta del tab.</td></tr>
+      <tr><td class="path">rituals <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Rituali" — apre la vista <code>ritualSubmenu</code>.</td></tr>
+      <tr><td class="path">rituals/notification, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span></td><td>Badge con numero di rituali disponibili/da riscattare.</td></tr>
+      <tr><td class="path">rituals/icon, rituals/text</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Icona ed etichetta del tab.</td></tr>
+      <tr><td class="path">blessings <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Benedizioni" — apre la vista <code>blessingsSubmenu</code>.</td></tr>
+      <tr><td class="path">blessings/notification, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span></td><td>Badge con numero di benedizioni potenziabili.</td></tr>
+      <tr><td class="path">blessings/icon, blessings/text</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Icona ed etichetta del tab.</td></tr>
+      <tr><td class="path">store <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Negozio" (offerte legate all'Oracolo).</td></tr>
+      <tr><td class="path">store/icon, store/text</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Icona ed etichetta del tab.</td></tr>
+      <tr><td class="path">store/notification, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica sul tab negozio.</td></tr>
+      <tr><td class="path">specialOffersButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (Canvas proprio, ChangingText)</td><td>Apre un'offerta speciale a tempo limitato.</td></tr>
+      <tr><td class="path">specialOffersButton/chestIcon</td><td>Image</td><td>Icona del forziere/offerta.</td></tr>
+      <tr><td class="path">specialOffersButton/timeLeft</td><td><span class="tag tag-txt">testo</span></td><td>Countdown dell'offerta.</td></tr>
+      <tr><td class="path">specialOffersButton/saleText</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Testo dello sconto (es. percentuale).</td></tr>
+      <tr><td class="path">unlockOfferButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (UnlockOfferButtonInteraction)</td><td>Offerta a tempo per sbloccare un elemento/unità.</td></tr>
+      <tr><td class="path">unlockOfferButton/unlockMechanismSpine, .../unlockUnitSpine</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazioni del meccanismo e dell'unità da sbloccare.</td></tr>
+      <tr><td class="path">unlockOfferButton/canvasGroup/unitIcon</td><td>Image</td><td>Icona dell'unità/elemento sbloccabile.</td></tr>
+      <tr><td class="path">unlockOfferButton/canvasGroup/time</td><td><span class="tag tag-txt">testo</span></td><td>Countdown dell'offerta di sblocco.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Pannello sottomenu (contenitore condiviso)</h2>
+  <p class="region-path">Percorso: <code>Oracle/submenus/bg</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg</td><td>Image</td><td>Pannello di sfondo condiviso dai tre contenuti di sottomenu sottostanti (stile papiro).</td></tr>
+      <tr><td class="path">bg/papyrusUpper, bg/papyrusLower</td><td>Image</td><td>Decorazioni del bordo a papiro. Puramente decorative.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Benedizioni" (blessingsSubmenu)</h2>
+  <p class="region-path">Percorso: <code>Oracle/submenus/bg/blessingsSubmenu</code> — <span class="tag tag-off">inattivo</span> nel prefab, si attiva selezionando il tab "Benedizioni"</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">blessingsSubmenu</td><td>OracleBlessingsSubmenuViewController <span class="tag tag-off">inattivo</span></td><td>Contenuto del tab "Benedizioni".</td></tr>
+      <tr><td class="path">bgBlue/bgLeft, bgBlue/bgRight</td><td>Image</td><td>Decorativo.</td></tr>
+      <tr><td class="path">circleSpine</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione decorativa del cerchio centrale.</td></tr>
+      <tr>
+        <td class="path">blessings/blessing (0…12) <span class="tag tag-btn">BOTTONE</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> (OracleBlessingInteraction)</td>
+        <td>Pattern ripetuto 13 volte (indici 0-12) = 13 bottoni: ogni nodo è una singola benedizione dell'albero. Il click apre presumibilmente il dettaglio/potenziamento di quella benedizione specifica, verificare dal vivo.</td>
+      </tr>
+      <tr><td class="path">.../ray</td><td>Image <span class="note">(inattivo solo sull'indice 12)</span></td><td>Raggio/glow mostrato quando la benedizione è disponibile o selezionata. Nel prefab risulta attivo per gli indici 0-11 e disattivo per l'indice 12: verificare se è intenzionale o un caso limite.</td></tr>
+      <tr><td class="path">.../bg, .../blessingIcon</td><td>Image</td><td>Sfondo e icona della benedizione.</td></tr>
+      <tr><td class="path">.../blessingLevelBg/blessingLevel</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale della benedizione.</td></tr>
+      <tr><td class="path">.../notification, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span></td><td>Badge che segnala un potenziamento disponibile.</td></tr>
+      <tr><td class="path">glowSpine <span class="tag tag-off">inattivo</span></td><td>Spine.Unity.SkeletonGraphic <span class="tag tag-off">inattivo</span></td><td>Effetto glow generale; si attiva solo in condizioni particolari (es. nuova benedizione sbloccata).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Rituali" (ritualSubmenu)</h2>
+  <p class="region-path">Percorso: <code>Oracle/submenus/bg/ritualSubmenu</code> — <span class="tag tag-off">inattivo</span> nel prefab, si attiva selezionando il tab "Rituali"</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">ritualSubmenu</td><td>OracleRitualSubmenuViewController <span class="tag tag-off">inattivo</span></td><td>Contenuto del tab "Rituali".</td></tr>
+      <tr><td class="path">ritualsGrid</td><td>GridLayoutGroup</td><td>Griglia che dispone le card dei rituali.</td></tr>
+      <tr>
+        <td class="path">ritualsGrid/oracleRitualInteraction (0…3)</td>
+        <td>OracleRitualInteraction</td>
+        <td>Pattern ripetuto 4 volte (indici 0-3): una card per ogni rituale attivo/disponibile.</td>
+      </tr>
+      <tr><td class="path">.../bg</td><td>Image</td><td>Sfondo della card.</td></tr>
+      <tr><td class="path">.../normal/titleText</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Nome del rituale.</td></tr>
+      <tr><td class="path">.../normal/rewards/gameItemRewardInteraction (0)</td><td>GameItemRewardInteraction</td><td>Anteprima della ricompensa del rituale: icona, quantità, forziere. I sotto-nodi glow/frame/canClaim/claimedFrame sono stati visivi alternativi attivati dinamicamente in base allo stato della ricompensa.</td></tr>
+      <tr><td class="path">.../normal/rewardsText</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Descrizione testuale delle ricompense.</td></tr>
+      <tr><td class="path">.../locked/lockerIcon, .../locked/lockedText</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Mostrati al posto del contenuto "normal" quando il rituale è ancora bloccato.</td></tr>
+      <tr><td class="path">.../ritualProgressBg/progressBarMask/progressBarFill</td><td>Image (mask+fill)</td><td>Barra di avanzamento del rituale in corso.</td></tr>
+      <tr><td class="path">.../ritualProgressBg/timeLeftText</td><td><span class="tag tag-txt">testo</span></td><td>Tempo rimanente del rituale.</td></tr>
+      <tr><td class="path">.../startButton <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Avvia il rituale; compare solo quando il rituale è avviabile.</td></tr>
+      <tr><td class="path">.../startButton/text</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Etichetta del pulsante (es. "Inizia").</td></tr>
+      <tr><td class="path">.../claimButton <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Riscatta la ricompensa del rituale completato; compare solo a completamento.</td></tr>
+      <tr><td class="path">.../claimButton/text</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Etichetta del pulsante (es. "Riscatta").</td></tr>
+      <tr><td class="path">.../claimedObj <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Stato "già riscattato", mostrato al posto di startButton/claimButton dopo il claim.</td></tr>
+      <tr><td class="path">.../claimedObj/parentGroup/text, .../tickImg</td><td><span class="tag tag-txt">testo</span> localizzato / Image</td><td>Etichetta "riscattato" con spunta.</td></tr>
+      <tr><td class="path">.../ritualBg/ritualIcon</td><td>Image</td><td>Icona del tipo di rituale.</td></tr>
+      <tr><td class="path">timeBg/timeLeft</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Countdown generale del sottomenu rituali (es. refresh delle card).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Oracolo / Progressi" (oracleSubmenu)</h2>
+  <p class="region-path">Percorso: <code>Oracle/submenus/bg/oracleSubmenu</code> — nel prefab non risulta <em>inactive</em>: è la vista mostrata di default all'apertura della schermata</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">oracleSubmenu</td><td>OracleSubmenuViewController</td><td>Contenuto del tab "Oracolo": panoramica virtù/progressi.</td></tr>
+      <tr><td class="path">progress/virtueYouOwnBg/virtueIcon, .../virtueYouOwnDesc, .../virtueYouOwn</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Quantità di virtù attualmente posseduta.</td></tr>
+      <tr><td class="path">progress/xImage</td><td>Image</td><td>Icona "x" moltiplicatore fra i due box statistica. Decorativo.</td></tr>
+      <tr><td class="path">progress/virtueEffectBg/virtueEffectIcon, .../virtueEffectDesc, .../virtueEffect</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Effetto/bonus prodotto dalla virtù posseduta.</td></tr>
+      <tr><td class="path">progress/totalFirestonesBg/prestigiousIcon, .../totalFirestoneEarningsDesc, .../totalFirestoneEarnings</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Totale Firestone guadagnate tramite l'Oracolo.</td></tr>
+      <tr><td class="path">progress/arrowImg</td><td>Image</td><td>Freccia decorativa fra i box.</td></tr>
+      <tr><td class="path">seperator</td><td>Image</td><td>Divisore decorativo (nome con refuso nel codice sorgente originale).</td></tr>
+      <tr><td class="path">nextMilestoneText</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Etichetta "prossimo traguardo".</td></tr>
+      <tr><td class="path">virtueAttribute</td><td>Image (AttributeGlobalInteraction)</td><td>Non ha componente Button nel dump, quindi non risulta cliccabile in senso stretto; lo script custom potrebbe comunque gestire l'input direttamente — funzione esatta non chiara dal nome, verificare dal vivo.</td></tr>
+      <tr><td class="path">virtueAttribute/bg, .../icon, .../value, .../lock</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Sfondo, icona, valore numerico dell'attributo e lucchetto mostrato se ancora bloccato.</td></tr>
+      <tr><td class="path">virtueAttribute/valueChagedSpine</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione riprodotta quando il valore dell'attributo cambia (nome con refuso nel codice sorgente originale).</td></tr>
+      <tr><td class="path">nextMilestone</td><td>Image</td><td>Card che riassume il prossimo traguardo/milestone.</td></tr>
+      <tr><td class="path">nextMilestone/normal/ritualIcon, .../ritualName, .../rewardText</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Icona, nome e descrizione ricompensa del prossimo traguardo.</td></tr>
+      <tr><td class="path">nextMilestone/normal/reward</td><td>GameItemRewardInteraction</td><td>Anteprima della ricompensa (stesso sotto-albero decorativo visto nei rituali: glow/frame/canClaim/claimedFrame).</td></tr>
+      <tr><td class="path">nextMilestone/maxed <span class="tag tag-off">inattivo</span></td><td><span class="tag tag-txt">testo</span> localizzato <span class="tag tag-off">inattivo</span></td><td>Mostrato al posto di "normal" quando tutti i traguardi sono stati raggiunti.</td></tr>
+      <tr><td class="path">milestoneListButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la lista completa dei traguardi/milestone.</td></tr>
+      <tr><td class="path">milestoneListButton/text</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Etichetta del pulsante.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Oracle</code>. Nota: il percorso radice è dedotto dal nome del GameObject e dalla presenza di <code>closeButton</code>/tab di navigazione tipici di un popup di menu (nessun riferimento a nodi di battaglia nel dump); non è stato verificato risalendo la gerarchia della scena live, quindi il prefisso esatto (in particolare eventuali contenitori intermedi) andrebbe confermato all'avvio del gioco. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

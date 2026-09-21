@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Minigioco Scarabeo</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Minigioco Scarabeo</div>
+  <h1>🪲 Minigioco Scarabeo</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Radice: <code>ScarabGame</code> (script <code>ScarabGameViewController</code>), risulta <strong>inattiva di default</strong> nel prefab: è un popup a schermo intero che viene attivato quando il giocatore apre il minigioco a tema egizio dello Scarabeo, non una vista sempre presente.</p>
+</header>
+<main>
+
+<section>
+  <h2>Header e controlli principali</h2>
+  <p class="region-path">Path: <code>bg/</code>, <code>secondaryObjects/scarabLevelBg</code>, <code>secondaryObjects/skyeButton</code>, <code>secondaryObjects/chat</code>, <code>closeButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/bgUpLeft, bgUpRight, bgDownLeft, bgDownRight, RightTile, RightMountains, LeftTile, LeftMountains, SkyTile, GroundTile, LeftSide, RightSide, clouds, clouds (1), Pyramid, treeSpine, rock, bushSpine, rockFront</td><td>decorazione</td><td>Sfondo a tema desertico/egizio (montagne, nuvole, piramide, piante) e dettagli di roccia in primo piano; hanno <code>MenuVfxEntityComponent</code> per effetti/parallax ma nessuna interazione.</td></tr>
+      <tr><td class="path">secondaryObjects/scarabLevelBg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro con il livello della funzione Scarabeo (<code>scarabLevelText</code>) e barra di progresso (<code>levelProgressBarFill</code>, <code>levelProgressText</code>); cliccabile, probabilmente apre il dettaglio del livello.</td></tr>
+      <tr><td class="path">secondaryObjects/scarabLevelBg/luckIcon</td><td>immagine</td><td>Icona "fortuna" mostrata accanto al livello.</td></tr>
+      <tr><td class="path">secondaryObjects/scarabLevelBg/luckInfoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo sul valore di "fortuna" (<code>InfoButtonAnimation</code>).</td></tr>
+      <tr><td class="path">secondaryObjects/skyeButton (+ skyeButton/skyeSpine)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Personaggio animato (Spine, "Skye") sullo sfondo; sia il nodo principale sia il figlio <code>skyeSpine</code> hanno un componente Button proprio (stessa area cliccabile) — probabilmente avvia una battuta/animazione di reazione al tocco.</td></tr>
+      <tr><td class="path">secondaryObjects/chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat/community (<code>ChatInteraction</code>); mostra una campanella di notifica con contatore non letti (<code>notification/amountTMP</code>).</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata del minigioco Scarabeo.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Contatore risorsa (gettoni scarabeo)</h2>
+  <p class="region-path">Path: <code>helpCanvas/counters/counterInteraction/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore risorsa (probabilmente apre il negozio/dettaglio della valuta usata per giocare).</td></tr>
+      <tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stessa azione del bottone di sfondo.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della risorsa posseduta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato temporaneamente quando la risorsa aumenta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone "Ottieni di più", nascosto di default: appare probabilmente solo quando la risorsa scende sotto una soglia, per aprire l'acquisto.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tavoletta: progressione sigilli e "Libera la Bestia"</h2>
+  <p class="region-path">Path: <code>secondaryObjects/tablet/</code> — script <code>ScarabGameTabletInteraction</code>. Meccanismo che accumula progresso durante le giocate fino a sbloccare una bestia da liberare.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">tablet</td><td>contenitore</td><td>Non cliccabile direttamente; gestisce lo stato della tavoletta e dei sigilli (<code>ScarabGameTabletInteraction</code> + <code>CanvasGroup</code> per dissolvenze).</td></tr>
+      <tr><td class="path">tablet/pattern, pattern/patternGlow, sigilProgressBarGlow, SeperatorLine, eyeGlow (+ Renderer0/1), BottomBG, leafs (+ Renderer0), BottomFG</td><td>decorazione</td><td>Cornice e dettagli grafici/animati (Spine) della tavoletta, senza interazione propria.</td></tr>
+      <tr><td class="path">tablet/sigils/Sigil (x6, con Inactive + Spine)</td><td>indicatore</td><td>Sei slot "sigillo" (<code>ProphecySigilInteraction</code>) che si illuminano progressivamente man mano che il giocatore avanza nel minigioco, rappresentando la progressione verso la liberazione della bestia. Nel dump non hanno componente Button Unity: probabilmente sono solo indicatori visivi non toccabili direttamente, ma verificare dal vivo dato il nome "Interaction".</td></tr>
+      <tr><td class="path">tablet/sigilProgress/sigilProgressMask/sigilProgressFillParent/sigilProgressFill, .../eye</td><td>immagine</td><td>Barra di riempimento (Spine) della progressione sigilli e occhio decorativo che si illumina insieme al progresso.</td></tr>
+      <tr><td class="path">tablet/releaseBeast</td><td>immagine</td><td>Riquadro contenitore del bottone di rilascio.</td></tr>
+      <tr><td class="path">tablet/releaseBeast/releaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritira/libera la bestia quando la barra dei sigilli è piena (testo localizzato in <code>text</code>); mostra un badge di notifica (<code>notification</code>, inattivo di default) con conteggio in <code>amountTMP</code> quando una ricompensa è pronta.</td></tr>
+      <tr><td class="path">tablet/releseTheBeastSpine (inattivo, + Renderer0-13, eyeGlowLarge/eyeLarge, explosionSpine)</td><td><span class="tag tag-off">inattivo</span></td><td>Animazione Spine a schermo intero (bagliore occhio ingrandito + esplosione), riprodotta probabilmente nel momento in cui la bestia viene liberata.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Meccanismo scarabeo (griglia simboli)</h2>
+  <p class="region-path">Path: <code>helpCanvas/scarabGame/</code> — script <code>ScarabMachine</code>. Il cuore del minigioco: una griglia 3×4 di simboli che cambiano a ogni giocata.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">scarabGame</td><td>contenitore</td><td>Non cliccabile; componente <code>ScarabMachine</code> che orchestra la logica del meccanismo.</td></tr>
+      <tr><td class="path">scarabGameBg, scarabGameSpine, scarabGameFg</td><td>decorazione</td><td>Sfondo/cornice e animazione Spine di ambientazione del meccanismo.</td></tr>
+      <tr><td class="path">symbols/columnLeft|columnMiddle|columnRight/symbol1-4</td><td>indicatore <span class="note">x12</span></td><td>Griglia di 12 slot simbolo (3 colonne × 4 righe, <code>ScarabGameSymbolInteraction</code>), ognuno con bagliore (<code>glow</code>) quando attivo/vincente, un'icona (<code>icon</code>) e un riquadro extra (<code>scarabFrame</code>) con propria icona e valore numerico (<code>value</code>) — probabilmente mostrato quando lo slot produce un simbolo bonus con moltiplicatore. Nessun componente Button: non risultano toccabili direttamente, solo esito visivo della giocata.</td></tr>
+      <tr><td class="path">lightningSpine (inattivo, + Renderer0/1)</td><td><span class="tag tag-off">inattivo</span></td><td>Effetto fulmine (Spine), probabilmente riprodotto in caso di combinazione vincente o evento speciale.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Info, gioco e azioni</h2>
+  <p class="region-path">Path: <code>helpCanvas/infoButton</code>, <code>helpCanvas/playButton</code>, <code>helpCanvas/actionButtons/</code>, <code>helpCanvas/bottomRightUI/</code>, <code>helpCanvas/unlockOfferButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo/spiegazione sul minigioco Scarabeo (<code>InfoButtonAnimation</code>).</td></tr>
+      <tr><td class="path">playButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avvia una giocata. Mostra descrizione (<code>desc</code>) e costo con icona valuta principale (<code>nobleTokenIcon</code>) + importo (<code>costText1</code>); una seconda coppia icona/importo (<code>pharaohTokenIcon</code>, <code>costText2</code>) risulta <span class="tag tag-off">inattiva</span> di default, probabilmente usata quando il costo è espresso in una valuta alternativa.</td></tr>
+      <tr><td class="path">actionButtons/pharaohVault</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il "Forziere del Faraone" (icona + testo localizzato); mostra badge di notifica (<code>notification/amountTMP</code>).</td></tr>
+      <tr><td class="path">actionButtons/beasts</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la collezione delle bestie ottenute/liberate.</td></tr>
+      <tr><td class="path">actionButtons/lostInscriptions</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la sezione "Iscrizioni perdute"; funzione non chiara nel dettaglio dal solo nome, verificare dal vivo.</td></tr>
+      <tr><td class="path">actionButtons/shop</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il negozio della funzione Scarabeo; mostra badge di notifica (<code>notification/amountTMP</code>).</td></tr>
+      <tr><td class="path">bottomRightUI/autoPlayToggle</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Attiva/disattiva la modalità di gioco automatico del minigioco.</td></tr>
+      <tr><td class="path">bottomRightUI/changePlayQuantity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità di giocate per singolo tocco (es. x1/x10); il testo mostra il moltiplicatore attuale.</td></tr>
+      <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Offerta a tempo per sbloccare un'unità/bestia (<code>UnlockOfferButtonInteraction</code>); mostra icona unità (<code>unitIcon</code>) e countdown (<code>time</code>). Probabilmente visibile solo quando l'offerta è attiva.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Popup "Libera la Bestia"</h2>
+  <p class="region-path">Path: <code>releaseTheBeastPopup/</code> — nodo <strong>inattivo di default</strong>: si apre quando il giocatore libera una bestia dalla tavoletta (vedi <code>tablet/releaseButton</code> sopra).</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">background</td><td>decorazione</td><td>Sfondo/overlay scuro dietro la carta della bestia.</td></tr>
+      <tr><td class="path">beastCard</td><td>contenitore</td><td>Carta della bestia ottenuta (<code>BeastCardViewController</code>): non cliccabile direttamente.</td></tr>
+      <tr><td class="path">beastCard/bg, cardBorder, beast</td><td>immagine</td><td>Sfondo, cornice e illustrazione della bestia.</td></tr>
+      <tr><td class="path">beastCard/top/bgTop, frameTop, rarityFrame</td><td>immagine</td><td>Intestazione della carta con cornice di rarità.</td></tr>
+      <tr><td class="path">beastCard/top/txtBeastLvl</td><td><span class="tag tag-txt">testo</span></td><td>Livello della bestia.</td></tr>
+      <tr><td class="path">beastCard/top/txtBeastRarity</td><td><span class="tag tag-txt">testo</span></td><td>Rarità della bestia (testo localizzato).</td></tr>
+      <tr><td class="path">beastCard/bottom/bgBottom, frameBottom</td><td>immagine</td><td>Fascia inferiore della carta.</td></tr>
+      <tr><td class="path">beastCard/bottom/txtBeastName</td><td><span class="tag tag-txt">testo</span></td><td>Nome della bestia (testo localizzato).</td></tr>
+      <tr><td class="path">beastCard/interactions/BeastCardEffectInteraction (0,1,2,3,4,5)</td><td>indicatore <span class="note">x6</span></td><td>Sei slot effetto/statistica della bestia (<code>bg</code>, <code>frame</code>, <code>icon</code>, valore testuale in <code>value</code>, animazione di incremento in <code>valueChangedSpine</code>); rappresentano gli effetti/bonus forniti dalla bestia liberata. Nessun componente Button: solo visualizzazione.</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup della carta bestia.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ScarabGame</code>. Nota: il path radice completo non è stato verificato risalendo la gerarchia della scena live — è dedotto per nome/contesto (minigioco/funzione bonus raggiungibile dal menu principale, non un elemento di battaglia) dato che il dump è stato estratto staticamente a partire dal solo prefab. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

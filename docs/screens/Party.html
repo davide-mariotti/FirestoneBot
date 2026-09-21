@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Party (Gestione Squadra)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Party (Gestione Squadra)</div>
+  <h1>👥 Party (Gestione Squadra)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Il popup si apre dal bottone <code>partyButtonUI</code> nella HUD di battaglia (vedi <a href="../path.firestone.html">mappa path battaglia</a>).</p>
+</header>
+<main>
+
+<section>
+  <h2>🧩 Radice del popup</h2>
+  <p class="region-path">Radice: <code>Party</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">(radice)</td><td>Image, PartyViewController</td><td>Nodo radice del popup. Nel prefab risulta <span class="tag tag-off">inattivo</span>: viene attivato quando il giocatore apre la schermata gestione squadra.</td></tr>
+    <tr><td class="path">bg</td><td>contenitore</td><td>Contenitore statico di sfondo che ospita tutte le sezioni del popup (slot formazione, rosa/deck, pannello leader, drag&amp;drop). Nessun componente interattivo diretto.</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup Party.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona (X) del bottone di chiusura.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>⚔️ Slot di formazione — Eroi e Guardiano</h2>
+  <p class="region-path">Radice: <code>bg/guardianSlot</code>, <code>bg/heroSlots/heroSlot0..4</code>, <code>bg/heroSlotIndicators</code>, <code>bg/guardianSlotIndicators</code></p>
+  <p class="note">Griglia di formazione con 5 slot eroe (<code>heroSlot0</code>..<code>heroSlot4</code>) e 1 slot guardiano. I 5 slot eroe hanno struttura interna identica: qui è documentata una sola volta.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/guardianSlot</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot di formazione del Guardiano (drago) attivo in battaglia. Componente <code>GuardianFormationSlot</code>; click/drag per selezionare o riposizionare il guardiano schierato.</td></tr>
+    <tr><td class="path">bg/guardianSlot/base</td><td>Image</td><td>Sfondo grafico dello slot.</td></tr>
+    <tr><td class="path">bg/guardianSlot/guardianSpinePos</td><td>contenitore</td><td>Ancoraggio per l'animazione Spine del guardiano; nessun componente diretto.</td></tr>
+    <tr><td class="path">bg/guardianSlot/battleFormationMoverGuardian</td><td>Image</td><td>Elemento visivo usato durante il trascinamento/riposizionamento del guardiano in formazione.</td></tr>
+    <tr><td class="path">bg/guardianSlot/slotNumber</td><td><span class="tag tag-txt">testo</span></td><td>Numero/ordine dello slot.</td></tr>
+    <tr><td class="path">bg/guardianSlot/guardianShadow</td><td>Image</td><td>Ombra sotto il guardiano.</td></tr>
+    <tr><td class="path">bg/guardianSlot/attributeGlobal</td><td>AttributeGlobalInteraction</td><td>Attributo aggregato mostrato sullo slot guardiano — vedi pattern comune "attributeGlobal" più sotto.</td></tr>
+    <tr><td class="path">bg/heroSlots/heroSlot<em>N</em> <span class="note">(N = 0..4)</span></td><td>Image, BattleFormationSlot</td><td>Slot di formazione per un eroe in squadra. Determina la posizione dell'eroe schierato in battaglia; non è un <code>[BUTTON]</code> nel dump (l'interazione passa probabilmente da drag&amp;drop/EventTrigger, non da <code>Button</code> — verificare dal vivo).</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/base</td><td>Image</td><td>Sfondo grafico dello slot.</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/characterSpinePos</td><td>contenitore</td><td>Ancoraggio per l'animazione Spine dell'eroe; nessun componente diretto.</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/arrowParent/swingingArrow</td><td>Image, ArrowMover</td><td>Freccia animata mostrata durante lo scambio di posizione tra due slot (drag&amp;drop).</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/isLeader</td><td>Image</td><td>Icona/indicatore mostrato se l'eroe nello slot è il leader della squadra.</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/battleFormationMover</td><td>Image, BattleFormationMover <span class="tag tag-off">inattivo</span></td><td>Elemento draggable per riordinare la formazione; risulta inattivo di default, si attiva solo durante il trascinamento.</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/slotNumber</td><td><span class="tag tag-txt">testo</span></td><td>Numero/ordine dello slot.</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/characterShadow</td><td>Image</td><td>Ombra sotto l'eroe.</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/SkeletonContainer</td><td>contenitore</td><td>Contenitore per l'animazione Spine dell'eroe schierato; nessun componente diretto.</td></tr>
+    <tr><td class="path">.../heroSlot<em>N</em>/attributeGlobal</td><td>AttributeGlobalInteraction</td><td>Attributo aggregato mostrato sullo slot eroe — vedi pattern comune "attributeGlobal" più sotto.</td></tr>
+    <tr><td class="path">bg/heroSlotIndicators/heroSlot<em>N</em>/AutoAbilitiesVFX</td><td>MenuVfxEntityComponent, SkeletonGraphic <span class="tag tag-off">inattivo</span></td><td>Effetto Spine mostrato quando l'eroe nello slot attiva un'abilità automatica; attivo solo temporaneamente durante l'animazione.</td></tr>
+    <tr><td class="path">bg/guardianSlotIndicators/AutoAttackVFX</td><td>MenuVfxEntityComponent, SkeletonGraphic <span class="tag tag-off">inattivo</span></td><td>Effetto Spine per l'attacco automatico del guardiano; attivo solo durante l'animazione.</td></tr>
+    <tr><td class="path">bg/clickForPreviewBg</td><td>Image</td><td>Nel nome suggerisce un'interazione al tocco (probabile anteprima formazione/battaglia), ma non risulta un componente <code>Button</code> nel prefab: funzione non confermata, verificare dal vivo.</td></tr>
+    <tr><td class="path">bg/clickForPreviewBg/clickForPreviewText</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Testo localizzato associato (es. invito a toccare per l'anteprima).</td></tr>
+    <tr><td class="path">bg/formationStatusBg</td><td>Image</td><td>Contenitore dello stato/validità della formazione attuale.</td></tr>
+    <tr><td class="path">bg/formationStatusBg/formationStatusText</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Testo di stato della formazione (es. bonus attivi, formazione incompleta).</td></tr>
+    <tr><td class="path">bg/formationStatusBg/infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo sulla formazione/bonus (<code>HolydayStudios.InfoButtonAnimation</code>, icona "i" animata).</td></tr>
+    <tr><td class="path">bg/formationStatusBg/infoButton/spineInfo</td><td>SkeletonGraphic</td><td>Animazione Spine del bottone info.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>🔁 Pattern comune — <code>attributeGlobal</code></h2>
+  <p class="region-path">Sotto-struttura ripetuta ovunque compaia un nodo <code>attributeGlobal</code> con componente <code>AttributeGlobalInteraction</code>: slot guardiano, ogni slot eroe, le card della rosa/deck, e le liste attributi del pannello leader.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">.../attributeGlobal</td><td>AttributeGlobalInteraction</td><td>Mostra un singolo attributo (es. potenza, vita, danno) con icona e valore numerico.</td></tr>
+    <tr><td class="path">.../attributeGlobal/bg</td><td>Image</td><td>Sfondo del riquadro attributo. Negli slot di formazione e nelle card del deck risulta <span class="tag tag-off">inattivo</span> di default; nelle liste del pannello leader risulta invece attivo — probabile evidenziazione condizionale, verificare dal vivo.</td></tr>
+    <tr><td class="path">.../attributeGlobal/valueChagedSpine</td><td>Spine.Unity.SkeletonGraphic, MenuVfxEntityComponent</td><td>Effetto Spine mostrato quando il valore dell'attributo cambia (es. dopo un potenziamento).</td></tr>
+    <tr><td class="path">.../attributeGlobal/icon</td><td>Image</td><td>Icona che identifica l'attributo rappresentato.</td></tr>
+    <tr><td class="path">.../attributeGlobal/value</td><td><span class="tag tag-txt">testo</span></td><td>Valore numerico dell'attributo.</td></tr>
+    <tr><td class="path">.../attributeGlobal/lock</td><td>Image</td><td>Icona lucchetto, visibile se l'attributo è ancora bloccato/non sbloccato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>🃏 Rosa / Deck — Eroi e Guardiani assegnabili</h2>
+  <p class="region-path">Radice: <code>bg/deck</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/deck</td><td>Canvas, GraphicRaycaster</td><td>Contenitore raycaster per la lista scorrevole di eroi/guardiani disponibili.</td></tr>
+    <tr><td class="path">bg/deck/heroScroll</td><td>ScrollRect, Image</td><td>Lista scorrevole della rosa eroi.</td></tr>
+    <tr><td class="path">bg/deck/heroScroll/Viewport</td><td>RectMask2D</td><td>Maschera di ritaglio dello scroll.</td></tr>
+    <tr><td class="path">bg/deck/heroScroll/Viewport/heroGrid</td><td>GridLayoutGroup, ContentSizeFitter</td><td>Griglia che dispone dinamicamente le card eroe generate a runtime.</td></tr>
+    <tr><td class="path">.../heroGrid/deckSlot0</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Template/istanza di una card eroe nella rosa (<code>PartyDeckSlotViewController</code>). Click per selezionare l'eroe e assegnarlo a uno slot di formazione o come leader. A runtime probabilmente ne esistono N cloni, uno per eroe posseduto.</td></tr>
+    <tr><td class="path">.../deckSlot0/attributeGlobal</td><td>AttributeGlobalInteraction</td><td>Attributo mostrato sulla card — vedi pattern comune sopra.</td></tr>
+    <tr><td class="path">.../deckSlot0/bg</td><td>Image</td><td>Sfondo della card.</td></tr>
+    <tr><td class="path">.../deckSlot0/bg/portrait</td><td>Image</td><td>Ritratto dell'eroe.</td></tr>
+    <tr><td class="path">.../deckSlot0/bg/activeIcon</td><td>Image</td><td>Icona che indica se l'eroe è attualmente schierato in formazione.</td></tr>
+    <tr><td class="path">bg/deck/guardianGrid</td><td>GridLayoutGroup, Image <span class="tag tag-off">inattivo</span></td><td>Griglia dei guardiani disponibili; risulta inattiva nel prefab, si attiva solo quando la tab "Guardiani" è selezionata.</td></tr>
+    <tr><td class="path">.../guardianGrid/deckSlot<em>N</em> <span class="note">(N = 0..3)</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Card guardiano nella rosa (4 istanze template nel prefab; il numero reale dipende dai guardiani posseduti). Click per selezionare/assegnare. Stessa sotto-struttura di <code>deckSlot0</code> sopra (attributeGlobal, bg/portrait, bg/activeIcon).</td></tr>
+    <tr><td class="path">bg/deck/categoryButtons/buttonsExtraBgGraphicHeroes</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Elemento grafico/hitbox extra dietro la tab "Eroi" — funzione non chiara dal nome (probabile stato attivo/hover della tab), verificare dal vivo.</td></tr>
+    <tr><td class="path">bg/deck/categoryButtons/buttonsExtraBgGraphicGuardians</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Equivalente del sopra per la tab "Guardiani" — funzione non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">bg/deck/categoryButtons/buttonsExtraBgGraphic</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo/hitbox extra condiviso dalle tab — funzione non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">bg/deck/categoryButtons/heroes</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Eroi": mostra la rosa eroi (<code>heroGrid</code>).</td></tr>
+    <tr><td class="path">.../heroes/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Etichetta "Eroi".</td></tr>
+    <tr><td class="path">bg/deck/categoryButtons/guardians</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Guardiani": mostra la rosa guardiani (<code>guardianGrid</code>).</td></tr>
+    <tr><td class="path">.../guardians/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Etichetta "Guardiani".</td></tr>
+    <tr><td class="path">bg/deck/orderByBg/orderByOptions/attributeGlobal (<em>0..3</em>)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone di scelta del criterio di ordinamento della rosa (per attributo); nonostante il nome non ha <code>AttributeGlobalInteraction</code>, è un semplice bottone con icona. 4 opzioni nel prefab.</td></tr>
+    <tr><td class="path">.../attributeGlobal (<em>N</em>)/icon</td><td>Image</td><td>Icona dell'attributo di ordinamento.</td></tr>
+    <tr><td class="path">bg/deck/orderByBg/orderByButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre/chiude il menu a tendina delle opzioni di ordinamento (<code>orderByOptions</code>).</td></tr>
+    <tr><td class="path">.../orderByButton/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Etichetta del criterio di ordinamento attualmente selezionato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>🧙 Pannello Leader / dettaglio selezionato</h2>
+  <p class="region-path">Radice: <code>bg/leaderPanel</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/leaderPanel</td><td>Image, Canvas, GraphicRaycaster, VerticalLayoutGroup</td><td>Pannello destro con i dettagli dell'eroe/guardiano attualmente selezionato (o del leader).</td></tr>
+    <tr><td class="path">leaderPanel/leaderNameBg/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Nome dell'eroe/guardiano selezionato.</td></tr>
+    <tr><td class="path">leaderPanel/leader/bg/portrait</td><td>Image</td><td>Ritratto grande del selezionato.</td></tr>
+    <tr><td class="path">leaderPanel/leader/bg/leaderIcon</td><td>Image</td><td>Icona/corona che indica il ruolo di leader.</td></tr>
+    <tr><td class="path">leaderPanel/setLeader</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Imposta l'eroe/guardiano selezionato come leader della squadra.</td></tr>
+    <tr><td class="path">setLeader/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Etichetta del bottone (es. "Imposta come Leader").</td></tr>
+    <tr><td class="path">leaderPanel/mainAttributesDesc/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Titolo sezione attributi principali.</td></tr>
+    <tr><td class="path">leaderPanel/mainAttributesList/attributeGlobal (<em>0..2</em>)</td><td>AttributeGlobalInteraction</td><td>3 attributi principali dell'eroe selezionato — vedi pattern comune sopra.</td></tr>
+    <tr><td class="path">leaderPanel/mainAttributesListGuardian</td><td><span class="tag tag-off">inattivo</span></td><td>Variante mostrata al posto di <code>mainAttributesList</code> quando è selezionato un guardiano (1 solo attributo principale). Inattiva di default.</td></tr>
+    <tr><td class="path">leaderPanel/advancedAttributesDesc</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Titolo sezione attributi avanzati; visibile solo se la sezione è sbloccata.</td></tr>
+    <tr><td class="path">leaderPanel/advancedAttributesList</td><td><span class="tag tag-off">inattivo</span></td><td>2 attributi avanzati (<code>attributeGlobal (0)</code>, <code>(1)</code>), visibili solo quando la sezione è sbloccata.</td></tr>
+    <tr><td class="path">leaderPanel/leaderSkillsDesc/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Titolo sezione abilità.</td></tr>
+    <tr><td class="path">leaderPanel/SkillsList/abilityBattle (<em>0..2</em>)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona di una delle abilità dell'eroe selezionato (fino a 3, componente <code>AbilityInteraction</code>). Il click mostra probabilmente dettagli/tooltip dell'abilità (l'attivazione vera e propria avviene in battaglia) — verificare dal vivo.</td></tr>
+    <tr><td class="path">.../abilityBattle (<em>N</em>)/mask/abilityIcon</td><td>Image</td><td>Icona dell'abilità.</td></tr>
+    <tr><td class="path">.../abilityBattle (<em>N</em>)/itemFrame</td><td>Image</td><td>Cornice del riquadro abilità.</td></tr>
+    <tr><td class="path">.../abilityBattle (<em>N</em>)/abilityCooldownImg</td><td>Image</td><td>Overlay radiale del tempo di ricarica.</td></tr>
+    <tr><td class="path">.../abilityBattle (<em>N</em>)/abilityActiveImg</td><td>Image</td><td>Indicatore abilità attiva.</td></tr>
+    <tr><td class="path">.../abilityBattle (<em>N</em>)/abilityCooldownText</td><td><span class="tag tag-txt">testo</span></td><td>Secondi di ricarica rimanenti.</td></tr>
+    <tr><td class="path">.../abilityBattle (<em>N</em>)/abilityHotkeyText</td><td><span class="tag tag-txt">testo</span></td><td>Tasto rapido associato all'abilità.</td></tr>
+    <tr><td class="path">.../abilityBattle (<em>N</em>)/abilityClickAnimation</td><td>SkeletonGraphic</td><td>Animazione Spine riprodotta al click.</td></tr>
+    <tr><td class="path">leaderPanel/autoAbilitiesControl</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Controllo per l'attivazione automatica delle abilità; visibile solo in certe condizioni (es. leader impostato).</td></tr>
+    <tr><td class="path">autoAbilitiesControl/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Etichetta del controllo.</td></tr>
+    <tr><td class="path">autoAbilitiesControl/autoAbilitiesToggle</td><td>Slider</td><td>Interruttore on/off "Abilità automatiche". <code>Background</code>, <code>Fill Area/Fill</code> e <code>Handle Slide Area/Handle</code> sono la grafica standard di uno <code>UnityEngine.UI.Slider</code> usato come toggle.</td></tr>
+    <tr><td class="path">.../autoAbilitiesToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile che attiva/disattiva l'interruttore "Abilità automatiche".</td></tr>
+    <tr><td class="path">leaderPanel/specializationDesc/desc, /text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Descrizione della specializzazione dell'eroe selezionato.</td></tr>
+    <tr><td class="path">leaderPanel/attackStyleDesc</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Descrizione dello stile d'attacco; attiva solo per certi tipi di personaggio (es. guardiani) — <code>desc</code>/<code>text</code> figli con testo localizzato.</td></tr>
+    <tr><td class="path">leaderPanel/autoAttackControl</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Controllo per l'attacco automatico, stessa struttura di <code>autoAbilitiesControl</code> sopra.</td></tr>
+    <tr><td class="path">autoAttackControl/text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Etichetta del controllo.</td></tr>
+    <tr><td class="path">autoAttackControl/autoAttackToggle</td><td>Slider</td><td>Interruttore on/off "Attacco automatico" (stessa grafica standard di Slider vista sopra).</td></tr>
+    <tr><td class="path">.../autoAttackToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile che attiva/disattiva l'interruttore "Attacco automatico".</td></tr>
+    <tr><td class="path">leaderPanel/typeDesc</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Descrizione del tipo/ruolo del personaggio; visibile solo in certi casi — <code>desc</code>/<code>text</code> figli con testo localizzato.</td></tr>
+    <tr><td class="path">leaderPanel/resourceDesc/desc, /text</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Descrizione della risorsa/energia usata dal personaggio selezionato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>🗑️ Drag &amp; Drop — rimozione dalla squadra</h2>
+  <p class="region-path">Radice: <code>bg/dropablesParent</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/dropablesParent</td><td>contenitore</td><td>Contenitore degli elementi visibili solo durante il trascinamento (drag&amp;drop) di un eroe/guardiano.</td></tr>
+    <tr><td class="path">dropablesParent/dropablesBg</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Sfondo mostrato durante il trascinamento.</td></tr>
+    <tr><td class="path">dropablesParent/removeFromPartyParent</td><td><span class="tag tag-off">inattivo</span></td><td>Contenitore attivo solo durante il drag, mostra la zona per rimuovere dalla squadra.</td></tr>
+    <tr><td class="path">.../removeFromPartyParent/removeFromParty</td><td>Image, BattleFormationSlot</td><td>Zona di rilascio (drop target): trascinare qui un eroe/guardiano lo rimuove dalla formazione.</td></tr>
+    <tr><td class="path">.../removeFromParty/outline</td><td>Image</td><td>Bordo evidenziato della zona di rilascio.</td></tr>
+    <tr><td class="path">.../removeFromParty/desc</td><td><span class="tag tag-txt">testo</span> I2.Loc</td><td>Testo della zona (es. "Rilascia per rimuovere").</td></tr>
+    <tr><td class="path">.../removeFromParty/deleteIcon</td><td>Image</td><td>Icona cestino/rimozione.</td></tr>
+    <tr><td class="path">dropablesParent/heroSpineOnMove</td><td><span class="tag tag-off">inattivo</span></td><td>Contenitore per l'animazione Spine dell'eroe mentre viene trascinato con il dito/mouse.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>battleRoot/battleMain/battleCanvas/SafeArea/Party</code>. Nota: il popup si apre dal bottone <code>partyButtonUI</code> nella HUD di battaglia (vedi <a href="../path.firestone.html">mappa path battaglia</a>), ma la catena esatta dei contenitori intermedi tra <code>SafeArea</code> e <code>Party</code> (es. un eventuale contenitore popup dedicato) non è confermata: individuata solo per nome del GameObject, senza risalire la gerarchia della scena live. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

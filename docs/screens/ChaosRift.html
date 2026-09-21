@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Chaos Rift</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Chaos Rift</div>
+  <h1>🌀 Chaos Rift</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Root: <code>ChaosRiftViewController</code> — evento a tempo in cui si colpisce ripetutamente un "dio" (boss) per infliggere danno, scalare una classifica e ottenere ricompense.</p>
+</header>
+<main>
+
+<section>
+  <h2>Sfondi e ambientazione</h2>
+  <p class="region-path">Radice: <code>ChaosRift/ledraBg</code>, <code>ChaosRift/yamanothBg</code>, <code>ChaosRift/kramatakBg</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">ledraBg <span class="tag tag-off">inattivo</span></td><td>Contenitore sfondo</td><td>Ambientazione "Ledra" (nuvole, gabbiani, scogliere, onde animate via Spine). Disattiva in questo dump; si alterna con le altre due ambientazioni a seconda dello stato/round corrente del Chaos Rift.</td></tr>
+    <tr><td class="path">yamanothBg</td><td>Contenitore sfondo (attivo)</td><td>Ambientazione "Yamanoth" (vulcano, lava, fumo, particelle). Risulta attiva nel dump analizzato.</td></tr>
+    <tr><td class="path">kramatakBg <span class="tag tag-off">inattivo</span></td><td>Contenitore sfondo</td><td>Ambientazione "Kramatak" (fulmini, rocce). Disattiva di default nel prefab.</td></tr>
+  </table>
+  <p class="note">Ogni sfondo contiene ~15-20 figli puramente decorativi (Image, ParticleSystem, Spine.Unity.SkeletonGraphic, CloudMovement, MenuVfxEntityComponent — parallax, nuvole, gabbiani, particelle di fumo) omessi qui perché privi di Button/testo e irrilevanti per l'automazione.</p>
+</section>
+
+<section>
+  <h2>Contatori risorse e info</h2>
+  <p class="region-path">Radice: <code>ChaosRift/UIElements/counters</code>, <code>ChaosRift/UIElements/infoButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">counters/counterInteraction</td><td>CounterInteraction (script)</td><td>Contenitore del contatore di una risorsa/valuta mostrato in alto nella schermata.</td></tr>
+    <tr><td class="path">counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Click sul contatore: apre presumibilmente lo shop/dettaglio della risorsa mostrata.</td></tr>
+    <tr><td class="path">counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della risorsa, stesso comportamento di click di "bg".</td></tr>
+    <tr><td class="path">counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della risorsa posseduta.</td></tr>
+    <tr><td class="path">counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo che mostra l'ultimo incremento della risorsa (es. "+5").</td></tr>
+    <tr><td class="path">counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>"Ottieni di più": apre l'acquisto della risorsa. Compare solo quando la risorsa scarseggia (inattivo di default nel prefab).</td></tr>
+    <tr><td class="path">counterInteraction/getMore/collider</td><td>Image (solo area di click)</td><td>Area cliccabile aggiuntiva del bottone "getMore", nessuna funzione propria.</td></tr>
+    <tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo con le regole/spiegazione dell'evento Chaos Rift.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Classifica (Leaderboard del dio)</h2>
+  <p class="region-path">Radice: <code>ChaosRift/UIElements/godLeaderboard</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">godLeaderboard</td><td>Pannello (Image + layout)</td><td>Contenitore della mini-classifica dei giocatori nella sfida corrente.</td></tr>
+    <tr><td class="path">infoDesc/rank</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta della colonna "Posizione".</td></tr>
+    <tr><td class="path">infoDesc/name</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta della colonna "Nome".</td></tr>
+    <tr><td class="path">infoDesc/type</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta della colonna "Tipo"; funzione non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">leaderboardRows/leaderboardRowSmall (0..3)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riga della classifica (struttura identica ripetuta per le posizioni 0-3): il click apre presumibilmente il dettaglio del giocatore in quella posizione.</td></tr>
+    <tr><td class="path">…/line (0)</td><td>Image</td><td>Separatore grafico della riga.</td></tr>
+    <tr><td class="path">…/rankingMain/ranking</td><td><span class="tag tag-txt">testo</span></td><td>Numero di posizione in classifica.</td></tr>
+    <tr><td class="path">…/rankingMain/rankingImg <span class="tag tag-off">inattivo</span></td><td>Image</td><td>Icona (es. medaglia) al posto del numero; probabilmente attivata solo per le prime posizioni.</td></tr>
+    <tr><td class="path">…/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar del giocatore in classifica; apre presumibilmente il profilo/dettaglio del giocatore.</td></tr>
+    <tr><td class="path">…/playerAvatar/avatarIcon</td><td>Image</td><td>Icona avatar del giocatore.</td></tr>
+    <tr><td class="path">…/guildAvatar <span class="tag tag-off">inattivo</span></td><td>Image</td><td>Icona della gilda; attiva solo se il giocatore appartiene a una gilda.</td></tr>
+    <tr><td class="path">…/flagIcon</td><td>Image</td><td>Bandiera/nazione del giocatore.</td></tr>
+    <tr><td class="path">…/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome del giocatore in classifica.</td></tr>
+    <tr><td class="path">…/statValue</td><td><span class="tag tag-txt">testo</span></td><td>Valore statistico mostrato (probabilmente danno totale inflitto al dio).</td></tr>
+    <tr><td class="path">leaderboardCurrentButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riga fissa con la posizione del giocatore corrente; il click probabilmente scorre la lista fino alla propria posizione.</td></tr>
+    <tr><td class="path">leaderboardCurrentButton/icon</td><td>Image</td><td>Icona della riga posizione corrente.</td></tr>
+    <tr><td class="path">leaderboardCurrentButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo della riga posizione corrente (es. numero di posizione).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Timer sfida e ricompense</h2>
+  <p class="region-path">Radice: <code>ChaosRift/UIElements/challengeEndsBg</code>, <code>ChaosRift/UIElements/rewards</code>, <code>ChaosRift/UIElements/baseDamageBg</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">challengeEndsBg</td><td>Image</td><td>Pannello del timer della sfida.</td></tr>
+    <tr><td class="path">challengeEndsBg/timeLeftText</td><td><span class="tag tag-txt">testo</span></td><td>Conto alla rovescia del tempo rimanente dell'evento Chaos Rift.</td></tr>
+    <tr><td class="path">challengeEndsBg/SkeletonGraphic (Clock)</td><td>Spine (animazione)</td><td>Animazione dell'icona orologio.</td></tr>
+    <tr><td class="path">rewards</td><td>Image</td><td>Pannello delle ricompense della sfida.</td></tr>
+    <tr><td class="path">rewards/name</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della sezione ricompense.</td></tr>
+    <tr><td class="path">effectsParent/reward (0)/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Prima ricompensa in palio (CurrencyIconInteraction); il click mostra presumibilmente un tooltip di dettaglio.</td></tr>
+    <tr><td class="path">reward (0)/bg/gameItemIcon</td><td>Image</td><td>Icona dell'oggetto/valuta in palio.</td></tr>
+    <tr><td class="path">reward (0)/bg/number</td><td><span class="tag tag-txt">testo</span></td><td>Quantità della ricompensa.</td></tr>
+    <tr><td class="path">effectsParent/reward (1)/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seconda ricompensa in palio, stessa struttura di reward (0).</td></tr>
+    <tr><td class="path">reward (1)/bg/gameItemIcon</td><td>Image</td><td>Icona dell'oggetto/valuta in palio.</td></tr>
+    <tr><td class="path">reward (1)/bg/number</td><td><span class="tag tag-txt">testo</span></td><td>Quantità della ricompensa.</td></tr>
+    <tr><td class="path">baseDamageBg</td><td>Image</td><td>Pannello del danno base.</td></tr>
+    <tr><td class="path">baseDamageBg/damageText</td><td><span class="tag tag-txt">testo</span></td><td>Mostra il danno base inflitto ad ogni colpo sul dio.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Il dio (boss) e il colpo</h2>
+  <p class="region-path">Radice: <code>ChaosRift/UIElements/godParent</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">godParent</td><td>Contenitore</td><td>Contenitore del "dio" (boss) bersaglio dei colpi in questa sfida.</td></tr>
+    <tr><td class="path">godLevelProgress/bg/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome del dio/boss corrente.</td></tr>
+    <tr><td class="path">…/godHealthProgressBarBg/progressBarMask/godHealthProgressBarFill</td><td>Image (riempimento barra)</td><td>Barra di vita/progresso del dio.</td></tr>
+    <tr><td class="path">…/godHealthProgressBarBg/godHealthProgressText</td><td><span class="tag tag-txt">testo</span></td><td>Valore/percentuale della vita residua del dio.</td></tr>
+    <tr><td class="path">godLevelProgress/levelBg/levelDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del livello (es. "Livello").</td></tr>
+    <tr><td class="path">godLevelProgress/levelBg/level</td><td><span class="tag tag-txt">testo</span></td><td>Valore del livello del dio/sfida corrente.</td></tr>
+    <tr><td class="path">shadow</td><td>Image</td><td>Ombra decorativa sotto il dio.</td></tr>
+    <tr><td class="path">deathSpine <span class="tag tag-off">inattivo</span></td><td>Spine (animazione)</td><td>Animazione di morte del dio; attiva solo quando viene sconfitto.</td></tr>
+    <tr><td class="path">crack <span class="tag tag-off">inattivo</span></td><td>Image</td><td>Crepa/danno visivo sul dio; attivata presumibilmente a certe soglie di danno.</td></tr>
+    <tr><td class="path">lightningSpine <span class="tag tag-off">inattivo</span></td><td>Spine (animazione)</td><td>Effetto fulmine; attivato in condizioni particolari (es. colpo critico), non chiaro dal nome.</td></tr>
+    <tr><td class="path">godMask/godTransform</td><td>Contenitore (RectMask2D)</td><td>Maschera/contenitore del modello visivo del dio.</td></tr>
+    <tr><td class="path">hitButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone principale della schermata: infligge un colpo al dio consumando la risorsa indicata (moonStone, o eclipseStone se attivo).</td></tr>
+    <tr><td class="path">hitButton/descBg</td><td>Image</td><td>Sfondo dell'etichetta del bottone.</td></tr>
+    <tr><td class="path">hitButton/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone di colpo (es. "Colpisci").</td></tr>
+    <tr><td class="path">hitButton/layout/moonStoneIcon</td><td>Image</td><td>Icona della valuta principale richiesta per colpire.</td></tr>
+    <tr><td class="path">hitButton/layout/costText1</td><td><span class="tag tag-txt">testo</span></td><td>Costo in moonStone del colpo.</td></tr>
+    <tr><td class="path">hitButton/layout/eclipseStoneIcon <span class="tag tag-off">inattivo</span></td><td>Image</td><td>Icona di una valuta alternativa di costo; si attiva solo quando il colpo richiede questa risorsa.</td></tr>
+    <tr><td class="path">hitButton/layout/costText2 <span class="tag tag-off">inattivo</span></td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Costo in eclipseStone; visibile solo in certe condizioni (probabilmente quando la moonStone non basta).</td></tr>
+    <tr><td class="path">hitSlots/slot (0..11)</td><td>Contenitore vuoto (nessun componente)</td><td>12 slot ripetuti, senza componenti propri nel prefab statico: verosimilmente indicatori/hook per animazioni dei colpi (es. hitstreak); funzione esatta non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">godHitVfx</td><td>Spine (animazione)</td><td>Effetto visivo riprodotto ad ogni colpo sul dio.</td></tr>
+    <tr><td class="path">floatingTexts</td><td>Contenitore</td><td>Contenitore per i numeri di danno fluttuanti mostrati ad ogni colpo.</td></tr>
+    <tr><td class="path">smokeSpine <span class="tag tag-off">inattivo</span></td><td>Spine (animazione)</td><td>Effetto fumo; attivato in condizioni particolari, non chiaro dal nome.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Guardiani</h2>
+  <p class="region-path">Radice: <code>ChaosRift/UIElements/guardianSpawnParent</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guardianSpawnParent/guardianSpawn (0..3)</td><td>Contenitore (nessun componente proprio)</td><td>Slot di spawn per un "guardiano" (struttura ripetuta per le posizioni 0-3); funzione esatta non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">guardianSpawn (n)/precisionIcon</td><td>Image</td><td>Icona che segnala il tratto/buff "Precisione" del guardiano.</td></tr>
+    <tr><td class="path">guardianSpawn (n)/doubleStrikeIcon</td><td>Image</td><td>Icona che segnala il tratto/buff "Doppio Colpo" del guardiano.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Pulsanti azione principali</h2>
+  <p class="region-path">Radice: <code>ChaosRift/UIElements/actionButtons</code>, <code>ChaosRift/UIElements/autoHitToggle</code>, <code>ChaosRift/UIElements/changeHitQuantity</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">actionButtons/upgrades</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata dei potenziamenti collegati al Chaos Rift.</td></tr>
+    <tr><td class="path">upgrades/icon, /text</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Icona ed etichetta "Potenziamenti".</td></tr>
+    <tr><td class="path">upgrades/notification/bell, /amountTMP</td><td>Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica animato con conteggio potenziamenti disponibili.</td></tr>
+    <tr><td class="path">actionButtons/competitionLeaderboards</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata estesa delle classifiche di competizione (diversa dalla mini-classifica di questa schermata).</td></tr>
+    <tr><td class="path">competitionLeaderboards/icon, /text</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Icona ed etichetta del bottone.</td></tr>
+    <tr><td class="path">actionButtons/shop</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il negozio di gioco.</td></tr>
+    <tr><td class="path">shop/icon, /text</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Icona ed etichetta "Negozio".</td></tr>
+    <tr><td class="path">shop/notification/bell, /amountTMP</td><td>Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica animato con conteggio offerte disponibili.</td></tr>
+    <tr><td class="path">autoHitToggle</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Attiva/disattiva il colpo automatico sul dio. Rilevante per l'automazione: se disponibile, sostituisce il click ripetuto su <code>hitButton</code>.</td></tr>
+    <tr><td class="path">autoHitToggle/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta dello stato del toggle (ON/OFF).</td></tr>
+    <tr><td class="path">changeHitQuantity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità di colpi per click (es. x1/x10/x100). Rilevante per l'automazione: determina quante risorse vengono consumate per ogni click su <code>hitButton</code>.</td></tr>
+    <tr><td class="path">changeHitQuantity/text</td><td><span class="tag tag-txt">testo</span></td><td>Valore corrente della quantità selezionata.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Chat, lega, offerta e chiusura</h2>
+  <p class="region-path">Radice: <code>ChaosRift/UIElements/chat</code>, <code>ChaosRift/UIElements/myLeagueButton</code>, <code>ChaosRift/UIElements/unlockOfferButton</code>, <code>ChaosRift/closeButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat di gioco (ChatInteraction).</td></tr>
+    <tr><td class="path">chat/collider</td><td>Image</td><td>Area di click aggiuntiva, nessuna funzione propria.</td></tr>
+    <tr><td class="path">chat/spineChat</td><td>Spine (animazione)</td><td>Icona/animazione della chat.</td></tr>
+    <tr><td class="path">chat/notification/bell, /amountTMP</td><td>Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica con conteggio messaggi non letti.</td></tr>
+    <tr><td class="path">myLeagueButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata della propria lega.</td></tr>
+    <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un'offerta (UnlockOfferButtonInteraction) per sbloccare un meccanismo o un'unità speciale — probabile offerta a pagamento/evento.</td></tr>
+    <tr><td class="path">unlockOfferButton/unlockMechanismSpine, /unlockUnitSpine</td><td>Spine (animazione)</td><td>Animazioni promozionali del meccanismo/unità in offerta.</td></tr>
+    <tr><td class="path">canvasGroup/unitIcon</td><td>Image</td><td>Icona dell'unità in offerta.</td></tr>
+    <tr><td class="path">canvasGroup/time</td><td><span class="tag tag-txt">testo</span></td><td>Conto alla rovescia della durata dell'offerta.</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Chaos Rift e torna al menu precedente.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona "X" del bottone di chiusura.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ChaosRift</code>. Nota: il path radice è dedotto solo dal nome del GameObject (evento a tempo con proprio <code>closeButton</code>, tipico dei popup di menu) e non è stato verificato risalendo la gerarchia della scena live — potrebbe differire. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Taverna</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Taverna</div>
+  <h1>🍺 Taverna</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice e struttura canvas</h2>
+  <p class="region-path">Percorso: <code>Tavern</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">Tavern <em>(radice)</em></td>
+        <td><span class="tag tag-txt">TavernViewController</span> <span class="tag tag-off">inattivo</span></td>
+        <td>Controller principale della schermata. Risulta disattivo nel prefab: viene istanziato/attivato dinamicamente quando il giocatore apre la Taverna dal menu principale (vedi nota in fondo pagina).</td>
+      </tr>
+      <tr><td class="path">bg</td><td>Image, Canvas, MenuVfxEntityComponent</td><td>Sfondo della schermata con aggancio per effetti particellari.</td></tr>
+      <tr><td class="path">visualEffects/rotatingSparks red</td><td>ParticleSystem</td><td>Effetto particellare decorativo (scintille rotanti).</td></tr>
+      <tr><td class="path">helpCanvas</td><td><em>(nessun componente proprio)</em></td><td>Contenitore che raccoglie tutta l'interfaccia interattiva della Taverna (carte, pulsanti, board elementi). Il nome sembra un residuo interno del motore/template, non indica una funzione di "aiuto".</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Contatore valuta</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/counters/counterInteraction</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">counters</td><td>HorizontalLayoutGroup</td><td>Contenitore del blocco contatore. A differenza di altre schermate qui è presente una sola istanza (non una fila di valute multiple).</td></tr>
+      <tr><td class="path">counterInteraction</td><td>CounterInteraction</td><td>Blocco che mostra la valuta usata per estrarre carte in questa schermata (probabilmente il "gametoken" usato anche dal pulsante di estrazione più sotto, verificare dal vivo).</td></tr>
+      <tr><td class="path">.../bg <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore; ipotesi: apre il negozio/dettaglio di quella valuta, verificare dal vivo.</td></tr>
+      <tr><td class="path">.../icon <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona cliccabile, stessa azione del bottone "bg".</td></tr>
+      <tr><td class="path">.../quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale posseduta.</td></tr>
+      <tr><td class="path">.../quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo animato "+N" mostrato quando la valuta aumenta.</td></tr>
+      <tr><td class="path">.../getMore <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Pulsante "ottieni di più"; compare solo quando la valuta è esaurita (condizione dinamica).</td></tr>
+      <tr><td class="path">.../getMore/collider</td><td>Image</td><td>Area di click decorativa, nessun contenuto proprio.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Carte della taverna (mazzo estraibile)</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/cardHolder</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">cardHolder</td><td>ScrollRect, Image</td><td>Elenco scorrevole delle carte disponibili.</td></tr>
+      <tr><td class="path">Viewport/Content/gridObject</td><td>GridLayoutGroup</td><td>Griglia che dispone le carte.</td></tr>
+      <tr>
+        <td class="path">Viewport/Content/discardedButtonParent/discardedCards <span class="tag tag-btn">BOTTONE</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Apre presumibilmente l'elenco delle carte scartate/già estratte in precedenza, verificare dal vivo.</td>
+      </tr>
+      <tr><td class="path">.../discardedCards/text</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Etichetta del pulsante.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Singola carta (pattern ripetuto tavernCard0…5)</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/cardHolder/tavernCard0…5</code> — 6 istanze identiche nel layout</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">tavernCard0…5 <span class="tag tag-btn">BOTTONE</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> (TavernCardInteraction)</td>
+        <td>Una carta della fila di estrazione. Il click probabilmente estrae/rivela quella carta o ne mostra il dettaglio, verificare dal vivo.</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardGlow</td>
+        <td>Image <span class="note">(inattivo solo su tavernCard0)</span></td>
+        <td>Bagliore di evidenziazione della carta. Nel prefab risulta disattivo solo sulla prima istanza (tavernCard0) e attivo sulle altre cinque: probabile stato di esempio salvato nel prefab, non necessariamente significativo — verificare dal vivo.</td>
+      </tr>
+      <tr><td class="path">.../cardFront/luckBg/luckIcon, .../luckText</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Indicatore di "fortuna"/probabilità associato alla carta.</td></tr>
+      <tr><td class="path">.../cardFront/name</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Nome della ricompensa/carta.</td></tr>
+      <tr>
+        <td class="path">.../cardFront/rewardParent/artifactReward <span class="tag tag-off">inattivo</span></td>
+        <td>Image, AncientArtifactInteraction <span class="tag tag-off">inattivo</span></td>
+        <td>Variante "ricompensa artefatto" della carta (con <code>iconImg</code> e glow <code>artifactGlow</code> dedicati). Attivata dinamicamente solo se la carta contiene questo tipo di ricompensa.</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardFront/rewardParent/elementReward <span class="tag tag-off">inattivo</span></td>
+        <td>Image, PrimordialElementInteraction <span class="tag tag-off">inattivo</span></td>
+        <td>Variante "ricompensa elemento primordiale" (con <code>quantity</code> e glow <code>elementGlow</code> dedicati).</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardFront/rewardParent/sacredCardReward <span class="tag tag-off">inattivo</span></td>
+        <td>Image, SacredCardRewardInteraction <span class="tag tag-off">inattivo</span></td>
+        <td>Variante "ricompensa carta sacra" (con <code>cardIcon</code> e <code>quantity</code>).</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardFront/rewardParent/currencyReward <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> (CurrencyRewardInteraction) <span class="tag tag-off">inattivo</span></td>
+        <td>Variante "ricompensa valuta" (con <code>currencyImage</code>, <code>itemFrame</code>, <code>quantity</code>).</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardFront/rewardParent/inventoryItem <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> (InventoryItemInteraction) <span class="tag tag-off">inattivo</span></td>
+        <td>Variante "ricompensa oggetto da inventario" (con <code>cooldownImg</code>, <code>activeImg</code>, <code>itemFrame</code>, <code>quantity</code>).</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardFront/rewardParent/gearChest <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> (GearChestInteraction) <span class="tag tag-off">inattivo</span></td>
+        <td>Variante "ricompensa forziere equipaggiamento" (con <code>quantity</code>).</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardFront/rewardParent/scroll <span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> (ScrollInteraction) <span class="tag tag-off">inattivo</span></td>
+        <td>Variante "ricompensa pergamena" (con <code>scrollImg</code>, <code>itemFrame</code>, <code>quantity</code>; <code>cooldownImg</code>/<code>activeImg</code> propri, anch'essi inattivi di default).</td>
+      </tr>
+      <tr>
+        <td class="path"><em>(nota generale sulle 7 varianti sopra)</em></td>
+        <td class="note">—</td>
+        <td>Sono tutte figlie di <code>rewardParent</code> e mutuamente esclusive: il gioco attiva solo quella corrispondente al tipo di ricompensa effettivo della carta.</td>
+      </tr>
+      <tr>
+        <td class="path">.../duplicateCardBacks</td>
+        <td><span class="note">(inattivo solo su tavernCard0)</span></td>
+        <td>Contiene 4 immagini "cardBack (1)…(4)" impilate; probabile indicatore visivo di copie duplicate possedute della stessa carta.</td>
+      </tr>
+      <tr>
+        <td class="path">.../cardBack, .../cardBack/quantityText</td>
+        <td>Image, <span class="tag tag-txt">testo</span> <span class="note">(inattivi solo su tavernCard0)</span></td>
+        <td>Retro della carta con conteggio. Ipotesi: tavernCard0 rappresenta la carta "in cima", già rivelata (retro nascosto), mentre tavernCard1…5 sono le carte successive in coda ancora coperte — dedotto dallo stato del prefab, verificare dal vivo.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Quantità di estrazione e modalità automatica</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/bottomRightUI</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">changeQuantity <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità di carte estratte per click (es. x1/x10); testo interno mostra il valore corrente.</td></tr>
+      <tr><td class="path">autoPickToggle <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Attiva/disattiva la modalità di estrazione automatica.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Pulsante principale di estrazione</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/bottomUI/playButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">playButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Pulsante principale: avvia l'estrazione di carte dalla Taverna.</td></tr>
+      <tr><td class="path">.../desc</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Etichetta del pulsante (es. "Gioca"/"Estrai").</td></tr>
+      <tr><td class="path">.../layout/gametokenIcon</td><td>Image</td><td>Icona della valuta di costo.</td></tr>
+      <tr><td class="path">.../layout/costText</td><td><span class="tag tag-txt">testo</span></td><td>Costo dell'estrazione.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Livello fortuna</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/luckLevelBg</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">luckLevelBg <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Blocco livello "fortuna"; il click apre probabilmente il dettaglio/potenziamento del livello, verificare dal vivo.</td></tr>
+      <tr><td class="path">.../luckLevelText</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Numero di livello fortuna attuale.</td></tr>
+      <tr><td class="path">.../levelProgressBarBg/progressBarMask/levelProgressBarFill</td><td>Image (mask+fill)</td><td>Barra di avanzamento verso il livello successivo.</td></tr>
+      <tr><td class="path">.../levelProgressBarBg/levelProgressText</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Valori numerici del progresso (es. "120/500").</td></tr>
+      <tr><td class="path">.../luckIcon</td><td>Image</td><td>Icona decorativa della fortuna.</td></tr>
+      <tr><td class="path">.../luckInfoButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (InfoButtonAnimation)</td><td>Apre un popup informativo sul funzionamento della fortuna/probabilità.</td></tr>
+      <tr><td class="path">.../luckInfoButton/spineInfo</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione dell'icona info.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra pulsanti generali e navigazione</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/</code> (nodi diretti)</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">infoButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (InfoButtonAnimation)</td><td>Apre un popup informativo/tutorial generale sulla schermata.</td></tr>
+      <tr><td class="path">infoButton/spineInfo</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione dell'icona info.</td></tr>
+      <tr><td class="path">stormyButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone con animazione Spine dedicata ("stormySpine"). Funzione non chiara dal nome (possibile personaggio/evento/venditore a tema associato alla Taverna): verificare dal vivo.</td></tr>
+      <tr><td class="path">stormyButton/stormySpine</td><td>Spine.Unity.SkeletonGraphic, MenuVfxEntityComponent</td><td>Animazione del pulsante "stormy".</td></tr>
+      <tr><td class="path">chat <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (ChatInteraction)</td><td>Apre la chat di gioco.</td></tr>
+      <tr><td class="path">chat/collider</td><td>Image</td><td>Area di click, nessun contenuto proprio.</td></tr>
+      <tr><td class="path">chat/spineChat</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione dell'icona chat.</td></tr>
+      <tr><td class="path">chat/notification, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica con conteggio messaggi non letti.</td></tr>
+      <tr><td class="path">rewards <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Funzione non chiara dal solo nome/icona: probabile accesso a un riepilogo ricompense, verificare dal vivo.</td></tr>
+      <tr><td class="path">rewards/icon</td><td>Image</td><td>Icona del pulsante.</td></tr>
+      <tr><td class="path">actionButtons</td><td>GridLayoutGroup</td><td>Contenitore dei tre pulsanti di scorciatoia sottostanti.</td></tr>
+      <tr><td class="path">actionButtons/artifacts <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso la schermata/lista degli artefatti, verificare dal vivo.</td></tr>
+      <tr><td class="path">actionButtons/cards <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso la collezione carte, verificare dal vivo.</td></tr>
+      <tr><td class="path">actionButtons/shop <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso il negozio, verificare dal vivo.</td></tr>
+      <tr><td class="path">actionButtons/*/icon, .../text</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Icona ed etichetta di ciascuno dei tre pulsanti sopra.</td></tr>
+      <tr><td class="path">actionButtons/*/notification <span class="tag tag-off">inattivo</span>, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Badge di notifica su ciascuno dei tre pulsanti; compare solo quando c'è qualcosa da segnalare.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Banco elementi primordiali e creazione artefatto</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/primordialElementBoard</code>, <code>helpCanvas/createArtifactButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">primordialElementBoard/boardGlow, .../elementBoard</td><td>Image</td><td>Sfondo e bagliore del pannello elementi.</td></tr>
+      <tr><td class="path">.../elementBoard/primalElement0…4</td><td>Image, PrimordialElementInteraction, EnlargeOnHover</td><td>5 slot cliccabili (non hanno componente Button ma hanno uno script di interazione proprio), uno per ogni elemento primordiale posseduto; ognuno ha un figlio <code>quantity</code> con la quantità.</td></tr>
+      <tr><td class="path">.../elementBoard/energizedElement0…4</td><td>Image</td><td>Overlay visivo mostrato quando il corrispondente elemento è "energizzato"/potenziato. Puramente visivo, nessuna interazione propria.</td></tr>
+      <tr><td class="path">createArtifactButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Crea un artefatto consumando gli elementi primordiali posseduti.</td></tr>
+      <tr><td class="path">createArtifactButton/text</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Etichetta del pulsante.</td></tr>
+      <tr><td class="path">createArtifactButton/notification <span class="tag tag-off">inattivo</span>, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Badge che segnala un artefatto pronto da creare; compare solo in quella condizione.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Popup "Artefatto creato" (ancientArtifactBg)</h2>
+  <p class="region-path">Percorso: <code>helpCanvas/ancientArtifactBg</code> — <span class="tag tag-off">inattivo</span> nel prefab, si attiva dopo la creazione di un artefatto</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">ancientArtifactBg</td><td>Canvas, GraphicRaycaster <span class="tag tag-off">inattivo</span></td><td>Popup di rivelazione dell'artefatto appena creato.</td></tr>
+      <tr><td class="path">background, baseGlow, board, vfx, elements, explosion</td><td>Image / Spine.Unity.SkeletonGraphic</td><td>Scenografia e animazioni della sequenza di rivelazione. Puramente decorative.</td></tr>
+      <tr><td class="path">helpCanvas/primordialElementBoard <span class="tag tag-off">inattivo</span></td><td>—</td><td>Copia del banco elementi primordiali (stessa struttura descritta sopra: <code>primalElement0…4</code>, <code>energizedElement0…4</code>), usata all'interno del popup invece di quella principale.</td></tr>
+      <tr><td class="path">helpCanvas/glow, .../artifact/glare</td><td>Spine.Unity.SkeletonGraphic</td><td>Effetti luminosi sull'artefatto rivelato.</td></tr>
+      <tr><td class="path">helpCanvas/artifact/iconImg</td><td>Image</td><td>Icona dell'artefatto creato.</td></tr>
+      <tr><td class="path">helpCanvas/artifact/starsHolder/stars <span class="note">(x4 nodi identici)</span></td><td>Spine.Unity.SkeletonGraphic</td><td>4 nodi "stars" identici, probabile indicatore di rarità dell'artefatto (numero di stelle animate attive in base alla rarità).</td></tr>
+      <tr><td class="path">helpCanvas/artifactNameText</td><td><span class="tag tag-txt">testo</span> localizzato</td><td>Nome dell'artefatto creato.</td></tr>
+      <tr><td class="path">helpCanvas/closeButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup di rivelazione artefatto (distinto dal <code>closeButton</code> della schermata principale, vedi sotto).</td></tr>
+      <tr><td class="path">helpCanvas/closeButton/icon</td><td>Image</td><td>Icona del pulsante di chiusura.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Offerta a tempo e chiusura schermata</h2>
+  <p class="region-path">Percorso: <code>Tavern/</code> (nodi diretti sotto la radice, fuori da <code>helpCanvas</code>)</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">unlockOfferButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (UnlockOfferButtonInteraction)</td><td>Offerta a tempo per sbloccare un elemento/unità legato alla Taverna.</td></tr>
+      <tr><td class="path">unlockOfferButton/unlockMechanismSpine, .../unlockUnitSpine</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazioni del meccanismo e dell'unità da sbloccare.</td></tr>
+      <tr><td class="path">unlockOfferButton/canvasGroup/unitIcon</td><td>Image</td><td>Icona dell'unità/elemento sbloccabile.</td></tr>
+      <tr><td class="path">unlockOfferButton/canvasGroup/time</td><td><span class="tag tag-txt">testo</span></td><td>Countdown dell'offerta di sblocco.</td></tr>
+      <tr><td class="path">closeButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude l'intera schermata Taverna.</td></tr>
+      <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona del pulsante di chiusura.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Tavern</code>. Nota: il percorso radice è dedotto dal nome del GameObject e dalla presenza di <code>closeButton</code>/<code>chat</code> tipici di un popup di menu (nessun riferimento a nodi di battaglia nel dump); non è stato verificato risalendo la gerarchia della scena live, quindi il prefisso esatto (in particolare eventuali contenitori intermedi) andrebbe confermato all'avvio del gioco. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

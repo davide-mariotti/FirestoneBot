@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Negozio dell'Oracolo</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Negozio dell'Oracolo</div>
+  <h1>🔮 Negozio dell'Oracolo (OracleStore)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Dump completo: 934 nodi, 112 componenti <code>Button</code>.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale</h2>
+  <p class="region-path">Path relativo alla radice: <code>OracleStore/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">OracleStore</td><td>Root, <code>Canvas</code>, script <code>OracleStoreViewController</code></td><td>Nodo radice del negozio dell'Oracolo, disattivo di default nel prefab (attivato quando l'utente apre lo store); il controller gestisce il cambio tab tra le cinque sotto-schermate di offerte e il refresh dei dati.</td></tr>
+      <tr><td class="path">bgElements/bgBlue</td><td>Immagine</td><td>Sfondo decorativo pieno.</td></tr>
+      <tr><td class="path">bgElements/bgStars/star</td><td>Immagine <span class="note">×27 (star, star (1)…star (26))</span></td><td>Campo di stelle decorativo di sfondo, nessuna interazione.</td></tr>
+      <tr><td class="path">bg/dog [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Personaggio mascotte animato (Spine, <code>MenuVfxEntityComponent</code>) cliccabile in sovrimpressione allo sfondo. Funzione esatta non chiara dal nome, probabilmente genera solo un effetto VFX/battuta al tocco — verificare dal vivo.</td></tr>
+      <tr><td class="path">StoreResetTimeInfo/bg/infoText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta informativa (es. "Si rinnova tra:"), localizzata.</td></tr>
+      <tr><td class="path">StoreResetTimeInfo/bg/timeText</td><td><span class="tag tag-txt">testo</span></td><td>Countdown testuale al prossimo reset delle offerte dello store.</td></tr>
+      <tr><td class="path">counters/counterInteraction Guild (1)</td><td>Contenitore, <code>CounterInteraction</code></td><td>Contatore di una valuta (probabilmente legata alla Gilda) mostrato in alto nello store.</td></tr>
+      <tr><td class="path">counters/…/bg [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area di sfondo del contatore, cliccabile (apre probabilmente il dettaglio/negozio di quella valuta).</td></tr>
+      <tr><td class="path">counters/…/icon [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stesso effetto del bg.</td></tr>
+      <tr><td class="path">counters/…/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta della valuta.</td></tr>
+      <tr><td class="path">counters/…/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato quando la quantità aumenta (animazione di incremento).</td></tr>
+      <tr><td class="path">counters/…/getMore [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Pulsante "ottieni di più", inattivo di default: appare solo in condizioni particolari (probabile scorta insufficiente) per indirizzare all'acquisto.</td></tr>
+      <tr><td class="path">closeButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup del negozio dell'Oracolo.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab dei sottomenu</h2>
+  <p class="region-path">Path relativo: <code>bg/submenuButtons/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenuButtons</td><td>Contenitore, <code>GridLayoutGroup</code></td><td>Barra dei cinque tab di categoria del negozio.</td></tr>
+      <tr><td class="path">valueBundles/button [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Offerte di grande valore" (apre il pannello <code>submenus/extremeValueBundles</code>).</td></tr>
+      <tr><td class="path">valueBundlesDaily/button [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Offerte giornaliere" (pannello <code>submenus/valueBundlesDaily</code>).</td></tr>
+      <tr><td class="path">valueBundlesWeekly/button [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Offerte settimanali" (pannello <code>submenus/valueBundlesWeekly</code>).</td></tr>
+      <tr><td class="path">celestialChests/button [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Forzieri celestiali" (pannello <code>submenus/celestialChests</code>).</td></tr>
+      <tr><td class="path">itemShop/button [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Negozio oggetti" (pannello <code>submenus/itemShop</code>).</td></tr>
+      <tr><td class="path">…/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta localizzata del tab (comune a tutti e cinque i bottoni).</td></tr>
+      <tr><td class="path">…/button/text/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Badge/pallino di notifica sul tab (es. numero di offerte nuove/riscattabili), con animazione di campanella (<code>NotificationAnimation</code>).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Pannello "Offerte di grande valore" (extremeValueBundles)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/extremeValueBundles/items/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">extremeValueBundles</td><td>Root pannello, <code>OracleValueBundlesSubmenuViewController</code></td><td>Inattivo di default (mostrato solo quando il tab è selezionato).</td></tr>
+      <tr><td class="path">oraclesGift [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro dell'offerta gratuita "Dono dell'Oracolo" del giorno, riscattabile una volta.</td></tr>
+      <tr><td class="path">oraclesGift/Graphics/header/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'offerta.</td></tr>
+      <tr><td class="path">oraclesGift/Graphics/renewText</td><td><span class="tag tag-txt">testo</span></td><td>Testo di rinnovo (probabile countdown al prossimo dono gratuito).</td></tr>
+      <tr><td class="path">oraclesGift/Graphics/purchaseButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riscatta il dono (gratuito: mostra "freeText" invece di un prezzo).</td></tr>
+      <tr><td class="path">oraclesGift/Graphics/claimedBG/claimedObj</td><td>Contenitore + <span class="tag tag-txt">testo</span></td><td>Overlay "già riscattato" con spunta, mostrato al posto del pulsante dopo il riscatto.</td></tr>
+      <tr><td class="path">extremeValueBundle</td><td>Contenitore, <code>ValueBundleInteraction</code></td><td>Il grande pacchetto in evidenza del tab, con più slot di ricompensa e un unico acquisto complessivo.</td></tr>
+      <tr><td class="path">extremeValueBundle/Graphics/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del pacchetto.</td></tr>
+      <tr><td class="path">…/mainBG/products/currencyReward (0..3) [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">×4</span></td><td>Quattro slot ricompensa in valuta (<code>CurrencyRewardInteraction</code>); il tocco mostra probabilmente il dettaglio della ricompensa.</td></tr>
+      <tr><td class="path">…/mainBG/products/gearChest [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa "forziere di equipaggiamento" (<code>GearChestInteraction</code>).</td></tr>
+      <tr><td class="path">…/mainBG/products/gearChest/info</td><td>Immagine, <code>GearChestInfoInteraction</code></td><td>Icona informativa annessa allo slot forziere (probabile tooltip sul contenuto).</td></tr>
+      <tr><td class="path">…/mainBG/products/celestialChest [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa "forziere celestiale" (<code>CelestialChestInteraction</code>).</td></tr>
+      <tr><td class="path">…/mainBG/products/jewelChest [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa "forziere di gioielli" (<code>JewelChestInteraction</code>).</td></tr>
+      <tr><td class="path">…/mainBG/purchaseButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'intero pacchetto; <code>priceHolder/purchaseCost</code> mostra il prezzo in valuta reale.</td></tr>
+      <tr><td class="path">…/mainBG/claimedBG (inactive)</td><td>Immagine <span class="tag tag-off">inattivo</span></td><td>Overlay "già acquistato/riscattato", attivato dopo l'acquisto al posto del pulsante prezzo.</td></tr>
+      <tr><td class="path">…/Graphics/mysteryBox</td><td><code>GenericInfoInteraction</code></td><td>Non è un vero pulsante (nessun componente Button): probabile tooltip informativo sulla scatola misteriosa inclusa nel pacchetto.</td></tr>
+      <tr><td class="path">…/Graphics/oraclesGift</td><td><code>GenericInfoInteraction</code></td><td>Come sopra, tooltip informativo sulla quantità di "Dono dell'Oracolo" incluso nel pacchetto.</td></tr>
+      <tr><td class="path">…/Graphics/ExtraValueInteraction</td><td><code>ExtraValueInteraction</code></td><td>Badge/testo che evidenzia il valore extra del pacchetto (es. "+300% valore"); non è un pulsante.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Pannello "Offerte giornaliere" (valueBundlesDaily)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/valueBundlesDaily/Scroll View/Viewport/items/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">valueBundlesDaily</td><td>Root pannello, <code>OracleValueBundlesDailySubmenuViewController</code></td><td>Inattivo di default; contenuto scrollabile orizzontale (<code>ScrollRect</code>).</td></tr>
+      <tr><td class="path">items/oraclesGift [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Stesso "Dono dell'Oracolo" gratuito già visto nel tab precedente, riproposto qui.</td></tr>
+      <tr><td class="path">items/valueBundle (0) …(2)</td><td>Contenitore, <code>ValueBundleInteraction</code> <span class="note">×3 (valueBundle 0-2)</span></td><td>Tre pacchetti a pagamento giornalieri, stessa struttura interna del pacchetto "extremeValueBundle" sopra (products, purchaseButton, claimedBG).</td></tr>
+      <tr><td class="path">valueBundle (n)/Graphics/mainBG/products/currencyReward (0..3) [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">×4 per bundle</span></td><td>Slot ricompensa in valuta del pacchetto.</td></tr>
+      <tr><td class="path">valueBundle (n)/Graphics/mainBG/products/gearChest [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa forziere equipaggiamento.</td></tr>
+      <tr><td class="path">valueBundle (n)/Graphics/mainBG/products/celestialChest [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa forziere celestiale.</td></tr>
+      <tr><td class="path">valueBundle (n)/Graphics/mainBG/products/jewelChest [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa forziere gioielli.</td></tr>
+      <tr><td class="path">valueBundle (n)/Graphics/mainBG/purchaseButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il pacchetto (prezzo in <code>priceHolder/purchaseCost</code>).</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Struttura identica al pacchetto descritto nella sezione precedente: differisce solo il numero di istanze (3 invece di 1) e l'assenza dei nodi <code>mysteryBox</code>/<code>oraclesGift</code>/<code>ExtraValueInteraction</code> annessi in alcune varianti — verificare caso per caso se presenti.</p>
+</section>
+
+<section>
+  <h2>Pannello "Offerte settimanali" (valueBundlesWeekly)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/valueBundlesWeekly/Scroll View/Viewport/items/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">valueBundlesWeekly</td><td>Root pannello</td><td>Inattivo di default; nessun <code>oraclesGift</code> gratuito in questo tab, solo pacchetti a pagamento.</td></tr>
+      <tr><td class="path">items/valueBundle (0) …(3)</td><td>Contenitore, <code>ValueBundleInteraction</code> <span class="note">×4 (valueBundle 0-3)</span></td><td>Quattro pacchetti a pagamento settimanali, stessa struttura di <code>currencyReward</code>×4 + <code>gearChest</code>/<code>celestialChest</code>/<code>jewelChest</code> + <code>purchaseButton</code> descritta sopra.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Pannello "Forzieri celestiali" (celestialChests)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/celestialChests/Scroll View/Viewport/chests/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">celestialChests</td><td>Root pannello, <code>OracleCelestialChestsSubmenuViewController</code></td><td>Inattivo di default; lista scrollabile orizzontale di forzieri acquistabili.</td></tr>
+      <tr><td class="path">chests/oracleCelestialChest (0) …(5)</td><td>Contenitore, <code>PremiumProductCelestialChestInteraction</code> <span class="note">×6 (chest 0-5)</span></td><td>Sei varianti di forziere celestiale acquistabile (probabilmente di rarità/valore crescente), ognuna con lato fronte e lato retro (info).</td></tr>
+      <tr><td class="path">…/chestName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del forziere.</td></tr>
+      <tr><td class="path">…/frontSide/stars/star</td><td>Immagine <span class="note">×12 per forziere</span></td><td>Indicatore grafico a stelle del "valore"/rarità del forziere.</td></tr>
+      <tr><td class="path">…/frontSide/info/infoAreaButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile che gira la carta mostrando il retro con i dettagli delle ricompense.</td></tr>
+      <tr><td class="path">…/frontSide/info/infoButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Pulsante informazioni (icona "i" animata) con lo stesso effetto di girare la carta.</td></tr>
+      <tr><td class="path">…/frontSide/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità di forzieri di questo tipo già posseduti/acquistati.</td></tr>
+      <tr><td class="path">…/frontSide/purchaseButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il forziere; <code>costText</code> mostra il prezzo in valuta reale.</td></tr>
+      <tr><td class="path">…/frontSide/bestValue/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Miglior valore" mostrata su una delle varianti.</td></tr>
+      <tr><td class="path">…/backSide/infoBackAreaButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile sul retro della carta, la rigira mostrando di nuovo il fronte.</td></tr>
+      <tr><td class="path">…/backSide/infoBackButton [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Pulsante per tornare al fronte della carta (stesso effetto dell'area sopra).</td></tr>
+      <tr><td class="path">…/backSide/dynamicArea/inventoryItemsReward, gearReward, guaranteedGear, sealReward</td><td>Contenitori + <span class="tag tag-txt">testo</span></td><td>Blocchi di dettaglio ricompensa mostrati sul retro (oggetti inventario, equipaggiamento, rarità garantita, sigillo); quali blocchi sono attivi dipende dal contenuto del singolo forziere, non tutti presenti/attivi contemporaneamente.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Pannello "Negozio oggetti" (itemShop)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/itemShop/ScrollView/Viewport/items/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">itemShop</td><td>Root pannello, <code>OracleItemShopSubmenuViewController</code></td><td>Inattivo di default; griglia di quattro oggetti acquistabili singolarmente.</td></tr>
+      <tr><td class="path">starEssenceBulk</td><td>Contenitore, <code>OracleStorePremiumProductItemInteraction</code></td><td>Confezione "grande" di Essenza Stellare (star essence) in vendita.</td></tr>
+      <tr><td class="path">starEssence</td><td>Contenitore</td><td>Confezione "piccola" di Essenza Stellare.</td></tr>
+      <tr><td class="path">emblemOfBrotherhoodBulk</td><td>Contenitore</td><td>Confezione "grande" di Emblema della Fratellanza.</td></tr>
+      <tr><td class="path">emblemOfBrotherhood</td><td>Contenitore</td><td>Confezione "piccola" di Emblema della Fratellanza.</td></tr>
+      <tr><td class="path">…/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'oggetto, comune alle quattro varianti.</td></tr>
+      <tr><td class="path">…/itemQuantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità inclusa nella confezione.</td></tr>
+      <tr><td class="path">…/priceFrame [BUTTON]</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">×4 (uno per oggetto)</span></td><td>Acquista l'oggetto al prezzo mostrato in <code>priceHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">…/bonusBg/text1, text2</td><td><span class="tag tag-txt">testo</span></td><td>Badge bonus (es. sconto/quantità extra) sopra il prezzo; su <code>starEssence</code> ed <code>emblemOfBrotherhood</code> risulta inattivo di default, quindi condizionale.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/OracleStore</code> (stimato per nome del GameObject e per la natura di popup del prefab, non verificato risalendo la gerarchia della scena live — potrebbe differire). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

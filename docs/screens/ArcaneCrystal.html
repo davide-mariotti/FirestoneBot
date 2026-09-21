@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Cristallo Arcano</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Cristallo Arcano</div>
+  <h1>💎 Cristallo Arcano</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Il nodo radice <code>ArcaneCrystal</code> risulta <em>inactive</em> nel prefab: è un popup di evento, mostrato/nascosto a runtime dal menu principale.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice e controlli generali</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/</code> (radice della schermata)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">ArcaneCrystal</td><td>controller <span class="tag tag-off">inattivo</span></td><td>Radice del popup evento "Cristallo Arcano". Componente <code>ArcaneCrystalViewController</code>: verosimilmente il controller che orchestra stato del cristallo, colpi, classifica e negozio di questa schermata. Disattivo di default nel prefab, attivato quando il giocatore apre l'evento.</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup e torna al menu precedente.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>immagine</td><td>Icona "X" del bottone di chiusura, puramente grafica.</td></tr>
+    <tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il popup informativo/tutorial dell'evento Cristallo Arcano. Componente <code>HolydayStudios.InfoButtonAnimation</code> gestisce l'animazione della "i".</td></tr>
+    <tr><td class="path">infoButton/spineInfo</td><td>animazione (Spine)</td><td>Grafica animata dell'icona informazioni, puramente visiva.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Offerta di sblocco</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/unlockOfferButton/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Banner/offerta a tempo per sbloccare qualcosa legato all'evento (probabilmente un'unità/reward speciale). Componente custom <code>UnlockOfferButtonInteraction</code> gestisce la logica di acquisto/sblocco.</td></tr>
+    <tr><td class="path">unlockOfferButton/unlockMechanismSpine</td><td>animazione (Spine)</td><td>Animazione del "meccanismo" di sblocco, puramente visiva.</td></tr>
+    <tr><td class="path">unlockOfferButton/unlockUnitSpine</td><td>animazione (Spine)</td><td>Animazione dell'unità/oggetto da sbloccare, puramente visiva.</td></tr>
+    <tr><td class="path">unlockOfferButton/canvasGroup</td><td>gruppo UI (fade)</td><td>CanvasGroup usato per dissolvenze in ingresso/uscita del contenuto dell'offerta.</td></tr>
+    <tr><td class="path">unlockOfferButton/canvasGroup/unitIcon</td><td>immagine</td><td>Icona dell'unità/premio offerto.</td></tr>
+    <tr><td class="path">unlockOfferButton/canvasGroup/time</td><td><span class="tag tag-txt">testo</span></td><td>Countdown testuale del tempo rimanente per l'offerta.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Contatore risorsa (valuta per colpire il cristallo)</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/counters/counterInteraction/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">counters/counterInteraction</td><td>script custom</td><td>Widget contatore della risorsa consumata per colpire il cristallo. Componente <code>CounterInteraction</code>.</td></tr>
+    <tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile di sfondo del contatore; probabilmente apre il negozio/la fonte per ottenere altra risorsa.</td></tr>
+    <tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della risorsa, anch'essa cliccabile con lo stesso effetto del bg.</td></tr>
+    <tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della risorsa posseduta.</td></tr>
+    <tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo animato "+N" mostrato quando la risorsa aumenta (feedback visivo transitorio).</td></tr>
+    <tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Prompt "ottieni di più" mostrato solo quando la risorsa non basta per il costo richiesto (es. per colpire il cristallo); attivato dinamicamente.</td></tr>
+    <tr><td class="path">counters/counterInteraction/getMore/collider</td><td>immagine (area sensibile)</td><td>Area di hit-test del bottone getMore, nessuna funzione propria.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Classifica del cristallo</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/crystalLeaderboard/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">crystalLeaderboard</td><td>pannello (layout)</td><td>Contenitore del riquadro classifica stagionale del cristallo.</td></tr>
+    <tr><td class="path">crystalLeaderboard/infoDesc/rank</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta di intestazione colonna "posizione" (localizzata).</td></tr>
+    <tr><td class="path">crystalLeaderboard/infoDesc/name</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta di intestazione colonna "nome" (localizzata).</td></tr>
+    <tr><td class="path">crystalLeaderboard/infoDesc/type</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta di intestazione colonna "punteggio/tipo" (localizzata).</td></tr>
+    <tr><td class="path">crystalLeaderboard/leaderboardRows/leaderboardRowSmall (0..3)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Righe della classifica (4 istanze, indici 0-3, struttura identica — vedi sotto). Click sulla riga: <code>LeaderboardRowViewAvatar</code>, apre probabilmente il profilo del giocatore.</td></tr>
+    <tr><td class="path">…/leaderboardRowSmall (N)/line (0)</td><td>immagine</td><td>Linea divisoria tra righe, puramente grafica.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/rankingMain/ranking</td><td><span class="tag tag-txt">testo</span></td><td>Numero di posizione in classifica.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/rankingMain/rankingImg</td><td>immagine <span class="tag tag-off">inattivo</span></td><td>Icona medaglia (oro/argento/bronzo) per le prime posizioni, mostrata solo condizionalmente al posto del numero.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar del giocatore in classifica, cliccabile. Componente <code>PlayerAvatarInteraction</code>: apre probabilmente il profilo/scheda giocatore.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/playerAvatar/avatarIcon</td><td>immagine</td><td>Immagine dell'avatar.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/guildAvatar</td><td>immagine <span class="tag tag-off">inattivo</span></td><td>Icona della gilda del giocatore, mostrata solo se il giocatore in classifica appartiene a una gilda.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/flagIcon</td><td>immagine</td><td>Bandiera/nazionalità del giocatore.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome del giocatore in classifica.</td></tr>
+    <tr><td class="path">…/horizontalLayoutGroup/statValue</td><td><span class="tag tag-txt">testo</span></td><td>Valore/punteggio del giocatore (probabilmente danno inflitto al cristallo).</td></tr>
+    <tr><td class="path">crystalLeaderboard/leaderboardCurrentButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorre/evidenzia la posizione del giocatore corrente nella classifica.</td></tr>
+    <tr><td class="path">crystalLeaderboard/leaderboardCurrentButton/icon</td><td>immagine</td><td>Icona del bottone "posizione attuale", puramente grafica.</td></tr>
+    <tr><td class="path">crystalLeaderboard/leaderboardCurrentButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone (localizzata, es. "La tua posizione").</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Cristallo centrale e azione di colpo</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/crystalParent/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">crystalParent/crystalLevelText</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale del cristallo.</td></tr>
+    <tr><td class="path">crystalParent/crystalHealthProgressBarBg</td><td>immagine (barra)</td><td>Sfondo della barra di "vita"/progresso del cristallo.</td></tr>
+    <tr><td class="path">…/progressBarMask/crystalHealthProgressBarFill</td><td>immagine (riempimento)</td><td>Riempimento della barra vita/progresso, mascherato da <code>RectMask2D</code>.</td></tr>
+    <tr><td class="path">…/crystalHealthProgressBarBg/crystalHealthProgressText</td><td><span class="tag tag-txt">testo</span></td><td>Testo numerico sovrapposto alla barra (es. vita corrente/massima).</td></tr>
+    <tr><td class="path">crystalParent/crystalTemp</td><td>immagine <span class="tag tag-off">inattivo?</span></td><td>Grafica "temporanea/placeholder": componente <code>HideGraphicOnPlayStatic</code> ne nasconde probabilmente la Image quando l'animazione Spine del cristallo è attiva. Funzione esatta non del tutto chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">crystalParent/crystalTransform/raysSpine</td><td>animazione (Spine)</td><td>Raggi di luce animati dietro il cristallo, puramente visivi.</td></tr>
+    <tr><td class="path">crystalParent/crystalTransform/arcaneCrystalSpine</td><td>animazione (Spine + script)</td><td>Il cristallo stesso, con animazione Spine. Componente <code>ArcaneCrystalAnimation</code> guida probabilmente le reazioni animate ai colpi.</td></tr>
+    <tr><td class="path">crystalParent/hitButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Azione principale: colpisce/estrae dal cristallo consumando la risorsa mostrata nel contatore.</td></tr>
+    <tr><td class="path">crystalParent/hitButton/descBg</td><td>immagine</td><td>Sfondo dell'etichetta descrittiva del bottone, puramente grafico.</td></tr>
+    <tr><td class="path">crystalParent/hitButton/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta descrittiva del bottone (localizzata, es. "Colpisci").</td></tr>
+    <tr><td class="path">crystalParent/hitButton/pickaxeIcon</td><td>immagine</td><td>Icona piccone, puramente grafica.</td></tr>
+    <tr><td class="path">crystalParent/hitButton/costText</td><td><span class="tag tag-txt">testo</span></td><td>Costo in risorsa del colpo (per unità/quantità selezionata).</td></tr>
+    <tr><td class="path">crystalParent/hitSlots</td><td>contenitore</td><td>Contenitore di 6 slot vuoti (<code>slot (0)</code>…<code>slot (5)</code>), senza componenti propri nel prefab statico: verosimilmente popolato a runtime con prefab dinamici (es. avatar degli ultimi giocatori che hanno colpito, o icone di combo/colpi eseguiti). Funzione esatta non chiara dai soli nomi, verificare dal vivo.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Pulsanti azione secondari</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/actionButtons/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">actionButtons/awakening</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata di "risveglio" (awakening) del cristallo, probabilmente una progressione/ascensione ulteriore.</td></tr>
+    <tr><td class="path">actionButtons/awakening/icon</td><td>immagine</td><td>Icona del bottone awakening.</td></tr>
+    <tr><td class="path">actionButtons/awakening/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone (localizzata).</td></tr>
+    <tr><td class="path">actionButtons/awakening/notification</td><td>badge notifica</td><td>Badge di notifica (es. disponibilità di un risveglio), gestito da <code>NotificationAnimation</code>.</td></tr>
+    <tr><td class="path">actionButtons/awakening/notification/bell</td><td>animazione (Spine)</td><td>Campanella animata del badge, puramente visiva.</td></tr>
+    <tr><td class="path">actionButtons/awakening/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero mostrato nel badge di notifica.</td></tr>
+    <tr><td class="path">actionButtons/upgrade</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata di potenziamento (upgrade) del cristallo. Stessa sottostruttura di <code>awakening</code> (icon/text/notification/bell/amountTMP).</td></tr>
+    <tr><td class="path">actionButtons/allTimeLeaderboard</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la classifica "di sempre" (all-time), distinta da quella stagionale mostrata inline in questa schermata.</td></tr>
+    <tr><td class="path">actionButtons/allTimeLeaderboard/icon</td><td>immagine</td><td>Icona del bottone, puramente grafica.</td></tr>
+    <tr><td class="path">actionButtons/allTimeLeaderboard/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone (localizzata). Nessun badge di notifica su questo bottone.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Controlli di colpo (rilevanti per l'automazione)</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/autoHitToggle</code>, <code>ArcaneCrystal/changeHitQuantity</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">autoHitToggle</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Attiva/disattiva il colpo automatico (auto-hit) sul cristallo. Bottone chiave per un bot che deve automatizzare la schermata.</td></tr>
+    <tr><td class="path">autoHitToggle/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del toggle (localizzata, probabilmente mostra lo stato ON/OFF).</td></tr>
+    <tr><td class="path">changeHitQuantity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità/moltiplicatore di colpi per pressione (pattern comune negli idle RPG: x1/x10/x100).</td></tr>
+    <tr><td class="path">changeHitQuantity/text</td><td><span class="tag tag-txt">testo</span></td><td>Mostra il moltiplicatore attualmente selezionato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Chat</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/chat/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il pannello chat dell'evento. Componente <code>ChatInteraction</code>.</td></tr>
+    <tr><td class="path">chat/collider</td><td>immagine (area sensibile)</td><td>Area di hit-test del bottone chat, nessuna funzione propria.</td></tr>
+    <tr><td class="path">chat/spineChat</td><td>animazione (Spine)</td><td>Icona chat animata, puramente visiva.</td></tr>
+    <tr><td class="path">chat/notification</td><td>badge notifica</td><td>Badge messaggi non letti, gestito da <code>NotificationAnimation</code>.</td></tr>
+    <tr><td class="path">chat/notification/bell</td><td>animazione (Spine)</td><td>Campanella animata del badge, puramente visiva.</td></tr>
+    <tr><td class="path">chat/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di messaggi non letti.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sfondo decorativo e VFX</h2>
+  <p class="region-path">Path: <code>ArcaneCrystal/bg/</code>, <code>ArcaneCrystal/arcaneCrystalHitVfx</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/bgTileUp, bg/bgTileDown, bg/bgTile</td><td>immagine (sfondo)</td><td>Livelli di sfondo/parallax (piastrelle), animati via <code>MenuVfxEntityComponent</code>. Nessuna interazione.</td></tr>
+    <tr><td class="path">bg/clouds, bg/clouds (1)</td><td>immagine (sfondo)</td><td>Livelli di nuvole animate in parallax. Nessuna interazione.</td></tr>
+    <tr><td class="path">bg/island, bg/island (1)</td><td>immagine (sfondo)</td><td>Isole fluttuanti decorative sullo sfondo. Nessuna interazione.</td></tr>
+    <tr><td class="path">bg/shell, bg/frontGround</td><td>immagine (sfondo)</td><td>Guscio/primo piano decorativi. Nessuna interazione.</td></tr>
+    <tr><td class="path">arcaneCrystalHitVfx</td><td>animazione (Spine, VFX)</td><td>Effetto visivo riprodotto quando il cristallo viene colpito.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ArcaneCrystal</code>. Path dedotto solo dal nome del GameObject e dalla forma della schermata (popup di evento con bottone di chiusura, contatore risorsa, chat, classifica) senza risalire la gerarchia della scena live: non è certo al 100%, verificare da uno snapshot runtime se serve un selettore Firebot preciso. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

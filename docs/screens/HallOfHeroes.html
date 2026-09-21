@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Sala degli Eroi</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Sala degli Eroi</div>
+  <h1>🏛️ Sala degli Eroi</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Root: <code>HallOfHeroes</code> (1991 nodi, 91 componenti Button). Componenti sul root: <code>HallOfHeroesViewController</code>, <code>HOHHeroRaritySubmenuViewController</code>.</p>
+</header>
+<main>
+
+<section>
+<h2>Barra superiore</h2>
+<p class="region-path">Path relativo: <code>(root)</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">menuTitleBg (inactive) / menuTitle</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Titolo della schermata. Disattivo di default nel prefab: probabilmente sostituito dai titoli dei singoli sotto-menu.</td></tr>
+<tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro cliccabile del contatore valuta in alto (componente <code>CounterInteraction</code>): apre probabilmente il negozio/dettaglio di quella valuta.</td></tr>
+<tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stesso comportamento cliccabile del riquadro <code>bg</code>.</td></tr>
+<tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della valuta mostrata.</td></tr>
+<tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Delta/animazione "+N" quando la valuta aumenta.</td></tr>
+<tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>"Ottieni di più": compare solo quando la valuta non basta per un acquisto in corso.</td></tr>
+<tr><td class="path">characterListScrollView/Viewport/heroGrid/hero (0..4)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×5 (slot 0-4). Seleziona l'eroe N nella striscia dei preferiti/recenti (<code>HeroInteractionSquare</code>). Ogni slot ha icona, livello, 5 stelle rarità e badge notifica (inattivo di default).</td></tr>
+<tr><td class="path">characterListScrollView/Viewport/heroGrid/allHeroesButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre l'elenco completo di tutti gli eroi posseduti.</td></tr>
+<tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat (gilda/globale), con campanella di notifica e contatore messaggi non letti.</td></tr>
+<tr><td class="path">biogrpahyButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la biografia dell'eroe attualmente in anteprima (<code>BioInteraction</code>). Nome del nodo con refuso originale del gioco ("biogrpahy").</td></tr>
+<tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Sala degli Eroi.</td></tr>
+<tr><td class="path">descriptionInfoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra un tooltip informativo aggiuntivo sull'eroe in anteprima.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Barra dei sotto-menu (tab)</h2>
+<p class="region-path">Path relativo: <code>submenus/submenuButtons</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">info</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu Info: statistiche, classe, abilità e bonus dell'eroe.</td></tr>
+<tr><td class="path">gear</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu Equipaggiamento. Badge <code>notificationCountBg</code> per oggetti nuovi/da gestire.</td></tr>
+<tr><td class="path">enchanting</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu Incantesimo (potenziamento oggetti).</td></tr>
+<tr><td class="path">sealsOfPower</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu Sigilli di Potere. Ha un'icona <code>lock</code> per quando è ancora bloccato.</td></tr>
+<tr><td class="path">heroRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu di gestione rarità dell'eroe (contenuto in <code>blessingsSubmenu</code>, vedi sezione dedicata).</td></tr>
+<tr><td class="path">skins</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu Skin. Ha un cerchio di notifica animato (<code>notificationCircle</code>) per skin nuove.</td></tr>
+<tr><td class="path">blessings</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Disattivo di default nel prefab. Funzione esatta non chiara dal nome/gerarchia: potrebbe essere un tab residuo non più cablato, oppure attivato dinamicamente in condizioni particolari — verificare dal vivo.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Info (statistiche eroe)</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/infoSubmenu</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sotto-menu Info.</td></tr>
+<tr><td class="path">scroll/viewport/content/heroDesc/class, specialization, attackStyle, resource (+ relative *Desc)</td><td><span class="tag tag-txt">testo</span></td><td>Classe, specializzazione, stile d'attacco e risorsa dell'eroe con relative etichette descrittive.</td></tr>
+<tr><td class="path">.../attributes&amp;abilities/mainAttributes/attributeGlobal (0..2)</td><td>non-bottone (<code>AttributeGlobalInteraction</code>)</td><td>×3 (slot 0-2). Attributi principali (bg, icona, valore, lucchetto se non sbloccato). Componente custom non-Button: la reattività al tocco va verificata dal vivo.</td></tr>
+<tr><td class="path">.../attributes&amp;abilities/advancedAttributes/attributeGlobal (0..3)</td><td>non-bottone (<code>AttributeGlobalInteraction</code>)</td><td>×4 (slot 0-3). Attributi avanzati, stessa struttura dei principali.</td></tr>
+<tr><td class="path">.../attributes&amp;abilities/abilities/ability0..2</td><td>non-bottone (<code>AbilityInteractionSimple</code>)</td><td>×3. Le tre abilità dell'eroe.</td></tr>
+<tr><td class="path">crewBonus/unlocked, crewBonus/locked (inactive)</td><td><span class="tag tag-txt">testo</span></td><td>Bonus di equipaggio: versione sbloccata (con attributi e descrizione) o bloccata (lucchetto + descrizione condizione).</td></tr>
+<tr><td class="path">heroAwakening/unlocked, heroAwakening/locked (inactive)</td><td><span class="tag tag-txt">testo</span></td><td>Risveglio eroe: bonus globale + bonus specifico dell'eroe quando sbloccato, altrimenti descrizione condizione di sblocco.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Equipaggiamento — vista Elenco</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/gearSubmenu</code> (inattivo di default)</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">galleryBtn</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa alla vista Galleria (griglia oggetti equipaggiati).</td></tr>
+<tr><td class="path">listViewBtn</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa alla vista Elenco (lista dettagliata per tier), quella descritta in questa sezione.</td></tr>
+<tr><td class="path">listView/submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sotto-menu.</td></tr>
+<tr><td class="path">listView/categories/gearCategory/.../content/tier1/tierText, tier2/tierText, tier3(analogo)</td><td><span class="tag tag-txt">testo</span></td><td>Etichette di tier all'interno della lista (Tier 1, 2, 3...).</td></tr>
+<tr><td class="path">listView/categories/gearCategory/.../content/gear (0..5)</td><td>non-bottone (<code>ListGearItemInteraction</code>)</td><td>×6 (slot 0-5, distribuiti tra i tier). Riga oggetto: nome/livello, potenza, descrizione, icona rarità, livello incantesimo, badge notifica.</td></tr>
+<tr><td class="path">listView/categories/gearCategory/.../content/tier2/counterInteraction/bg, /icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Contatore/valuta necessaria per sbloccare il tier 2, cliccabile come i contatori in alto.</td></tr>
+<tr><td class="path">.../tier2/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>"Ottieni di più" valuta, compare solo se insufficiente.</td></tr>
+<tr><td class="path">listView/categories/gearCategory/.../content/tierUnlock (0)/.../confirmButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×2 (tierUnlock 0 e 1, uno per ogni soglia tier). Conferma lo sblocco del tier successivo pagando il costo mostrato (<code>costText</code> + <code>currencyIcon</code>).</td></tr>
+<tr><td class="path">listView/categories/soulstonesCategory/.../content/tier2/counterInteraction/*, tierUnlock/.../confirmButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Stessa struttura contatore/sblocco tier della categoria oggetti, applicata alla categoria pietre dell'anima. Presenti anche testi <code>locked</code>/<code>noServerAccess</code> per stati bloccati o senza connessione.</td></tr>
+<tr><td class="path">listView/categoryButtons/gear, /jewels, /soulstones</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab per passare tra le categorie Equipaggiamento / Gioielli / Pietre dell'anima. Gioielli e pietre hanno anche un'icona <code>lock</code> e un badge <code>notificationCount</code>.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Equipaggiamento — vista Galleria</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/gearSubmenu/galleryView</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">submenuTitle, powerBg/Image/power</td><td><span class="tag tag-txt">testo</span></td><td>Titolo e potenza totale dell'equipaggiamento.</td></tr>
+<tr><td class="path">gear/gearTitle, jewels/jewelsTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titoli delle sezioni Equipaggiamento e Gioielli nella griglia (una sezione analoga esiste per le pietre dell'anima).</td></tr>
+<tr><td class="path">gear/unlocked/itemList/gear (0..7)</td><td>non-bottone (<code>GearItemInteraction</code>)</td><td>×8 (slot 0-7). Slot griglia oggetto equipaggiato, con linee di collegamento decorative <code>tier1Lines</code>/<code>tier2Lines</code>/<code>tier3Lines</code> tra i tier.</td></tr>
+<tr><td class="path">gear/unlocked/itemList/tier2Locked (inactive)/unlockTier2Button</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Sblocca il tier 2 della griglia; il contenitore è attivo solo quando il tier è ancora bloccato.</td></tr>
+<tr><td class="path">gear/unlocked/itemList/tier3Locked (inactive)/unlockTier3Button</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Analogo per il tier 3.</td></tr>
+<tr><td class="path">gear/locked (inactive)</td><td><span class="tag tag-txt">testo</span></td><td>Fallback quando l'intera categoria è bloccata (lucchetto + descrizione).</td></tr>
+<tr><td class="path">jewels/unlocked/itemList/gear (0..N), tier2Locked/unlockTier2Button</td><td><span class="tag tag-btn">BOTTONE</span> (parziale)</td><td>Stessa struttura della sezione Equipaggiamento, applicata ai Gioielli.</td></tr>
+<tr><td class="path">soulstones/unlocked/itemList/tier2Locked/unlockTier2Button</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sblocca il tier 2 della griglia Pietre dell'anima. Presenti anche testi <code>locked</code>/<code>noServerAccess</code>.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Incantesimo</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/enchantingSubmenu</code> (inattivo di default)</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sotto-menu.</td></tr>
+<tr><td class="path">categories/gearCategory/.../content/gear (0..7)/mainBg/enchantItem</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×8 (slot 0-7). Applica/potenzia l'incantesimo sull'oggetto: mostra costo in cristalli del vuoto (<code>voidCrystalsIcon</code> + <code>costText</code>) ed effetto attuale vs successivo (<code>currentEffect</code> → <code>nextEffect</code>).</td></tr>
+<tr><td class="path">categories/jewelsCategory/.../content/jewel (0..5)/mainBg/enchantItem</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×6 (slot 0-5). Stessa funzione applicata ai gioielli.</td></tr>
+<tr><td class="path">categories/soulstonesCategory/.../content/soulstone (0..5)/mainBg/enchantItem</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×6 (slot 0-5). Stessa funzione applicata alle pietre dell'anima.</td></tr>
+<tr><td class="path">categoryButtons/gear, /jewels, /soulstones</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab per passare tra le tre categorie di oggetti incantabili.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Sigilli di Potere</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/sealsOfPowerSubmenu</code> (inattivo di default)</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sotto-menu.</td></tr>
+<tr><td class="path">categories/gearCategory/.../content/gearSealUpgrade0/mainBg/sealOfPower</td><td>non-bottone (<code>GearSealOfPowerInteraction</code>)</td><td>Slot del sigillo per Equipaggiamento: qui il componente non ha un <code>Button</code> (a differenza delle varianti gioielli/pietre sotto), probabile drag&amp;drop o attivazione via script — verificare dal vivo.</td></tr>
+<tr><td class="path">.../gearSealUpgrade0/mainBg/increaseRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Conferma l'aumento di rarità del sigillo Equipaggiamento (mostra il testo del requisito in <code>reqInfo</code>).</td></tr>
+<tr><td class="path">categories/jewelsCategory/.../content/jewelSealUpgrade0/mainBg/sealOfPower</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot sigillo Gioielli, qui cliccabile direttamente (<code>JewelSealOfPowerInteraction</code>).</td></tr>
+<tr><td class="path">.../jewelSealUpgrade0/mainBg/increaseRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Conferma l'aumento di rarità del sigillo Gioielli.</td></tr>
+<tr><td class="path">categories/soulstonesCategory/.../content/soulstoneSealUpgrade0/mainBg/sealOfPower</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot sigillo Pietre dell'anima, cliccabile (<code>SoulstoneSealOfPowerInteraction</code>).</td></tr>
+<tr><td class="path">.../soulstoneSealUpgrade0/mainBg/increaseRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Conferma l'aumento di rarità del sigillo Pietre dell'anima.</td></tr>
+<tr><td class="path">categories/*/gearSealUnavailable, gearSealLocked (inactive)</td><td><span class="tag tag-txt">testo</span></td><td>Fallback quando la categoria non è ancora disponibile/sbloccata.</td></tr>
+<tr><td class="path">categoryButtons/gear, /jewels, /soulstones</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab per passare tra le tre categorie di sigilli.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Rarità Eroe / Benedizioni</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/blessingsSubmenu</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">blessingsInfoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra un tooltip informativo sul sistema di benedizioni/ricerca.</td></tr>
+<tr><td class="path">blessings/research0..5</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×6 (research0-5). Avvia/potenzia un nodo dell'albero di ricerca meteorite (<code>MeteoriteResearchInteraction</code>), con icona e livello attuale.</td></tr>
+<tr><td class="path">rarityManagement/currentRarityHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Anteprima cliccabile dell'eroe alla rarità attuale (icona, livello, stelle).</td></tr>
+<tr><td class="path">rarityManagement/nextRarityHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Anteprima cliccabile dell'eroe alla rarità successiva.</td></tr>
+<tr><td class="path">rarityManagement/ineligibleToIncreaseRarity (inactive)/howToUnlockRarityDesc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione di come sbloccare l'aumento di rarità, mostrata solo quando non ancora eleggibile.</td></tr>
+<tr><td class="path">rarityManagement/eligibleToIncreaseRarity (inactive)/increaseRarityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Conferma l'aumento di rarità pagando in moneta esotica (<code>cost</code> + <code>exoticCoinIcon</code>); il contenitore è attivo solo quando l'eroe è eleggibile.</td></tr>
+<tr><td class="path">rarityManagement/maxRarity/increaseRarityDesc</td><td><span class="tag tag-txt">testo</span></td><td>Messaggio mostrato quando è stata raggiunta la rarità massima.</td></tr>
+<tr><td class="path">blessingBonus/blessingsBonusCounter, /effectDesc, /effectBg/effect</td><td><span class="tag tag-txt">testo</span></td><td>Riepilogo del bonus totale attivo dovuto alle benedizioni.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Rarità (legacy)</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/raritySubmenu</code> (inattivo di default)</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td colspan="3" class="note">Intero sotto-menu disattivo di default nel prefab. Ha una struttura molto simile a "Rarità Eroe / Benedizioni" sopra (confronto rarità attuale/successiva, requisiti, attributi). Non è chiaro dal solo dump statico se sia una schermata legacy sostituita da <code>blessingsSubmenu</code> o se venga ancora aperta da un tab in condizioni particolari — verificare dal vivo.</td></tr>
+<tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sotto-menu.</td></tr>
+<tr><td class="path">rarityUnlocked/rarityIncrease/rarityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Conferma l'aumento di rarità (descrizione, icona valuta, costo).</td></tr>
+<tr><td class="path">rarityUnlocked/CurrentRarityView/currentRarityHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Anteprima eroe alla rarità attuale.</td></tr>
+<tr><td class="path">rarityUnlocked/CurrentRarityView/currentSelfAllAttributes, currentAllAttributes, currentRainingGold</td><td>non-bottone (<code>AttributeGlobalInteraction</code>)</td><td>Statistiche comparative alla rarità attuale.</td></tr>
+<tr><td class="path">rarityUnlocked/NextRarityView/nextRarityHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Anteprima eroe alla rarità successiva.</td></tr>
+<tr><td class="path">rarityUnlocked/NextRarityView/nextSelfAllAttributes, nextAllAttributes, nextRainingGold</td><td>non-bottone (<code>AttributeGlobalInteraction</code>)</td><td>Statistiche comparative alla rarità successiva.</td></tr>
+<tr><td class="path">rarityUnlocked/requirementsBg/requirementsText</td><td><span class="tag tag-txt">testo</span></td><td>Requisiti per l'aumento di rarità.</td></tr>
+<tr><td class="path">rarityLocked (container)/lockedDescription</td><td><span class="tag tag-txt">testo</span></td><td>Fallback quando l'intero sistema rarità è bloccato.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu Skin</h2>
+<p class="region-path">Path relativo: <code>submenus/bg/skinsSubmenu</code> (inattivo di default)</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sotto-menu.</td></tr>
+<tr><td class="path">skins/scrollView/viewport/content/skinCardInteraction (rappresentativo, ripetuto per ogni skin)/bg/panelUnlocked</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona/applica la skin sbloccata su questa card.</td></tr>
+<tr><td class="path">.../skinCardInteraction/header/nameText</td><td><span class="tag tag-txt">testo</span></td><td>Nome della skin.</td></tr>
+<tr><td class="path">.../skinCardInteraction/header/tickIcon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Funzione non del tutto chiara dal nome (probabile indicatore/selettore di skin attiva) — verificare dal vivo.</td></tr>
+<tr><td class="path">.../skinCardInteraction/header/viewIcon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra un'anteprima della skin.</td></tr>
+<tr><td class="path">.../skinCardInteraction/unlockedObj/claimedText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "riscattata/sbloccata" mostrata sulle skin già ottenute.</td></tr>
+<tr><td class="path">.../skinCardInteraction/requirementsObj/requirementText, progressBarBg/progressText</td><td><span class="tag tag-txt">testo</span></td><td>Requisito di sblocco e relativa barra di progresso, per le skin non ancora ottenute.</td></tr>
+<tr><td class="path">skins/selectSkinObj (inactive)/selectSkinText</td><td><span class="tag tag-txt">testo</span></td><td>Messaggio mostrato in stato di selezione skin attiva.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Offerta sblocco eroe e anteprima personaggio</h2>
+<p class="region-path">Path relativo: <code>(root)</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Offerta a tempo per sbloccare un nuovo eroe/unità (<code>UnlockOfferButtonInteraction</code>), con icona e conto alla rovescia (<code>canvasGroup/time</code>).</td></tr>
+<tr><td class="path">base/characterPreview/info/powerLevelText</td><td><span class="tag tag-txt">testo</span></td><td>Potere totale dell'eroe in anteprima.</td></tr>
+<tr><td class="path">base/characterPreview/standardLevelProgress</td><td><span class="tag tag-txt">testo</span></td><td>Barra di progressione livello dell'eroe: nome, percentuale (<code>progressBarFill</code>/<code>progressText</code>), 5 stelle rarità, livello attuale.</td></tr>
+<tr><td class="path">base/characterPreview/rarityBg (inactive)/rarity</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta rarità dell'eroe, attiva solo in certe condizioni.</td></tr>
+<tr><td class="path">base/characterPreview/characterAnimateButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Interagisce con il modello 3D/Spine dell'eroe in anteprima (probabile trigger di un'animazione).</td></tr>
+<tr><td class="path">.../characterAnimateButton/navigation/goBackHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'eroe precedente nell'anteprima; supporta pressione prolungata (<code>RepeatAction</code>).</td></tr>
+<tr><td class="path">.../characterAnimateButton/navigation/goForthHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'eroe successivo nell'anteprima; supporta pressione prolungata (<code>RepeatAction</code>).</td></tr>
+</tbody>
+</table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/HallOfHeroes</code>. Nota: il path del root è stato dedotto solo dal nome del GameObject e dal fatto che sia una schermata di menu (componenti <code>MenuVfxEntityComponent</code> diffusi, nessun aggancio a nodi di battaglia) — non è stato verificato risalendo la gerarchia della scena live, quindi il prefisso esatto andrebbe confermato dal vivo. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

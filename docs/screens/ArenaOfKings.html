@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Arena dei Re</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Arena dei Re</div>
+  <h1>👑 Arena dei Re</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Modalità PvP asincrona: si sfidano 3 avversari proposti a turno, si scala una classifica giornaliera e si incassano ricompense in base al piazzamento.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale / Barra superiore</h2>
+  <p class="region-path">Radice: <code>ArenaOfKings</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">. (radice)</td>
+      <td>ArenaOfKingsViewController <span class="tag tag-off">inattivo</span></td>
+      <td>Root della schermata e relativo controller; risulta disattivo nel prefab perché viene attivato dal codice solo quando si naviga verso l'Arena dei Re.</td>
+    </tr>
+    <tr>
+      <td class="path">bgDecor</td>
+      <td>Image (contenitore)</td>
+      <td>Contenitore dello sfondo decorativo dell'arena (cielo, terreno, montagne, gradinate, animazione Spine). Nodi puramente grafici omessi.</td>
+    </tr>
+    <tr>
+      <td class="path">bgDecor/grayOverlay</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Overlay scuro a tutto schermo dietro al pannello; il click probabilmente chiude la schermata toccando "fuori" dal popup.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/titleBg/title</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo della schermata (localizzato, "Arena dei Re").</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleTokens/icon</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Icona della valuta usata per le sfide (gettoni battaglia); il click probabilmente apre un tooltip informativo.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleTokens/quantity</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Quantità di gettoni battaglia posseduti.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleTokens/getMore</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre la schermata/negozio per acquistare altri gettoni battaglia.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/leaderboardButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre/mostra il pannello classifica (vedi sezione successiva).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/leaderboardButton/icon</td>
+      <td>Image</td>
+      <td>Icona del pulsante classifica.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/leaderboardButton/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta localizzata del pulsante ("Classifica").</td>
+    </tr>
+    <tr>
+      <td class="path">bg/infoButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre un popup informativo/di aiuto sulla modalità Arena dei Re (icona animata via Spine).</td>
+    </tr>
+    <tr>
+      <td class="path">closeButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Chiude la schermata Arena dei Re.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Classifica</h2>
+  <p class="region-path">Path relativo: <code>bg/leaderboard</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/leaderboard/title</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo del pannello classifica.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/leaderboard/ScrollView</td>
+      <td>ScrollRect</td>
+      <td>Lista scorrevole dei classificati.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/leaderboard/ScrollView/Viewport/Content</td>
+      <td>VerticalLayoutGroup</td>
+      <td>Contenitore delle righe classifica, dimensionato dinamicamente in base al numero di giocatori.</td>
+    </tr>
+    <tr>
+      <td class="path">.../Content/leaderboardRowNoValueLight (0..9)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> (LeaderboardRowViewAvatar)</td>
+      <td>Riga di classifica, ripetuta per 10 posizioni (0-9); il click sulla riga probabilmente apre la scheda del giocatore. Struttura interna dettagliata sotto per la riga (0), identica per le altre.</td>
+    </tr>
+    <tr>
+      <td class="path">.../leaderboardRowNoValueLight (0)/line (0)</td>
+      <td>Image <span class="tag tag-off">inattivo</span></td>
+      <td>Linea separatrice sopra la riga; disattiva solo sulla prima riga (nessun separatore in cima alla lista).</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/playerAvatar</td>
+      <td><span class="tag tag-btn">BOTTONE</span> (PlayerAvatarInteraction)</td>
+      <td>Avatar del giocatore in classifica; click per interagire con il profilo (es. visualizza/sfida).</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/playerAvatar/avatarIcon</td>
+      <td>Image</td>
+      <td>Icona avatar.</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/playerAvatar/avatarFrame</td>
+      <td>Image <span class="tag tag-off">inattivo</span></td>
+      <td>Cornice speciale dell'avatar, disattiva di default: probabilmente attivata per giocatori di rilievo (es. amici, top player).</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/guildAvatar</td>
+      <td>Image <span class="tag tag-off">inattivo</span></td>
+      <td>Icona della gilda, disattiva di default: mostrata solo se il giocatore appartiene a una gilda.</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/flagIcon</td>
+      <td>Image</td>
+      <td>Bandiera del paese del giocatore.</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/name</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome del giocatore.</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/rankingMain/ranking</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Numero di posizione in classifica. Nel dump risulta inattivo per le righe 0-3 e attivo dalla riga 3 in poi: indica che i primi 3 posti mostrano un'icona medaglia al posto del numero.</td>
+    </tr>
+    <tr>
+      <td class="path">.../horizontalLayoutGroup/rankingMain/rankingImg</td>
+      <td>Image</td>
+      <td>Icona medaglia/podio per le prime posizioni, complementare al testo numerico "ranking" (si escludono a vicenda).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/leaderboard/yourRanking/title</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "la tua posizione" (o simile).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/leaderboard/yourRanking/valueText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Posizione attuale del giocatore in classifica.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Avversari disponibili</h2>
+  <p class="region-path">Path relativo: <code>bg/opponentHub</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/opponentHub/refreshBg/refreshDesc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Testo descrittivo accanto al pulsante di aggiornamento avversari.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/opponentHub/refreshBg/refreshButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Aggiorna la lista dei 3 avversari proposti (probabilmente a pagamento o con tempo di attesa, vedi timeLeft).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/opponentHub/refreshBg/timeLeft</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Tempo residuo prima del prossimo aggiornamento gratuito degli avversari.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/opponentHub/opponentGrid</td>
+      <td>GridLayoutGroup</td>
+      <td>Griglia con le 3 carte avversario proposte.</td>
+    </tr>
+    <tr>
+      <td class="path">opponentGrid/arenaOfKingsOpponentInteraction (0..2)</td>
+      <td>Image (ArenaOfKingsOpponentInteraction)</td>
+      <td>Carta avversario, ripetuta per gli slot 0-2 (3 avversari mostrati per turno). Struttura interna dettagliata sotto per lo slot (0), identica per gli altri.</td>
+    </tr>
+    <tr>
+      <td class="path">.../arenaOfKingsOpponentInteraction (0)/nameBg/flag</td>
+      <td>Image</td>
+      <td>Bandiera del paese dell'avversario.</td>
+    </tr>
+    <tr>
+      <td class="path">.../nameBg/nameText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome dell'avversario.</td>
+    </tr>
+    <tr>
+      <td class="path">.../playerAvatar</td>
+      <td><span class="tag tag-btn">BOTTONE</span> (PlayerAvatarInteraction)</td>
+      <td>Avatar dell'avversario, cliccabile per vederne il profilo.</td>
+    </tr>
+    <tr>
+      <td class="path">.../playerAvatar/avatarIcon</td>
+      <td>Image</td>
+      <td>Icona avatar avversario.</td>
+    </tr>
+    <tr>
+      <td class="path">.../powerBg/powerDesc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "Potenza".</td>
+    </tr>
+    <tr>
+      <td class="path">.../powerBg/powerValue</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Valore di potenza dell'avversario.</td>
+    </tr>
+    <tr>
+      <td class="path">.../rankingBg/rankingDesc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "Posizione".</td>
+    </tr>
+    <tr>
+      <td class="path">.../rankingBg/rankingValue</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Posizione in classifica dell'avversario.</td>
+    </tr>
+    <tr>
+      <td class="path">.../guildBg/guildDesc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "Gilda".</td>
+    </tr>
+    <tr>
+      <td class="path">.../guildBg/guildValue</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome della gilda dell'avversario.</td>
+    </tr>
+    <tr>
+      <td class="path">.../fightButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Avvia la battaglia contro questo avversario.</td>
+    </tr>
+    <tr>
+      <td class="path">.../fightButton/fightText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta del pulsante ("Combatti"/"Sfida").</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Ricompense</h2>
+  <p class="region-path">Path relativo: <code>bg/rewards</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/rewards/title</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo della sezione ricompense.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/rewards/timeLeftBg/icon</td>
+      <td>Image</td>
+      <td>Icona orologio/clessidra.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/rewards/timeLeftBg/timeLeft</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Tempo residuo al reset giornaliero delle ricompense/classifica.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/rewards/rewardsGrid</td>
+      <td>GridLayoutGroup</td>
+      <td>Griglia delle icone ricompensa per fascia di piazzamento (il dump non risolve i singoli elementi figli, probabilmente generati a runtime).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/rewards/noBattles</td>
+      <td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td>
+      <td>Messaggio mostrato quando il giocatore non ha ancora combattuto nel ciclo corrente (nessun piazzamento registrato); disattivo di default.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/rewards/highestRankToday/rankDesc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "Miglior piazzamento di oggi".</td>
+    </tr>
+    <tr>
+      <td class="path">bg/rewards/highestRankToday/rankBg/rankText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Valore del miglior piazzamento raggiunto nella giornata.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Log battaglie</h2>
+  <p class="region-path">Path relativo: <code>bg/battleLogButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/battleLogButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il registro/storico delle battaglie di Arena dei Re.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleLogButton/battleLogText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta del pulsante ("Registro battaglie" o simile).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleLogButton/notification</td>
+      <td>Image (NotificationAnimation)</td>
+      <td>Badge di notifica (es. nuovi risultati da consultare).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleLogButton/notification/amountTMP</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Numero di notifiche non lette.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Formazione da battaglia</h2>
+  <p class="region-path">Path relativo: <code>bg/battleFormation</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/battleFormation/title</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo della sezione formazione (i war machine schierati in difesa/attacco per l'Arena dei Re).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleFormation/totalPower</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Potenza totale della formazione attuale.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/battleFormation/warMachineGrid</td>
+      <td>GridLayoutGroup</td>
+      <td>Griglia degli slot della formazione (5 slot, indici 0-4).</td>
+    </tr>
+    <tr>
+      <td class="path">warMachineGrid/emptySpot (0..4)</td>
+      <td>Image <span class="tag tag-off">inattivo</span></td>
+      <td>Slot vuoto (nessun war machine assegnato); attivo/disattivo in alternanza con "warMachineSquare" dello stesso indice. Contiene un testo placeholder ("Vuoto"/"Aggiungi").</td>
+    </tr>
+    <tr>
+      <td class="path">warMachineGrid/warMachineSquare (0..4)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> (WarMachineInteractionSquare)</td>
+      <td>Slot occupato da un war machine; il click apre probabilmente il dettaglio/selezione. Struttura interna dettagliata sotto per lo slot (4), identica per gli altri.</td>
+    </tr>
+    <tr>
+      <td class="path">.../warMachineSquare (4)/highlighted</td>
+      <td>Image <span class="tag tag-off">inattivo</span></td>
+      <td>Evidenziazione dello slot, disattiva di default (probabile stato "selezionato" o "consigliato").</td>
+    </tr>
+    <tr>
+      <td class="path">.../warMachineSquare (4)/icon</td>
+      <td>Image</td>
+      <td>Icona del war machine assegnato.</td>
+    </tr>
+    <tr>
+      <td class="path">.../warMachineSquare (4)/levelBg/level</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Livello del war machine.</td>
+    </tr>
+    <tr>
+      <td class="path">.../warMachineSquare (4)/starsParent/star0..4</td>
+      <td>Image</td>
+      <td>Pip delle stelle di rarità/potenziamento (5 stelle).</td>
+    </tr>
+    <tr>
+      <td class="path">.../warMachineSquare (4)/notificationCircle</td>
+      <td>Image (NotificationAnimation) <span class="tag tag-off">inattivo</span></td>
+      <td>Badge di notifica sullo slot, disattivo di default: probabilmente segnala un potenziamento disponibile per quel war machine.</td>
+    </tr>
+    <tr>
+      <td class="path">.../notificationCircle/amountTMP</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Numero mostrato nel badge di notifica.</td>
+    </tr>
+    <tr>
+      <td class="path">warMachineGrid/editButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre la schermata di modifica della formazione.</td>
+    </tr>
+    <tr>
+      <td class="path">warMachineGrid/editButton/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta del pulsante ("Modifica").</td>
+    </tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ArenaOfKings</code>. Nota: il path radice è dedotto dal nome del GameObject (schermata di tipo menu/popup, non raggiungibile dalla battaglia) e non è stato verificato risalendo la gerarchia della scena live — da confermare al primo avvio reale. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

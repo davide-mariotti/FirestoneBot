@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Mercante Esotico</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Mercante Esotico</div>
+  <h1>🐫 Mercante Esotico</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Radice: <code>ExoticMerchant</code> (script <code>ExoticMerchantViewController</code>), risulta <strong>inattiva di default</strong> nel prefab: è un popup a schermo intero attivato quando il giocatore apre il Mercante Esotico dalla città. Dump sorgente: 493 nodi, 56 componenti Button.</p>
+</header>
+<main>
+
+<section>
+  <h2>Sfondo e personaggio</h2>
+  <p class="region-path">Path: <code>bg/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/bgUp, bg/bgDown</td><td>Image</td><td>Sfondo statico (cielo/terreno) della bancarella.</td></tr>
+      <tr><td class="path">bg/bgTile</td><td>Image + MenuVfxEntityComponent</td><td>Texture di terreno ripetuta, con effetto parallax/vfx.</td></tr>
+      <tr><td class="path">bg/bgElements/mountain, cloud×6, tree×3, shop, barrel, rock×3</td><td>Image + MenuVfxEntityComponent</td><td>×15 elementi decorativi di scenario (montagna, nuvole, alberi, baracca, barile, rocce), con parallax/vfx ma non cliccabili.</td></tr>
+      <tr><td class="path">bg/exoticMerchantSpine</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Il personaggio animato (Spine) del Mercante Esotico sullo sfondo; toccarlo probabilmente avvia una battuta/animazione di reazione, nessuna funzione di gioco nota.</td></tr>
+      <tr><td class="path">bg/exoticMerchantSpine/exoticMerchantSpine</td><td>Spine.Unity.SkeletonGraphic + MenuVfxEntityComponent</td><td>Skeleton animato del personaggio (grafica figlia del bottone sopra).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Offerta di sblocco unità</h2>
+  <p class="region-path">Path: <code>unlockOfferButton/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Offerta a tempo per sbloccare un'unità/meccanismo (<code>UnlockOfferButtonInteraction</code>, <code>ButtonOnHoverActions</code>). Non risulta disattivato di default nel dump, ma è verosimile che sia visibile solo quando un'offerta è effettivamente attiva — verificare dal vivo.</td></tr>
+      <tr><td class="path">unlockOfferButton/unlockMechanismSpine</td><td>Spine.Unity.SkeletonGraphic + MenuVfxEntityComponent</td><td>Animazione del meccanismo/macchinario legato all'offerta.</td></tr>
+      <tr><td class="path">unlockOfferButton/unlockUnitSpine</td><td>Spine.Unity.SkeletonGraphic + MenuVfxEntityComponent</td><td>Animazione dell'unità offerta in sblocco.</td></tr>
+      <tr><td class="path">unlockOfferButton/canvasGroup</td><td>CanvasGroup</td><td>Contenitore per dissolvenze in ingresso/uscita dell'offerta.</td></tr>
+      <tr><td class="path">unlockOfferButton/canvasGroup/unitIcon</td><td>Image</td><td>Icona dell'unità offerta.</td></tr>
+      <tr><td class="path">unlockOfferButton/canvasGroup/time</td><td><span class="tag tag-txt">testo</span></td><td>Countdown testuale del tempo rimanente per l'offerta.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Contatore valuta (Monete Esotiche)</h2>
+  <p class="region-path">Path: <code>counters/counterInteraction/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore valuta (<code>CounterInteraction</code> sul genitore); probabilmente apre il dettaglio/acquisto della valuta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stessa azione del bottone di sfondo.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale di valuta posseduta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato temporaneamente quando la valuta aumenta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone "Ottieni di più", nascosto di default: appare probabilmente solo quando la valuta scende sotto una soglia, per aprire l'acquisto. Ha un figlio <code>collider</code> (area di click estesa).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Chiusura schermata</h2>
+  <p class="region-path">Path: <code>closeButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata del Mercante Esotico (probabilmente torna alla città). Componente <code>ButtonAnimation</code> per feedback visivo al tap.</td></tr>
+      <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona "X" del bottone di chiusura.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra delle schede sottomenu</h2>
+  <p class="region-path">Path: <code>submenus/submenuButtons/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenus/submenuButtons/sellItems</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Vendi oggetti" (materiali in eccesso in cambio di Monete Esotiche); selezionata di default all'apertura.</td></tr>
+      <tr><td class="path">submenus/submenuButtons/upgrades</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Potenziamenti" (spesa delle Monete Esotiche su un albero di upgrade).</td></tr>
+      <tr><td class="path">submenus/submenuButtons/emblemMarket</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Mercato Emblemi" (acquisto forzieri per categoria). Mostra <code>lock</code> (overlay se non ancora sbloccata) e badge notifica in <code>notification/amountTMP</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Vendi oggetti (tab di default)</h2>
+  <p class="region-path">Path: <code>submenus/bg/sellItemsSubmenu/</code> — script <code>ExoticSellItemSubmenuViewController</code>, attivo di default (prima scheda).</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">darkBg</td><td>Image</td><td>Sfondo scuro/overlay del pannello sottomenu.</td></tr>
+      <tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della scheda ("Vendi oggetti"), localizzato (I2.Loc.Localize).</td></tr>
+      <tr><td class="path">Scroll View/Viewport/Content/head/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo introduttivo, localizzato.</td></tr>
+      <tr><td class="path">.../productGrid/exoticMerchantSellItem (0..2)</td><td>Image + ExoticSellItemInteraction <span class="note">×3 istanze</span></td><td>Riquadro di un materiale vendibile: nome (<code>itemName</code>), icona/rarità (<code>itemBg/icon</code>, <code>itemBg/itemFrame</code> — quest'ultimo con <code>ExoticSellItemTooltipInteraction</code>, probabile tooltip al tocco) e quantità posseduta (<code>itemBg/quantity</code>).</td></tr>
+      <tr><td class="path">.../exoticMerchantSellItem (N)/sellButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Vende il materiale: mostra la quantità venduta (<code>sellQuantity</code>) e la ricompensa in Monete Esotiche (<code>exoticCoinIcon</code> + <code>costText</code>).</td></tr>
+      <tr><td class="path">changeQuantityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità di vendita per operazione (probabile ciclo tra x1/x10/max); testo etichetta in <code>text</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Potenziamenti</h2>
+  <p class="region-path">Path: <code>submenus/bg/upgradesSubmenu/</code> — script <code>ExoticUpgradesSubmenuViewController</code>, nodo <strong>inattivo di default</strong> (visibile selezionando la relativa scheda).</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenuTitle, darkBg</td><td><span class="tag tag-txt">testo</span> / Image</td><td>Titolo scheda e sfondo scuro del pannello.</td></tr>
+      <tr><td class="path">navigation/goBackTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'albero di potenziamenti precedente. Componente <code>RepeatAction</code>: probabile ripetizione tenendo premuto. Figlio <code>collider</code> per area di click estesa.</td></tr>
+      <tr><td class="path">navigation/currentTreeText</td><td><span class="tag tag-txt">testo</span></td><td>Nome/indice dell'albero di potenziamenti corrente.</td></tr>
+      <tr><td class="path">navigation/goForthTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'albero di potenziamenti successivo, stesso pattern di <code>goBackTree</code>.</td></tr>
+      <tr><td class="path">upgradesScrollView/Viewport/Content/head/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo introduttivo dell'albero, localizzato.</td></tr>
+      <tr><td class="path">.../upgradesList/exoticMerchantUpgrade (0..11)</td><td>Image + ExoticUpgradesInteraction <span class="note">×12 istanze</span></td><td>Riquadro di un singolo potenziamento: nome (<code>upgradeName</code>), icona (<code>upgradeIcon</code>), livello attuale (<code>level</code>), descrizioni (<code>description</code>, <code>effectDesc</code>) e confronto effetto attuale→prossimo (<code>effectLayout/currentEffect</code>, <code>arrowIcon</code>, <code>nextEffect</code>).</td></tr>
+      <tr><td class="path">.../exoticMerchantUpgrade (N)/upgradeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il potenziamento: quantità/livelli acquistabili (<code>upgradeQuantity</code>) e costo (<code>currencyIcon</code> + <code>costText</code>).</td></tr>
+      <tr><td class="path">.../exoticMerchantUpgrade (N)/reachLevelText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Testo alternativo mostrato quando il potenziamento richiede di raggiungere un certo livello prima di essere disponibile.</td></tr>
+      <tr><td class="path">.../exoticMerchantUpgrade (N)/maxLevelText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Testo alternativo mostrato quando il potenziamento ha raggiunto il livello massimo.</td></tr>
+      <tr><td class="path">changeQuantityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la quantità di acquisto per operazione, stesso pattern del sottomenu "Vendi oggetti".</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Mercato Emblemi</h2>
+  <p class="region-path">Path: <code>submenus/bg/emblemMarketSubmenu/</code> — script <code>ExoticEmblemMarketSubmenuViewController</code>, nodo <strong>inattivo di default</strong>.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">darkBg, submenuTitle</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Sfondo scuro del pannello e titolo scheda.</td></tr>
+      <tr><td class="path">emblemMarketInfoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo sul Mercato Emblemi (<code>HolydayStudios.InfoButtonAnimation</code>); grafica animata in <code>spineInfo</code>.</td></tr>
+      <tr><td class="path">categoryButtons/gear</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Categoria "Equipaggiamento"; selezionata di default. Badge notifica in <code>notification/amountTMP</code> (con campanella animata <code>bell</code>).</td></tr>
+      <tr><td class="path">categoryButtons/jewels</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Categoria "Gioielli", stesso pattern di badge notifica.</td></tr>
+      <tr><td class="path">categoryButtons/celestials</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Categoria "Celestiali"; a differenza delle altre ha un overlay <code>lock</code>, probabile categoria sbloccabile con la progressione. Stesso badge notifica.</td></tr>
+      <tr><td class="path">categories/gearCategory/.../productGrid/exoticMerchantEmblemGearChest (0..3)</td><td>Image + ExoticEmblemMarketGearChestInteraction <span class="note">×4 istanze</span></td><td>Contenuto della categoria "Equipaggiamento" (attiva di default, nodo non marcato inattivo). Forziere acquistabile: nome (<code>chestName</code>), icona (<code>gearChest</code>) con bottone info (<code>chestInteraction/infoButton</code>, <code>GearChestInfoInteraction</code>) e quantità posseduta (<code>quantity</code>).</td></tr>
+      <tr><td class="path">.../exoticMerchantEmblemGearChest (N)/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il forziere: costo in <code>costText</code> + <code>currencyIcon</code>.</td></tr>
+      <tr><td class="path">categories/jewelsCategory</td><td><span class="tag tag-off">inattivo</span></td><td>Categoria "Gioielli", nascosta finché non selezionata. Stessa struttura di <code>gearCategory</code>: <code>exoticMerchantEmblemJewelChest (0..3)</code> ×4 istanze, con <code>JewelChestInfoInteraction</code> / <code>ExoticEmblemMarketJewelChestInteraction</code> e bottone <code>purchaseButton</code>.</td></tr>
+      <tr><td class="path">categories/celestialsCategory</td><td><span class="tag tag-off">inattivo</span></td><td>Categoria "Celestiali", nascosta finché non selezionata. Stessa struttura: <code>exoticMerchantEmblemCelestialChest (0..3)</code> ×4 istanze, con <code>CelestialChestInfoInteraction</code> / <code>ExoticEmblemMarketCelestialChestInteraction</code> e bottone <code>purchaseButton</code>.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ExoticMerchant</code>. Nota: il path radice completo non è stato verificato risalendo la gerarchia della scena live — è dedotto per nome/contesto (popup di gestione raggiungibile dalla città, come confermato dal bottone <code>exoticMerchant</code> nella schermata <a href="TownIrongard.html">Città di Irongard</a>) dato che il dump è stato estratto staticamente a partire dal solo prefab. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

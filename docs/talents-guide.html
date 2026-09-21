@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone – Talent Tree Guide</title>
+<style>
+  :root {
+    --bg: #14161c;
+    --panel: #1d2029;
+    --border: #2c3040;
+    --text: #e8e9ee;
+    --muted: #9aa0b4;
+    --accent: #f2b84b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    padding: 24px 16px 60px;
+  }
+  h1 {
+    text-align: center;
+    margin: 0 0 4px;
+    font-size: 1.6rem;
+  }
+  .sub {
+    text-align: center;
+    color: var(--muted);
+    margin: 0 0 28px;
+    font-size: 0.9rem;
+  }
+  .sub a { color: var(--accent); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    max-width: 1100px;
+    margin: 0 auto 28px;
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    border: 1px solid var(--border);
+  }
+
+  .timeline {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--border);
+  }
+  .row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  .row::before {
+    content: "";
+    position: absolute;
+    left: -23px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--dot, var(--accent));
+    border: 2px solid var(--bg);
+  }
+  .lvl {
+    flex: 0 0 78px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .icon {
+    flex: 0 0 34px;
+    text-align: center;
+  }
+  .icon img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+  .legend .icon img { width: 20px; height: 20px; }
+  .name {
+    flex: 1;
+    font-size: 0.92rem;
+  }
+  .note {
+    display: block;
+    color: var(--muted);
+    font-size: 0.74rem;
+    margin-top: 1px;
+  }
+  .count {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+  }
+
+  .totals {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .totals h2 {
+    text-align: center;
+    font-size: 1.15rem;
+    margin-bottom: 14px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  td.icon-cell { width: 34px; font-size: 1.1rem; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --border: #e1e4ee;
+      --text: #1c1e26;
+      --muted: #6b7080;
+      --accent: #c9861f;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>🔥 Firestone — Progressione Talenti</h1>
+  <p class="sub">
+    Trascritta dalla guida Steam
+    <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2974944503" target="_blank" rel="noopener">"Talents" (id 2974944503)</a>.
+    Icone estratte dagli asset ufficiali del gioco (resources.assets). I numeri tra parentesi sono quelli riportati dalla guida originale, non ricalcolati.
+  </p>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="timeline" id="timeline"></div>
+
+  <div class="totals">
+    <h2>Totali per talento (come riportati dalla guida)</h2>
+    <table>
+      <thead><tr><th></th><th>Talento</th><th class="num">Punti citati</th></tr></thead>
+      <tbody id="totalsBody"></tbody>
+    </table>
+  </div>
+
+<script>
+// Ogni voce: range di livelli, nome talento, punti citati dalla guida, icona, colore categoria.
+const DATA = [
+  { lvl: "1-9",     name: "All main attributes",              pts: 9,  icon: "icons/all-main-attributes.png", color: "#4fc3f7" },
+  { lvl: "10",      name: "Leadership",                        pts: 1,  icon: "icons/leadership.png", color: "#ba68c8" },
+  { lvl: "11",      name: "Leader — Auto Abilities",            pts: 1,  icon: "icons/leader-auto-abilities.png", color: "#90a4ae", note: "massimo 1" },
+  { lvl: "12-15",   name: "All main attributes",               pts: 13, icon: "icons/all-main-attributes.png", color: "#4fc3f7", note: "ritorno" },
+  { lvl: "16-20",   name: "Trainer Skills",                     pts: 5,  icon: "icons/trainer-skills.png", color: "#81c784" },
+  { lvl: "21",      name: "Party — Auto Abilities",             pts: 1,  icon: "icons/party-auto-abilities.png", color: "#90a4ae", note: "massimo 1" },
+  { lvl: "22-29",   name: "Trainer Skills",                     pts: 13, icon: "icons/trainer-skills.png", color: "#81c784", note: "ritorno" },
+  { lvl: "30",      name: "Critical damage",                    pts: 1,  icon: "icons/critical-damage.png", color: "#e57373" },
+  { lvl: "31-50",   name: "Meteorite hunter",                   pts: 20, icon: "icons/meteorite-hunter.png", color: "#ffb74d", note: "massimo" },
+  { lvl: "51-57",   name: "Trainer Skills",                     pts: 19, icon: "icons/trainer-skills.png", color: "#81c784", note: "ritorno, massimo" },
+  { lvl: "58",      name: "Powerless boss",                     pts: 1,  icon: "icons/powerless-boss.png", color: "#a1887f" },
+  { lvl: "59",      name: "Expose Weakness",                    pts: 1,  icon: "icons/expose-weakness.png", color: "#f06292" },
+  { lvl: "60",      name: "Ancient Knowledge",                  pts: 1,  icon: "icons/ancient-knowledge.png", color: "#ffd54f" },
+  { lvl: "61-65",   name: "Raining gold",                       pts: 5,  icon: "icons/raining-gold.png", color: "#ffca28", note: "massimo" },
+  { lvl: "66-70",   name: "Coworkers",                          pts: 5,  icon: "icons/coworkers.png", color: "#4db6ac", note: "massimo" },
+  { lvl: "71-76",   name: "Trainer Skills",                     pts: 25, icon: "icons/trainer-skills.png", color: "#81c784", note: "ritorno, massimo" },
+  { lvl: "77-92",   name: "Librarian",                          pts: 25, icon: "icons/librarian.png", color: "#7986cb", note: "avanza, massimo" },
+  { lvl: "93-98",   name: "Expeditioner",                       pts: 6,  icon: "icons/expeditioner.png", color: "#4dd0e1" },
+  { lvl: "99",      name: "Twin dragons",                       pts: 1,  icon: "icons/twin-dragons.png", color: "#ef5350" },
+  { lvl: "100",     name: "Critical chance",                    pts: 1,  icon: "icons/critical-chance.png", color: "#ff8a65" },
+  { lvl: "101-115", name: "Battle cry",                         pts: 15, icon: "icons/battle-cry.png", color: "#9575cd" },
+  { lvl: "116-130", name: "Expeditioner",                       pts: 20, icon: "icons/expeditioner.png", color: "#4dd0e1", note: "ritorno, massimo" },
+  { lvl: "131-139", name: "Twin dragons",                       pts: 10, icon: "icons/twin-dragons.png", color: "#ef5350", note: "avanza, massimo" },
+  { lvl: "140-159", name: "Ancient Knowledge",                  pts: 20, icon: "icons/ancient-knowledge.png", color: "#ffd54f", note: "ritorno, massimo" },
+  { lvl: "160",     name: "Critical damage",                    pts: 1,  icon: "icons/critical-damage.png", color: "#e57373", note: "dopo Battle cry" },
+  { lvl: "161",     name: "Powerless boss",                     pts: 1,  icon: "icons/powerless-boss.png", color: "#a1887f" },
+  { lvl: "162-187", name: "Alchemy",                             pts: 25, icon: "icons/alchemy.png", color: "#66bb6a", note: "massimo" },
+  { lvl: "188",     name: "Expose Weakness",                    pts: 1,  icon: "icons/expose-weakness.png", color: "#f06292", note: "dopo Alchemy" },
+  { lvl: "189-200", name: "All main attributes",                pts: 25, icon: "icons/all-main-attributes.png", color: "#4fc3f7", note: "torna all'inizio, massimo" },
+  { lvl: "201-224", name: "Leadership",                         pts: 25, icon: "icons/leadership.png", color: "#ba68c8", note: "riga sotto, massimo" },
+  { lvl: "225-249", name: "All main attributes",                pts: 25, icon: "icons/all-main-attributes.png", color: "#4fc3f7", note: "dopo Alchemy, massimo" },
+  { lvl: "250-275", name: "Leadership",                         pts: 25, icon: "icons/leadership.png", color: "#ba68c8", note: "massimo" },
+  { lvl: "276-300", name: "Team bonus",                         pts: 25, icon: "icons/team-bonus.png", color: "#26a69a", note: "torna all'inizio, massimo" },
+  { lvl: "301-315", name: "Twin dragons",                       pts: 15, icon: "icons/twin-dragons.png", color: "#ef5350", note: "riga sotto, massimo" },
+  { lvl: "316-340", name: "Team bonus",                         pts: 25, icon: "icons/team-bonus.png", color: "#26a69a", note: "riga sotto, massimo" },
+  { lvl: "341-350", name: "Critical damage / Critical chance",  pts: 11, icon: "icons/critical-damage.png", color: "#e57373", note: "scelta libera" },
+  { lvl: "351-375", name: "Librarian",                          pts: 25, icon: "icons/librarian.png", color: "#7986cb", note: "massimo" },
+  { lvl: "376-400", name: "Alchemy",                             pts: 25, icon: "icons/alchemy.png", color: "#66bb6a", note: "massimo" },
+  { lvl: "401-415", name: "Battle cry",                         pts: 15, icon: "icons/battle-cry.png", color: "#9575cd" },
+];
+
+const timeline = document.getElementById("timeline");
+DATA.forEach(d => {
+  const row = document.createElement("div");
+  row.className = "row";
+  row.style.setProperty("--dot", d.color);
+  row.innerHTML = `
+    <div class="lvl">Lv ${d.lvl}</div>
+    <div class="icon"><img src="${d.icon}" alt="${d.name}" loading="lazy"></div>
+    <div class="name">${d.name}${d.note ? `<span class="note">${d.note}</span>` : ""}</div>
+    <div class="count" style="border:1px solid ${d.color}66">${d.pts}</div>
+  `;
+  timeline.appendChild(row);
+});
+
+// legenda: icona per talento univoco
+const seen = new Map();
+DATA.forEach(d => { if (!seen.has(d.name)) seen.set(d.name, d); });
+const legend = document.getElementById("legend");
+seen.forEach(d => {
+  const s = document.createElement("span");
+  s.style.borderColor = d.color + "88";
+  s.innerHTML = `<span class="icon"><img src="${d.icon}" alt=""></span> ${d.name}`;
+  legend.appendChild(s);
+});
+
+// totali per nome talento (somma dei valori citati dalla guida, non ricalcolati)
+const totals = new Map();
+DATA.forEach(d => {
+  const prev = totals.get(d.name) || { pts: 0, icon: d.icon };
+  totals.set(d.name, { pts: prev.pts + d.pts, icon: d.icon });
+});
+const tbody = document.getElementById("totalsBody");
+[...totals.entries()].sort((a, b) => b[1].pts - a[1].pts).forEach(([name, v]) => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td class="icon-cell"><img src="${v.icon}" alt="" style="width:22px;height:22px;object-fit:contain;display:block"></td><td>${name}</td><td class="num">${v.pts}</td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

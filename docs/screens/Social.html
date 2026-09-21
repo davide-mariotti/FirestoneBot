@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Sociale (Chat)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Sociale (Chat)</div>
+  <h1>💬 Sociale (Chat)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice e overlay generali</h2>
+  <p class="region-path">Path relativo: <code>(radice)</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">(radice) — Social</td><td><span class="tag tag-off">inattivo</span> controller</td><td>Root della schermata. <code>SocialViewController</code> + <code>ChatSubmenusViewController</code> gestiscono l'apertura dei sottomenu (mondo, gilda, fratellanza, privati, amici, silenziati). Nel prefab risulta disattiva di default: viene attivata quando il giocatore apre la scheda Sociale.</td></tr>
+    <tr><td class="path">background</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile a tutto schermo dietro ai pannelli; pattern tipico per chiudere l'overlay toccando fuori dai contenuti.</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Sociale.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>Image (icona)</td><td>Icona del pulsante di chiusura.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tab dei sottomenu — versione mobile (attiva di default)</h2>
+  <p class="region-path">Path relativo: <code>submenuButtonsMobile/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenuButtonsMobile</td><td>GridLayoutGroup</td><td>Contenitore a griglia dei pulsanti-tab, layout mobile.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/world</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu chat "Mondo".</td></tr>
+    <tr><td class="path">submenuButtonsMobile/world/icon</td><td>Image (icona)</td><td>Icona del tab Mondo.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/world/notification</td><td>Image + NotificationAnimation</td><td>Badge animato dei messaggi non letti nel canale Mondo.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/world/notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione Spine della campanella di notifica.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/world/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di notifiche non lette nel canale Mondo.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/guild</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu chat di Gilda.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/guild/icon</td><td>Image (icona)</td><td>Icona del tab Gilda.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/guild/lock</td><td>Image (icona)</td><td>Icona lucchetto: il tab risulta bloccato finché il giocatore non entra/sblocca una gilda.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/guild/notification</td><td>Image + NotificationAnimation</td><td>Badge animato notifiche gilda.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/guild/notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione Spine della campanella.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/guild/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di notifiche non lette del canale Gilda.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/fellowship</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Fellowship" (funzione non chiara dal nome con certezza, probabile gruppo/alleanza minore rispetto alla gilda; verificare dal vivo).</td></tr>
+    <tr><td class="path">submenuButtonsMobile/fellowship/icon</td><td>Image (icona)</td><td>Icona del tab Fellowship.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/fellowship/lock</td><td>Image (icona)</td><td>Icona lucchetto: tab bloccato finché la feature non è sbloccata.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/fellowship/notification</td><td>Image + NotificationAnimation</td><td>Badge animato notifiche fellowship.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/fellowship/notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione Spine della campanella.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/fellowship/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di notifiche non lette della fellowship.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/private</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu messaggi privati.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/private/icon</td><td>Image (icona)</td><td>Icona del tab Privati.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/private/notification</td><td>Image + NotificationAnimation</td><td>Badge animato messaggi privati non letti.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/private/notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione Spine della campanella.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/private/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di messaggi privati non letti.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/friendList</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu lista amici.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/friendList/icon</td><td>Image (icona)</td><td>Icona del tab Amici.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/friendList/notification</td><td>Image + NotificationAnimation</td><td>Badge animato (probabili richieste di amicizia in sospeso).</td></tr>
+    <tr><td class="path">submenuButtonsMobile/friendList/notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione Spine della campanella.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/friendList/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di notifiche relative agli amici.</td></tr>
+    <tr><td class="path">submenuButtonsMobile/muteList</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la lista degli utenti silenziati (mute).</td></tr>
+    <tr><td class="path">submenuButtonsMobile/muteList/icon</td><td>Image (icona)</td><td>Icona del tab Silenziati.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tab dei sottomenu — versione desktop (inattiva di default)</h2>
+  <p class="region-path">Path relativo: <code>submenuButtons/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenuButtons</td><td><span class="tag tag-off">inattivo</span> GridLayoutGroup</td><td>Variante desktop degli stessi tab presenti in <code>submenuButtonsMobile</code> (world/guild/fellowship/private/friendList/muteList, con gli stessi sotto-nodi icon/lock/notification/bell/amountTMP). Risulta disattiva nel prefab: probabilmente attivata dal codice in base alla piattaforma/risoluzione rilevata a runtime, al posto della variante mobile.</td></tr>
+  </table>
+  <p class="note">Struttura interna identica, nodo per nodo, alla sezione "versione mobile" sopra (stessi nomi world/guild/fellowship/private/friendList/muteList e stessi figli icon, lock, notification, notification/bell, notification/amountTMP) — non ripetuta qui per brevità.</p>
+</section>
+
+<section>
+  <h2>Pannello chat principale (chatMain)</h2>
+  <p class="region-path">Path relativo: <code>submenus/chatMain/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenus/submenusBg</td><td>Image</td><td>Sfondo comune dietro ai pannelli dei sottomenu.</td></tr>
+    <tr><td class="path">submenus</td><td>Image</td><td>Contenitore principale dei pannelli: chatMain, muteList, friendList, privateMessages, chatChannels.</td></tr>
+    <tr><td class="path">submenus/chatMain</td><td>contenitore (nessun componente)</td><td>Raggruppa la barra superiore della chat (canale, stato connessione, utenti online, selezione stanza) e la barra di digitazione messaggio.</td></tr>
+    <tr><td class="path">submenus/chatMain/channelName</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Nome del canale chat correntemente selezionato.</td></tr>
+    <tr><td class="path">submenus/chatMain/connectedState</td><td>contenitore (nessun componente)</td><td>Raggruppa icona e testo dello stato di connessione alla chat.</td></tr>
+    <tr><td class="path">submenus/chatMain/connectedState/connectedIcon</td><td>Image (icona)</td><td>Icona dello stato di connessione (es. connesso/disconnesso).</td></tr>
+    <tr><td class="path">submenus/chatMain/connectedState/connectedText</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Etichetta testuale dello stato di connessione.</td></tr>
+    <tr><td class="path">submenus/chatMain/onlineUsers</td><td>contenitore (nessun componente)</td><td>Raggruppa icona e numero di utenti online.</td></tr>
+    <tr><td class="path">submenus/chatMain/onlineUsers/userIcon</td><td>Image (icona)</td><td>Icona utente/i.</td></tr>
+    <tr><td class="path">submenus/chatMain/onlineUsers/number</td><td><span class="tag tag-txt">testo</span></td><td>Numero di utenti attualmente online nel canale.</td></tr>
+    <tr><td class="path">submenus/chatMain/selectRoom</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la selezione della stanza/canale chat.</td></tr>
+    <tr><td class="path">submenus/chatMain/selectRoom/icon</td><td>Image (icona)</td><td>Icona del pulsante di selezione stanza.</td></tr>
+    <tr><td class="path">submenus/chatMain/selectRoom/roomsText</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Nome della stanza/canale attualmente selezionata.</td></tr>
+    <tr><td class="path">submenus/chatMain/userInPrivate</td><td><span class="tag tag-off">inattivo</span> contenitore</td><td>Visibile solo quando l'utente sta chattando in una conversazione privata specifica; sostituisce le info di canale con quelle dell'interlocutore.</td></tr>
+    <tr><td class="path">submenus/chatMain/userInPrivate/connectedIcon</td><td>Image (icona)</td><td>Icona di stato connessione dell'interlocutore privato.</td></tr>
+    <tr><td class="path">submenus/chatMain/userInPrivate/flagIcon</td><td>Image (icona)</td><td>Icona bandiera (lingua/regione) dell'interlocutore.</td></tr>
+    <tr><td class="path">submenus/chatMain/userInPrivate/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'utente con cui si sta chattando in privato.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage</td><td>contenitore (nessun componente)</td><td>Barra inferiore per digitare e inviare un messaggio.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/inputField</td><td>TMP_InputField</td><td>Campo di testo dove il giocatore scrive il messaggio da inviare.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/inputField/Text Area</td><td>RectMask2D</td><td>Maschera di ritaglio standard del componente TMP_InputField.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/inputField/Text Area/Placeholder</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Testo segnaposto mostrato quando il campo è vuoto (es. "Scrivi un messaggio...").</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/inputField/Text Area/Text</td><td><span class="tag tag-txt">testo</span></td><td>Testo effettivamente digitato dal giocatore.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/inputField/charCount</td><td><span class="tag tag-txt">testo</span></td><td>Contatore caratteri digitati, verosimilmente rispetto a un limite massimo per messaggio.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/inputField/roomName</td><td><span class="tag tag-txt">testo</span></td><td>Nome della stanza/canale a cui verrà inviato il messaggio.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/sendMessageButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Invia il messaggio digitato nel campo di testo.</td></tr>
+    <tr><td class="path">submenus/chatMain/typeMessage/emojiButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il popup di selezione emoji.</td></tr>
+    <tr><td class="path">submenus/chatMain/emojiPopup</td><td>controller</td><td>Popup di selezione emoji, gestito dallo script <code>EmojiSubmenuViewController</code>.</td></tr>
+    <tr><td class="path">submenus/chatMain/emojiPopup/collider</td><td>Image</td><td>Area/sfondo dietro alla griglia emoji; non ha un componente Button proprio, quindi la chiusura al tocco esterno (se presente) è gestita da script, non verificabile dal solo dump statico.</td></tr>
+    <tr><td class="path">submenus/chatMain/emojiPopup/close</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup emoji.</td></tr>
+    <tr><td class="path">submenus/chatMain/emojiPopup/close/icon</td><td>Image (icona)</td><td>Icona del pulsante di chiusura popup emoji.</td></tr>
+    <tr><td class="path">submenus/chatMain/emojiPopup/grid</td><td>GridLayoutGroup</td><td>Griglia dei pulsanti emoji selezionabili.</td></tr>
+    <tr><td class="path">submenus/chatMain/emojiPopup/grid/emoji0 … emoji14</td><td><span class="tag tag-btn">BOTTONE</span> ×15</td><td>15 pulsanti emoji (slot 0-14); ognuno inserisce la relativa emoji nel messaggio in digitazione. Ogni emoji ha un figlio interno <code>TMP SubMeshUI [TextMeshPro/Sprite]</code> generato automaticamente da TextMeshPro per il rendering multi-atlas (non interattivo, omesso da questa tabella).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Lista utenti silenziati (submenus/muteList, inattivo di default)</h2>
+  <p class="region-path">Path relativo: <code>submenus/muteList/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenus/muteList</td><td><span class="tag tag-off">inattivo</span> controller</td><td>Pannello "Lista silenziati" (<code>MuteListSubmenuViewController</code>), visibile solo quando si apre il tab muteList.</td></tr>
+    <tr><td class="path">submenus/muteList/muteListTitle</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Titolo del pannello.</td></tr>
+    <tr><td class="path">submenus/muteList/muteListCount</td><td><span class="tag tag-txt">testo</span></td><td>Conteggio degli utenti silenziati.</td></tr>
+    <tr><td class="path">submenus/muteList/muteScroll</td><td>ScrollRect</td><td>Area scorrevole della lista utenti silenziati.</td></tr>
+    <tr><td class="path">submenus/muteList/muteScroll/Viewport</td><td>RectMask2D</td><td>Maschera di ritaglio dell'area scrollabile.</td></tr>
+    <tr><td class="path">submenus/muteList/muteScroll/Viewport/grid</td><td>GridLayoutGroup + ContentSizeFitter</td><td>Contenitore dinamico delle righe utente; nel prefab statico non è presente una riga template, viene popolato interamente a runtime.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Lista amici (submenus/friendList, inattivo di default)</h2>
+  <p class="region-path">Path relativo: <code>submenus/friendList/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenus/friendList</td><td><span class="tag tag-off">inattivo</span> controller</td><td>Pannello "Lista amici" (<code>FriendListSubmenuViewController</code>).</td></tr>
+    <tr><td class="path">submenus/friendList/title</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Titolo del pannello.</td></tr>
+    <tr><td class="path">submenus/friendList/emptyList</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Messaggio mostrato quando la lista amici è vuota.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons</td><td>GridLayoutGroup</td><td>Tab interni del pannello amici: lista amici / richieste in arrivo / richieste inviate.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendList</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra la lista amici (tab predefinito).</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendList/icon</td><td>Image (icona)</td><td>Icona del tab.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendRequestsIncoming</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra le richieste di amicizia ricevute.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendRequestsIncoming/icon</td><td>Image (icona)</td><td>Icona del tab.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendRequestsIncoming/notification</td><td>Image + NotificationAnimation</td><td>Badge animato con il numero di richieste in arrivo.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendRequestsIncoming/notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione Spine della campanella.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendRequestsIncoming/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di richieste di amicizia in arrivo non lette.</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendRequestsOutcoming</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra le richieste di amicizia inviate (nome del nodo così nel prefab, refuso di "Outgoing").</td></tr>
+    <tr><td class="path">submenus/friendList/submenuButtons/friendRequestsOutcoming/icon</td><td>Image (icona)</td><td>Icona del tab.</td></tr>
+    <tr><td class="path">submenus/friendList/friendListBg</td><td>Image</td><td>Sfondo del pannello lista amici.</td></tr>
+    <tr><td class="path">.../friendListBg/scrollView</td><td>ScrollRect</td><td>Area scorrevole della lista amici.</td></tr>
+    <tr><td class="path">.../scrollView/viewport</td><td>RectMask2D</td><td>Maschera di ritaglio dell'area scrollabile.</td></tr>
+    <tr><td class="path">.../viewport/friendList</td><td>VerticalLayoutGroup + ContentSizeFitter</td><td>Contenitore verticale delle righe amico, popolato a runtime.</td></tr>
+    <tr><td class="path">.../friendList/friend (0)</td><td>FriendInteraction</td><td>Riga-template di un amico (indice 0, presente nel prefab come istanza di esempio/pool). Script <code>FriendInteraction</code> gestisce l'interazione con la riga.</td></tr>
+    <tr><td class="path">.../friend (0)/memberBg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riga cliccabile dell'amico; funzione precisa non certa dal nome (probabile apertura dettaglio/profilo), verificare dal vivo.</td></tr>
+    <tr><td class="path">.../memberBg/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar del giocatore, cliccabile (<code>PlayerAvatarInteraction</code>) — apre probabilmente il profilo/scheda del giocatore.</td></tr>
+    <tr><td class="path">.../playerAvatar/avatarIcon</td><td>Image (icona)</td><td>Immagine dell'avatar dell'amico.</td></tr>
+    <tr><td class="path">.../memberBg/flagIcon</td><td>Image (icona)</td><td>Icona bandiera (lingua/regione) dell'amico.</td></tr>
+    <tr><td class="path">.../memberBg/connectedIcon</td><td>Image (icona)</td><td>Icona stato online/offline dell'amico.</td></tr>
+    <tr><td class="path">.../memberBg/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'amico.</td></tr>
+    <tr><td class="path">.../memberBg/characterLevelBg</td><td>Image</td><td>Sfondo del badge livello personaggio.</td></tr>
+    <tr><td class="path">.../characterLevelBg/characterLevel</td><td><span class="tag tag-txt">testo</span></td><td>Livello del personaggio dell'amico.</td></tr>
+    <tr><td class="path">.../friend (0)/friend</td><td>contenitore (nessun componente)</td><td>Raggruppa i pulsanti di azione rapida sulla riga (messaggio, rimuovi).</td></tr>
+    <tr><td class="path">.../friend (0)/friend/message</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat privata con l'amico.</td></tr>
+    <tr><td class="path">.../friend/message/icon</td><td>Image (icona)</td><td>Icona del pulsante messaggio.</td></tr>
+    <tr><td class="path">.../friend (0)/friend/remove</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Rimuove l'amico dalla lista.</td></tr>
+    <tr><td class="path">.../friend/remove/icon</td><td>Image (icona)</td><td>Icona del pulsante rimuovi.</td></tr>
+    <tr><td class="path">.../friend (0)/friendRequestIncoming</td><td><span class="tag tag-off">inattivo</span> contenitore</td><td>Sostituisce la riga normale quando l'elemento è una richiesta di amicizia in arrivo.</td></tr>
+    <tr><td class="path">.../friendRequestIncoming/accept</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Accetta la richiesta di amicizia.</td></tr>
+    <tr><td class="path">.../accept/icon</td><td>Image (icona)</td><td>Icona del pulsante accetta.</td></tr>
+    <tr><td class="path">.../friendRequestIncoming/reject</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Rifiuta la richiesta di amicizia.</td></tr>
+    <tr><td class="path">.../reject/icon</td><td>Image (icona)</td><td>Icona del pulsante rifiuta.</td></tr>
+    <tr><td class="path">.../friend (0)/friendRequestOutgoing</td><td><span class="tag tag-off">inattivo</span> contenitore</td><td>Sostituisce la riga normale per le richieste di amicizia inviate, in attesa di risposta.</td></tr>
+    <tr><td class="path">.../friendRequestOutgoing/revoke</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Annulla/revoca la richiesta di amicizia inviata.</td></tr>
+    <tr><td class="path">.../revoke/icon</td><td>Image (icona)</td><td>Icona del pulsante revoca.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Messaggi privati (submenus/privateMessages, inattivo di default)</h2>
+  <p class="region-path">Path relativo: <code>submenus/privateMessages/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenus/privateMessages</td><td><span class="tag tag-off">inattivo</span> controller</td><td>Pannello "Messaggi privati" (<code>PrivateMessagesSubmenuViewController</code>), elenco delle conversazioni private.</td></tr>
+    <tr><td class="path">submenus/privateMessages/title</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Titolo del pannello.</td></tr>
+    <tr><td class="path">submenus/privateMessages/emptyList</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Messaggio mostrato quando non ci sono conversazioni private.</td></tr>
+    <tr><td class="path">submenus/privateMessages/conversationsBg</td><td>Image</td><td>Sfondo del pannello.</td></tr>
+    <tr><td class="path">.../conversationsBg/scrollView</td><td>ScrollRect</td><td>Area scorrevole delle conversazioni.</td></tr>
+    <tr><td class="path">.../scrollView/viewport</td><td>RectMask2D</td><td>Maschera di ritaglio dell'area scrollabile.</td></tr>
+    <tr><td class="path">.../viewport/conversationList</td><td>VerticalLayoutGroup + ContentSizeFitter</td><td>Contenitore verticale delle anteprime conversazione, popolato a runtime.</td></tr>
+    <tr><td class="path">.../conversationList/conversationPreview (0)</td><td>ConversationPreviewInteraction</td><td>Riga-template di anteprima conversazione (indice 0, esempio/pool nel prefab).</td></tr>
+    <tr><td class="path">.../conversationPreview (0)/memberBg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riga cliccabile: apre la conversazione privata con questo utente.</td></tr>
+    <tr><td class="path">.../memberBg/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar dell'interlocutore, cliccabile (<code>PlayerAvatarInteraction</code>).</td></tr>
+    <tr><td class="path">.../playerAvatar/avatarIcon</td><td>Image (icona)</td><td>Immagine avatar.</td></tr>
+    <tr><td class="path">.../memberBg/characterLevelBg</td><td>Image</td><td>Sfondo badge livello personaggio.</td></tr>
+    <tr><td class="path">.../characterLevelBg/characterLevel</td><td><span class="tag tag-txt">testo</span></td><td>Livello del personaggio dell'interlocutore.</td></tr>
+    <tr><td class="path">.../memberBg/connectedIcon</td><td>Image (icona)</td><td>Icona stato online/offline.</td></tr>
+    <tr><td class="path">.../memberBg/flagIcon</td><td>Image (icona)</td><td>Icona bandiera (lingua/regione).</td></tr>
+    <tr><td class="path">.../memberBg/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'interlocutore.</td></tr>
+    <tr><td class="path">.../memberBg/timeStamp</td><td><span class="tag tag-txt">testo</span></td><td>Orario dell'ultimo messaggio scambiato.</td></tr>
+    <tr><td class="path">.../memberBg/notification</td><td>Image + NotificationAnimation</td><td>Badge animato messaggi non letti in questa conversazione.</td></tr>
+    <tr><td class="path">.../notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione Spine della campanella.</td></tr>
+    <tr><td class="path">.../notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero di messaggi non letti in questa conversazione.</td></tr>
+    <tr><td class="path">.../memberBg/messagePreview</td><td><span class="tag tag-txt">testo</span></td><td>Anteprima testuale dell'ultimo messaggio scambiato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Elenco messaggi del canale (submenus/chatChannels, attivo di default)</h2>
+  <p class="region-path">Path relativo: <code>submenus/chatChannels/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenus/chatChannels</td><td>ScrollRect</td><td>Area scorrevole con i messaggi del canale chat correntemente selezionato (mondo/gilda/fellowship/privata).</td></tr>
+    <tr><td class="path">chatChannels/Viewport</td><td>RectMask2D</td><td>Maschera di ritaglio dell'area scrollabile.</td></tr>
+    <tr><td class="path">Viewport/grid</td><td>VerticalLayoutGroup + ContentSizeFitter</td><td>Contenitore verticale dei messaggi, popolato a runtime.</td></tr>
+    <tr><td class="path">grid/chatMessageView (0)</td><td>ChatMessageView</td><td>Riga-template di un singolo messaggio chat (indice 0, esempio/pool nel prefab).</td></tr>
+    <tr><td class="path">chatMessageView (0)/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar del mittente, cliccabile (<code>PlayerAvatarInteractionLevel</code>) — probabile apertura profilo/scheda del mittente.</td></tr>
+    <tr><td class="path">playerAvatar/avatarIcon</td><td>Image (icona)</td><td>Immagine avatar del mittente.</td></tr>
+    <tr><td class="path">playerAvatar/characterLevelBg</td><td>Image</td><td>Sfondo badge livello personaggio.</td></tr>
+    <tr><td class="path">characterLevelBg/characterLevel</td><td><span class="tag tag-txt">testo</span></td><td>Livello del personaggio del mittente.</td></tr>
+    <tr><td class="path">chatMessageView (0)/messageInfo</td><td>Image</td><td>Riga con le info del messaggio (bandiera, nome mittente, orario).</td></tr>
+    <tr><td class="path">messageInfo/flagIcon</td><td>Image (icona)</td><td>Icona bandiera (lingua/regione) del mittente.</td></tr>
+    <tr><td class="path">messageInfo/playerInfo</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nome del mittente, cliccabile — probabile apertura profilo o menzione/reply.</td></tr>
+    <tr><td class="path">messageInfo/timeStamp</td><td><span class="tag tag-txt">testo</span></td><td>Orario di invio del messaggio.</td></tr>
+    <tr><td class="path">chatMessageView (0)/messageBg</td><td>Image</td><td>Sfondo della bolla di messaggio.</td></tr>
+    <tr><td class="path">messageBg/message</td><td><span class="tag tag-txt">testo</span></td><td>Contenuto testuale del messaggio.</td></tr>
+    <tr><td class="path">messageBg/tick</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Icona di spunta, probabile indicatore di messaggio inviato/letto (funzione esatta non certa dal solo nome, verificare dal vivo).</td></tr>
+    <tr><td class="path">submenus/chatChannels/newMessages</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Pulsante "nuovi messaggi": porta in fondo alla chat; compare presumibilmente solo quando si è scrollato via dal fondo e arrivano nuovi messaggi.</td></tr>
+    <tr><td class="path">newMessages/text</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Etichetta del pulsante nuovi messaggi.</td></tr>
+    <tr><td class="path">newMessages/extendedArea</td><td>Image</td><td>Area/hitbox estesa del pulsante nuovi messaggi.</td></tr>
+    <tr><td class="path">submenus/chatChannels/mutedBg</td><td>Image</td><td>Banner mostrato quando l'utente è stato silenziato (mute) nel canale corrente, al posto della barra di digitazione.</td></tr>
+    <tr><td class="path">mutedBg/mutedDesc</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Descrizione dello stato di silenziamento.</td></tr>
+    <tr><td class="path">mutedBg/reasonDesc</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Etichetta "Motivo".</td></tr>
+    <tr><td class="path">mutedBg/reason</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Motivo del silenziamento.</td></tr>
+    <tr><td class="path">mutedBg/expirationDesc</td><td><span class="tag tag-txt">testo</span> (localizzato)</td><td>Etichetta "Scadenza".</td></tr>
+    <tr><td class="path">mutedBg/expirationTime</td><td><span class="tag tag-txt">testo</span></td><td>Data/ora di scadenza del silenziamento.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Social</code>. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+  <p class="note">Nota: il path radice completo sopra è dedotto solo dal nome del GameObject e dalla natura del contenuto (chat/gilda/amici, tipico di un menu principale), non risalendo la gerarchia della scena live — non è stato possibile confermarlo con certezza. Verificare via Explorer/inspector a gioco avviato se serve un selettore Unity affidabile. 16 nodi puramente decorativi (<code>TMP SubMeshUI [TextMeshPro/Sprite]</code>, generati automaticamente da TextMeshPro sotto emojiButton ed emoji0-14) sono stati omessi dalle tabelle perché privi di componenti utili all'automazione.</p>
+</footer>
+</body>
+</html>

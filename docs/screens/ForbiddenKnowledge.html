@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Conoscenza Proibita</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Conoscenza Proibita</div>
+  <h1>📜 Conoscenza Proibita</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice</h2>
+  <p class="region-path">Path: <code>ForbiddenKnowledge</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">ForbiddenKnowledge <span class="tag tag-off">inattivo</span></td>
+      <td>contenitore + script (<code>Image</code>, <code>ForbiddenKnowledgeViewController</code>)</td>
+      <td>Nodo radice della schermata. Disattivo di default nel prefab: viene attivato/mostrato dal sistema di navigazione menu quando lo screen viene aperto. Contiene il controller principale <code>ForbiddenKnowledgeViewController</code>.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sfondo (bg)</h2>
+  <p class="region-path">Path: <code>ForbiddenKnowledge/bg/...</code></p>
+  <p class="note">I tre sfondi sotto sembrano corrispondere ai tre "regni"/divinità (Ledra, Yamanoth, Kramatak) selezionabili in fondo alla schermata: solo quello del regno attivo è visibile. I relativi figli puramente decorativi (particellari <code>orbParticles</code>/<code>fireParticles</code>, <code>sparkle</code>, <code>bubbles</code>, animazioni Spine <code>triangleSpine</code>/<code>thunderSpine</code> e i loro <code>Renderer0-3</code>, i quadrati <code>squares</code>, ecc. — circa 45 nodi) sono omessi qui perché non rilevanti per l'automazione.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/ledraBg <span class="tag tag-off">inattivo</span></td>
+      <td>contenitore sfondo</td>
+      <td>Sfondo a tema "Ledra". Disattivo di default nel prefab: presumibilmente attivato solo quando il regno Ledra è quello selezionato.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/yamanothBg <span class="tag tag-off">inattivo</span></td>
+      <td>contenitore sfondo</td>
+      <td>Sfondo a tema "Yamanoth". Disattivo di default nel prefab, stessa logica di ledraBg.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/kramatakBg</td>
+      <td>contenitore sfondo</td>
+      <td>Sfondo a tema "Kramatak". Attivo di default nel prefab (probabile regno selezionato all'apertura della schermata).</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Contatore risorsa (counters)</h2>
+  <p class="region-path">Path: <code>ForbiddenKnowledge/counters/...</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">counters</td>
+      <td>contenitore (layout + Canvas)</td>
+      <td>Contenitore del widget contatore risorsa in alto nella schermata.</td>
+    </tr>
+    <tr>
+      <td class="path">counters/counterInteraction</td>
+      <td>contenitore (script <code>CounterInteraction</code>)</td>
+      <td>Gestisce l'interazione col contatore (probabile tooltip/dettaglio sulla risorsa "Conoscenza Proibita").</td>
+    </tr>
+    <tr>
+      <td class="path">counters/counterInteraction/bg</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Sfondo cliccabile del contatore; funzione non chiara dal nome, probabilmente apre lo stesso tooltip/dettaglio dell'icona.</td>
+    </tr>
+    <tr>
+      <td class="path">counters/counterInteraction/icon</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Icona della risorsa, cliccabile; probabilmente apre un popup informativo sulla risorsa.</td>
+    </tr>
+    <tr>
+      <td class="path">counters/counterInteraction/quantity</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Quantità attuale della risorsa posseduta.</td>
+    </tr>
+    <tr>
+      <td class="path">counters/counterInteraction/quantityAdded</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Testo popup "+N" mostrato quando la risorsa aumenta (es. dopo un guadagno).</td>
+    </tr>
+    <tr>
+      <td class="path">counters/counterInteraction/getMore</td>
+      <td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+      <td>Bottone per ottenere altra risorsa (probabile acquisto/IAP). Inattivo di default nel prefab: compare solo in certe condizioni, es. risorsa insufficiente.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Attributi da potenziare (attributes)</h2>
+  <p class="region-path">Path: <code>ForbiddenKnowledge/attributes/forbiddenKnoweledgeUpgrade (N)/...</code> — N = 0..9, 10 slot identici</p>
+  <p class="note">I 10 slot hanno tutti la stessa struttura; sono elencati una sola volta come pattern invece di ripetere 10 blocchi identici.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">attributes</td>
+      <td>contenitore (Canvas)</td>
+      <td>Griglia dei 10 slot di potenziamento attributo del regno selezionato.</td>
+    </tr>
+    <tr>
+      <td class="path">attributes/forbiddenKnoweledgeUpgrade (N)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Slot di potenziamento per l'attributo N-esimo. Contiene <code>ForbiddenKnowledgeUpgradeInteraction</code> (logica di upgrade) e <code>EnlargeOnHover</code>/<code>ButtonAnimation</code> (feedback visivo).</td>
+    </tr>
+    <tr>
+      <td class="path">attributes/forbiddenKnoweledgeUpgrade (N)/upgradeIcon</td>
+      <td>immagine</td>
+      <td>Icona dell'attributo.</td>
+    </tr>
+    <tr>
+      <td class="path">attributes/forbiddenKnoweledgeUpgrade (N)/levelBg</td>
+      <td>immagine</td>
+      <td>Sfondo del badge livello.</td>
+    </tr>
+    <tr>
+      <td class="path">attributes/forbiddenKnoweledgeUpgrade (N)/levelBg/level</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Livello attuale dell'attributo.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Reclutamento divinità (purchaseGod)</h2>
+  <p class="region-path">Path: <code>ForbiddenKnowledge/purchaseGod/...</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">purchaseGod</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Recluta/acquista la divinità associata al regno correntemente selezionato.</td>
+    </tr>
+    <tr>
+      <td class="path">purchaseGod/god</td>
+      <td>immagine</td>
+      <td>Illustrazione della divinità.</td>
+    </tr>
+    <tr>
+      <td class="path">purchaseGod/recruitText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta localizzata (I2.Loc.Localize), presumibilmente "Recluta" o simile.</td>
+    </tr>
+    <tr>
+      <td class="path">purchaseGod/godName</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome della divinità, localizzato.</td>
+    </tr>
+    <tr>
+      <td class="path">purchaseGod/notification</td>
+      <td>immagine + <code>NotificationAnimation</code></td>
+      <td>Badge animato che segnala una notifica sulla divinità (es. reclutabile/pronta).</td>
+    </tr>
+    <tr>
+      <td class="path">purchaseGod/notification/bell</td>
+      <td>animazione (Spine)</td>
+      <td>Animazione della campanella del badge di notifica.</td>
+    </tr>
+    <tr>
+      <td class="path">purchaseGod/notification/amountTMP</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Numero mostrato sul badge di notifica.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Selezione regno (submenuButtons)</h2>
+  <p class="region-path">Path: <code>ForbiddenKnowledge/submenuButtons/...</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">submenuButtons</td>
+      <td>contenitore (griglia)</td>
+      <td>Contiene i tre bottoni di navigazione tra i regni/divinità (Ledra, Yamanoth, Kramatak).</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/ledra</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Seleziona/mostra il regno "Ledra" (sfondo, attributi e divinità corrispondenti).</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/ledra/icon</td>
+      <td>immagine</td>
+      <td>Icona del regno Ledra.</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/ledra/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome del regno, localizzato.</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/ledra/notification</td>
+      <td>immagine + <code>NotificationAnimation</code> <span class="tag tag-off">inattivo</span></td>
+      <td>Badge di notifica (es. potenziamenti disponibili nel regno). Inattivo di default: compare solo quando c'è qualcosa da segnalare.</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/ledra/notification/bell</td>
+      <td>animazione (Spine)</td>
+      <td>Animazione della campanella del badge.</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/ledra/notification/amountTMP</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Numero mostrato sul badge di notifica.</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/ledra/lock</td>
+      <td>immagine</td>
+      <td>Icona lucchetto, presumibilmente visibile se il regno Ledra non è ancora sbloccato.</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/yamanoth</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Seleziona/mostra il regno "Yamanoth". Stessa struttura di <code>ledra</code> (icon, text, notification/bell/amountTMP, lock).</td>
+    </tr>
+    <tr>
+      <td class="path">submenuButtons/kramatak</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Seleziona/mostra il regno "Kramatak". Stessa struttura di <code>ledra</code> (icon, text, notification/bell/amountTMP, lock).</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Chiusura</h2>
+  <p class="region-path">Path: <code>ForbiddenKnowledge/closeButton/...</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">closeButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Chiude la schermata Conoscenza Proibita e torna al menu precedente.</td>
+    </tr>
+    <tr>
+      <td class="path">closeButton/icon</td>
+      <td>immagine</td>
+      <td>Icona "X" del bottone di chiusura.</td>
+    </tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ForbiddenKnowledge</code>. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+  <br>Nota: la schermata è stata identificata come un menu (potenziamenti/reclutamento divinità, non un overlay di battaglia), ma il path radice completo non è stato verificato risalendo la gerarchia della scena live — solo il nome del GameObject è confermato dal dump statico.
+</footer>
+</body>
+</html>

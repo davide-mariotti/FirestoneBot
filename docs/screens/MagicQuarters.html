@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Quartiere Magico</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Quartiere Magico</div>
+  <h1>🔮 Quartiere Magico</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Radice del prefab: <code>MagicQuarters</code> (root: <code>MagicQuartersViewController</code>), <span class="tag tag-off">inattivo</span> di default — è un menu a schermo intero, chiuso finché non viene aperto dalla mappa. 592 nodi totali, 34 bottoni.</p>
+</header>
+<main>
+
+<section>
+  <h2>Barra valuta (counters)</h2>
+  <p class="region-path">Path: <code>MagicQuarters/counters/counterInteraction</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore valuta (script <code>CounterInteraction</code>); apre probabilmente il dettaglio/negozio della risorsa mostrata.</td></tr>
+    <tr><td class="path">icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stesso comportamento click di <code>bg</code>.</td></tr>
+    <tr><td class="path">quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della valuta.</td></tr>
+    <tr><td class="path">quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato in animazione quando la valuta aumenta.</td></tr>
+    <tr><td class="path">getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Pulsante "ottieni di più" (ha <code>ButtonAnimation</code>); compare solo in certe condizioni (es. valuta insufficiente), porta probabilmente al negozio.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Anteprima Guardiano (pannello principale)</h2>
+  <p class="region-path">Path: <code>MagicQuarters/guardianPreview</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">standardLevelProgress/bg/evolutionNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero/stadio di evoluzione corrente del guardiano in anteprima.</td></tr>
+    <tr><td class="path">standardLevelProgress/bg/evolutionName</td><td><span class="tag tag-txt">testo</span></td><td>Nome dello stadio evolutivo.</td></tr>
+    <tr><td class="path">standardLevelProgress/bg/progressBarBg/progressBarMask/progressBarFill</td><td>Image (fill)</td><td>Riempimento della barra di progresso verso il prossimo livello.</td></tr>
+    <tr><td class="path">standardLevelProgress/bg/progressBarBg/progressText</td><td><span class="tag tag-txt">testo</span></td><td>Testo numerico del progresso (es. "120/500 XP").</td></tr>
+    <tr><td class="path">standardLevelProgress/starsParent/star0..star4</td><td>Image ×5</td><td>Icone stella che indicano la rarità/qualità del guardiano (0-4, tutte presenti, quelle oltre la rarità attuale restano spente via sprite).</td></tr>
+    <tr><td class="path">standardLevelProgress/levelBg/levelDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Livello".</td></tr>
+    <tr><td class="path">standardLevelProgress/levelBg/level</td><td><span class="tag tag-txt">testo</span></td><td>Numero di livello corrente del guardiano.</td></tr>
+    <tr><td class="path">rarityBg</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Riquadro rarità alternativo (contiene <code>rarity</code>, testo); attivo probabilmente solo oltre una certa rarità al posto della barra livello standard.</td></tr>
+    <tr><td class="path">guardianAnimateButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile sopra il guardiano in anteprima; presumibilmente avvia/ripete un'animazione dimostrativa. Contiene anche i pulsanti di navigazione sotto.</td></tr>
+    <tr><td class="path">guardianAnimateButton/navigation/goBackGuardian</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Va al guardiano precedente nella lista posseduta (<code>RepeatAction</code>: tenuto premuto scorre più volte).</td></tr>
+    <tr><td class="path">guardianAnimateButton/navigation/goForthGuardian</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Va al guardiano successivo nella lista posseduta.</td></tr>
+    <tr><td class="path">info/guardianName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del guardiano selezionato.</td></tr>
+    <tr><td class="path">info/setActiveGuardian</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Imposta il guardiano selezionato come guardiano attivo/in uso (testo figlio localizzato, probabilmente "Equipaggia" o "Attiva").</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Lista Guardiani posseduti (griglia)</h2>
+  <p class="region-path">Path: <code>MagicQuarters/guardianList</code> — pattern ripetuto identico ×4 (slot <code>guardian (0)</code>…<code>guardian (3)</code>)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guardian (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot cliccabile della griglia guardiani (<code>GuardianInteractionSquare</code>, <code>EnlargeOnHover</code>); selezionandolo lo mostra nell'anteprima principale. Ripetuto ×4 (slot 0-3), stessa struttura interna.</td></tr>
+    <tr><td class="path">guardian (0)/highlighted</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Bordo evidenziato quando lo slot è quello selezionato.</td></tr>
+    <tr><td class="path">guardian (0)/bgFrame</td><td>Image</td><td>Cornice di sfondo dello slot (colore per rarità).</td></tr>
+    <tr><td class="path">guardian (0)/icon</td><td>Image</td><td>Icona/ritratto del guardiano.</td></tr>
+    <tr><td class="path">guardian (0)/starsParent/star0..star4</td><td>Image ×5</td><td>Stelle rarità del guardiano nello slot.</td></tr>
+    <tr><td class="path">guardian (0)/notification</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Badge notifica (campanella <code>bell</code> + testo <code>amountTMP</code>); compare quando c'è un'azione disponibile per quel guardiano (es. livello up pronto).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Pulsanti principali di schermata</h2>
+  <p class="region-path">Path: <code>MagicQuarters/*</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">biogrpahyButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la biografia/lore del guardiano (script <code>BioInteraction</code>; nome del nodo con refuso "biogrpahy" presente nel gioco originale).</td></tr>
+    <tr><td class="path">bananaButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Funzione non chiara dal solo nome/componenti (nessuno script specifico oltre <code>ButtonAnimation</code>/<code>ButtonOnHoverActions</code>); verificare dal vivo cosa attiva.</td></tr>
+    <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Offerta a tempo per sbloccare un'unità (script <code>UnlockOfferButtonInteraction</code>; mostra <code>unitIcon</code> e <code>time</code> come countdown).</td></tr>
+    <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat (script <code>ChatInteraction</code>); badge notifica con contatore messaggi non letti (<code>notification/amountTMP</code>).</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Quartiere Magico e torna alla mappa/schermata precedente.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tab dei sottomenu</h2>
+  <p class="region-path">Path: <code>MagicQuarters/submenus/submenuButtons</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">info</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Info" (statistiche/attributi/attività del guardiano).</td></tr>
+    <tr><td class="path">evolution</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Evoluzione". Badge notifica quando un'evoluzione è disponibile.</td></tr>
+    <tr><td class="path">chaosRift</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Chaos Rift". Badge notifica quando un potenziamento è disponibile.</td></tr>
+    <tr><td class="path">rarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Rarità". Badge notifica; icona <code>lock</code> (inattiva di default) mostrata quando il tab è ancora bloccato.</td></tr>
+    <tr><td class="path">skin</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sottomenu "Skin". Badge notifica (inattivo di default) quando una nuova skin è disponibile.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Info</h2>
+  <p class="region-path">Path: <code>MagicQuarters/submenus/bg/infoSubmenu</code> — <span class="tag tag-off">inattivo</span> di default (visibile solo quando il tab "info" è selezionato)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sottomenu.</td></tr>
+    <tr><td class="path">changeQuantityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la modalità di visualizzazione dei valori mostrati (testo figlio dinamico); funzione esatta non certa dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">mainInfo/type, mainInfo/typeDesc</td><td><span class="tag tag-txt">testo</span> ×2</td><td>Tipo del guardiano e relativa descrizione.</td></tr>
+    <tr><td class="path">mainInfo/attackStyle, mainInfo/attackStyleDesc</td><td><span class="tag tag-txt">testo</span> ×2</td><td>Stile d'attacco e descrizione.</td></tr>
+    <tr><td class="path">mainInfo/evolution, mainInfo/evolutionDesc</td><td><span class="tag tag-txt">testo</span> ×2</td><td>Stadio evolutivo e descrizione.</td></tr>
+    <tr><td class="path">mainAttributes/attributeGlobal (0)</td><td>Image + <code>AttributeGlobalInteraction</code></td><td>Card di un attributo principale (icona + valore); <code>lock</code> interno indica attributo non ancora sbloccato. Non ha componente Button proprio.</td></tr>
+    <tr><td class="path">secondaryAttributes/attributeGlobal (0)/(1)</td><td>Image + <code>AttributeGlobalInteraction</code> ×2</td><td>Card attributi secondari, stessa struttura di sopra.</td></tr>
+    <tr><td class="path">aura/grid/attributeGlobal (0)..(2)</td><td>Image + <code>AttributeGlobalInteraction</code> ×3</td><td>Card degli attributi "aura".</td></tr>
+    <tr><td class="path">aura/grid/attributeGlobalRedemption</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Card attributo aggiuntivo "redenzione", compare solo in condizioni specifiche.</td></tr>
+    <tr><td class="path">attributesInfoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo sugli attributi (<code>HolydayStudios.InfoButtonAnimation</code>).</td></tr>
+    <tr><td class="path">activities/unlocked/train/trainButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avvia l'allenamento del guardiano. Ha due stati interni: <code>cooldownOff</code> (pronto) e <code>cooldownOn</code> (in cooldown, con <code>cooldownTimeLeft</code>).</td></tr>
+    <tr><td class="path">activities/unlocked/enlightenment/enlightenmentButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Attiva l'upgrade "Illuminazione" (icona + <code>costText</code> in "polvere strana"/<code>strangeDustIcon</code>).</td></tr>
+    <tr><td class="path">activities/locked</td><td>container <span class="tag tag-off">inattivo</span></td><td>Stato "attività bloccate" con lucchetto e descrizione requisiti, mostrato al posto delle attività quando non ancora sbloccate.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Evoluzione</h2>
+  <p class="region-path">Path: <code>MagicQuarters/submenus/bg/evolutionSubmenu</code> — <span class="tag tag-off">inattivo</span> di default</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sottomenu.</td></tr>
+    <tr><td class="path">evolutionInfo</td><td>container <span class="tag tag-off">inattivo</span></td><td>Blocco principale con la timeline di evoluzione, attivo quando il guardiano non è al massimo stadio né bloccato.</td></tr>
+    <tr><td class="path">evolutionInfo/guardianEvolution/evolution0..evolution4</td><td>Image ×5</td><td>Icone dei 5 stadi evolutivi possibili, evidenziano quello corrente.</td></tr>
+    <tr><td class="path">evolutionInfo/evolutionName</td><td><span class="tag tag-txt">testo</span></td><td>Nome dello stadio evolutivo selezionato/successivo.</td></tr>
+    <tr><td class="path">evolutionInfo/evolveButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Esegue l'evoluzione del guardiano al prossimo stadio; mostra costo in "polvere strana" (<code>strangeDustIcon</code> + <code>costText</code>).</td></tr>
+    <tr><td class="path">evolutionInfo/attributes/attributeGlobal (0)..(3)</td><td>Image + <code>AttributeGlobalInteraction</code> ×4</td><td>Attributi principali confrontati pre/post evoluzione.</td></tr>
+    <tr><td class="path">evolutionInfo/attributes/attributeGlobal (4)/(5)</td><td>Image + <code>AttributeGlobalInteraction</code> ×2 <span class="tag tag-off">inattivo</span></td><td>Attributi aggiuntivi, sbloccati solo da un certo stadio evolutivo in poi.</td></tr>
+    <tr><td class="path">evolutionInfo/attributes/attributeRedemption</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Attributo speciale "redenzione", condizionale.</td></tr>
+    <tr><td class="path">evolutionMax</td><td>container <span class="tag tag-off">inattivo</span></td><td>Messaggio mostrato quando il guardiano ha raggiunto l'evoluzione massima (<code>evolutionDescription</code>).</td></tr>
+    <tr><td class="path">evolutionLocked</td><td>container <span class="tag tag-off">inattivo</span></td><td>Messaggio + lucchetto mostrati quando l'evoluzione non è ancora sbloccata.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Chaos Rift</h2>
+  <p class="region-path">Path: <code>MagicQuarters/submenus/bg/chaosRiftSubmenu</code> — <span class="tag tag-off">inattivo</span> di default</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sottomenu.</td></tr>
+    <tr><td class="path">changeQuantityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Come nel sottomenu Info: cambia modalità di visualizzazione dei valori.</td></tr>
+    <tr><td class="path">mainAttributes/attributeGlobal (0)</td><td>Image + <code>AttributeGlobalInteraction</code></td><td>Card attributo principale legato al Chaos Rift.</td></tr>
+    <tr><td class="path">secondaryAttributes/attributeGlobal (0)..(2)</td><td>Image + <code>AttributeGlobalInteraction</code> ×3</td><td>Card attributi secondari.</td></tr>
+    <tr><td class="path">aura/grid/attributeGlobal (0)</td><td>Image + <code>AttributeGlobalInteraction</code></td><td>Card attributo "aura".</td></tr>
+    <tr><td class="path">holyDamageUpgrade/bg/upgradeNumBg/upgradeNum</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale dell'upgrade "danno sacro".</td></tr>
+    <tr><td class="path">holyDamageUpgrade/bg/currentEffect, .../nextEffect</td><td><span class="tag tag-txt">testo</span> ×2</td><td>Valore attuale e valore dopo il prossimo upgrade, separati da <code>arrowImg</code>.</td></tr>
+    <tr><td class="path">holyDamageUpgrade/bg/upgradeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il livello successivo dell'upgrade "danno sacro" (icona + <code>costText</code> nel layout interno).</td></tr>
+    <tr><td class="path">holyDamageUpgrade/holyDamageDescText</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione testuale dell'effetto "danno sacro".</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Rarità</h2>
+  <p class="region-path">Path: <code>MagicQuarters/submenus/bg/raritySubmenu</code> — <span class="tag tag-off">inattivo</span> di default</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sottomenu.</td></tr>
+    <tr><td class="path">rarityUnlocked/rarityIncrease/rarityButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Aumenta la rarità del guardiano al livello successivo (icona valuta + <code>costText</code>).</td></tr>
+    <tr><td class="path">rarityUnlocked/CurrentRarityView/currentRarityGuardian</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro guardiano alla rarità attuale, cliccabile come gli slot della griglia (<code>GuardianInteractionSquare</code>).</td></tr>
+    <tr><td class="path">rarityUnlocked/CurrentRarityView/layout/attributeGlobalDarkBrown, currentAura, currentHitChance, currentHitDamage, currentDoubleStrike</td><td>Image + <code>AttributeGlobalInteraction</code> ×5</td><td>Attributi del guardiano alla rarità attuale (danno, aura, % colpo, danno critico, doppio colpo).</td></tr>
+    <tr><td class="path">rarityUnlocked/NextRarityView/nextRarityGuardian</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro anteprima guardiano alla rarità successiva, stesso comportamento del precedente.</td></tr>
+    <tr><td class="path">rarityUnlocked/NextRarityView/layout/attributeGlobalDarkBrown, nextAura, nextHitChance, nextHitDamage, nextDoubleStrike</td><td>Image + <code>AttributeGlobalInteraction</code> ×5</td><td>Stessi attributi proiettati alla rarità successiva, per confronto.</td></tr>
+    <tr><td class="path">rarityUnlocked/requirementsBg/requirementsText</td><td><span class="tag tag-txt">testo</span></td><td>Requisiti per passare alla rarità successiva.</td></tr>
+    <tr><td class="path">rarityLocked</td><td>container <span class="tag tag-off">inattivo</span></td><td>Stato "rarità bloccata" con lucchetto e descrizione, alternativo a <code>rarityUnlocked</code>.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Skin</h2>
+  <p class="region-path">Path: <code>MagicQuarters/submenus/bg/skinSubmenu</code> — <span class="tag tag-off">inattivo</span> di default</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del sottomenu.</td></tr>
+    <tr><td class="path">skins/scrollView/viewport/content/skinCardInteraction</td><td><code>SkinCardInteraction</code></td><td>Card di una skin nello scroll orizzontale (template ripetuto per ogni skin disponibile).</td></tr>
+    <tr><td class="path">.../skinCardInteraction/bg/panelUnlocked</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona/equipaggia questa skin (o ne mostra il dettaglio se non sbloccata).</td></tr>
+    <tr><td class="path">.../skinCardInteraction/header/nameText</td><td><span class="tag tag-txt">testo</span></td><td>Nome della skin.</td></tr>
+    <tr><td class="path">.../skinCardInteraction/header/tickIcon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Segno di spunta; indica/seleziona la skin come attualmente equipaggiata.</td></tr>
+    <tr><td class="path">.../skinCardInteraction/header/viewIcon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Anteprima della skin (probabile apertura di una vista ingrandita), funzione dedotta dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">.../skinCardInteraction/unlockedObj/claimedText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta mostrata quando la skin è già stata riscattata/sbloccata.</td></tr>
+    <tr><td class="path">.../skinCardInteraction/requirementsObj/requirementText</td><td><span class="tag tag-txt">testo</span></td><td>Requisito per sbloccare la skin.</td></tr>
+    <tr><td class="path">.../skinCardInteraction/requirementsObj/progressBarBg/progressBarFill, progressText</td><td>Image (fill) + <span class="tag tag-txt">testo</span></td><td>Barra e testo di avanzamento verso lo sblocco della skin.</td></tr>
+    <tr><td class="path">skins/selectSkinObj/selectSkinText</td><td><span class="tag tag-txt">testo</span> (container <span class="tag tag-off">inattivo</span>)</td><td>Messaggio/conferma mostrato quando si seleziona una skin.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tutorial overlay</h2>
+  <p class="region-path">Path: <code>MagicQuarters/tutorialMain</code> — <span class="tag tag-off">inattivo</span> di default (mostrato solo durante l'onboarding)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">tutorialTrainGuardian</td><td><code>TutorialStepView</code> <span class="tag tag-off">inattivo</span></td><td>Passo tutorial che punta con una freccia animata (<code>swingingArrow</code>) al pulsante di allenamento del guardiano.</td></tr>
+    <tr><td class="path">tutorialCloseMenu</td><td><code>TutorialStepView</code> <span class="tag tag-off">inattivo</span></td><td>Passo tutorial che punta al pulsante di chiusura del menu, con testo informativo (<code>infoObj</code>).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sfondo e scenografia (non dettagliato)</h2>
+  <p class="region-path">Path: <code>MagicQuarters/bgElements</code>, <code>MagicQuarters/sceneObjectsNear</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bgElements/... (montagne, nuvole, alberi)</td><td>Image + <code>MenuVfxEntityComponent</code></td><td>Elementi decorativi di parallasse dello sfondo, nessuna interazione, omessi qui in dettaglio.</td></tr>
+    <tr><td class="path">sceneObjectsNear/altar/...</td><td>Image/Spine + <code>MenuVfxEntityComponent</code></td><td>Altare animato (Spine) con particellari e fumo, puramente decorativo, nessun bottone.</td></tr>
+    <tr><td class="path">levelUpVFXback/front, evolveVFXback/front, rarityVFXback/front</td><td>Spine <code>SkeletonGraphic</code></td><td>Effetti VFX riprodotti in occasione di level up / evoluzione / aumento rarità del guardiano.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/MagicQuarters</code>. Nota: il percorso sopra la radice <code>MagicQuarters</code> è dedotto per convenzione (schermata di gestione Guardiano aperta come menu a schermo intero) e non è stato verificato risalendo la gerarchia di una scena live — potrebbe differire leggermente. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

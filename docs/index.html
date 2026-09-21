@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Mappa UI</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { padding: 28px 20px 20px; text-align: center; }
+  h1 { margin: 0 0 6px; font-size: 1.7rem; }
+  .sub { color: var(--muted); font-size: 0.9rem; max-width: 720px; margin: 0 auto; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 10px 20px 60px; }
+  .hero-link { display: block; background: linear-gradient(135deg, rgba(242,184,74,0.15), rgba(79,195,247,0.1)); border: 1px solid var(--accent); border-radius: 12px; padding: 18px 22px; margin: 20px 0 36px; text-decoration: none; color: var(--text); }
+  .hero-link b { color: var(--accent); font-size: 1.05rem; }
+  .hero-link p { margin: 4px 0 0; color: var(--muted); font-size: 0.85rem; }
+  .category { margin-bottom: 30px; }
+  .category h2 { font-size: 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+  .card { display: block; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; text-decoration: none; color: var(--text); font-size: 0.85rem; transition: border-color 0.15s; }
+  .card:hover { border-color: var(--btn); }
+  .card .n { display: block; font-weight: 600; margin-bottom: 3px; }
+  .card .meta { color: var(--muted); font-size: 0.72rem; }
+  .missing { opacity: 0.4; pointer-events: none; }
+  .missing .meta::after { content: " · non ancora generata"; }
+  footer { color: var(--muted); font-size: 0.8rem; padding: 10px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  footer code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🗺️ Firestone — Mappa completa della UI</h1>
+  <p class="sub">
+    Ogni pagina qui sotto documenta i path e i bottoni cliccabili di una schermata del gioco, estratti
+    <b>senza avviare Firestone</b> (analisi statica di <code>Firestone_Data/resources.assets</code> con
+    <a href="https://github.com/K0lb3/UnityPy" target="_blank" rel="noopener">UnityPy</a> — vedi
+    <code>tools/unity_ui_mapper.py</code> nel repo).
+  </p>
+</header>
+<main>
+
+<a class="hero-link" href="path.firestone.html">
+  <b>⚔️ Schermata di Battaglia</b>
+  <p>Il punto di partenza: profilo, upgrade eroi, stage bar, notifiche, menu principale — da qui si arriva a tutte le altre.</p>
+</a>
+
+<a class="hero-link" href="wiki/index.html">
+  <b>📖 Firestone Wiki — Mirror locale (225 pagine)</b>
+  <p>Copia locale di firestone-idle-rpg.fandom.com (con immagini): meccaniche di gioco, formule,
+  tabelle ricompense, guide eroi, alberi di ricerca e livelli di sblocco — complementare a questa mappa
+  UI, che documenta solo i path Unity cliccabili.</p>
+</a>
+
+<div class="category">
+  <h2>🏘️ Città e Gilda</h2>
+  <div class="grid">
+    <a class="card" href="screens/TownIrongard.html"><span class="n">TownIrongard</span><span class="meta">Hub Town — edifici</span></a>
+    <a class="card" href="screens/TownGuild.html"><span class="n">TownGuild</span><span class="meta">Sezione Gilda in Town</span></a>
+    <a class="card" href="screens/Library.html"><span class="n">Library</span><span class="meta">Firestone/Meteorite Research</span></a>
+    <a class="card" href="screens/Engineer.html"><span class="n">Engineer</span><span class="meta">Warfront/War Machines</span></a>
+    <a class="card" href="screens/MagicQuarters.html"><span class="n">MagicQuarters</span><span class="meta">Training guardiani</span></a>
+    <a class="card" href="screens/TempleOfEternals.html"><span class="n">TempleOfEternals</span><span class="meta">Reset/Empower adventure</span></a>
+    <a class="card" href="screens/HallOfHeroes.html"><span class="n">HallOfHeroes</span><span class="meta">Gear/equip eroi</span></a>
+    <a class="card" href="screens/GuildBank.html"><span class="n">GuildBank</span><span class="meta">Tesoreria gilda</span></a>
+    <a class="card" href="screens/GuildShop.html"><span class="n">GuildShop</span><span class="meta">Negozio gilda</span></a>
+    <a class="card" href="screens/CreateFellowship.html"><span class="n">CreateFellowship</span><span class="meta">Crea/gestisci fellowship</span></a>
+  </div>
+</div>
+
+<div class="category">
+  <h2>🗺️ Mondo e Progressione</h2>
+  <div class="grid">
+    <a class="card" href="screens/WorldMap.html"><span class="n">WorldMap</span><span class="meta">Mappa missioni</span></a>
+    <a class="card" href="screens/WorldMapInfo.html"><span class="n">WorldMapInfo</span><span class="meta">Info mappa</span></a>
+    <a class="card" href="screens/WarMachines.html"><span class="n">WarMachines</span><span class="meta">Macchine da guerra</span></a>
+    <a class="card" href="screens/WarmachinesInfo.html"><span class="n">WarmachinesInfo</span><span class="meta">Info war machines</span></a>
+    <a class="card" href="screens/ArenaOfKings.html"><span class="n">ArenaOfKings</span><span class="meta">Arena PvP</span></a>
+    <a class="card" href="screens/Leaderboards.html"><span class="n">Leaderboards</span><span class="meta">Classifiche</span></a>
+    <a class="card" href="screens/Achievements.html"><span class="n">Achievements</span><span class="meta">Obiettivi</span></a>
+    <a class="card" href="screens/ChaosRift.html"><span class="n">ChaosRift</span><span class="meta">Evento mensile guild vs guild</span></a>
+    <a class="card" href="screens/ChaosRiftShop.html"><span class="n">ChaosRiftShop</span><span class="meta">Negozio Chaos Rift</span></a>
+  </div>
+</div>
+
+<div class="category">
+  <h2>👥 Eroi, Party, Personaggio</h2>
+  <div class="grid">
+    <a class="card" href="screens/Party.html"><span class="n">Party</span><span class="meta">Composizione squadra</span></a>
+    <a class="card" href="screens/AllHeroes.html"><span class="n">AllHeroes</span><span class="meta">Roster eroi</span></a>
+    <a class="card" href="screens/InspectHero.html"><span class="n">InspectHero</span><span class="meta">Dettaglio eroe</span></a>
+    <a class="card" href="screens/Character.html"><span class="n">Character</span><span class="meta">Scheda personaggio/talenti</span></a>
+    <a class="card" href="screens/Upgrades.html"><span class="n">Upgrades</span><span class="meta">Riepilogo potenziamenti</span></a>
+    <a class="card" href="screens/Inventory.html"><span class="n">Inventory</span><span class="meta">Bag/inventario</span></a>
+    <a class="card" href="screens/Beasts.html"><span class="n">Beasts</span><span class="meta">Bestie (guild spirit)</span></a>
+    <a class="card" href="screens/Awakening.html"><span class="n">Awakening</span><span class="meta">Risveglio eroi</span></a>
+    <a class="card" href="screens/Biography.html"><span class="n">Biography</span><span class="meta">Lore personaggio</span></a>
+  </div>
+</div>
+
+<div class="category">
+  <h2>🛒 Negozi e Valute Premium</h2>
+  <div class="grid">
+    <a class="card" href="screens/Store.html"><span class="n">Store</span><span class="meta">Negozio principale</span></a>
+    <a class="card" href="screens/OracleStore.html"><span class="n">OracleStore</span><span class="meta">Negozio Oracle</span></a>
+    <a class="card" href="screens/ExoticMerchant.html"><span class="n">ExoticMerchant</span><span class="meta">Mercante esotico</span></a>
+    <a class="card" href="screens/PirateShip.html"><span class="n">PirateShip</span><span class="meta">Nave pirata (offerte)</span></a>
+    <a class="card" href="screens/Tavern.html"><span class="n">Tavern</span><span class="meta">Taverna (carte/mercenari)</span></a>
+    <a class="card" href="screens/ScarabGameShop.html"><span class="n">ScarabGameShop</span><span class="meta">Negozio Scarab Game</span></a>
+  </div>
+</div>
+
+<div class="category">
+  <h2>🔮 Sistemi Meta</h2>
+  <div class="grid">
+    <a class="card" href="screens/Alchemist.html"><span class="n">Alchemist</span><span class="meta">Esperimenti/transmute</span></a>
+    <a class="card" href="screens/Oracle.html"><span class="n">Oracle</span><span class="meta">Rituali Oracle</span></a>
+    <a class="card" href="screens/TreeOfLife.html"><span class="n">TreeOfLife</span><span class="meta">Albero potenziamenti guild coin</span></a>
+    <a class="card" href="screens/AncientArtifacts.html"><span class="n">AncientArtifacts</span><span class="meta">Artefatti antichi</span></a>
+    <a class="card" href="screens/ArcaneCrystal.html"><span class="n">ArcaneCrystal</span><span class="meta">Cristallo arcano</span></a>
+    <a class="card" href="screens/ForbiddenKnowledge.html"><span class="n">ForbiddenKnowledge</span><span class="meta">Conoscenza proibita</span></a>
+    <a class="card" href="screens/PharaohsVault.html"><span class="n">PharaohsVault</span><span class="meta">Forziere del faraone</span></a>
+    <a class="card" href="screens/SacredCards.html"><span class="n">SacredCards</span><span class="meta">Carte sacre</span></a>
+    <a class="card" href="screens/LostInscriptions.html"><span class="n">LostInscriptions</span><span class="meta">Iscrizioni perdute</span></a>
+    <a class="card" href="screens/ScarabGame.html"><span class="n">ScarabGame</span><span class="meta">Minigioco scarabeo</span></a>
+  </div>
+</div>
+
+<div class="category">
+  <h2>🌐 Social e Sistema</h2>
+  <div class="grid">
+    <a class="card" href="screens/Social.html"><span class="n">Social</span><span class="meta">Hub fellowship/amici</span></a>
+    <a class="card" href="screens/Settings.html"><span class="n">Settings</span><span class="meta">Impostazioni</span></a>
+    <a class="card" href="screens/BattlePass.html"><span class="n">BattlePass</span><span class="meta">Path of Glory</span></a>
+    <a class="card" href="screens/FrostfireFestival.html"><span class="n">FrostfireFestival</span><span class="meta">Evento stagionale (verificare se attivo)</span></a>
+  </div>
+</div>
+
+</main>
+<footer>
+  <p>
+    <b>Fuori scope in questo giro</b> (esistono ma non ancora documentate): decine di piccoli tooltip
+    (<code>TooltipGear</code>, <code>TooltipJewel</code>, <code>TooltipCurrency</code>...), popup generici
+    (conferme, dialoghi, animazioni apertura forziere) e promozioni stagionali probabilmente inattive
+    (<code>Xmas*</code>, <code>TrickOrTreat*</code>, <code>Spring*</code>...). Scoperte comunque durante la scansione —
+    dimmi se vuoi che aggiunga anche quelle.
+  </p>
+  <p>Metodo, script e dettagli tecnici: vedi il footer della <a href="path.firestone.html">pagina Schermata di Battaglia</a>.</p>
+</footer>
+</body>
+</html>

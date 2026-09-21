@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Livelli di Sblocco - Firestone</title>
+<style>
+  :root { --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee; --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+  a { color: var(--btn); }
+  h1 { font-size: 1.4rem; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 16px; }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  th { color: var(--muted); background: rgba(255,255,255,0.03); }
+  td.unlock { color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .note { color: var(--muted); font-size: 0.82rem; margin-top: 16px; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26; --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; }
+  }
+</style>
+</head>
+<body>
+<p><a href="index.html">&larr; Wiki index</a></p>
+<h1>🔓 Livelli/Stage di sblocco</h1>
+<p>Compilato dagli infobox della wiki (<code>Infobox/Buildings | unlock = ...</code>). Il gioco usa due
+assi di progressione diversi: <b>Level</b> (livello personaggio) e <b>Stage</b> (avanzamento in
+avventura/mappa) — quest'ultimo si applica solo alle feature sbloccate molto presto.</p>
+<table>
+<tr><th>Feature</th><th>Sblocco</th><th>Fonte</th></tr>
+<tr><td>Hall of Heroes</td><td class="unlock">Stage 1</td><td><a href="pages/Hall_of_Heroes.html">wiki</a></td></tr>
+<tr><td>Magic Quarter</td><td class="unlock">Stage 1</td><td><a href="pages/Magic_Quarter.html">wiki</a></td></tr>
+<tr><td>Shop</td><td class="unlock">Stage 21</td><td><a href="pages/Shop.html">wiki</a></td></tr>
+<tr><td>Temple of Eternals</td><td class="unlock">Stage 45</td><td><a href="pages/Temple_of_Eternals.html">wiki</a></td></tr>
+<tr><td>Library (Firestone/Meteorite Research)</td><td class="unlock">Stage 45</td><td><a href="pages/Library.html">wiki</a></td></tr>
+<tr><td>Leaderboards</td><td class="unlock">Level 10</td><td><a href="pages/Leaderboards.html">wiki</a></td></tr>
+<tr><td>Guild Hall</td><td class="unlock">Level 10</td><td><a href="pages/Guild_Hall.html">wiki</a></td></tr>
+<tr><td>Expeditions</td><td class="unlock">Level 10</td><td><a href="pages/Expeditions.html">wiki</a></td></tr>
+<tr><td>Guild Shop</td><td class="unlock">Level 10</td><td><a href="pages/Guild_Shop.html">wiki</a></td></tr>
+<tr><td>Bank (Guild)</td><td class="unlock">Level 10</td><td><a href="pages/Bank.html">wiki</a></td></tr>
+<tr><td>Tree of Life</td><td class="unlock">Level 10</td><td><a href="pages/Tree_of_Life.html">wiki</a></td></tr>
+<tr><td>Pirate Ship</td><td class="unlock">Level 10</td><td><a href="pages/Pirate_Ship.html">wiki</a></td></tr>
+<tr><td>Tavern</td><td class="unlock">Level 15</td><td><a href="pages/Tavern.html">wiki</a></td></tr>
+<tr><td>Exotic Merchant</td><td class="unlock">Level 30</td><td><a href="pages/Exotic_Merchant.html">wiki</a></td></tr>
+<tr><td>Engineer</td><td class="unlock">Level 50</td><td><a href="pages/Engineer.html">wiki</a></td></tr>
+<tr><td>Training Base (Engineer)</td><td class="unlock">Level 50</td><td><a href="pages/Training_Base.html">wiki</a></td></tr>
+<tr><td>Arcane Crystal</td><td class="unlock">Level 50 + Guild level 5</td><td><a href="pages/Arcane_Crystal.html">wiki</a></td></tr>
+<tr><td>Awakening</td><td class="unlock">Level 50</td><td><a href="pages/Awakening.html">wiki</a></td></tr>
+<tr><td>Warfront Campaign</td><td class="unlock">Level 50</td><td><a href="pages/Warfront_Campaign.html">wiki</a></td></tr>
+<tr><td>Scarab's Game</td><td class="unlock">Level 60 (Tavern itself unlocks at 15)</td><td><a href="pages/Scarab_s_Game.html">wiki</a></td></tr>
+<tr><td>Arena of Kings</td><td class="unlock">Level 80</td><td><a href="pages/Arena_of_Kings.html">wiki</a></td></tr>
+<tr><td>Chaos Rift</td><td class="unlock">Level 100</td><td><a href="pages/Chaos_Rift.html">wiki</a></td></tr>
+<tr><td>Forbidden Knowledge</td><td class="unlock">Level 100</td><td><a href="pages/Forbidden_Knowledge.html">wiki</a></td></tr>
+<tr><td>Alchemist</td><td class="unlock">Level 120</td><td><a href="pages/Alchemist.html">wiki</a></td></tr>
+<tr><td>Oracle</td><td class="unlock">Level 200</td><td><a href="pages/Oracle.html">wiki</a></td></tr>
+</table>
+<p class="note">
+Già usato nel codice v2: <code>OraclesGiftTask</code> (Level 200) e <code>ScarabGameFreeTokenTask</code>
+(Level 60) fanno un check esplicito prima di navigare, per evitare cicli di scan inutili sotto quel
+livello. Le altre feature qui sopra non hanno ancora un check esplicito — i click restano comunque
+sicuri (no-op) su un edificio non sbloccato, il gate è solo un'ottimizzazione CPU, non un requisito di
+correttezza. Possibile lavoro futuro se serve spremere ulteriormente i cicli di scan.
+</p>
+</body>
+</html>

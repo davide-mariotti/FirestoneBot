@@ -1,0 +1,27 @@
+## --- Build and Binary Directories ---
+bin/
+obj/
+
+## --- Dependencies and User-Specific Settings ---
+packages/
+*.user
+*.userosscache
+*.sln.DotSettings.user
+
+## --- IDE Specific Files (Rider, VS Code, Visual Studio) ---
+.idea/
+.vscode/
+*.iml
+*.suo
+_ReSharper.Caches/
+
+## --- Operating System Files ---
+.DS_Store
+Thumbs.db
+global.json
+
+# Ignore analysis and reports directory
+Reports/
+
+## --- Local build output (never the game's live Mods folder, see src/Directory.Build.props) ---
+dist/

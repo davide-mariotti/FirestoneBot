@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Banca della Gilda</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Banca della Gilda</div>
+  <h1>🏦 Banca della Gilda</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Popup unico (<code>GuildBankViewController</code>, inattivo di default) con 4 schede interne selezionabili dalla barra in alto: Banca/Donazioni, Tesoreria, Log, Cassetta. 313 nodi totali, 54 bottoni nel dump grezzo (le righe-lista ripetute — es. i 12 membri della classifica tesoreria — sono qui rappresentate una sola volta come template).</p>
+</header>
+<main>
+
+<section>
+  <h2>Cornice principale e overlay</h2>
+  <p class="region-path">Radice: <code>GuildBank</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">(radice) GuildBank</td><td>Script <code>GuildBankViewController</code> <span class="tag tag-off">inattivo</span></td><td class="note">Controller del popup; il GameObject è disattivo di default nel prefab e viene attivato all'apertura della Banca della Gilda dal menu di gilda.</td></tr>
+    <tr><td class="path">background</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Overlay a schermo intero dietro al popup; probabilmente chiude la schermata toccando fuori dal contenuto.</td></tr>
+    <tr><td class="path">bg</td><td>Image</td><td class="note">Pannello di sfondo del popup.</td></tr>
+    <tr><td class="path">bg/title</td><td><span class="tag tag-txt">testo</span></td><td class="note">Titolo della schermata (localizzato, es. "Banca della Gilda").</td></tr>
+    <tr><td class="path">bg/closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Chiude il popup.</td></tr>
+    <tr><td class="path">bg/closeButton/icon</td><td>Image</td><td class="note">Icona (X) del bottone di chiusura.</td></tr>
+    <tr><td class="path">bg/infoButton</td><td><span class="tag tag-btn">BOTTONE</span> (<code>InfoButtonAnimation</code>)</td><td class="note">Apre un popup informativo/tutorial sulla banca della gilda.</td></tr>
+    <tr><td class="path">bg/infoButton/spineInfo</td><td>Spine.Unity.SkeletonGraphic</td><td class="note">Animazione grafica (Spine) dell'icona informazioni.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Barra delle schede (tab bar)</h2>
+  <p class="region-path">Radice: <code>bg/submenuButtons</code> — GridLayoutGroup con 4 bottoni scheda, ciascuno mostra/nasconde uno dei 4 submenu sotto <code>bg/submenus</code>.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bank</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Passa alla scheda "Banca/Donazioni" (<code>bankSubmenu</code>).</td></tr>
+    <tr><td class="path">bank/icon</td><td>Image</td><td class="note">Icona della scheda.</td></tr>
+    <tr><td class="path">treasury</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Passa alla scheda "Tesoreria" (<code>treasurySubmenu</code>).</td></tr>
+    <tr><td class="path">treasury/icon</td><td>Image</td><td class="note">Icona della scheda.</td></tr>
+    <tr><td class="path">logs</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Passa alla scheda "Log" (<code>logsSubmenu</code>).</td></tr>
+    <tr><td class="path">logs/icon</td><td>Image</td><td class="note">Icona della scheda.</td></tr>
+    <tr><td class="path">logs/notificationCircle</td><td>Image, <code>NotificationAnimation</code></td><td class="note">Badge di notifica per log non letti.</td></tr>
+    <tr><td class="path">logs/notificationCircle/bell</td><td>Spine.Unity.SkeletonGraphic</td><td class="note">Animazione campanella del badge.</td></tr>
+    <tr><td class="path">logs/notificationCircle/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td class="note">Numero di log non letti.</td></tr>
+    <tr><td class="path">locker</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Passa alla scheda "Cassetta" (<code>lockerSubmenu</code>).</td></tr>
+    <tr><td class="path">locker/icon</td><td>Image</td><td class="note">Icona della scheda.</td></tr>
+    <tr><td class="path">locker/notificationCircle</td><td>Image, <code>NotificationAnimation</code></td><td class="note">Badge di notifica (es. ricompense pronte da ritirare).</td></tr>
+    <tr><td class="path">locker/notificationCircle/bell</td><td>Spine.Unity.SkeletonGraphic</td><td class="note">Animazione campanella del badge.</td></tr>
+    <tr><td class="path">locker/notificationCircle/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td class="note">Numero associato al badge della cassetta.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Scheda "Banca / Donazioni"</h2>
+  <p class="region-path">Radice: <code>bg/submenus/bankSubmenu</code> — <code>GuildBankSubmenuViewController</code>, <span class="tag tag-off">inattivo</span> di default (mostrato quando si seleziona la scheda "bank").</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guildMembersBg/infoDesc/rank</td><td><span class="tag tag-txt">testo</span></td><td class="note">Intestazione colonna "rango" della classifica donatori.</td></tr>
+    <tr><td class="path">guildMembersBg/infoDesc/name</td><td><span class="tag tag-txt">testo</span></td><td class="note">Intestazione colonna "nome".</td></tr>
+    <tr><td class="path">guildMembersBg/infoDesc/donations</td><td><span class="tag tag-txt">testo</span></td><td class="note">Intestazione colonna "donazioni".</td></tr>
+    <tr><td class="path">guildMembersBg/infoDesc/navigateMonths</td><td><span class="tag tag-btn">BOTTONE</span> (<code>RepeatAction</code>)</td><td class="note">Naviga tra i mesi della classifica donazioni; <code>RepeatAction</code> suggerisce che tenendolo premuto scorre più mesi di seguito.</td></tr>
+    <tr><td class="path">guildMembersBg/scrollView/viewport/memberList</td><td>GridLayoutGroup</td><td class="note">Contenitore scorrevole della lista donatori.</td></tr>
+    <tr><td class="path">.../memberList/guildMemberInListValue (0)</td><td><span class="tag tag-btn">BOTTONE</span> (<code>GuildMemberInListValueInteraction</code>)</td><td class="note">Riga-template di un membro nella classifica donazioni (ripetuta per ogni membro della gilda).</td></tr>
+    <tr><td class="path">.../guildMemberInListValue (0)/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span> (<code>PlayerAvatarInteractionLevel</code>)</td><td class="note">Avatar cliccabile: apre la scheda/profilo del giocatore.</td></tr>
+    <tr><td class="path">.../playerAvatar/avatarIcon</td><td>Image</td><td class="note">Icona avatar del membro.</td></tr>
+    <tr><td class="path">.../playerAvatar/characterLevelBg/characterLevel</td><td><span class="tag tag-txt">testo</span></td><td class="note">Livello personaggio del membro.</td></tr>
+    <tr><td class="path">.../guildMemberInListValue (0)/rankIcon</td><td>Image</td><td class="note">Icona del ruolo/rango in gilda del membro.</td></tr>
+    <tr><td class="path">.../rankIcon/treasuryIcon</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Icona aggiuntiva (es. "tesoriere"), attivata solo se il membro ha quel ruolo.</td></tr>
+    <tr><td class="path">.../guildMemberInListValue (0)/flagIcon</td><td>Image</td><td class="note">Bandiera/nazionalità del membro.</td></tr>
+    <tr><td class="path">.../guildMemberInListValue (0)/name</td><td><span class="tag tag-txt">testo</span></td><td class="note">Nome del membro.</td></tr>
+    <tr><td class="path">.../guildMemberInListValue (0)/value</td><td><span class="tag tag-txt">testo</span></td><td class="note">Ammontare donato dal membro nel periodo selezionato.</td></tr>
+    <tr><td class="path">.../guildMemberInListValue (0)/connectedIcon</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Indicatore "online", attivato se il membro è connesso.</td></tr>
+    <tr><td class="path">.../guildMemberInListValue (0)/offline</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Contenitore indicatore "offline", attivato se il membro non è connesso.</td></tr>
+    <tr><td class="path">.../offline/Image</td><td>Image</td><td class="note">Grafica dell'indicatore offline.</td></tr>
+    <tr><td class="path">donate/bankGuildCoinCounterBg/guildCoin</td><td><code>CounterInteraction</code></td><td class="note">Contatore delle monete gilda depositate in banca.</td></tr>
+    <tr><td class="path">.../guildCoin/guildBankDesc</td><td><span class="tag tag-txt">testo</span></td><td class="note">Etichetta descrittiva (es. "Monete della gilda").</td></tr>
+    <tr><td class="path">.../guildCoin/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Icona valuta cliccabile; funzione non chiara dal nome, verificare dal vivo (potrebbe mostrare un tooltip/dettagli).</td></tr>
+    <tr><td class="path">.../guildCoin/quantity</td><td><span class="tag tag-txt">testo</span></td><td class="note">Quantità di monete gilda in banca.</td></tr>
+    <tr><td class="path">.../guildCoin/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td class="note">Delta animato mostrato quando la quantità aumenta.</td></tr>
+    <tr><td class="path">.../guildCoin/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td class="note">Bottone per ottenere/acquistare altre monete gilda; compare solo in certe condizioni (es. saldo insufficiente).</td></tr>
+    <tr><td class="path">.../getMore/collider</td><td>Image</td><td class="note">Area cliccabile del bottone "getMore".</td></tr>
+    <tr><td class="path">donate/text</td><td><span class="tag tag-txt">testo</span></td><td class="note">Etichetta della sezione donazioni.</td></tr>
+    <tr><td class="path">donate/yoursGuildCoinCounterBg/guildCoin</td><td><code>CounterInteraction</code></td><td class="note">Contatore delle monete gilda possedute dal giocatore (stesso pattern del contatore banca sopra: guildBankDesc, icon [BOTTONE], quantity, quantityAdded, getMore [BOTTONE inattivo]/collider).</td></tr>
+    <tr><td class="path">donate/donationOptions</td><td>GridLayoutGroup</td><td class="note">Griglia di bottoni per donare importi predefiniti.</td></tr>
+    <tr><td class="path">donationOptions/donate1k (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Dona 1.000 monete gilda.</td></tr>
+    <tr><td class="path">donationOptions/donate10k (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Dona 10.000 monete gilda.</td></tr>
+    <tr><td class="path">donationOptions/donate100k (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Dona 100.000 monete gilda.</td></tr>
+    <tr><td class="path">donationOptions/donate200k (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Dona 200.000 monete gilda.</td></tr>
+    <tr><td class="path">donationOptions/donate500k (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Dona 500.000 monete gilda.</td></tr>
+    <tr><td class="path">donationOptions/donate1m (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Dona 1.000.000 monete gilda.</td></tr>
+    <tr><td class="path">donationOptions/donateAll (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Dona tutte le monete gilda disponibili del giocatore.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Scheda "Tesoreria"</h2>
+  <p class="region-path">Radice: <code>bg/submenus/treasurySubmenu</code> — <code>GuildBankTreasurySubmenuViewController</code>, <span class="tag tag-off">inattivo</span> di default.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guildItems/info</td><td><span class="tag tag-txt">testo</span></td><td class="note">Testo informativo sulla tesoreria di gilda.</td></tr>
+    <tr><td class="path">guildItems/scrollView/viewport/itemList/gameItemRewardInteraction</td><td><span class="tag tag-btn">BOTTONE</span> (<code>GuildTreasuryItemInteraction</code>)</td><td class="note">Riga-template di un oggetto ricompensa della tesoreria di gilda (ripetuta per ogni oggetto disponibile).</td></tr>
+    <tr><td class="path">.../gameItemRewardInteraction/glowFrame, frame, frameOutline</td><td>Image</td><td class="note">Cornici grafiche/decorative dello slot oggetto.</td></tr>
+    <tr><td class="path">.../gameItemRewardInteraction/rewardIcon</td><td>Image</td><td class="note">Icona dell'oggetto ricompensa.</td></tr>
+    <tr><td class="path">.../gameItemRewardInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td class="note">Quantità dell'oggetto.</td></tr>
+    <tr><td class="path">.../gameItemRewardInteraction/claimedFrame</td><td>Image</td><td class="note">Overlay mostrato quando l'oggetto è già stato ritirato.</td></tr>
+    <tr><td class="path">.../claimedFrame/tick</td><td>Image</td><td class="note">Segno di spunta sull'overlay "già ritirato".</td></tr>
+    <tr><td class="path">.../gameItemRewardInteraction/button</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Ritira la ricompensa della tesoreria di gilda.</td></tr>
+    <tr><td class="path">members/info</td><td><span class="tag tag-txt">testo</span></td><td class="note">Testo informativo sull'elenco membri.</td></tr>
+    <tr><td class="path">members/infoDesc</td><td>&nbsp; <span class="tag tag-off">inattivo</span></td><td class="note">Contenitore intestazioni colonna, attivato solo in certe condizioni (es. quando la lista è popolata).</td></tr>
+    <tr><td class="path">members/infoDesc/rank, name</td><td><span class="tag tag-txt">testo</span></td><td class="note">Intestazioni colonna "rango" e "nome".</td></tr>
+    <tr><td class="path">members/scrollView/viewport/memberList/guildMemberInList (0)</td><td><span class="tag tag-btn">BOTTONE</span> (<code>GuildMemberInListInteraction</code>)</td><td class="note">Riga-template di un membro della gilda, selezionabile per vederne i dettagli/contributi in tesoreria. Il prefab include 12 istanze precreate (indici 0–11, ciascuna con lo stesso set di componenti) per la lista scorrevole.</td></tr>
+    <tr><td class="path">.../guildMemberInList (0)/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span> (<code>PlayerAvatarInteractionLevel</code>)</td><td class="note">Avatar cliccabile: apre la scheda/profilo del giocatore.</td></tr>
+    <tr><td class="path">.../playerAvatar/avatarIcon</td><td>Image</td><td class="note">Icona avatar.</td></tr>
+    <tr><td class="path">.../playerAvatar/characterLevelBg/characterLevel</td><td><span class="tag tag-txt">testo</span></td><td class="note">Livello personaggio.</td></tr>
+    <tr><td class="path">.../guildMemberInList (0)/rankIcon</td><td>Image</td><td class="note">Icona ruolo/rango in gilda.</td></tr>
+    <tr><td class="path">.../rankIcon/treasuryIcon</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Icona "tesoriere", attivata solo per il ruolo corrispondente.</td></tr>
+    <tr><td class="path">.../guildMemberInList (0)/flagIcon</td><td>Image</td><td class="note">Bandiera/nazionalità.</td></tr>
+    <tr><td class="path">.../guildMemberInList (0)/connectedIcon</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Indicatore "online", condizionale.</td></tr>
+    <tr><td class="path">.../guildMemberInList (0)/name</td><td><span class="tag tag-txt">testo</span></td><td class="note">Nome del membro.</td></tr>
+    <tr><td class="path">.../guildMemberInList (0)/offline/Image</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Indicatore "offline", condizionale.</td></tr>
+    <tr><td class="path">chaosRiftCompetition (+/text, /Image)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Apre la competizione di gilda "Chaos Rift"; nome non del tutto chiaro dal solo dump, verificare dal vivo cosa mostra esattamente.</td></tr>
+    <tr><td class="path">selectMemberInfoBg/text</td><td><span class="tag tag-txt">testo</span></td><td class="note">Testo placeholder (es. "seleziona un membro") mostrato quando nessun membro della lista è selezionato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Scheda "Log"</h2>
+  <p class="region-path">Radice: <code>bg/submenus/logsSubmenu</code> — <code>GuildBankLogsSubmenuViewController</code>. A differenza delle altre 3 schede, questo nodo non risulta marcato "(inactive)" nel dump: potrebbe essere la scheda selezionata di default all'apertura del popup, da confermare dal vivo.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">logSubmenuButtons/donationLogs (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Filtra la lista mostrando solo i log delle donazioni.</td></tr>
+    <tr><td class="path">donationLogs/notificationCountBg/notificationCount</td><td><span class="tag tag-txt">testo</span></td><td class="note">Contatore di log donazioni non letti.</td></tr>
+    <tr><td class="path">logSubmenuButtons/treasuryLogs (+/text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Filtra la lista mostrando solo i log della tesoreria.</td></tr>
+    <tr><td class="path">treasuryLogs/notificationCountBg/notificationCount</td><td><span class="tag tag-txt">testo</span></td><td class="note">Contatore di log tesoreria non letti.</td></tr>
+    <tr><td class="path">logsBg/scrollView/viewport/content/logInteraction</td><td><code>GuildLogInteraction</code></td><td class="note">Riga-template di un log di donazione (data, ora, azione, icona).</td></tr>
+    <tr><td class="path">logInteraction/date, time, action</td><td><span class="tag tag-txt">testo</span></td><td class="note">Data, ora e descrizione dell'evento di log.</td></tr>
+    <tr><td class="path">logInteraction/icon</td><td>Image</td><td class="note">Icona associata al tipo di evento.</td></tr>
+    <tr><td class="path">.../content/guildLogCompetitionInteraction</td><td><code>GuildLogTreasuryInteraction</code></td><td class="note">Riga-template di un log di tesoreria/competizione (data, ora, azione, icona, contatori valuta).</td></tr>
+    <tr><td class="path">guildLogCompetitionInteraction/date, time, action, icon</td><td>testo/Image</td><td class="note">Stessi campi della riga log donazione.</td></tr>
+    <tr><td class="path">.../counters/counterInteraction</td><td><code>CounterInteraction</code></td><td class="note">Contatore di valuta/oggetto associato all'evento (bg [BOTTONE], icon [BOTTONE], quantity, quantityAdded, getMore [BOTTONE inattivo]/collider — stesso pattern dei contatori valuta già visti nella scheda Banca).</td></tr>
+    <tr><td class="path">noLogs</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td class="note">Messaggio placeholder (es. "Nessun log disponibile") mostrato quando la lista risulta vuota.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Scheda "Cassetta" (locker)</h2>
+  <p class="region-path">Radice: <code>bg/submenus/lockerSubmenu</code> — <code>GuildBankLockerSubmenuViewController</code>, <span class="tag tag-off">inattivo</span> di default.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/title</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td class="note">Titolo della cassetta, mostrato solo in certe condizioni.</td></tr>
+    <tr><td class="path">bg/desc</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td class="note">Descrizione della cassetta, condizionale.</td></tr>
+    <tr><td class="path">bg/rewardsTitle</td><td><span class="tag tag-txt">testo</span></td><td class="note">Titolo della sezione ricompense.</td></tr>
+    <tr><td class="path">bg/items/info</td><td><span class="tag tag-txt">testo</span></td><td class="note">Testo informativo sugli oggetti della cassetta.</td></tr>
+    <tr><td class="path">bg/items/seperatorLeft, seperatorRight</td><td>Image</td><td class="note">Separatori grafici decorativi.</td></tr>
+    <tr><td class="path">items/scrollView/viewport/itemList/reward</td><td><code>GameItemRewardInteraction</code></td><td class="note">Riga-template di un oggetto ricompensa della cassetta.</td></tr>
+    <tr><td class="path">reward/glowFrame, frame, frameOutline</td><td>Image</td><td class="note">Cornici grafiche/decorative dello slot.</td></tr>
+    <tr><td class="path">reward/glowChest</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Effetto glow speciale, attivato per oggetti particolari (es. contenuti in un forziere).</td></tr>
+    <tr><td class="path">reward/canClaim</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Evidenziazione mostrata quando l'oggetto è pronto per essere ritirato.</td></tr>
+    <tr><td class="path">reward/rewardIcon</td><td>Image</td><td class="note">Icona dell'oggetto ricompensa.</td></tr>
+    <tr><td class="path">reward/chestIcon</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Icona forziere, condizionale.</td></tr>
+    <tr><td class="path">reward/quantity</td><td><span class="tag tag-txt">testo</span></td><td class="note">Quantità dell'oggetto.</td></tr>
+    <tr><td class="path">reward/claimedFrame</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Overlay "già ritirato", condizionale.</td></tr>
+    <tr><td class="path">claimedFrame/tick</td><td>Image</td><td class="note">Segno di spunta sull'overlay.</td></tr>
+    <tr><td class="path">claimButton (+/textCurrency)</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="note">Ritira le ricompense disponibili nella cassetta; <code>textCurrency</code> mostra probabilmente il costo/valuta richiesta per il ritiro anticipato.</td></tr>
+    <tr><td class="path">timerBg</td><td>Image <span class="tag tag-off">inattivo</span></td><td class="note">Contenitore del timer, attivato solo quando la cassetta ha una scadenza impostata.</td></tr>
+    <tr><td class="path">timerBg/expiresText</td><td><span class="tag tag-txt">testo</span></td><td class="note">Etichetta "scade tra" o simile.</td></tr>
+    <tr><td class="path">timerBg/timer</td><td><span class="tag tag-txt">testo</span></td><td class="note">Conto alla rovescia prima della scadenza.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/GuildBank</code>. Nota: il path radice è dedotto solo dal nome del GameObject e dal fatto che "Banca della Gilda" è una funzionalità di gestione gilda tipicamente aperta da un menu, non trovato risalendo la gerarchia della scena live — verificare con il gioco avviato. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

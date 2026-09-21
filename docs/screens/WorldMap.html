@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Mappa del Mondo (World Map)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Mappa del Mondo (World Map)</div>
+  <h1>🗺️ Mappa del Mondo (World Map)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Controller radice: <code>WorldMapViewController</code>. La schermata contiene due sotto-tab (sottomenu): <code>Mappa missioni</code> e <code>Fronte di guerra</code>, selezionabili dai bottoni in alto.</p>
+</header>
+<main>
+
+<section>
+  <h2>Barra superiore e contatori</h2>
+  <p class="region-path">Radice sezione: <code>WorldMap</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">WorldMap</td>
+        <td>controller schermata <span class="note">(WorldMapViewController)</span></td>
+        <td>Radice del prefab: gestisce apertura/chiusura della mappa del mondo e i due sottomenu.</td>
+      </tr>
+      <tr>
+        <td class="path">counters</td>
+        <td>contenitore layout <span class="note">(HorizontalLayoutGroup)</span></td>
+        <td>Riga orizzontale dei contatori risorsa in alto (stelle, squadre, valuta generica).</td>
+      </tr>
+      <tr>
+        <td class="path">counters/stars <span class="tag tag-off">inattivo</span></td>
+        <td>contenitore</td>
+        <td>Contatore "stelle" (valuta premium?), disattivo di default: probabilmente mostrato solo se la valuta è sbloccata/rilevante.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/stars/icon</td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Icona cliccabile del contatore stelle, apre probabilmente il negozio/dettaglio della valuta.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/stars/quantity</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Quantità di stelle possedute.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/squads <span class="tag tag-off">inattivo</span></td>
+        <td>contenitore</td>
+        <td>Contatore "squadre", disattivo di default (mostrato solo in certe condizioni/eventi).</td>
+      </tr>
+      <tr>
+        <td class="path">counters/squads/bg</td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Sfondo cliccabile del contatore squadre (probabilmente apre dettaglio/negozio squadre).</td>
+      </tr>
+      <tr>
+        <td class="path">counters/squads/icon</td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Icona cliccabile del contatore squadre.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/squads/quantity</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Quantità di squadre disponibili.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/squads/getMore</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Bottone "ottieni di più": acquisto/apertura offerta per ricevere altre squadre.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/counterInteraction <span class="tag tag-off">inattivo</span></td>
+        <td>contenitore <span class="note">(CounterInteraction)</span></td>
+        <td>Contatore valuta generico/riutilizzabile, probabilmente istanziato dinamicamente per valute non fisse (evento, offerta...).</td>
+      </tr>
+      <tr>
+        <td class="path">counters/counterInteraction/bg</td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Sfondo cliccabile del contatore generico.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/counterInteraction/icon</td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Icona cliccabile del contatore generico.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/counterInteraction/quantity</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Quantità corrente della valuta mostrata.</td>
+      </tr>
+      <tr>
+        <td class="path">counters/counterInteraction/quantityAdded</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Testo "+N" mostrato temporaneamente quando la quantità aumenta (animazione incremento).</td>
+      </tr>
+      <tr>
+        <td class="path">counters/counterInteraction/getMore <span class="tag tag-off">inattivo</span></td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Bottone "ottieni di più" per questa valuta generica; appare solo quando disponibile un'offerta per quella valuta.</td>
+      </tr>
+      <tr>
+        <td class="path">closeButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Chiude la schermata Mappa del Mondo e torna alla schermata precedente.</td>
+      </tr>
+      <tr>
+        <td class="path">submenuButtons</td>
+        <td>contenitore <span class="note">(Image)</span></td>
+        <td>Barra dei tab per passare tra i due sottomenu della mappa.</td>
+      </tr>
+      <tr>
+        <td class="path">submenuButtons/mapMissionsButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Seleziona il tab "Mappa missioni".</td>
+      </tr>
+      <tr>
+        <td class="path">submenuButtons/warfrontCampaignButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Seleziona il tab "Fronte di guerra".</td>
+      </tr>
+      <tr>
+        <td class="path">chat</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ChatInteraction)</span></td>
+        <td>Apre la chat di gioco.</td>
+      </tr>
+      <tr>
+        <td class="path">chat/notification/amountTMP</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Numero di messaggi/notifiche chat non lette (badge).</td>
+      </tr>
+      <tr>
+        <td class="path">zoomSliderObj/zoomSlider</td>
+        <td>slider <span class="note">(UnityEngine.UI.Slider, ObjectInteraction)</span></td>
+        <td>Slider per lo zoom sulla mappa (trascinamento, non un Button classico).</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Mappa missioni"</h2>
+  <p class="region-path">Radice sezione: <code>WorldMap/submenus/mapMissionsSubmenu</code> <span class="tag tag-off">inattivo</span> nel prefab — attivo quando è selezionato il tab "Mappa missioni" (<code>MapMissionsSubmenuViewController</code>)</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">activeMissionsCanvas/activeMissions</td>
+        <td>lista scrollabile <span class="note">(ScrollRect)</span></td>
+        <td>Elenco scrollabile delle missioni attualmente attive.</td>
+      </tr>
+      <tr>
+        <td class="path">.../grid/activeMission (0)</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(MapMissionActiveInteraction, EnlargeOnHover, ButtonAnimation)</span></td>
+        <td>Card di una missione attiva (elemento template della griglia): clic per aprire dettaglio/azione sulla missione.</td>
+      </tr>
+      <tr>
+        <td class="path">.../activeMission (0)/missionProgress/activeMissionProgressBar</td>
+        <td>immagine (fill)</td>
+        <td>Barra di riempimento del progresso della missione.</td>
+      </tr>
+      <tr>
+        <td class="path">.../activeMission (0)/missionProgress/activeMissionProgressText</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Percentuale/valore testuale del progresso missione.</td>
+      </tr>
+      <tr>
+        <td class="path">.../activeMission (0)/activeMissionClaim/activeMissionClaimText</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Etichetta "ritira/claim" mostrata sulla card quando la missione è completata; il nodo non ha un Button proprio, verificare dal vivo se il claim avviene cliccando l'intera card.</td>
+      </tr>
+      <tr>
+        <td class="path">.../activeMission (0)/activeMissionIconBg/activeMissionIcon</td>
+        <td>immagine</td>
+        <td>Icona della missione.</td>
+      </tr>
+      <tr>
+        <td class="path">.../activeMission (0)/activeMissionIconBg/stars</td>
+        <td>immagine</td>
+        <td>Indicatore stelle ottenute nella missione.</td>
+      </tr>
+      <tr>
+        <td class="path">.../activeMission (0)/activeMissionName</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Nome della missione (localizzato).</td>
+      </tr>
+      <tr>
+        <td class="path">rankView</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(RankView, ButtonAnimation)</span></td>
+        <td>Riquadro del rango corrente; clic apre probabilmente il dettaglio/i benefici del rango.</td>
+      </tr>
+      <tr>
+        <td class="path">rankView/rankName</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Nome/livello del rango attuale.</td>
+      </tr>
+      <tr>
+        <td class="path">rankView/rankProgressBarBg/rankProgressBarFill</td>
+        <td>immagine (fill)</td>
+        <td>Riempimento della barra di progresso verso il prossimo rango.</td>
+      </tr>
+      <tr>
+        <td class="path">rankView/rankProgressBarBg/rankProgressText</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Valore testuale del progresso rango (es. "120/500").</td>
+      </tr>
+      <tr>
+        <td class="path">rankView/rankBg/rankImg</td>
+        <td>immagine</td>
+        <td>Icona/emblema del rango.</td>
+      </tr>
+      <tr>
+        <td class="path">rankView/rankBg/infoImg</td>
+        <td>script animazione <span class="note">(HolydayStudios.InfoButtonAnimation, no Button proprio)</span></td>
+        <td>Icona informativa "i" animata; funzione non chiara dal nome se cliccabile autonomamente, verificare dal vivo (il clic potrebbe essere gestito dal padre <code>rankView</code>).</td>
+      </tr>
+      <tr>
+        <td class="path">infoButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(HolydayStudios.InfoButtonAnimation)</span></td>
+        <td>Apre un popup informativo su missioni/rango.</td>
+      </tr>
+      <tr>
+        <td class="path">bottomLeftUI/newMissionsSpeedUpButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(SpeedUpButtonInteraction, ButtonAnimation)</span></td>
+        <td>Velocizza la generazione di nuove missioni pagando con valuta.</td>
+      </tr>
+      <tr>
+        <td class="path">bottomLeftUI/newMissionsSpeedUpButton/finishDesc</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Descrizione/tempo restante per il completamento.</td>
+      </tr>
+      <tr>
+        <td class="path">bottomLeftUI/newMissionsSpeedUpButton/costText</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Costo in valuta per velocizzare.</td>
+      </tr>
+      <tr>
+        <td class="path">bottomLeftUI/missionRefreshCanvas/missionRefreshBg/missionRefreshText</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Conto alla rovescia per il prossimo refresh automatico delle missioni.</td>
+      </tr>
+      <tr>
+        <td class="path">bottomUI/noMissionsActive</td>
+        <td>immagine (pannello)</td>
+        <td>Pannello mostrato quando non ci sono missioni attive.</td>
+      </tr>
+      <tr>
+        <td class="path">bottomUI/noMissionsActive/text</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Messaggio "nessuna missione attiva" (localizzato).</td>
+      </tr>
+      <tr>
+        <td class="path">rankUpAnimation</td>
+        <td>animazione <span class="note">(Spine, Canvas, MenuVfxEntityComponent)</span></td>
+        <td>Effetto visivo mostrato quando si sale di rango.</td>
+      </tr>
+      <tr>
+        <td class="path">bottomRightUI/rankListButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Apre la classifica/lista dei ranghi.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="region-path" style="margin-top:18px">Overlay tutorial (onboarding): <code>mapMissionsSubmenu/tutorialMain</code> <span class="tag tag-off">inattivo</span> — ogni step sotto è a sua volta <span class="tag tag-off">inattivo</span> di default e viene attivato dal flusso di tutorial in sequenza</p>
+  <table>
+    <thead><tr><th>Path (relativo a tutorialMain)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">tutorialChooseFirstMission</td>
+        <td>step tutorial <span class="note">(TutorialStepView)</span></td>
+        <td>Step "scegli la prima missione": mostra una freccia animata (<code>tutorialArrowParent/swingingArrow</code>, script ArrowMoverFast) che indica dove toccare.</td>
+      </tr>
+      <tr>
+        <td class="path">tutorialFirstStartMission</td>
+        <td>step tutorial <span class="note">(TutorialStepView)</span></td>
+        <td>Step "avvia la prima missione", con relativa freccia animata.</td>
+      </tr>
+      <tr>
+        <td class="path">tutoriaMissionInfo</td>
+        <td>step tutorial</td>
+        <td>Step informativo sulla missione, mostra un riquadro di testo con freccia.</td>
+      </tr>
+      <tr>
+        <td class="path">tutoriaMissionInfo/infoObj/tutorialText</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Testo istruzioni del popup tutorial.</td>
+      </tr>
+      <tr>
+        <td class="path">tutoriaMissionInfo/infoObj/okBtn</td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Conferma/"OK" per proseguire al prossimo step del tutorial.</td>
+      </tr>
+      <tr>
+        <td class="path">tutorialRushMission</td>
+        <td>step tutorial</td>
+        <td>Step relativo al "rush" (velocizzare) di una missione, con freccia animata.</td>
+      </tr>
+      <tr>
+        <td class="path">tutorialStartMission</td>
+        <td>step tutorial</td>
+        <td>Step "avvia missione", con freccia animata.</td>
+      </tr>
+      <tr>
+        <td class="path">tutorialChooseMission</td>
+        <td>step tutorial</td>
+        <td>Step "scegli una missione", con freccia animata.</td>
+      </tr>
+      <tr>
+        <td class="path">tutoriaClaimMission</td>
+        <td>step tutorial</td>
+        <td>Step "ritira ricompensa missione", con freccia animata.</td>
+      </tr>
+      <tr>
+        <td class="path">tutorialCloseMap</td>
+        <td>step tutorial <span class="note">(TutorialStepView)</span></td>
+        <td>Step finale "chiudi la mappa", con freccia animata verso il pulsante di chiusura.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Fronte di guerra"</h2>
+  <p class="region-path">Radice sezione: <code>WorldMap/submenus/warfrontCampaignSubmenu</code> <span class="tag tag-off">inattivo</span> nel prefab — attivo quando è selezionato il tab "Fronte di guerra" (<code>WFCampaignSubmenuViewController</code>)</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">starProgressMain</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Riquadro del livello a stelle del fronte di guerra; clic apre probabilmente il dettaglio del progresso.</td>
+      </tr>
+      <tr>
+        <td class="path">starProgressMain/starLevelText</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Testo del livello a stelle corrente.</td>
+      </tr>
+      <tr>
+        <td class="path">starProgressMain/infoButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(HolydayStudios.InfoButtonAnimation)</span></td>
+        <td>Apre un popup informativo sul livello a stelle.</td>
+      </tr>
+      <tr>
+        <td class="path">starProgressMain/starLevelProgressBarBg/levelProgressBarFill</td>
+        <td>immagine (fill)</td>
+        <td>Riempimento della barra di progresso del livello.</td>
+      </tr>
+      <tr>
+        <td class="path">starProgressMain/starLevelProgressBarBg/star0 … star4</td>
+        <td>immagini (5 marcatori)</td>
+        <td>Icone tacca-stella lungo la barra, indicano le soglie/traguardi del livello.</td>
+      </tr>
+      <tr>
+        <td class="path">starProgressMain/starLevelProgressBarBg/line, line (1), line (2), line (3)</td>
+        <td>immagini decorative</td>
+        <td>Linee divisorie tra le tacche della barra di progresso (puramente visive).</td>
+      </tr>
+      <tr>
+        <td class="path">loot</td>
+        <td>pannello <span class="note">(Image)</span></td>
+        <td>Sezione delle ricompense periodiche del fronte di guerra.</td>
+      </tr>
+      <tr>
+        <td class="path">loot/infoButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(HolydayStudios.InfoButtonAnimation)</span></td>
+        <td>Apre un popup informativo sulle ricompense.</td>
+      </tr>
+      <tr>
+        <td class="path">loot/lootDesc</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Descrizione della ricompensa/evento (localizzata).</td>
+      </tr>
+      <tr>
+        <td class="path">loot/nextLootTimeLeft</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Conto alla rovescia per la prossima ricompensa disponibile.</td>
+      </tr>
+      <tr>
+        <td class="path">loot/rewardsGrid/currency (0)</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(CurrencyRewardInteraction)</span></td>
+        <td>Slot ricompensa (valuta) nella griglia; clic mostra probabilmente il dettaglio della valuta.</td>
+      </tr>
+      <tr>
+        <td class="path">loot/rewardsGrid/currency (0)/quantity</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Quantità della ricompensa mostrata nello slot.</td>
+      </tr>
+      <tr>
+        <td class="path">loot/rewardsGrid/currency (1)</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(CurrencyRewardInteraction)</span></td>
+        <td>Secondo slot ricompensa della griglia, stesso comportamento del precedente.</td>
+      </tr>
+      <tr>
+        <td class="path">loot/claimButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Ritira la ricompensa disponibile del fronte di guerra.</td>
+      </tr>
+      <tr>
+        <td class="path">loot/claimButton/notification/amountTMP</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Badge/numero associato alla notifica di ricompensa disponibile sul claim.</td>
+      </tr>
+      <tr>
+        <td class="path">competitionBg</td>
+        <td>pannello <span class="note">(Image)</span></td>
+        <td>Sezione relativa alla competizione/evento del fronte di guerra.</td>
+      </tr>
+      <tr>
+        <td class="path">competitionBg/timeLeft</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Conto alla rovescia della competizione in corso.</td>
+      </tr>
+      <tr>
+        <td class="path">competitionBg/competitionButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Apre il dettaglio/la schermata della competizione.</td>
+      </tr>
+      <tr>
+        <td class="path">leaderboardButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Apre la classifica (leaderboard) del fronte di guerra.</td>
+      </tr>
+      <tr>
+        <td class="path">dailyMissionsButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Apre le missioni giornaliere.</td>
+      </tr>
+      <tr>
+        <td class="path">dailyMissionsButton/notification/amountTMP</td>
+        <td><span class="tag tag-txt">testo</span></td>
+        <td>Badge con il numero di missioni giornaliere da riscuotere/notificare.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/WorldMap</code>. Nota: il path radice è dedotto solo dal nome del GameObject (schermata di tipo "hub/mappa" tipicamente aperta dal menu principale), non è stato verificato risalendo la gerarchia di una scena live — potrebbe differire da come <code>WorldMapViewController</code> viene istanziato realmente. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

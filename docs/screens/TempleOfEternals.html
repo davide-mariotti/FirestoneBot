@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Tempio degli Eterni</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Tempio degli Eterni</div>
+  <h1>🏛️ Tempio degli Eterni</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice</h2>
+  <p class="region-path">Path: <code>(radice)</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">TempleOfEternals <span class="tag tag-off">inattivo</span></td>
+      <td>controller (TempleOfEternalsViewController)</td>
+      <td>Script controller della schermata. Il nodo radice risulta disattivo nel prefab: viene attivato dinamicamente quando il giocatore apre il Tempio degli Eterni (probabilmente dal menu principale).</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sfondo e scenografia</h2>
+  <p class="region-path">Path: <code>bg/...</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg</td><td>contenitore</td><td>Raggruppa gli elementi grafici di sfondo.</td></tr>
+    <tr><td class="path">bg/bgUp</td><td>Image</td><td>Sfondo statico, porzione superiore.</td></tr>
+    <tr><td class="path">bg/bgDown</td><td>Image</td><td>Sfondo statico, porzione inferiore.</td></tr>
+    <tr><td class="path">bg/bgDownWalls</td><td>Image</td><td>Mura disegnate sullo sfondo inferiore.</td></tr>
+    <tr><td class="path">bg/bgTile</td><td>Image + VFX</td><td>Tile di sfondo con componente effetti (MenuVfxEntityComponent).</td></tr>
+    <tr><td class="path">bg/bgTile/cloudsParent</td><td>contenitore</td><td>Raggruppa le nuvole animate.</td></tr>
+    <tr><td class="path">bg/bgTile/cloudsParent/cloud, cloud (1), cloud (2)</td><td>Image + VFX</td><td>Nuvole decorative animate in loop, puramente scenografiche.</td></tr>
+    <tr><td class="path">bg/bgTile/mountain</td><td>Image + VFX</td><td>Montagna sullo sfondo, decorativa.</td></tr>
+    <tr><td class="path">bg/bgTile/enviroment</td><td>Image + VFX</td><td>Elementi ambientali decorativi aggiuntivi.</td></tr>
+    <tr><td class="path">bg/walls</td><td>Image + VFX</td><td>Mura del tempio.</td></tr>
+    <tr><td class="path">bg/wallsFront</td><td>Image + VFX</td><td>Mura in primo piano (davanti alla scena).</td></tr>
+    <tr><td class="path">bg/base</td><td>Image + VFX</td><td>Base/piedistallo della struttura del tempio.</td></tr>
+    <tr><td class="path">bg/base/spineParent</td><td>contenitore</td><td>Raggruppa le animazioni Spine sulla base.</td></tr>
+    <tr><td class="path">bg/base/spineParent/spineHeroes</td><td>animazione Spine + VFX</td><td>Animazione delle statue/eroi sulla base del tempio.</td></tr>
+    <tr><td class="path">bg/base/spineParent/spineCrystal</td><td>animazione Spine + VFX</td><td>Animazione del cristallo, presumibilmente collegata alle Firestone.</td></tr>
+    <tr><td class="path">bg/base/spineParent/spinePrestige</td><td>animazione Spine + VFX</td><td>Animazione legata al livello di prestigio raggiunto; funzione esatta non chiara dal nome, verificare dal vivo.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Offerta di sblocco</h2>
+  <p class="region-path">Path: <code>unlockOfferButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">unlockOfferButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Bottone con script dedicato (UnlockOfferButtonInteraction) che propone un'offerta di sblocco, presumibilmente un acquisto per sbloccare in anticipo un elemento del tempio o un'unità.</td>
+    </tr>
+    <tr><td class="path">unlockOfferButton/unlockMechanismSpine</td><td>animazione Spine + VFX</td><td>Animazione del meccanismo di sblocco.</td></tr>
+    <tr><td class="path">unlockOfferButton/unlockUnitSpine</td><td>animazione Spine + VFX</td><td>Animazione dell'unità/oggetto offerto in sblocco.</td></tr>
+    <tr><td class="path">unlockOfferButton/canvasGroup</td><td>CanvasGroup</td><td>Gruppo che controlla visibilità/interattività del contenuto del bottone (icona e timer).</td></tr>
+    <tr><td class="path">unlockOfferButton/canvasGroup/unitIcon</td><td>Image</td><td>Icona dell'unità/oggetto proposto nell'offerta.</td></tr>
+    <tr><td class="path">unlockOfferButton/canvasGroup/time</td><td><span class="tag tag-txt">testo</span></td><td>Testo del conto alla rovescia (tempo residuo) dell'offerta.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Chiusura schermata</h2>
+  <p class="region-path">Path: <code>closeButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">closeButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Chiude la schermata del Tempio degli Eterni.</td>
+    </tr>
+    <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona (X) del bottone di chiusura.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu prestigio — intestazione e info</h2>
+  <p class="region-path">Path: <code>submenus/bgNew/prestigeSubmenu</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenus</td><td>contenitore</td><td>Raggruppa i pannelli dei sottomenu.</td></tr>
+    <tr><td class="path">submenus/bgNew</td><td>Image</td><td>Sfondo del pannello sottomenu.</td></tr>
+    <tr><td class="path">submenus/bgNew/prestigeSubmenu</td><td>contenitore</td><td>Pannello principale con le informazioni di prestigio.</td></tr>
+    <tr><td class="path">submenus/bgNew/prestigeSubmenu/submenuTitle</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Titolo del pannello prestigio.</td></tr>
+    <tr>
+      <td class="path">submenus/bgNew/prestigeSubmenu/prestigeInfoButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre un popup informativo che spiega il funzionamento del prestigio (script HolydayStudios.InfoButtonAnimation).</td>
+    </tr>
+    <tr><td class="path">submenus/bgNew/prestigeSubmenu/prestigeInfoButton/spineInfo</td><td>animazione Spine</td><td>Icona animata "i" (informazioni) sul bottone.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Statistiche dell'avventura corrente</h2>
+  <p class="region-path">Path: <code>submenus/bgNew/prestigeSubmenu/adventureInfo</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">adventureInfo</td><td>Image</td><td>Contenitore delle statistiche della run/avventura in corso.</td></tr>
+    <tr><td class="path">adventureInfo/adventureTimePlayedDesc</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Etichetta "tempo di gioco trascorso".</td></tr>
+    <tr><td class="path">adventureInfo/adventureTimePlayed</td><td><span class="tag tag-txt">testo</span></td><td>Valore del tempo giocato nella run corrente.</td></tr>
+    <tr><td class="path">adventureInfo/clockSpine</td><td>animazione Spine + VFX</td><td>Icona animata a forma di orologio.</td></tr>
+    <tr><td class="path">adventureInfo/firestonesFoundDesc</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Etichetta "firestone trovate".</td></tr>
+    <tr><td class="path">adventureInfo/firestonesFound</td><td><span class="tag tag-txt">testo</span></td><td>Numero di firestone trovate nella run corrente.</td></tr>
+    <tr><td class="path">adventureInfo/firestoneIcon</td><td>Image</td><td>Icona firestone.</td></tr>
+    <tr><td class="path">adventureInfo/separator</td><td>Image</td><td>Separatore visivo tra le sezioni.</td></tr>
+    <tr><td class="path">adventureInfo/empowerInfo</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Testo descrittivo relativo al potenziamento "Empower".</td></tr>
+    <tr>
+      <td class="path">adventureInfo/openEmpowerButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre la schermata/funzione di potenziamento "Empower".</td>
+    </tr>
+    <tr><td class="path">adventureInfo/openEmpowerButton/text</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Etichetta testuale del bottone Empower.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Progresso / statistiche di prestigio</h2>
+  <p class="region-path">Path: <code>submenus/bgNew/prestigeSubmenu/progress</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">progress</td><td>contenitore</td><td>Raggruppa le statistiche di prestigio (firestone possedute, effetto, oro totale).</td></tr>
+    <tr><td class="path">progress/firestonesYouOwnBg</td><td>Image</td><td>Riquadro "firestone possedute".</td></tr>
+    <tr><td class="path">progress/firestonesYouOwnBg/firestoneIcon</td><td>Image</td><td>Icona firestone.</td></tr>
+    <tr><td class="path">progress/firestonesYouOwnBg/firestonesYouOwnDesc</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Etichetta "firestone possedute".</td></tr>
+    <tr><td class="path">progress/firestonesYouOwnBg/firestonesYouOwn</td><td><span class="tag tag-txt">testo</span></td><td>Numero totale di firestone possedute dal giocatore.</td></tr>
+    <tr><td class="path">progress/xImage</td><td>Image</td><td>Simbolo "x" (moltiplicatore) tra i riquadri, decorativo.</td></tr>
+    <tr><td class="path">progress/firestoneEffectBg</td><td>Image</td><td>Riquadro dell'effetto/bonus fornito dalle firestone.</td></tr>
+    <tr><td class="path">progress/firestoneEffectBg/firestoneEffectIcon</td><td>Image</td><td>Icona dell'effetto.</td></tr>
+    <tr><td class="path">progress/firestoneEffectBg/firestoneEffectDesc</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Etichetta dell'effetto/bonus.</td></tr>
+    <tr><td class="path">progress/firestoneEffectBg/firestoneEffect</td><td><span class="tag tag-txt">testo</span></td><td>Valore del bonus/moltiplicatore attivo grazie alle firestone.</td></tr>
+    <tr><td class="path">progress/totalGoldEarningsBg</td><td>Image</td><td>Riquadro "oro totale guadagnato".</td></tr>
+    <tr><td class="path">progress/totalGoldEarningsBg/rainingGoldIcon</td><td>Image</td><td>Icona di pioggia d'oro.</td></tr>
+    <tr><td class="path">progress/totalGoldEarningsBg/totalGoldEarningsDesc</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Etichetta "oro totale guadagnato".</td></tr>
+    <tr><td class="path">progress/totalGoldEarningsBg/totalGoldEarnings</td><td><span class="tag tag-txt">testo</span></td><td>Valore dell'oro totale guadagnato.</td></tr>
+    <tr><td class="path">progress/arrowImg</td><td>Image</td><td>Freccia indicatrice, presumibilmente tra stato attuale e stato dopo il prestigio; funzione non chiara con certezza dal solo nome, verificare dal vivo.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Suggerimento (tip)</h2>
+  <p class="region-path">Path: <code>submenus/bgNew/prestigeSubmenu/tipBg</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">tipBg</td><td>Image</td><td>Riquadro del suggerimento mostrato al giocatore.</td></tr>
+    <tr><td class="path">tipBg/tip</td><td><span class="tag tag-txt">testo (localizzato)</span></td><td>Testo del suggerimento/tip.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Blocco prestigio</h2>
+  <p class="region-path">Path: <code>prestigeBlocker</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">prestigeBlocker <span class="tag tag-off">inattivo</span></td>
+      <td>Image</td>
+      <td>Overlay che presumibilmente blocca l'interazione col pannello prestigio quando le condizioni non sono soddisfatte (es. requisiti minimi non raggiunti). Compare solo in certe condizioni: verificare dal vivo.</td>
+    </tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/TempleOfEternals</code>. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+  <br>Nota: il path radice sopra è una stima basata sul solo nome del GameObject (schermata di tipo menu/prestigio), non confermata risalendo la gerarchia della scena live: verificare all'avvio del gioco.
+</footer>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Crea Fellowship</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Crea Fellowship</div>
+  <h1>🤝 Crea Fellowship</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale / header</h2>
+  <p class="region-path">Path relativo alla radice: <code>CreateFellowship/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">CreateFellowship</td><td>Root, script <code>CreateFellowshipViewController</code></td><td>Nodo radice del popup, disattivo di default nel prefab; viene attivato quando l'utente apre la creazione di una Fellowship (probabilmente dal menu Social/Fellowship). Il controller gestisce la validazione del form e l'invio della richiesta di creazione.</td></tr>
+      <tr><td class="path">background</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo/overlay a tutto schermo dietro il popup; è cliccabile, probabilmente chiude il popup se si tocca fuori dal pannello.</td></tr>
+      <tr><td class="path">bg</td><td>Immagine</td><td>Pannello principale del popup.</td></tr>
+      <tr><td class="path">bg/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del popup (testo localizzato), es. "Crea Fellowship".</td></tr>
+      <tr><td class="path">bg/closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup senza creare la Fellowship.</td></tr>
+      <tr><td class="path">bg/closeButton/icon</td><td>Immagine</td><td>Icona (X) del pulsante di chiusura.</td></tr>
+      <tr><td class="path">bg/createFellowshipBg</td><td>Immagine</td><td>Pannello interno che contiene il form di creazione (nome, requisiti opzionali, pulsante di conferma).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Nome della Fellowship</h2>
+  <p class="region-path">Path relativo: <code>CreateFellowship/bg/createFellowshipBg/inputFieldName/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">inputFieldName</td><td>Campo di input (<code>TMP_InputField</code>)</td><td>Campo di testo per il nome della Fellowship da creare.</td></tr>
+      <tr><td class="path">inputFieldName/Text Area</td><td><code>RectMask2D</code></td><td>Area di ritaglio del testo digitato/placeholder.</td></tr>
+      <tr><td class="path">inputFieldName/Text Area/Placeholder</td><td><span class="tag tag-txt">testo</span></td><td>Testo segnaposto localizzato, es. "Inserisci nome".</td></tr>
+      <tr><td class="path">inputFieldName/Text Area/Text</td><td><span class="tag tag-txt">testo</span></td><td>Testo effettivamente digitato dall'utente.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Requisiti opzionali (grido di battaglia, fato, password)</h2>
+  <p class="region-path">Path relativo: <code>CreateFellowship/bg/createFellowshipBg/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">optionalReqTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo di sezione localizzato per il blocco dei requisiti opzionali sottostante.</td></tr>
+
+      <tr><td class="path">battleCryDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione localizzata del campo "grido di battaglia" (battle cry) sottostante.</td></tr>
+      <tr><td class="path">inputFieldBattleCry</td><td>Campo di input (<code>TMP_InputField</code>)</td><td>Campo di testo per il messaggio/motto (battle cry) della Fellowship.</td></tr>
+      <tr><td class="path">inputFieldBattleCry/Text Area</td><td><code>RectMask2D</code></td><td>Area di ritaglio del testo digitato/placeholder.</td></tr>
+      <tr><td class="path">inputFieldBattleCry/Text Area/Placeholder</td><td><span class="tag tag-txt">testo</span></td><td>Testo segnaposto del campo battle cry (non localizzato, a differenza degli altri placeholder).</td></tr>
+      <tr><td class="path">inputFieldBattleCry/Text Area/Text</td><td><span class="tag tag-txt">testo</span></td><td>Testo effettivamente digitato dall'utente.</td></tr>
+
+      <tr><td class="path">percentageSymbol</td><td><span class="tag tag-txt">testo</span></td><td>Simbolo "%" associato al requisito minimo sottostante (Fato). Nel dump statico compaiono due nodi distinti con lo stesso nome allo stesso livello (righe 19 e 21 del dump grezzo); non è chiaro dal nome se sia un duplicato ridondante nel prefab o se uno dei due sia inutilizzato/residuo — verificare dal vivo.</td></tr>
+      <tr><td class="path">fateDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione localizzata del requisito minimo di "Fato" (Fate) richiesto per unirsi alla Fellowship.</td></tr>
+      <tr><td class="path">percentageSymbol</td><td><span class="tag tag-txt">testo</span></td><td>Secondo nodo "percentageSymbol" (vedi nota sopra), posizionato subito dopo <code>fateDesc</code> e prima del campo di input Fato.</td></tr>
+      <tr><td class="path">inputFieldFate</td><td>Campo di input (<code>TMP_InputField</code>)</td><td>Campo numerico per impostare il requisito minimo di Fato/potere per l'ingresso nella Fellowship.</td></tr>
+      <tr><td class="path">inputFieldFate/Text Area</td><td><code>RectMask2D</code></td><td>Area di ritaglio del testo digitato/placeholder.</td></tr>
+      <tr><td class="path">inputFieldFate/Text Area/Placeholder</td><td><span class="tag tag-txt">testo</span></td><td>Testo segnaposto del campo Fato (es. valore di default "0").</td></tr>
+      <tr><td class="path">inputFieldFate/Text Area/Text</td><td><span class="tag tag-txt">testo</span></td><td>Valore effettivamente digitato dall'utente.</td></tr>
+
+      <tr><td class="path">passwordDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione localizzata del campo password sottostante, per rendere la Fellowship privata.</td></tr>
+      <tr><td class="path">inputFieldPassword</td><td>Campo di input (<code>TMP_InputField</code>)</td><td>Campo di testo per impostare una password opzionale di accesso alla Fellowship.</td></tr>
+      <tr><td class="path">inputFieldPassword/Text Area</td><td><code>RectMask2D</code></td><td>Area di ritaglio del testo digitato/placeholder.</td></tr>
+      <tr><td class="path">inputFieldPassword/Text Area/Placeholder</td><td><span class="tag tag-txt">testo</span></td><td>Testo segnaposto del campo password.</td></tr>
+      <tr><td class="path">inputFieldPassword/Text Area/Text</td><td><span class="tag tag-txt">testo</span></td><td>Valore effettivamente digitato dall'utente (password in chiaro nel campo di testo).</td></tr>
+    </tbody>
+  </table>
+  <p class="note">I tre requisiti (grido di battaglia, Fato minimo, password) sembrano tutti opzionali, coerentemente col titolo <code>optionalReqTitle</code>: probabilmente possono restare vuoti/a zero senza bloccare la creazione.</p>
+</section>
+
+<section>
+  <h2>Conferma creazione</h2>
+  <p class="region-path">Path relativo: <code>CreateFellowship/bg/createFellowshipBg/createFellowshipButton/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">createFellowshipButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Conferma e invia la richiesta di creazione della Fellowship con i dati inseriti nel form.</td></tr>
+      <tr><td class="path">createFellowshipButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta localizzata del pulsante, es. "Crea".</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/CreateFellowship</code> (stimato per nome del GameObject — sembra una schermata di menu/social raggiunta al di fuori della battaglia, non verificato risalendo la gerarchia della scena live: potrebbe differire). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

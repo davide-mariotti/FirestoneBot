@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Info Mappa del Mondo (World Map Info)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Info Mappa del Mondo (World Map Info)</div>
+  <h1>ℹ️ Info Mappa del Mondo (World Map Info)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Controller radice: <code>WorldMapInfoViewController</code>. È un popup informativo/tutorial (radice <span class="tag tag-off">inattivo</span> nel prefab) con tre sotto-tab: <code>info</code> (mappa/onore/rango), <code>missionType</code> (tipi di missione) e <code>missionQuality</code> (qualità missione), aperto probabilmente dal bottone "i" della schermata Mappa del Mondo.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale e bottoni principali</h2>
+  <p class="region-path">Radice sezione: <code>WorldMapInfo</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">WorldMapInfo</td>
+        <td>controller schermata <span class="note">(WorldMapInfoViewController)</span></td>
+        <td>Radice del prefab, disattiva di default: viene attivata quando si apre il popup informativo della mappa del mondo.</td>
+      </tr>
+      <tr>
+        <td class="path">background</td>
+        <td><span class="tag tag-btn">BOTTONE</span></td>
+        <td>Sfondo scurito a schermo intero dietro al pannello; cliccarlo probabilmente chiude il popup (pattern tipico backdrop-dismiss).</td>
+      </tr>
+      <tr>
+        <td class="path">bg</td>
+        <td>contenitore</td>
+        <td>Pannello principale del popup, senza componenti propri.</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenuButtons</td>
+        <td>contenitore <span class="note">(GridLayoutGroup)</span></td>
+        <td>Barra dei tre bottoni per cambiare sotto-tab all'interno del popup.</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenuButtons/info</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Seleziona il tab "Info" (informazioni generali su mappa, onore e rango).</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenuButtons/info/icon</td>
+        <td>immagine</td>
+        <td>Icona del tab "Info".</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenuButtons/missionType</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Seleziona il tab "Tipo di missione" (elenco/spiegazione dei tipi di missione).</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenuButtons/missionType/icon</td>
+        <td>immagine</td>
+        <td>Icona del tab "Tipo di missione".</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenuButtons/missionQuality</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Seleziona il tab "Qualità missione".</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenuButtons/missionQuality/icon</td>
+        <td>immagine</td>
+        <td>Icona del tab "Qualità missione".</td>
+      </tr>
+      <tr>
+        <td class="path">bg/submenus</td>
+        <td>contenitore <span class="note">(Image)</span></td>
+        <td>Contiene i tre pannelli scrollabili (uno per tab), descritti nelle sezioni sotto.</td>
+      </tr>
+      <tr>
+        <td class="path">bg/closeButton</td>
+        <td><span class="tag tag-btn">BOTTONE</span> <span class="note">(ButtonAnimation)</span></td>
+        <td>Chiude il popup informativo.</td>
+      </tr>
+      <tr>
+        <td class="path">bg/closeButton/icon</td>
+        <td>immagine</td>
+        <td>Icona "X" del bottone di chiusura.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab "Info" (mappa / onore / rango)</h2>
+  <p class="region-path">Radice sezione: <code>WorldMapInfo/bg/submenus/infoScroll/Viewport/Content</code> — questo pannello risulta attivo di default nel prefab (è il primo tab mostrato all'apertura).</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">worldMapTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo della sezione informativa sulla mappa del mondo (localizzato).</td>
+      </tr>
+      <tr>
+        <td class="path">worldMapInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo che spiega a cosa serve la mappa del mondo.</td>
+      </tr>
+      <tr>
+        <td class="path">honorTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo della sezione "Onore".</td>
+      </tr>
+      <tr>
+        <td class="path">honorTitle/honorIcon</td>
+        <td>immagine</td>
+        <td>Icona della valuta/risorsa "Onore".</td>
+      </tr>
+      <tr>
+        <td class="path">honorInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo che spiega come si ottiene e a cosa serve l'Onore.</td>
+      </tr>
+      <tr>
+        <td class="path">rankTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo della sezione "Rango".</td>
+      </tr>
+      <tr>
+        <td class="path">rankTitle/rankIcon</td>
+        <td>immagine</td>
+        <td>Icona/emblema del rango.</td>
+      </tr>
+      <tr>
+        <td class="path">rankInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo che spiega il sistema di rango.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab "Tipo di missione"</h2>
+  <p class="region-path">Radice sezione: <code>WorldMapInfo/bg/submenus/missionsTypeScroll/Viewport/Content</code> — <code>missionsTypeScroll</code> risulta <span class="tag tag-off">inattivo</span> nel prefab: viene mostrato solo quando si seleziona il tab "missionType".</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">scoutMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Esplorazione" (scout).</td>
+      </tr>
+      <tr>
+        <td class="path">scoutMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Esplorazione".</td>
+      </tr>
+      <tr>
+        <td class="path">scoutMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Esplorazione".</td>
+      </tr>
+      <tr>
+        <td class="path">adventureMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Avventura".</td>
+      </tr>
+      <tr>
+        <td class="path">adventureMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Avventura".</td>
+      </tr>
+      <tr>
+        <td class="path">adventureMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Avventura".</td>
+      </tr>
+      <tr>
+        <td class="path">warMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Guerra".</td>
+      </tr>
+      <tr>
+        <td class="path">warMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Guerra".</td>
+      </tr>
+      <tr>
+        <td class="path">warMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Guerra".</td>
+      </tr>
+      <tr>
+        <td class="path">monsterMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Mostri".</td>
+      </tr>
+      <tr>
+        <td class="path">monsterMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Mostri".</td>
+      </tr>
+      <tr>
+        <td class="path">monsterMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Mostri".</td>
+      </tr>
+      <tr>
+        <td class="path">dragonMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Draghi".</td>
+      </tr>
+      <tr>
+        <td class="path">dragonMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Draghi".</td>
+      </tr>
+      <tr>
+        <td class="path">dragonMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Draghi".</td>
+      </tr>
+      <tr>
+        <td class="path">navalMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Navale".</td>
+      </tr>
+      <tr>
+        <td class="path">navalMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Navale".</td>
+      </tr>
+      <tr>
+        <td class="path">navalMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Navale".</td>
+      </tr>
+      <tr>
+        <td class="path">titanMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Titani".</td>
+      </tr>
+      <tr>
+        <td class="path">titanMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Titani".</td>
+      </tr>
+      <tr>
+        <td class="path">titanMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Titani".</td>
+      </tr>
+      <tr>
+        <td class="path">shadowMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo del tipo di missione "Ombra".</td>
+      </tr>
+      <tr>
+        <td class="path">shadowMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona del tipo di missione "Ombra".</td>
+      </tr>
+      <tr>
+        <td class="path">shadowMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo del tipo di missione "Ombra".</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab "Qualità missione"</h2>
+  <p class="region-path">Radice sezione: <code>WorldMapInfo/bg/submenus/missionsQualityScroll/Viewport/Content</code> — <code>missionsQualityScroll</code> risulta <span class="tag tag-off">inattivo</span> nel prefab: viene mostrato solo quando si seleziona il tab "missionQuality".</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="path">silverMissionsTitle</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Titolo della qualità missione "Argento". Nel prefab statico è presente solo questa voce: probabilmente è la voce template che il gioco clona a runtime per le altre qualità (es. oro, diamante); verificare dal vivo aprendo il tab in gioco.</td>
+      </tr>
+      <tr>
+        <td class="path">silverMissionsTitle/missionIcon</td>
+        <td>immagine</td>
+        <td>Icona della qualità missione "Argento".</td>
+      </tr>
+      <tr>
+        <td class="path">silverMissionsInfo</td>
+        <td><span class="tag tag-txt">testo</span> <span class="note">(I2.Loc.Localize)</span></td>
+        <td>Testo descrittivo della qualità missione "Argento".</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/WorldMapInfo</code>. Nota: il path radice è dedotto solo dal nome del GameObject e dal fatto che è un popup informativo legato alla schermata Mappa del Mondo, non è stato verificato risalendo la gerarchia di una scena live — potrebbe in realtà essere annidato sotto <code>WorldMap</code> stesso invece che come figlio diretto di <code>menus</code>. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a> e la schermata <a href="WorldMap.html">Mappa del Mondo</a>.
+</footer>
+</body>
+</html>

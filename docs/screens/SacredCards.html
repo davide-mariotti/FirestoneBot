@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Carte Sacre</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Carte Sacre</div>
+  <h1>🎴 Carte Sacre</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Popup che elenca le carte sacre (bonus passivi/equipaggiabili) suddivise in 4 categorie: Eroi, Guardiani, Macchine da Guerra, Attributi.</p>
+</header>
+<main>
+
+<section>
+<h2>Struttura generale e navigazione</h2>
+<p class="region-path">Radice: <code>SacredCards</code></p>
+<table>
+<tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+<tr><td class="path">SacredCards</td><td>Root — <code>Canvas</code>, <code>GraphicRaycaster</code>, <code>SacredCardsViewController</code> <span class="tag tag-off">inattivo</span></td><td>Radice del popup; disattiva finché non viene aperto dal menu principale.</td></tr>
+<tr><td class="path">bg</td><td>Image + VFX decorativi</td><td>Sfondo del popup, puramente estetico.</td></tr>
+<tr><td class="path">cardCounter</td><td>Image (contenitore)</td><td>Contatore in alto con il totale di carte sacre possedute/raccolte.</td></tr>
+<tr><td class="path">cardCounter/cardImg</td><td>Image</td><td>Icona "carta" del contatore.</td></tr>
+<tr><td class="path">cardCounter/cardNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero di carte sacre possedute (o possedute/totali).</td></tr>
+<tr><td class="path">submenuButtons</td><td>GridLayoutGroup + Image (barra tab)</td><td>Barra dei sottomenu che filtra la lista carte per categoria.</td></tr>
+<tr><td class="path">submenuButtons/heroes</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab: mostra le carte sacre della categoria Eroi.</td></tr>
+<tr><td class="path">submenuButtons/heroes/icon</td><td>Image</td><td>Icona del tab Eroi.</td></tr>
+<tr><td class="path">submenuButtons/heroes/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata).</td></tr>
+<tr><td class="path">submenuButtons/guardians</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab: mostra le carte sacre della categoria Guardiani.</td></tr>
+<tr><td class="path">submenuButtons/guardians/icon</td><td>Image</td><td>Icona del tab Guardiani.</td></tr>
+<tr><td class="path">submenuButtons/guardians/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata).</td></tr>
+<tr><td class="path">submenuButtons/warMachines</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab: mostra le carte sacre della categoria Macchine da Guerra.</td></tr>
+<tr><td class="path">submenuButtons/warMachines/icon</td><td>Image</td><td>Icona del tab Macchine da Guerra.</td></tr>
+<tr><td class="path">submenuButtons/warMachines/lock</td><td>Image <span class="tag tag-off">inattivo</span></td><td>Lucchetto mostrato sopra il tab quando la categoria non è ancora sbloccata.</td></tr>
+<tr><td class="path">submenuButtons/warMachines/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata).</td></tr>
+<tr><td class="path">submenuButtons/attributes</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab: mostra le carte sacre della categoria Attributi.</td></tr>
+<tr><td class="path">submenuButtons/attributes/icon</td><td>Image</td><td>Icona del tab Attributi.</td></tr>
+<tr><td class="path">submenuButtons/attributes/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata).</td></tr>
+<tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup Carte Sacre e torna alla schermata precedente.</td></tr>
+<tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona "X" del pulsante di chiusura.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Lista carte (elemento ripetuto nella scrollview)</h2>
+<p class="region-path">Radice: <code>SacredCards/cardsBg/cardsScrollView/Viewport/Content/sacredCard (0)</code> — <code>sacredCard (0)</code> è il template della singola voce, ripetuto dinamicamente a runtime per ogni carta sacra della categoria selezionata.</p>
+<table>
+<tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+<tr><td class="path">cardsBg</td><td>Container</td><td>Sfondo/contenitore della zona lista carte.</td></tr>
+<tr><td class="path">cardsBg/cardsScrollView</td><td>ScrollRect + Image</td><td>Vista scrollabile con l'elenco delle carte sacre della categoria attiva.</td></tr>
+<tr><td class="path">cardsScrollView/Viewport</td><td>RectMask2D</td><td>Maschera di ritaglio della scrollview.</td></tr>
+<tr><td class="path">Viewport/Content</td><td>GridLayoutGroup + ContentSizeFitter</td><td>Contenitore che dispone le carte in griglia e si ridimensiona in base al numero di elementi.</td></tr>
+<tr><td class="path">Content/sacredCard (0)</td><td>Image, <code>RewardCardInteraction</code>, VFX</td><td>Elemento carta (template). Non ha un componente Button standard ma lo script custom <code>RewardCardInteraction</code>, che presumibilmente gestisce click/selezione della carta; funzione esatta non chiara dal solo nome, verificare dal vivo.</td></tr>
+<tr><td class="path">sacredCard (0)/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome della carta sacra (localizzato).</td></tr>
+<tr><td class="path">sacredCard (0)/starsParent</td><td>GridLayoutGroup</td><td>Contenitore delle stelle che indicano la rarità/livello della carta.</td></tr>
+<tr><td class="path">starsParent/star0 … star4</td><td>Image ×5</td><td>5 slot stella (rarità o progressione di livello della carta).</td></tr>
+<tr><td class="path">sacredCard (0)/frameBg</td><td>Container</td><td>Cornice grafica della carta.</td></tr>
+<tr><td class="path">frameBg/icon</td><td>Image</td><td>Icona/artwork della carta.</td></tr>
+<tr><td class="path">sacredCard (0)/progressBarBg</td><td>Image</td><td>Sfondo della barra di progresso verso il prossimo potenziamento/livello.</td></tr>
+<tr><td class="path">progressBarBg/progressBarMask/progressBarFill</td><td>RectMask2D + Image</td><td>Riempimento della barra di progresso (materiali/frammenti raccolti).</td></tr>
+<tr><td class="path">progressBarBg/progressText</td><td><span class="tag tag-txt">testo</span></td><td>Testo di progresso (es. frazione o percentuale verso il prossimo livello).</td></tr>
+<tr><td class="path">sacredCard (0)/unlocked</td><td>Container</td><td>Blocco informazioni mostrato quando la carta è sbloccata.</td></tr>
+<tr><td class="path">unlocked/description</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione generale della carta (localizzata).</td></tr>
+<tr><td class="path">unlocked/levelDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Livello" (localizzata).</td></tr>
+<tr><td class="path">unlocked/level</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale della carta.</td></tr>
+<tr><td class="path">unlocked/effectDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta descrittiva dell'effetto/bonus fornito (localizzata).</td></tr>
+<tr><td class="path">unlocked/effect</td><td><span class="tag tag-txt">testo</span></td><td>Valore numerico dell'effetto/bonus al livello attuale.</td></tr>
+<tr><td class="path">sacredCard (0)/locked</td><td>Container <span class="tag tag-off">inattivo</span></td><td>Blocco alternativo a "unlocked", mostrato quando la carta non è ancora sbloccata.</td></tr>
+<tr><td class="path">locked/lockedText</td><td><span class="tag tag-txt">testo</span></td><td>Testo che spiega come/quando sbloccare la carta (localizzato).</td></tr>
+</table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/SacredCards</code> — dedotto dal fatto che questa è una schermata di menu autonoma (popup di elenco, non contiene riferimenti alla battaglia), non raggiunta risalendo la gerarchia della scena live: verificare il path esatto dal vivo. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

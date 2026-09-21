@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Mappa Path UI</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 16px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  .sub { color: var(--muted); font-size: 0.85rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .warnbox { background: rgba(239,83,80,0.1); border: 1px solid var(--warn); border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; font-size: 0.88rem; }
+  .warnbox b { color: var(--warn); }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  nav.toc a { color: var(--accent); text-decoration: none; font-size: 0.82rem; border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; }
+  nav.toc a:hover { background: var(--panel); }
+  section { margin-bottom: 40px; }
+  section h2 { font-size: 1.1rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  section .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
+  section .region-path code { color: var(--btn); }
+  section .desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; color: var(--text); word-break: break-all; }
+  td.path .prefix { color: var(--muted); }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  .already { color: var(--ok); font-size: 0.72rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 30px 20px 60px; max-width: 1100px; margin: 0 auto; }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:0.8rem;color:var(--muted);margin-bottom:6px;"><a href="index.html" style="color:var(--accent);text-decoration:none;">Indice</a> / Schermata di Battaglia</div>
+  <h1>🗺️ Firestone — Mappa Path UI (Schermata di Battaglia)</h1>
+  <p class="sub">
+    Estratta <b>senza avviare il gioco</b>, analizzando staticamente <code>Firestone_Data/resources.assets</code> con
+    <a href="https://github.com/K0lb3/UnityPy" target="_blank" rel="noopener">UnityPy</a> (ogni schermata del gioco esiste come
+    prefab Unity completo — GameObject/Transform/componenti — anche senza eseguire il gioco). Ogni bottone qui sotto è stato
+    verificato controllando la presenza di un componente <code>UnityEngine.UI.Button</code> sull'oggetto.
+  </p>
+</header>
+<main>
+
+<div class="warnbox">
+  <b>Da verificare dal vivo:</b> esistono due varianti quasi identiche per alcune barre (probabilmente legate a
+  risoluzione/aspect ratio dello schermo): <code>bottomSideUINew</code> vs <code>bottomSideUIDesktop</code>,
+  e <code>topRightSideUI</code> vs <code>topRightSideUINew</code>. In un dump live fatto in precedenza,
+  <code>bottomSideUINew</code> risultava <b>attiva</b> e <code>bottomSideUIDesktop</code> <b>inattiva</b> — ma
+  quest'ultima contiene i bottoni Party/Fellowship/Bag/Upgrades che nello screenshot reale erano visibili. Probabilmente
+  il gioco alterna le due in base alla finestra. Le ho documentate entrambe: quando tocca automatizzare questi bottoni,
+  va controllato quale risulta effettivamente attiva in quel momento (<code>GameElement.IsVisible()</code> lo fa già
+  automaticamente per il bot).
+  <br><br>
+  <b>Aggiornamento:</b> lo stesso tipo di ambiguità è stato trovato (e risolto) anche per la barra
+  notifiche — vedi la nota nella sezione <a href="#notifiche" style="color:inherit">Notifiche</a> qui sotto.
+</div>
+
+<nav class="toc">
+  <a href="#profilo">Profilo</a>
+  <a href="#stage">Barra Stage (su/giù, boss)</a>
+  <a href="#opzioni">Opzioni</a>
+  <a href="#hud-heroes">Party/Eroi/Upgrade (barra attiva)</a>
+  <a href="#hud-desktop">Party/Eroi (variante Desktop)</a>
+  <a href="#menu-bottom">Party · Fellowship · Bag · Upgrades</a>
+  <a href="#menu-right">Menu destra (Town/Map/Guild/...)</a>
+  <a href="#notifiche">Notifiche (attività)</a>
+  <a href="#chat-dps">Chat / Mail / DPS</a>
+</nav>
+
+<section id="profilo">
+  <h2>👤 Profilo</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/topLeftSideUI</code></p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata del personaggio. <span class="already">Già in Paths.cs come PlayerAvatarLoc (solo il testo livello)</span></td></tr>
+      <tr><td class="path">playerAvatar/characterLevelBg/characterLevel</td><td><span class="tag tag-txt">testo</span></td><td>Livello personaggio attuale. <span class="already">Già in Paths.cs: CharacterLevel</span></td></tr>
+      <tr><td class="path">buffs/battleBuff0 … battleBuff17</td><td><span class="tag tag-btn">BOTTONE</span> ×18</td><td>Icone dei buff attivi in battaglia (0-9 attivi di default, 10-17 inattivi/riserva). Click apre dettaglio buff.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="stage">
+  <h2>⚔️ Barra Stage (avanti/indietro, boss)</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/topSideUI/stageProgression</code></p>
+  <p class="desc">Già usata da <code>AutoRetreat</code> (vedi <code>src/GameModel/Features/Battle/StageProgress.cs</code>).</p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">currentStage/stageNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero stage attuale. <span class="already">Già in Paths.cs: StageProgressionLoc.CurrentStageNumTxt</span></td></tr>
+      <tr><td class="path">nextStage/stageNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero stage successivo</td></tr>
+      <tr><td class="path">nextStageAnimated/stageNum</td><td><span class="tag tag-txt">testo</span></td><td>Copia animata del numero (transizione)</td></tr>
+      <tr><td class="path">goBackStage</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Torna indietro di 1 stage. <span class="already">Già in Paths.cs: StageProgressionLoc.GoBackBtn</span></td></tr>
+      <tr><td class="path">goForthStage</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Avanza di 1 stage (risultava disattivo nel dump — probabilmente attivo solo a determinate condizioni)</td></tr>
+      <tr><td class="path">stageProgressBarBg/waveEnemyTotalHp</td><td><span class="tag tag-txt">testo</span></td><td>HP totali nemici nell'ondata corrente</td></tr>
+      <tr><td class="path">bossTimerProgressBarBg/bossTimerText</td><td><span class="tag tag-txt">testo</span></td><td>Countdown prima del boss</td></tr>
+      <tr><td class="path">leaveBossButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Esci dal combattimento col boss (visibile solo durante il boss fight)</td></tr>
+      <tr><td class="path">fightBossButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Inizia il combattimento col boss (visibile solo quando disponibile)</td></tr>
+      <tr><td class="path">cloudBlocked</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Overlay "bloccato" (probabile popup info livello richiesto)</td></tr>
+      <tr><td class="path">currencies/currencyInteraction (Gold)/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona Oro — click apre dettaglio valuta</td></tr>
+      <tr><td class="path">currencies/currencyInteraction (Gold)/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità oro posseduto</td></tr>
+      <tr><td class="path">currencies/currencyInteraction (Gold)/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>"Ottieni di più" (compare quando serve oro)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="opzioni">
+  <h2>⚙️ Opzioni</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/topRightSideUI</code> (o <code>topRightSideUINew</code>, vedi nota sopra)</p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">settingsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il menu impostazioni (l'icona a ingranaggio in alto a destra)</td></tr>
+      <tr><td class="path">currencies/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Solo su <code>topRightSideUI</code> (non presente nella variante New): altra valuta (gemme?)</td></tr>
+      <tr><td class="path">currencies/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>"Ottieni di più"</td></tr>
+      <tr><td class="path">eventCountdown</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Countdown evento a tempo (compare solo con un evento attivo)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="hud-heroes">
+  <h2>💪 Party / Eroi / Upgrade — barra attiva (<code>bottomSideUINew</code>)</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack</code></p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">LeaderPanel/leaderPanelNew/lvlUpButtonBig</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Upgrade Leader</b> (il leader di party). Tieni premuto per ripetere (componente <code>RepeatAction</code>).</td></tr>
+      <tr><td class="path">LeaderPanel/leaderPanelNew/lvlUpButtonBig/numLevels</td><td><span class="tag tag-txt">testo</span></td><td>Quanti livelli guadagni con questo upgrade</td></tr>
+      <tr><td class="path">LeaderPanel/leaderPanelNew/lvlUpButtonBig/lvlUpCost</td><td><span class="tag tag-txt">testo</span></td><td>Costo in oro dell'upgrade</td></tr>
+      <tr><td class="path">LeaderPanel/leaderPanelNew/lvlUpButtonBig/portraitElements/heroPortrait</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Click sul ritratto leader → apre dettaglio eroe</td></tr>
+      <tr><td class="path">LeaderPanel/leaderPanelNew/abilitiesContainer/leaderButtonContainer/leaderAutoCastButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Attiva/disattiva auto-cast abilità leader (usato da AutoSkill?)</td></tr>
+      <tr><td class="path">LeaderPanel/leaderPanelNew/abilitiesContainer/abilityBattle (0), (1), (2)</td><td><span class="tag tag-btn">BOTTONE</span> ×3</td><td><b>Hotkey abilità 1-2-3</b> del leader (già usate da AutoSkill via <code>abilityBattle (N)</code>)</td></tr>
+      <tr><td class="path">layout/battleEntitySlot (0)…(5)/lvlUpButtonBig</td><td><span class="tag tag-btn">BOTTONE</span> ×6</td><td><b>Upgrade Eroe 1-6</b> (uno slot per ogni eroe/guardiano in party). Stessa struttura del leader: numLevels, lvlUpCost, portraitElements/heroPortrait.</td></tr>
+      <tr><td class="path">layout/battleEntitySlot (N)/lvlUpButtonBig/portraitElements/heroPortrait</td><td><span class="tag tag-btn">BOTTONE</span> ×6</td><td>Click sul ritratto eroe N → dettaglio eroe</td></tr>
+      <tr><td class="path">rightSide/changeLevelUpModeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Moltiplicatore upgrade</b> (x1/x10/x100/MAX). <span class="already">Già in Paths.cs: ChangeLevelUpModeLoc.Button</span>, già usato da AutoUpgrade.</td></tr>
+      <tr><td class="path">rightSide/changeLevelUpModeButtonOLD</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Variante legacy dello stesso bottone, disattivata</td></tr>
+      <tr><td class="path">rightSide/counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Contatore valuta accanto al moltiplicatore</td></tr>
+      <tr><td class="path">resourceProgressBarBg/progressText</td><td><span class="tag tag-txt">testo</span></td><td>Barra risorsa (probabile progresso adventure/Temple of Eternals)</td></tr>
+      <tr><td class="path">comboPointsMain/combo0…combo4</td><td><span class="tag tag-txt">immagini</span></td><td>Indicatori punti combo (non cliccabili)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="hud-desktop">
+  <h2>💪 Party / Eroi — variante Desktop (<code>bottomSideUIDesktop</code>)</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop</code></p>
+  <p class="desc">Struttura equivalente a <code>bottomSideUINew</code> ma con un solo pannello leader (non uno slot-per-eroe separato — verificare dal vivo come mostra gli altri eroi) e con in più i 4 bottoni del prossimo blocco.</p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">leaderPanel/leaderAvatarBg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritratto leader (equivalente a heroPortrait sopra)</td></tr>
+      <tr><td class="path">leaderPanel/abilitiesContainer/leaderButtonContainer/leaderAutoCastButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Auto-cast leader</td></tr>
+      <tr><td class="path">leaderPanel/abilitiesContainer/abilityBattle (0), (1), (2)</td><td><span class="tag tag-btn">BOTTONE</span> ×3</td><td>Hotkey abilità 1-2-3</td></tr>
+      <tr><td class="path">pathOfGloryButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Battle Pass</b></td></tr>
+      <tr><td class="path">eventsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Eventi (con countdown <code>timeLeft</code>)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="menu-bottom">
+  <h2>🎒 Party · Fellowship · Bag · Upgrades</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop/menuButtons</code></p>
+  <p class="desc">Questi 4 bottoni erano quelli che nello screenshot reale comparivano in basso: <b>Bag</b>, <b>Fellowship</b>, <b>Party</b> (più un quarto, Upgrades, non menzionato nello screenshot ma presente nel prefab).</p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">partyButtonUI</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Party</b> — gestione squadra/eroi. Ha un badge notifica (<code>notification/amountTMP</code>).</td></tr>
+      <tr><td class="path">fellowshipButtonUI</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Fellowship</b> — gruppo da 5 giocatori (vedi conversazione precedente sui bonus fellowship)</td></tr>
+      <tr><td class="path">inventoryButtonUI</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Bag / Inventario</b></td></tr>
+      <tr><td class="path">upgradesButtonUI</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Upgrades</b> (probabile pannello riepilogo potenziamenti/equip)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="menu-right">
+  <h2>📋 Menu destra</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/rightSideUI</code></p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">menuButtons/townButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Town</b>. <span class="already">Già in Paths.cs: RightSideUILoc.TownBtn</span></td></tr>
+      <tr><td class="path">menuButtons/mapButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Mappa</b> (con badge notifica)</td></tr>
+      <tr><td class="path">menuButtons/guildButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Gilda</b></td></tr>
+      <tr><td class="path">menuButtons/storeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td><b>Market/Negozio</b> (con badge notifica)</td></tr>
+      <tr><td class="path">fightBossButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Duplicato del bottone "combatti il boss" (vedi anche in Barra Stage)</td></tr>
+      <tr><td class="path">eventButtonsGroup/specialOffersButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Offerta speciale a tempo</td></tr>
+      <tr><td class="path">eventButtonsGroup/starterPackButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Starter pack a tempo</td></tr>
+    </tbody>
+  </table>
+  <p class="desc">Nota: <b>Eventi</b> e <b>Battle Pass</b> (menzionati dall'utente nel menu destra) sono risultati altrove nel prefab: <code>eventsButton</code> e <code>pathOfGloryButton</code> sono dentro <code>bottomSideUIDesktop</code> (vedi sezione sopra), non dentro <code>rightSideUI</code>. Da verificare dal vivo la posizione a schermo esatta.</p>
+</section>
+
+<section id="notifiche">
+  <h2>🔔 Notifiche (badge attività disponibili)</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/leftSideUINew/notifications/Viewport/grid</code></p>
+  <p class="desc">Corretto: la scansione statica aveva trovato <code>leftSideUI</code> (senza "New") — esistono entrambi negli asset del gioco con contenuto quasi identico, ma solo <code>leftSideUINew</code> è quello davvero usato in gioco (confermato dal codice v1 già testato dal vivo, che lo usa con successo da mesi per 13 di queste notifiche).</p>
+  <p class="desc">
+    Ogni voce è un bottone che appare solo quando l'attività ha qualcosa da reclamare/fare (badge). <span class="already">Il bot ne usa già 14 tramite <code>Notifications.cs</code> / <code>Paths.NotificationsLoc</code></span>
+    (Engineer, WarfrontCampaign, FreePickaxes, Expeditions, Quests, GuardianTraining, FirestoneResearch, Experiments, OracleRituals, MapMissions, OraclesGift, MysteryBox, CheckIn). Il prefab ne contiene <b>48 in totale</b> — molte non ancora automatizzate:
+  </p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">BeerExchange</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">TowerOfSouls</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">Prophet</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">BattleLive</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (ha anche un indicatore "live")</td></tr>
+      <tr><td class="path">ArenaTokens</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">HallOfHeroes</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">Engineer</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">WarmachineUnlocked</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">WarfrontCampaign</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">Warmachines</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">WarMachinesRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">GuardianEvolution</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">GuardianRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">GuardianHolyUpgrade</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">GuildApplication</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">FreePickaxes</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">ArcaneCrystal</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">Awakening</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">Expeditions</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">Quests</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">GuardianTraining</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">MeteoriteResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Rimossa dal bot (feature mai raggiunta)</td></tr>
+      <tr><td class="path">FirestoneResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">TemplePrestige</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (probabile alias di Temple of Eternals)</td></tr>
+      <tr><td class="path">Experiments</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">TalentAvailable</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (talento livello disponibile)</td></tr>
+      <tr><td class="path">Mercenaries</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">PiratesPrize</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">OracleRituals</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">OracleBlessings</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">OraclesGift</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">SignIn</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">MapMissions</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
+      <tr><td class="path">CheckIn</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata (Daily Rewards)</td></tr>
+      <tr><td class="path">MysteryBox</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Path già in Paths.cs ma nessun task la usa</td></tr>
+      <tr><td class="path">ChaosRift</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (vedi conversazione su Chaos Rift/guerre di gilda)</td></tr>
+      <tr><td class="path">ForbiddenKnowledge</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">UnlockLedra</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (sblocco eroe)</td></tr>
+      <tr><td class="path">UnlockYamanoth</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (sblocco eroe)</td></tr>
+      <tr><td class="path">UnlockKramatak</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (sblocco eroe)</td></tr>
+      <tr><td class="path">ChaosRiftSupplies</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">LockerRewards</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">ScarabGame</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">PharaohsVault</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">ScarabGameMilestones</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">ScarabGameShopFreeToken</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">ScarabGameBeastRelease</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">AncientArtifact</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="chat-dps">
+  <h2>💬 Chat / Mail / DPS</h2>
+  <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/bottomLeftSideUI</code></p>
+  <table>
+    <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">mail</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la posta (con badge notifica)</td></tr>
+      <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat</td></tr>
+      <tr><td class="path">chatLastMsgBg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Click sull'ultimo messaggio → apre la chat</td></tr>
+      <tr><td class="path">chatLastMsgBg/chatLastMsgText</td><td><span class="tag tag-txt">testo</span></td><td>Testo dell'ultimo messaggio</td></tr>
+      <tr><td class="path">dps/dpsText</td><td><span class="tag tag-txt">testo</span></td><td>DPS attuale del party (non cliccabile)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Metodo: <code>UnityPy.load("Firestone_Data/resources.assets")</code> → per ogni GameObject radice noto (es. <code>topSideUI</code>),
+  risalita/discesa nell'albero <code>Transform.m_Children</code>/<code>m_Father</code>; ogni componente <code>MonoBehaviour</code>
+  risolto al vero tipo (Button, TMP_Text, script custom...) leggendo <code>m_Script</code> → <code>MonoScript</code> in
+  <code>globalgamemanagers.assets</code>. Lo stesso metodo si applica a <b>qualsiasi</b> altra schermata del gioco
+  (Town, Library, Guild, ecc. — ognuna esiste come prefab a sé, indipendente da questa) semplicemente cercando il nome
+  del suo GameObject radice (es. <code>TownIrongard</code>, <code>Library</code>, <code>HallOfHeroes</code>...).
+</footer>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Negozio Chaos Rift</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Negozio Chaos Rift</div>
+  <h1>🌀 Negozio Chaos Rift</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice e sfondo</h2>
+  <p class="region-path">Path relativo alla radice: <code>.</code> / <code>bgElements</code> / <code>bg</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">.</td><td><span class="tag tag-off">inattivo</span> Canvas, GraphicRaycaster, <em>ChaosRiftShopViewController</em></td><td>Root della schermata e controller principale. Risulta inattivo nel prefab: viene attivato quando lo shop viene aperto (probabilmente da un pulsante "Chaos Rift" in un menu evento).</td></tr>
+    <tr><td class="path">bgElements/bg</td><td>Image</td><td>Immagine di sfondo statica del negozio.</td></tr>
+    <tr><td class="path">bgElements/ChaosRiftParticles/ChaosRiftParticles1</td><td>ParticleSystem, MenuVfxEntityComponent</td><td>Effetto particellare decorativo (atmosfera "rift"/portale); stesso pattern per ChaosRiftParticles2 e ChaosRiftParticles3.</td></tr>
+    <tr><td class="path">bg</td><td>Canvas, GraphicRaycaster</td><td>Contenitore principale dei contenuti interattivi: barra dei tab e pannelli sottostanti.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab (bg/submenuButtons)</h2>
+  <p class="region-path">Path relativo alla radice: <code>bg/submenuButtons</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenuButtons</td><td>GridLayoutGroup, Image</td><td>Barra orizzontale con i 4 pulsanti di navigazione tra le sotto-sezioni del negozio.</td></tr>
+    <tr><td class="path">.../sale/button</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation, ButtonOnHoverActions</td><td>Seleziona la tab "Sale" (offerta scontata in evidenza).</td></tr>
+    <tr><td class="path">.../sale/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta testuale del tab "Sale".</td></tr>
+    <tr><td class="path">.../sale/button/text/notification</td><td>Image, NotificationAnimation</td><td>Badge di notifica animato sul tab.</td></tr>
+    <tr><td class="path">.../sale/button/text/notification/bell</td><td>Spine.Unity.SkeletonGraphic</td><td>Icona campanella animata (Spine) del badge di notifica.</td></tr>
+    <tr><td class="path">.../sale/button/text/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero mostrato nel badge di notifica (es. conteggio offerte disponibili).</td></tr>
+    <tr><td class="path">.../sale/seperator</td><td>Image, LayoutElement</td><td>Separatore grafico tra un tab e l'altro.</td></tr>
+    <tr><td class="path">.../sale/timeLeftBg</td><td>Image, Canvas</td><td>Riquadro del countdown associato al tab "Sale".</td></tr>
+    <tr><td class="path">.../sale/timeLeftBg/clockSpine</td><td>Spine.Unity.SkeletonGraphic</td><td>Icona orologio animata (Spine).</td></tr>
+    <tr><td class="path">.../sale/timeLeftBg/timeLeft</td><td><span class="tag tag-txt">testo</span></td><td>Tempo rimanente dell'offerta "Sale".</td></tr>
+    <tr><td class="path">.../sale/isActive</td><td><span class="tag tag-off">inattivo</span> Image, Canvas</td><td>Evidenziazione che compare solo quando il tab "Sale" è quello attualmente selezionato.</td></tr>
+    <tr><td class="path">.../sale/isActive/Image</td><td>Image</td><td>Grafica dell'evidenziazione "tab attivo".</td></tr>
+    <tr><td class="path">.../sale/isActive/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta testuale (es. "IN CORSO") dell'evidenziazione.</td></tr>
+    <tr><td class="path">.../supplies/button</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation, ButtonOnHoverActions</td><td>Seleziona la tab "Supplies" (forniture/materiali).</td></tr>
+    <tr><td class="path">.../supplies/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab "Supplies".</td></tr>
+    <tr><td class="path">.../supplies/button/text/notification (+bell, +amountTMP)</td><td>Image, NotificationAnimation</td><td>Badge di notifica; stessa struttura del tab "Sale" (bell + amountTMP).</td></tr>
+    <tr><td class="path">.../supplies/seperator</td><td>Image, LayoutElement</td><td>Separatore grafico.</td></tr>
+    <tr><td class="path">.../dailyDeals/button</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation, ButtonOnHoverActions</td><td>Seleziona la tab "Daily Deals" (contenuto mostrato: pannello <code>extremeValueBundlesDaily</code>).</td></tr>
+    <tr><td class="path">.../dailyDeals/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab "Daily Deals".</td></tr>
+    <tr><td class="path">.../dailyDeals/seperator</td><td>Image, LayoutElement</td><td>Separatore grafico.</td></tr>
+    <tr><td class="path">.../weeklyDeals/button</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation, ButtonOnHoverActions</td><td>Seleziona la tab "Weekly Deals" (contenuto mostrato: pannello <code>extremeValueBundles</code>).</td></tr>
+    <tr><td class="path">.../weeklyDeals/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab "Weekly Deals".</td></tr>
+    <tr><td class="path">.../weeklyDeals/seperator</td><td>Image, LayoutElement</td><td>Separatore grafico (presente due volte nel dump, prima e dopo il pulsante).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tab "Sale" (offerta in evidenza)</h2>
+  <p class="region-path">Path relativo alla radice: <code>bg/submenus/sale</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/sale</td><td><span class="tag tag-off">inattivo</span> contenitore</td><td>Pannello dei contenuti della tab "Sale"; visibile solo quando questo tab è selezionato.</td></tr>
+    <tr><td class="path">items/panel/outline</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Bordo di evidenziazione dell'offerta, condizionale (probabile variante "premium").</td></tr>
+    <tr><td class="path">items/panel/bgImage</td><td>Image</td><td>Sfondo del riquadro offerta.</td></tr>
+    <tr><td class="path">items/panel/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo dell'offerta in vendita.</td></tr>
+    <tr><td class="path">items/panel/timeLeftBg</td><td>Image</td><td>Riquadro del countdown dell'offerta.</td></tr>
+    <tr><td class="path">items/panel/timeLeftBg/clockSpine</td><td>Spine.Unity.SkeletonGraphic</td><td>Icona orologio animata.</td></tr>
+    <tr><td class="path">items/panel/timeLeftBg/timeLeft</td><td><span class="tag tag-txt">testo</span></td><td>Tempo rimanente dell'offerta.</td></tr>
+    <tr><td class="path">items/panel/productsGrid</td><td><span class="tag tag-off">inattivo</span> GridLayoutGroup</td><td>Griglia di anteprima delle ricompense incluse nel bundle; attiva solo per certe varianti dell'offerta.</td></tr>
+    <tr><td class="path">.../productsGrid/product (0)</td><td>Image</td><td>Slot ricompensa nella griglia (istanza 0; stessa struttura per <code>product (1)</code>).</td></tr>
+    <tr><td class="path">.../product (0)/gameItem/frame, frameOutline, rewardIcon</td><td>Image</td><td>Cornice e icona dell'oggetto ricompensa.</td></tr>
+    <tr><td class="path">.../product (0)/rewardName</td><td><span class="tag tag-txt">testo</span></td><td>Nome della ricompensa.</td></tr>
+    <tr><td class="path">.../product (0)/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità della ricompensa.</td></tr>
+    <tr><td class="path">items/panel/products</td><td>GridLayoutGroup, Image, ContentSizeFitter</td><td>Griglia delle ricompense in valuta acquistabili/riscattabili singolarmente.</td></tr>
+    <tr><td class="path">.../products/currencyReward (0)</td><td><span class="tag tag-btn">BOTTONE</span> CurrencyRewardInteraction</td><td>Riscatta/acquista la singola ricompensa in valuta (istanza 0; stesso pattern per <code>currencyReward (1)</code>).</td></tr>
+    <tr><td class="path">.../currencyReward (0)/currencyImage</td><td>Image</td><td>Icona della valuta/ricompensa.</td></tr>
+    <tr><td class="path">.../currencyReward (0)/itemFrame</td><td>Image</td><td>Cornice decorativa dello slot.</td></tr>
+    <tr><td class="path">.../currencyReward (0)/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità ottenibile.</td></tr>
+    <tr><td class="path">.../currencyReward (0)/claimedFrame</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Overlay che compare quando questa ricompensa è già stata riscattata.</td></tr>
+    <tr><td class="path">.../currencyReward (0)/claimedFrame/tick</td><td>Image</td><td>Icona di spunta "riscattato".</td></tr>
+    <tr><td class="path">items/panel/ribbonBg</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Fascetta promozionale (es. "Migliore offerta"), condizionale.</td></tr>
+    <tr><td class="path">items/panel/ribbonBg/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo della fascetta promozionale.</td></tr>
+    <tr><td class="path">items/panel/currencyHolder</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation</td><td>Pulsante principale di acquisto dell'offerta "Sale".</td></tr>
+    <tr><td class="path">.../currencyHolder/priceHolder/currencyIcon</td><td>Image</td><td>Icona della valuta di pagamento.</td></tr>
+    <tr><td class="path">.../currencyHolder/priceHolder/purchaseCost</td><td><span class="tag tag-txt">testo</span></td><td>Prezzo di acquisto mostrato sul pulsante.</td></tr>
+    <tr><td class="path">items/panel/ribonBgIsActive</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Etichetta alternativa condizionale (es. "già acquistato"); nome poco chiaro, verificare dal vivo.</td></tr>
+    <tr><td class="path">.../ribonBgIsActive/text, /active</td><td><span class="tag tag-txt">testo</span></td><td>Testi dell'etichetta condizionale di cui sopra.</td></tr>
+    <tr><td class="path">items/panel/info</td><td>Image</td><td>Icona informazioni (apre un tooltip) sull'offerta.</td></tr>
+    <tr><td class="path">items/panel/info/infoText</td><td><span class="tag tag-txt">testo</span></td><td>Testo del tooltip informativo.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tab "Supplies" (forniture)</h2>
+  <p class="region-path">Path relativo alla radice: <code>bg/submenus/supplies</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/supplies</td><td><span class="tag tag-off">inattivo</span> <em>ChaosRiftShopSuppliesSubmenuViewController</em></td><td>Root/controller del pannello "Supplies"; visibile solo quando questa tab è selezionata.</td></tr>
+    <tr><td class="path">items</td><td>GridLayoutGroup</td><td>Griglia dei 3 oggetti acquistabili: tomeOfPower, moonstoneOne, moonstoneBulk.</td></tr>
+    <tr><td class="path">items/tomeOfPower</td><td><em>ChaosRiftShopSuppliesInteraction</em></td><td>Riga dell'oggetto "Tome of Power". Nessun componente Button proprio: il click è gestito da questo script custom, non da un pulsante standard.</td></tr>
+    <tr><td class="path">items/tomeOfPower/outline</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Bordo di evidenziazione, condizionale.</td></tr>
+    <tr><td class="path">items/tomeOfPower/multipleButtons/x1</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la quantità x1 da acquistare.</td></tr>
+    <tr><td class="path">items/tomeOfPower/multipleButtons/x1/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "x1".</td></tr>
+    <tr><td class="path">items/tomeOfPower/multipleButtons/x5</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la quantità x5 da acquistare.</td></tr>
+    <tr><td class="path">items/tomeOfPower/multipleButtons/x5/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "x5".</td></tr>
+    <tr><td class="path">items/tomeOfPower/multipleButtons/x10</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la quantità x10 da acquistare.</td></tr>
+    <tr><td class="path">items/tomeOfPower/multipleButtons/x10/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "x10".</td></tr>
+    <tr><td class="path">items/tomeOfPower/claimBg/itemBg/itemImage</td><td>Image</td><td>Icona dell'oggetto "Tome of Power".</td></tr>
+    <tr><td class="path">items/tomeOfPower/claimBg/itemBg/itemQuantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità inclusa nella confezione.</td></tr>
+    <tr><td class="path">items/tomeOfPower/claimBg/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'oggetto.</td></tr>
+    <tr><td class="path">items/tomeOfPower/claimBg/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation</td><td>Acquista il "Tome of Power" nella quantità selezionata.</td></tr>
+    <tr><td class="path">.../purchaseButton/priceHolder/currencyIcon</td><td>Image</td><td>Icona della valuta di pagamento.</td></tr>
+    <tr><td class="path">.../purchaseButton/priceHolder/purchaseCost</td><td><span class="tag tag-txt">testo</span></td><td>Prezzo di acquisto.</td></tr>
+    <tr><td class="path">items/moonstoneOne</td><td><em>ChaosRiftShopSuppliesInteraction</em></td><td>Riga oggetto "Moonstone" (singolo); stessa struttura di tomeOfPower ma senza selettore quantità x1/x5/x10.</td></tr>
+    <tr><td class="path">items/moonstoneOne/outline</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Bordo di evidenziazione, condizionale.</td></tr>
+    <tr><td class="path">items/moonstoneOne/claimBg/... (itemImage, itemQuantity, itemName, purchaseButton)</td><td><span class="tag tag-btn">BOTTONE</span> su purchaseButton</td><td>Icona, quantità, nome e pulsante di acquisto del Moonstone singolo (stesso schema di tomeOfPower/claimBg).</td></tr>
+    <tr><td class="path">items/moonstoneBulk</td><td><em>ChaosRiftShopSuppliesInteraction</em></td><td>Riga oggetto "Moonstone" in confezione multipla/scontata.</td></tr>
+    <tr><td class="path">items/moonstoneBulk/outline</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Bordo di evidenziazione, condizionale.</td></tr>
+    <tr><td class="path">items/moonstoneBulk/claimBg/... (itemImage, itemQuantity, itemName, purchaseButton)</td><td><span class="tag tag-btn">BOTTONE</span> su purchaseButton</td><td>Icona, quantità, nome e pulsante di acquisto (stesso schema di tomeOfPower/claimBg).</td></tr>
+    <tr><td class="path">items/moonstoneBulk/salesFrame</td><td>Image</td><td>Badge dello sconto sulla confezione multipla.</td></tr>
+    <tr><td class="path">items/moonstoneBulk/salesFrame/percentage</td><td><span class="tag tag-txt">testo</span></td><td>Percentuale di sconto (es. "-20%").</td></tr>
+    <tr><td class="path">items/moonstoneBulk/salesFrame/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo accompagnatorio del badge sconto (es. "SCONTO").</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tab "Daily Deals" (extremeValueBundlesDaily)</h2>
+  <p class="region-path">Path relativo alla radice: <code>bg/submenus/extremeValueBundlesDaily</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/extremeValueBundlesDaily</td><td><span class="tag tag-off">inattivo</span> <em>ChaosRiftDailyBundleSubmenuViewController</em></td><td>Root/controller del pannello offerte giornaliere; visibile solo quando questa tab è selezionata.</td></tr>
+    <tr><td class="path">Scroll View</td><td>ScrollRect</td><td>Lista scorrevole orizzontale delle offerte-bundle giornaliere.</td></tr>
+    <tr><td class="path">Scroll View/Viewport</td><td>Image, RectMask2D</td><td>Area di ritaglio (clip) della lista scorrevole.</td></tr>
+    <tr><td class="path">.../Viewport/items</td><td>HorizontalLayoutGroup, ContentSizeFitter</td><td>Contenitore orizzontale delle card-bundle.</td></tr>
+    <tr><td class="path">.../items/chaosRiftDailyDealInteraction (0)</td><td><em>ChaosRiftShopValueBundleInteraction</em></td><td>Card di un bundle giornaliero (istanza 0; stessa struttura per le istanze (1) e (2), 3 card totali).</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/outline</td><td><span class="tag tag-off">inattivo</span> Image</td><td>Bordo di evidenziazione della card, condizionale.</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/bgImage</td><td>Image</td><td>Sfondo della card.</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del bundle.</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/itemImage</td><td>Image</td><td>Immagine principale del bundle.</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/mysteryBox</td><td><em>GenericInfoInteraction</em></td><td>Riquadro "cassa misteriosa" inclusa nel bundle; script di interazione per mostrare informazioni al tap.</td></tr>
+    <tr><td class="path">.../mysteryBox/mysterBoxIxon</td><td>Image</td><td>Icona della cassa misteriosa.</td></tr>
+    <tr><td class="path">.../mysteryBox/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità di casse incluse.</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/products</td><td>GridLayoutGroup</td><td>Griglia delle anteprime ricompense del bundle.</td></tr>
+    <tr><td class="path">.../products/currencyReward (0)</td><td><span class="tag tag-btn">BOTTONE</span> CurrencyRewardInteraction</td><td>Anteprima di una ricompensa in valuta inclusa nel bundle (istanze 0-3); probabilmente apre un tooltip al tap.</td></tr>
+    <tr><td class="path">.../currencyReward (0)/currencyImage, itemFrame, quantity</td><td>Image / testo</td><td>Icona, cornice e quantità della ricompensa.</td></tr>
+    <tr><td class="path">.../products/jewelChest</td><td>Image, <em>JewelChestInteraction</em></td><td>Ricompensa speciale "cassa di gioielli" inclusa nel bundle.</td></tr>
+    <tr><td class="path">.../products/jewelChest/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità della cassa di gioielli.</td></tr>
+    <tr><td class="path">.../products/jewelChest/info</td><td>Image, <em>JewelChestInfoInteraction</em></td><td>Icona informazioni/tooltip sulla cassa di gioielli.</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation</td><td>Acquista il bundle (con valuta reale, vedi realCurrencyIcon sotto).</td></tr>
+    <tr><td class="path">.../purchaseButton/priceHolder/realCurrencyIcon</td><td>Image</td><td>Icona della valuta reale (acquisto in-app).</td></tr>
+    <tr><td class="path">.../purchaseButton/priceHolder/purchaseCost</td><td><span class="tag tag-txt">testo</span></td><td>Prezzo di acquisto (valuta reale).</td></tr>
+    <tr><td class="path">.../chaosRiftDailyDealInteraction (0)/claimedObj</td><td><span class="tag tag-off">inattivo</span> ContentSizeFitter, HorizontalLayoutGroup</td><td>Etichetta "già acquistato", compare solo dopo l'acquisto del bundle.</td></tr>
+    <tr><td class="path">.../claimedObj/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo "riscattato"/"posseduto".</td></tr>
+    <tr><td class="path">.../claimedObj/tickImg</td><td>Image</td><td>Icona di spunta.</td></tr>
+    <tr><td class="path">Scroll View/Viewport/info/bg</td><td>Image</td><td>Riquadro informativo generale della tab (tooltip).</td></tr>
+    <tr><td class="path">Scroll View/Viewport/info/bg/infoText</td><td><span class="tag tag-txt">testo</span></td><td>Testo informativo generale della tab.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Tab "Weekly Deals" (extremeValueBundles)</h2>
+  <p class="region-path">Path relativo alla radice: <code>bg/submenus/extremeValueBundles</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/extremeValueBundles</td><td><span class="tag tag-off">inattivo</span> <em>ChaosRiftWeeklyBundleSubmenuViewController</em></td><td>Root/controller del pannello offerte settimanali; struttura interna identica alla tab "Daily Deals" sopra, ma con 4 card bundle invece di 3.</td></tr>
+    <tr><td class="path">Scroll View/Viewport/items/chaosRiftValueBundleInteraction (0..3)</td><td><em>ChaosRiftShopValueBundleInteraction</em></td><td>4 card bundle settimanali; stessa struttura interna descritta per <code>chaosRiftDailyDealInteraction</code> nella sezione "Daily Deals" (outline, bgImage, itemName, itemImage, mysteryBox, products/currencyReward×4, products/jewelChest, purchaseButton con realCurrencyIcon+purchaseCost, claimedObj).</td></tr>
+    <tr><td class="path">Scroll View/Viewport/info/bg/infoText</td><td><span class="tag tag-txt">testo</span></td><td>Testo informativo generale della tab.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Contatore valuta e chiusura</h2>
+  <p class="region-path">Path relativo alla radice: <code>bg/counters</code> / <code>closeButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/counters</td><td>HorizontalLayoutGroup</td><td>Barra dei contatori di valuta in alto nello shop.</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction Guild (1)</td><td><em>CounterInteraction</em></td><td>Contatore di una valuta (nome "Guild" ambiguo nel dump: potrebbe riferirsi alla valuta della Gilda o essere solo il nome dell'istanza; verificare dal vivo).</td></tr>
+    <tr><td class="path">.../counterInteraction Guild (1)/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore; probabilmente apre la schermata/negozio per ottenere altra valuta.</td></tr>
+    <tr><td class="path">.../counterInteraction Guild (1)/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona valuta cliccabile, verosimilmente con la stessa azione del pulsante "bg".</td></tr>
+    <tr><td class="path">.../counterInteraction Guild (1)/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale posseduta.</td></tr>
+    <tr><td class="path">.../counterInteraction Guild (1)/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo animato "+N" mostrato quando la quantità aumenta.</td></tr>
+    <tr><td class="path">.../counterInteraction Guild (1)/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span> ButtonAnimation</td><td>Pulsante "ottieni di più" che compare solo in certe condizioni (es. saldo insufficiente).</td></tr>
+    <tr><td class="path">.../getMore/collider</td><td>Image</td><td>Area/collider aggiuntivo del pulsante "getMore".</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span> ButtonAnimation</td><td>Chiude la schermata del negozio Chaos Rift.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona "X" del pulsante di chiusura.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ChaosRiftShop</code>. Nota: il path radice è dedotto solo dal nome del GameObject e dal fatto che "Chaos Rift" sembra un evento raggiungibile da un menu (non dalla battaglia); non è stato verificato risalendo la gerarchia della scena live, quindi va confermato sul dispositivo. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

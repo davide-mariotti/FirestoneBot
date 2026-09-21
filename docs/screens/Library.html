@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Library (Ricerca)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Library (Ricerca)</div>
+  <h1>📚 Library (Ricerca)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Contiene due sottomenu (tab): <b>Ricerca Meteoriti</b> (talenti/bonus passivi) e <b>Ricerca Firestone</b> (albero tecnologico con ricerche a tempo).</p>
+</header>
+<main>
+
+<section>
+<h2>Struttura generale e navigazione</h2>
+<p class="region-path">Radice: <code>Library</code></p>
+<table>
+<tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+<tr><td class="path">Library</td><td>Root — <code>LibraryViewController</code> <span class="tag tag-off">inattivo</span></td><td>Radice della schermata; disattiva finché il menu non viene aperto.</td></tr>
+<tr><td class="path">bgTile</td><td>Image + VFX decorativi</td><td>Sfondo animato (pianeti/particellari Spine), puramente estetico.</td></tr>
+<tr><td class="path">menuTitleBg/menuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della schermata (localizzato), es. "Ricerca/Library".</td></tr>
+<tr><td class="path">submenuButtons/meteoriteResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab per aprire il sottomenu "Ricerca Meteoriti".</td></tr>
+<tr><td class="path">submenuButtons/meteoriteResearch/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata).</td></tr>
+<tr><td class="path">submenuButtons/firestoneResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab per aprire il sottomenu "Ricerca Firestone".</td></tr>
+<tr><td class="path">submenuButtons/firestoneResearch/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata).</td></tr>
+<tr><td class="path">submenuButtons/firestoneResearch/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Badge con conteggio ricerche/slot pronti da ritirare sul tab.</td></tr>
+<tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Contatore valuta (probabilmente Firestone/pietre di ricerca) cliccabile, apre dettaglio o negozio.</td></tr>
+<tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stesso comportamento del bg (bottone gemello).</td></tr>
+<tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della valuta mostrata.</td></tr>
+<tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Variazione recente (es. "+N") della valuta.</td></tr>
+<tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Pulsante "+" per ottenere altra valuta; appare solo in certe condizioni (es. scorta esaurita).</td></tr>
+<tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Banner/offerta per sbloccare qualcosa (unità o bonus legato alla ricerca); mostra icona unità e un timer (<code>canvasGroup/time</code>). Funzione esatta non chiara dal solo nome, verificare dal vivo.</td></tr>
+<tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Library e torna al menu precedente.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Sottomenu: Ricerca Meteoriti (talenti/bonus)</h2>
+<p class="region-path">Radice sottomenu: <code>Library/submenus/meteoriteResearch</code> — <code>MeteoriteResearchSubmenuViewController</code></p>
+<table>
+<tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+<tr><td class="path">navigation/goBackTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Freccia "albero precedente" per scorrere i 5 alberi di ricerca meteoriti.</td></tr>
+<tr><td class="path">navigation/currentTreeText</td><td><span class="tag tag-txt">testo</span></td><td>Indicatore dell'albero corrente (es. "1/5").</td></tr>
+<tr><td class="path">navigation/goForthTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Freccia "albero successivo".</td></tr>
+<tr><td class="path">submenus/tree1 … tree5</td><td>Container</td><td>×5 alberi di ricerca (talenti), uno visibile alla volta; ciascuno contiene 13 nodi <code>research0..research12</code> collegati da linee decorative <code>researchPath0..12</code> (non interattive, omesse).</td></tr>
+<tr><td class="path">submenus/treeN/research0 … research12</td><td><span class="tag tag-btn">BOTTONE</span> ×13 per albero (slot 0-12, ×5 alberi = 65 bottoni)</td><td>Nodo di talento cliccabile: apre dettagli/potenzia il bonus. Contiene <code>researchIcon</code> e <code>researchLevelBg/researchLevel</code> (livello attuale del nodo).</td></tr>
+<tr><td class="path">bonusesParent</td><td>Pannello <span class="tag tag-off">inattivo</span></td><td>Riepilogo bonus totali ottenuti dall'albero; probabilmente si apre on-demand (non un popup con bottone dedicato visibile nel dump).</td></tr>
+<tr><td class="path">bonusesParent/totalBonusesTitleBg/totalBonusesTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo "Bonus Totali" (localizzato).</td></tr>
+<tr><td class="path">bonusesParent/totalBonuses/grid/stat0 … stat12</td><td>Righe statistica ×13 (slot 0-12)</td><td>Elenco bonus cumulativi: <code>name</code> (nome statistica, localizzato) + <code>effect</code> (valore effetto).</td></tr>
+<tr><td class="path">selectResearchTable/description</td><td><span class="tag tag-txt">testo</span></td><td>Testo istruzioni quando nessun nodo è selezionato (es. "seleziona una ricerca").</td></tr>
+<tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo/tutorial sul sistema di ricerca meteoriti.</td></tr>
+<tr><td class="path">MeteoriteResearchVFX</td><td>Spine VFX decorativo</td><td>Effetto grafico di sfondo, non interattivo.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Sottomenu: Ricerca Firestone (albero tecnologico a tempo)</h2>
+<p class="region-path">Radice sottomenu: <code>Library/submenus/firestoneResearch</code> — <code>FirestoneResearchSubmenuViewController</code> <span class="tag tag-off">inattivo</span> di default (tab non selezionato all'apertura)</p>
+<table>
+<tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+<tr><td class="path">researchScrollView/viewport/content/submenus/tree1 … tree3</td><td>Container scrollabile</td><td>×3 alberi tecnologici in una <code>ScrollRect</code>; ciascuno con 16 nodi <code>firestoneResearch0..15</code> collegati da <code>pathLines/tierN/pathLine (N)</code> decorative (omesse).</td></tr>
+<tr><td class="path">tree1/firestoneResearch0 … firestoneResearch15</td><td><span class="tag tag-btn">BOTTONE</span> ×16 per albero (slot 0-15, ×3 alberi = 48 bottoni)</td><td>Nodo di ricerca cliccabile: apre il dettaglio/avvia la ricerca. Contiene <code>researchNameBg/researchName</code> (nome ricerca), <code>researchIcon</code>, <code>glow</code>, barra progresso (<code>progressBarBg/progressBarMask/progressBarFill</code> + <code>progressText</code>) e <code>genericText</code> (stato/descrizione contestuale).</td></tr>
+<tr><td class="path">researchPanel</td><td>GridLayoutGroup</td><td>Pannello con gli slot di ricerca attualmente in corso.</td></tr>
+<tr><td class="path">researchPanel/researchSlot0</td><td>Slot ricerca <span class="tag tag-off">inattivo</span></td><td>Primo slot di ricerca attiva; disattivo quando lo slot è vuoto/non ancora sbloccato.</td></tr>
+<tr><td class="path">researchSlot0/container/researchInfo/name, researchIcon, progressBarBg…, timeLeftText</td><td><span class="tag tag-txt">testo</span> / Image</td><td>Nome ricerca in corso, icona, barra di progresso e tempo rimanente.</td></tr>
+<tr><td class="path">researchSlot0/container/speedUpButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Velocizza/completa subito la ricerca in corso spendendo valuta (<code>costText</code> + <code>currencyIcon</code>).</td></tr>
+<tr><td class="path">researchSlot0/container/claimButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Ritira la ricompensa quando la ricerca è completata; attivo solo a ricerca finita.</td></tr>
+<tr><td class="path">researchPanel/researchSlot1</td><td>Slot ricerca</td><td>Secondo slot di ricerca attiva, stessa struttura di <code>researchSlot0</code> (<code>speedUpButton</code>/<code>claimButton</code> con lo stesso comportamento).</td></tr>
+<tr><td class="path">researchPanel/selectResearchTable/description</td><td><span class="tag tag-txt">testo</span></td><td>Testo istruzioni quando nessuna ricerca è selezionata per lo slot.</td></tr>
+<tr><td class="path">researchPanel/unlockResearchSlot</td><td>Pannello <span class="tag tag-off">inattivo</span></td><td>Offerta per sbloccare uno slot di ricerca aggiuntivo (oltre i 2 di default).</td></tr>
+<tr><td class="path">unlockResearchSlot/confirmButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Conferma lo sblocco dello slot spendendo valuta (<code>desc</code> + <code>costText</code> + <code>currencyIcon</code>).</td></tr>
+<tr><td class="path">navigation/goBackTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Freccia "albero precedente" per scorrere i 3 alberi tecnologici.</td></tr>
+<tr><td class="path">navigation/currentTreeText</td><td><span class="tag tag-txt">testo</span></td><td>Indicatore dell'albero corrente (es. "1/3").</td></tr>
+<tr><td class="path">navigation/goForthTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Freccia "albero successivo".</td></tr>
+</table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Library</code> — dedotto dal fatto che questa è una schermata di menu autonoma (elenco insieme a Town/Guild/Engineer nell'indice), non raggiungibile dalla battaglia; il path esatto non è stato verificato risalendo la gerarchia della scena live. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Negozio Evento Scarab</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Negozio Evento Scarab</div>
+  <h1>🪲 Negozio Evento Scarab</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Radice: <code>ScarabGameShop</code> (Canvas, disattivo di default — è un popup aperto su richiesta, con <code>ScarabGameShopViewController</code>).</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale e sfondo</h2>
+  <p class="region-path">Percorso: <code>(radice)</code>, <code>bgElements</code>, <code>bg</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">(root) ScarabGameShop</td><td><span class="tag tag-off">inattivo</span> Canvas</td><td>Canvas radice dell'intero popup (<code>GraphicRaycaster</code> + <code>ScarabGameShopViewController</code>); disattivo nel prefab, viene attivato quando il negozio evento viene aperto.</td></tr>
+    <tr><td class="path">bgElements/bg</td><td>Image</td><td>Immagine di sfondo statica del popup.</td></tr>
+    <tr><td class="path">bgElements/ScarabGameShopParticles/ChaosRiftParticles1..3</td><td>ParticleSystem</td><td>Tre emettitori di particelle ambientali a tema "Chaos Rift" (evento a cui è legato questo negozio); puramente decorativi.</td></tr>
+    <tr><td class="path">bg</td><td>Canvas</td><td>Canvas secondario con proprio <code>GraphicRaycaster</code> che ospita la barra dei tab, i sottomenu, i contatori e la mascotte: contenitore principale dell'interfaccia interattiva.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab (submenuButtons)</h2>
+  <p class="region-path">Percorso: <code>bg/submenuButtons</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">submenuButtons/sale/button</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Saldi" e mostra il sottomenu <code>bg/submenus/sale</code>.</td></tr>
+    <tr><td class="path">submenuButtons/sale/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata via I2 Loc).</td></tr>
+    <tr><td class="path">submenuButtons/sale/button/text/notification/bell</td><td>Spine.SkeletonGraphic</td><td>Icona animata "campanella" del badge di notifica del tab.</td></tr>
+    <tr><td class="path">submenuButtons/sale/button/text/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero mostrato sul badge di notifica (es. offerte nuove disponibili).</td></tr>
+    <tr><td class="path">submenuButtons/sale/timeLeftBg/timeLeft</td><td><span class="tag tag-txt">testo</span></td><td>Countdown testuale del tempo rimanente per l'offerta del tab Saldi.</td></tr>
+    <tr><td class="path">submenuButtons/sale/isActive</td><td><span class="tag tag-off">inattivo</span></td><td>Overlay (Image + testo) mostrato quando il tab Saldi risulta "attivo"/selezionato; compare solo in quella condizione.</td></tr>
+    <tr><td class="path">submenuButtons/supplies/button</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Forniture" → <code>bg/submenus/supplies</code>.</td></tr>
+    <tr><td class="path">submenuButtons/supplies/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab Forniture.</td></tr>
+    <tr><td class="path">submenuButtons/supplies/button/text/notification/bell, .../amountTMP</td><td>Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica del tab, stessa struttura del tab Saldi.</td></tr>
+    <tr><td class="path">submenuButtons/dailyDeals/button</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Offerte giornaliere" → <code>bg/submenus/extremeValueBundlesDaily</code>.</td></tr>
+    <tr><td class="path">submenuButtons/dailyDeals/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab Offerte giornaliere.</td></tr>
+    <tr><td class="path">submenuButtons/dailyDeals/button/text/notification/bell, .../amountTMP</td><td>Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica del tab.</td></tr>
+    <tr><td class="path">submenuButtons/weeklyDeals/button</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Offerte settimanali" → <code>bg/submenus/extremeValueBundles</code>.</td></tr>
+    <tr><td class="path">submenuButtons/weeklyDeals/button/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab Offerte settimanali.</td></tr>
+    <tr><td class="path">submenuButtons/weeklyDeals/button/text/notification/bell, .../amountTMP</td><td>Spine / <span class="tag tag-txt">testo</span></td><td>Badge di notifica del tab.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Saldi" — omaggio giornaliero</h2>
+  <p class="region-path">Percorso: <code>bg/submenus/sale</code> (inattivo di default, <code>ScarabGameShopSaleSubmenuViewController</code> — attivato alla selezione del tab Saldi) → <code>items/scarabGameShopFreeTokenInteraction</code> (<code>ScarabGameShopFreeItemInteraction</code>)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">.../scarabGameShopFreeTokenInteraction/outline</td><td><span class="tag tag-off">inattivo</span></td><td>Bordo evidenziatore, probabilmente mostrato quando l'oggetto è in evidenza.</td></tr>
+    <tr><td class="path">.../claimBg/itemBg/itemImage</td><td>Image</td><td>Immagine dell'oggetto omaggio.</td></tr>
+    <tr><td class="path">.../claimBg/itemBg/itemQuantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità dell'oggetto omaggio.</td></tr>
+    <tr><td class="path">.../claimBg/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'oggetto (localizzato).</td></tr>
+    <tr><td class="path">.../claimBg/renewText</td><td><span class="tag tag-off">inattivo</span></td><td>Testo mostrato quando l'omaggio si sta per rinnovare; compare solo in quella condizione.</td></tr>
+    <tr><td class="path">.../claimBg/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritira l'oggetto gratuito.</td></tr>
+    <tr><td class="path">.../claimBg/purchaseButton/priceHolder/freeText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Gratis" mostrata sul bottone.</td></tr>
+    <tr><td class="path">.../claimBg/claimedBG</td><td><span class="tag tag-off">inattivo</span></td><td>Overlay mostrato dopo il riscatto dell'omaggio.</td></tr>
+    <tr><td class="path">.../claimBg/claimedBG/claimedObj/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo "Riscattato" (o simile).</td></tr>
+    <tr><td class="path">.../claimBg/claimedBG/claimedObj/tickImg</td><td>Image</td><td>Icona di spunta a conferma del riscatto.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Saldi" — Monthly Pass</h2>
+  <p class="region-path">Percorso: <code>bg/submenus/sale/items/scarabGameShopmonthlyPassInteraction</code> (<code>ScarabGameShopMonthlyPassInteraction</code>)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">.../outline</td><td><span class="tag tag-off">inattivo</span></td><td>Bordo evidenziatore del riquadro.</td></tr>
+    <tr><td class="path">.../title, .../title (2)</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del pass; "(2)" è il suffisso automatico di Unity per un GameObject duplicato (probabile variante di stile/dimensione).</td></tr>
+    <tr><td class="path">.../textYouGet</td><td><span class="tag tag-txt">testo</span></td><td>Elenco delle ricompense personali del pass ("tu ricevi").</td></tr>
+    <tr><td class="path">.../textAllGuildMembersGet</td><td><span class="tag tag-txt">testo</span></td><td>Testo della ricompensa condivisa con tutti i membri della gilda.</td></tr>
+    <tr><td class="path">.../timeLeftBg/timeLeft</td><td><span class="tag tag-txt">testo</span></td><td>Countdown del tempo rimanente del pass.</td></tr>
+    <tr><td class="path">.../products/currencyReward (0), (1)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa in valuta del pass (<code>CurrencyRewardInteraction</code>); contiene <code>currencyImage</code>, <code>itemFrame</code>, <code>quantity</code> e un overlay <code>claimedFrame</code> (inattivo) con spunta se già riscattata. Entrambi gli indici hanno struttura identica.</td></tr>
+    <tr><td class="path">.../products (1)/currencyReward (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seconda griglia di ricompense ("products (1)"), stessa struttura della prima.</td></tr>
+    <tr><td class="path">.../ribbonBg/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta sul nastro promozionale del riquadro.</td></tr>
+    <tr><td class="path">.../currencyHolder</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il pass mensile; mostra <code>priceHolder/currencyIcon</code> e <code>purchaseCost</code>.</td></tr>
+    <tr><td class="path">.../ribonBgIsActive</td><td><span class="tag tag-off">inattivo</span></td><td>Sostituisce nastro/pulsante di acquisto quando il pass è già attivo (contiene le etichette <code>text</code> e <code>active</code>).</td></tr>
+    <tr><td class="path">.../info/infoText</td><td><span class="tag tag-txt">testo</span></td><td>Testo informativo/tooltip sul pass.</td></tr>
+    <tr><td class="path">.../AnonymousGiftToggle</td><td>Toggle</td><td>Interruttore "regalo anonimo": invia la ricompensa condivisa alla gilda senza mostrare il proprio nome. Sottonodi <code>textYouGet</code> (etichetta) e <code>Background/Checkmark</code> (grafica del toggle).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Forniture" (supplies)</h2>
+  <p class="region-path">Percorso: <code>bg/submenus/supplies</code> (inattivo, <code>ScarabGameShopSuppliesSubmenuViewController</code>) → <code>items/tokensPack (0)</code> / <code>tokensPack (1)</code> (<code>ScarabGameShopSuppliesInteraction</code>, template identico ripetuto 2 volte)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">.../tokensPack (0)/outline</td><td><span class="tag tag-off">inattivo</span></td><td>Bordo evidenziatore del pacchetto.</td></tr>
+    <tr><td class="path">.../tokensPack (0)/claimBg/itemBg/itemImage</td><td>Image</td><td>Immagine del pacchetto in vendita.</td></tr>
+    <tr><td class="path">.../tokensPack (0)/claimBg/itemBg/itemQuantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità contenuta nel pacchetto.</td></tr>
+    <tr><td class="path">.../tokensPack (0)/claimBg/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del pacchetto.</td></tr>
+    <tr><td class="path">.../tokensPack (0)/claimBg/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista con la prima valuta/metodo (<code>priceHolder/currencyIcon</code> + <code>purchaseCost</code>).</td></tr>
+    <tr><td class="path">.../tokensPack (0)/claimBg/orText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "oppure" fra le due opzioni di pagamento.</td></tr>
+    <tr><td class="path">.../tokensPack (0)/claimBg/purchaseButton (1)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista con la valuta/metodo alternativo, stessa struttura del primo bottone.</td></tr>
+    <tr><td class="path">.../tokensPack (0)/claimBg/salesFrame</td><td><span class="tag tag-off">inattivo su questo indice</span></td><td>Badge sconto (<code>percentage</code> + <code>text</code>); nel dump risulta inattivo su <code>tokensPack (0)</code> e attivo su <code>tokensPack (1)</code> — compare solo quando il pacchetto è in offerta.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Offerte giornaliere" (extremeValueBundlesDaily)</h2>
+  <p class="region-path">Percorso: <code>bg/submenus/extremeValueBundlesDaily</code> (inattivo, <code>ScarabGameShopDailyBundleSubmenuViewController</code>) → <code>Scroll View/Viewport/items</code> (lista scorrevole orizzontale)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">items/scarabGameShopFreeTokenInteraction</td><td>vedi sezione "Saldi — omaggio giornaliero"</td><td>Stessa identica struttura del riquadro omaggio già documentato sopra.</td></tr>
+    <tr><td class="path">items/scarabGameDailyDealInteraction (0)/outline</td><td><span class="tag tag-off">inattivo</span></td><td>Bordo evidenziatore. Template ripetuto identico anche per gli indici (1) e (2).</td></tr>
+    <tr><td class="path">.../scarabGameDailyDealInteraction (0)/itemName, .../itemImage</td><td><span class="tag tag-txt">testo</span> / Image</td><td>Nome e immagine del bundle.</td></tr>
+    <tr><td class="path">.../scarabGameDailyDealInteraction (0)/mysteryBox</td><td><code>GenericInfoInteraction</code></td><td>Icona "scrigno misterioso" con info aggiuntive (<code>mysterBoxIxon</code> + <code>quantity</code>); non ha Button, probabile solo tooltip al tocco tramite lo script.</td></tr>
+    <tr><td class="path">.../scarabGameDailyDealInteraction (0)/products/currencyReward (0..3)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Fino a 4 slot ricompensa in valuta (<code>CurrencyRewardInteraction</code>), ognuno con <code>currencyImage</code>/<code>itemFrame</code>/<code>quantity</code>.</td></tr>
+    <tr><td class="path">.../scarabGameDailyDealInteraction (0)/products/jewelChest</td><td><code>JewelChestInteraction</code></td><td>Slot scrigno di gioielli; <code>quantity</code> mostra il numero, <code>info</code> (<code>JewelChestInfoInteraction</code>) è probabilmente un tooltip informativo (nessun Button rilevato).</td></tr>
+    <tr><td class="path">.../scarabGameDailyDealInteraction (0)/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il bundle; <code>priceHolder/realCurrencyIcon</code> + <code>purchaseCost</code> indicano un prezzo in valuta reale (acquisto in-app).</td></tr>
+    <tr><td class="path">.../scarabGameDailyDealInteraction (0)/claimedObj</td><td><span class="tag tag-off">inattivo</span></td><td>Overlay "già acquistato" (<code>text</code> + <code>tickImg</code>), compare solo dopo l'acquisto.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Offerte settimanali" (extremeValueBundles)</h2>
+  <p class="region-path">Percorso: <code>bg/submenus/extremeValueBundles</code> (inattivo, <code>ScarabGameShopWeeklyBundleSubmenuViewController</code>) → <code>Scroll View/Viewport/items/scarabGameValueBundleInteraction (0..3)</code> (<code>ScarabGameShopValueBundleInteraction</code>, template identico ripetuto 4 volte)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>A differenza del bundle giornaliero, qui l'intera scheda ha un componente Button (oltre ai bottoni interni) — probabile apertura di un dettaglio/popup informativo al tocco della scheda.</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/outline, .../bgImage, .../itemName, .../itemImage</td><td>vari</td><td>Bordo, sfondo, nome e immagine del bundle — stessa struttura della versione giornaliera.</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/mysteryBox/mysterBoxIxon, .../quantity</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Icona e quantità dello scrigno misterioso, identico al bundle giornaliero.</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/products/currencyReward (0..3)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa in valuta, identico al bundle giornaliero.</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/products/jewelChest/quantity, .../info</td><td><span class="tag tag-txt">testo</span> / Image</td><td>Scrigno di gioielli, identico al bundle giornaliero.</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/sharedText</td><td><span class="tag tag-txt">testo</span></td><td>Testo che descrive la ricompensa condivisa con la gilda (elemento non presente nel bundle giornaliero).</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/currencyReward</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot ricompensa in valuta aggiuntivo/condiviso (<code>currencyImage</code>, <code>itemFrame</code>, <code>quantity</code>), extra rispetto al bundle giornaliero.</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/claimedObj</td><td><span class="tag tag-off">inattivo</span></td><td>Overlay "già acquistato", compare solo dopo l'acquisto.</td></tr>
+    <tr><td class="path">.../scarabGameValueBundleInteraction (0)/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il bundle settimanale (<code>priceHolder/realCurrencyIcon</code> + <code>purchaseCost</code>).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Contatori valuta e mascotte</h2>
+  <p class="region-path">Percorso: <code>bg/counters</code>, <code>bg/mascotSpine</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/counters/counterInteraction Guild (1)/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore valuta di gilda/evento (<code>CounterInteraction</code>); probabile apertura di un tooltip/info sulla valuta.</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction Guild (1)/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, cliccabile (verosimilmente stessa azione del bottone <code>bg</code> sopra).</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction Guild (1)/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta della valuta.</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction Guild (1)/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Variazione recente mostrata temporaneamente (es. "+10").</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction Guild (1)/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Pulsante "Ottieni di più"; compare solo quando la valuta risulta insufficiente.</td></tr>
+    <tr><td class="path">bg/mascotSpine</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mascotte animata del negozio (Spine); cliccabile — probabile reazione/animazione al tocco, non un'azione di gioco.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Barra info, chiusura e toggle regalo (radice)</h2>
+  <p class="region-path">Percorso: <code>info</code>, <code>closeButton</code>, <code>AnonymousGiftToggle</code> (livello radice, fuori da <code>bg</code>)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">info/bg/infoText</td><td><span class="tag tag-txt">testo</span></td><td>Testo informativo generale del negozio (es. descrizione dell'evento Scarab).</td></tr>
+    <tr><td class="path">info/bg/timeText</td><td><span class="tag tag-txt">testo</span></td><td>Countdown testuale, probabile scadenza dell'intero evento/negozio.</td></tr>
+    <tr><td class="path">info/GameObject</td><td>HorizontalLayoutGroup</td><td>Nome generico non rinominato ("GameObject"), senza contenuto visibile nel prefab: funzione non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata del negozio.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>Image</td><td>Icona "X" del pulsante di chiusura.</td></tr>
+    <tr><td class="path">AnonymousGiftToggle</td><td>Toggle</td><td>Istanza duplicata dello stesso toggle "regalo anonimo" presente dentro il Monthly Pass, ma a livello radice della schermata: funzione esatta non chiara dal nome/posizione (potrebbe essere un'istanza inutilizzata o condivisa a runtime tra sottomenu), verificare dal vivo.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/ScarabGameShop</code> — dedotto dal nome del GameObject e dal fatto che si tratta di un popup di negozio richiamabile dai menu (non risulta collegato a <code>battleRoot</code>); non è stato possibile risalire la gerarchia della scena live per confermarlo con certezza. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

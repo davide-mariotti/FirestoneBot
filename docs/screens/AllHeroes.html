@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Tutti gli Eroi</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Tutti gli Eroi</div>
+  <h1>🦸 Tutti gli Eroi</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Root: <code>AllHeroes</code> (156 nodi, 15 componenti Button). Componente sul root: <code>AllHeroesViewController</code>. Nel prefab il root risulta <strong>inattivo</strong> di default: si attiva quando il giocatore apre l'elenco completo degli eroi/mercenari/dei/skin (es. dal pulsante "allHeroesButton" nella Sala degli Eroi).</p>
+</header>
+<main>
+
+<section>
+<h2>Radice e controlli principali</h2>
+<p class="region-path">Path relativo: <code>(root)</code> / <code>bg</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">background</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile a schermo intero; probabile "tocca fuori dal pannello per chiudere".</td></tr>
+<tr><td class="path">bg/frame</td><td>Image</td><td>Cornice decorativa del pannello principale.</td></tr>
+<tr><td class="path">bg/closeButton (+icon)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata (ha anche <code>ButtonAnimation</code> per il feedback al click).</td></tr>
+<tr><td class="path">bg/biogrpahyButton (+spine, +text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la biografia/storia dell'eroe attualmente in anteprima (<code>BioInteraction</code>). Nome del nodo con refuso originale del gioco ("biogrpahy"). Il collider decorativo del bottone è stato omesso dalla tabella.</td></tr>
+<tr><td class="path">bg/infoButton (+spineInfo)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra un tooltip informativo aggiuntivo (<code>HolydayStudios.InfoButtonAnimation</code>).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sfondo decorativo</h2>
+<p class="region-path">Path relativo: <code>bg/bgCanvas/bgArtMask</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">bgUp, bgDown, bgTile</td><td>Image</td><td>Livelli statici/scorrevoli dello sfondo (parallax).</td></tr>
+<tr><td class="path">elements/cloud (1..4)</td><td>Image + <code>MenuVfxEntityComponent</code></td><td>×4. Nuvole decorative animate.</td></tr>
+<tr><td class="path">elements/mountains, elements/tiles&amp;Pillars (+tiles&amp;Pillars2), elements/light</td><td>Image + <code>MenuVfxEntityComponent</code></td><td>Ulteriori livelli decorativi dello sfondo (montagne, piastrelle/pilastri, luce).</td></tr>
+<tr><td class="path">elements/HallOfHeroesSmoke/SmokeHallOfHeroesParticles</td><td>ParticleSystem</td><td>Effetto particellare di fumo, puramente decorativo.</td></tr>
+<tr><td class="path">elements/base (+base/baseSpine)</td><td>Image + Spine <code>SkeletonGraphic</code></td><td>Elemento di sfondo animato via Spine, puramente decorativo.</td></tr>
+<tr><td colspan="3" class="note">Intera sezione priva di bottoni/interazioni: solo arte di sfondo animata (stesso stile grafico della Sala degli Eroi).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Info eroe: dati e statistiche testuali</h2>
+<p class="region-path">Path relativo: <code>bg/heroInfo</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">title</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'eroe attualmente in anteprima.</td></tr>
+<tr><td class="path">heroDesc (inactive)/class (+classDesc), specialization (+specializationDesc), attackStyle (+attackStyleDesc), resource (+resourceDesc)</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Etichette e valori di classe, specializzazione, stile d'attacco e risorsa dell'eroe. Contenitore disattivo di default nel prefab: probabilmente mostrato solo in una vista/stato particolare — verificare dal vivo.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Attributi, abilità e bonus risveglio</h2>
+<p class="region-path">Path relativo: <code>bg/heroInfo/attributes&amp;abilities</code> (inattivo di default)</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td colspan="3" class="note">L'intero contenitore <code>attributes&amp;abilities</code> risulta disattivo di default nel prefab: probabilmente mostrato in una vista dettagliata dell'eroe non attiva nello stato base — verificare dal vivo.</td></tr>
+<tr><td class="path">line</td><td>Image</td><td>Linea divisoria decorativa.</td></tr>
+<tr><td class="path">mainAttributes/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta della sezione attributi principali.</td></tr>
+<tr><td class="path">mainAttributes/attributeGlobal (0..2)</td><td>non-bottone (<code>AttributeGlobalInteraction</code>)</td><td>×3 (slot 0-2). Attributi principali dell'eroe: sfondo, icona, valore, lucchetto se non sbloccato, animazione Spine al cambio valore.</td></tr>
+<tr><td class="path">advancedAttributes/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta della sezione attributi avanzati.</td></tr>
+<tr><td class="path">advancedAttributes/attributeGlobal (0..3)</td><td>non-bottone (<code>AttributeGlobalInteraction</code>)</td><td>×4 (slot 0-3). Attributi avanzati, stessa struttura dei principali.</td></tr>
+<tr><td class="path">abilities/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta della sezione abilità.</td></tr>
+<tr><td class="path">abilities/ability0..2</td><td>non-bottone (<code>AbilityInteractionSimple</code>)</td><td>×3. Le tre abilità dell'eroe.</td></tr>
+<tr><td class="path">awakeningBonus/bg, /desc</td><td>Image / <span class="tag tag-txt">testo</span></td><td>Sfondo e descrizione del bonus di risveglio dell'eroe.</td></tr>
+<tr><td class="path">awakeningBonus/attributeBg (+attributeIcon)</td><td>non-bottone (<code>TooltipInteractionNameDescEffect</code>)</td><td>Icona del bonus di risveglio, con tooltip di nome/descrizione/effetto.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Biografia estesa (scroll)</h2>
+<p class="region-path">Path relativo: <code>bg/heroInfo/extraStoryParent</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">(container)</td><td>ScrollRect + Image</td><td>Area scorrevole per il testo biografico esteso dell'eroe.</td></tr>
+<tr><td class="path">line (1)</td><td>Image</td><td>Linea divisoria decorativa.</td></tr>
+<tr><td class="path">viewport/content</td><td>VerticalLayoutGroup + ContentSizeFitter</td><td>Contenitore che si adatta automaticamente alla lunghezza del testo.</td></tr>
+<tr><td class="path">viewport/content/biographyText</td><td><span class="tag tag-txt">testo</span></td><td>Testo della biografia/lore dell'eroe (nessun <code>I2.Loc.Localize</code>: probabilmente popolato via script, come in <code>Biography</code>).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Anteprima personaggio e navigazione tra eroi</h2>
+<p class="region-path">Path relativo: <code>bg/characterPreview</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">characterSpinePos</td><td>Contenitore (nessun componente)</td><td>Punto di ancoraggio per il modello 3D/Spine dell'eroe in anteprima.</td></tr>
+<tr><td class="path">characterAnimateButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Interagisce con il modello 3D/Spine in anteprima (probabile trigger di un'animazione).</td></tr>
+<tr><td class="path">characterAnimateButton/navigation/goBackHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'eroe precedente nell'anteprima; supporta pressione prolungata (<code>RepeatAction</code>). Collider decorativo del bottone omesso dalla tabella.</td></tr>
+<tr><td class="path">characterAnimateButton/navigation/goForthHero</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'eroe successivo nell'anteprima; supporta pressione prolungata (<code>RepeatAction</code>). Collider decorativo del bottone omesso dalla tabella.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Sotto-menu categorie (tab)</h2>
+<p class="region-path">Path relativo: <code>bg/submenuButtons</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">heroesButton (+text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra l'elenco Eroi (la vista descritta in questa pagina).</td></tr>
+<tr><td class="path">mercenariesButton (+text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'elenco Mercenari.</td></tr>
+<tr><td class="path">godsButton (+text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'elenco Dei.</td></tr>
+<tr><td class="path">skinsButton (+text)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa all'elenco Skin.</td></tr>
+<tr><td class="path">seperator</td><td>Image</td><td>Linea divisoria decorativa sotto la barra dei tab (refuso nel nome originale del gioco).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Griglia elenco eroi</h2>
+<p class="region-path">Path relativo: <code>bg/characterListScrollView/Viewport/heroGrid</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">(container)</td><td>ScrollRect + Image; GridLayoutGroup + ContentSizeFitter</td><td>Area scorrevole con la griglia degli eroi disponibili.</td></tr>
+<tr><td class="path">hero (0..3)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×4 (slot 0-3 nel dump statico; il numero effettivo di card dipende dal roster sbloccato). Seleziona l'eroe N e lo mostra in anteprima (<code>PlayerAvatarSelectInteraction</code>). Ogni slot ha <code>avatarIcon</code> (ritratto), <code>avatarFrame</code> (inattivo, cornice di evidenziazione se selezionato) e <code>activeIcon</code> (indicatore eroe attualmente attivo/equipaggiato nel party).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Stato eroe: sbloccato / bloccato</h2>
+<p class="region-path">Path relativo: <code>bg/heroState</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">unlocked (inactive)/text</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Mostrato quando l'eroe in anteprima è già sbloccato.</td></tr>
+<tr><td class="path">locked/unlockHero (inactive) (+lockIcon, +unlockText)</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Mostrato quando l'eroe può essere sbloccato direttamente: icona lucchetto e testo di sblocco/requisito.</td></tr>
+<tr><td class="path">locked/unlockSkin (+lockIcon/unlockSkinText)</td><td><span class="tag tag-txt">testo</span></td><td>Stato alternativo di blocco (sblocco tramite skin/frammenti), con etichetta descrittiva.</td></tr>
+<tr><td class="path">locked/unlockSkin/progressBarParent/progressBarBg (+progressBarMask/progressBarFill, +progressBarText)</td><td>non-bottone (<code>GenericProgressBarInteraction</code>)</td><td>Barra di progresso verso lo sblocco (es. frammenti raccolti), con testo numerico; componente custom senza <code>Button</code>, possibile tooltip al tocco — verificare dal vivo.</td></tr>
+</tbody>
+</table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/AllHeroes</code>. Nota: il path del root è stato dedotto solo dal nome del GameObject e dal fatto che sia una schermata di menu (componenti <code>MenuVfxEntityComponent</code> diffusi nello sfondo, stessa struttura di <code>HallOfHeroes</code>, nessun aggancio a nodi di battaglia) — non è stato verificato risalendo la gerarchia della scena live, quindi il prefisso esatto andrebbe confermato dal vivo. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

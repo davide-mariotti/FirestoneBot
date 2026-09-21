@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Ingegnere</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Ingegnere</div>
+  <h1>🔧 Ingegnere</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Radice: <code>Engineer</code> (script <code>EngineerViewController</code>), risulta <strong>inattiva di default</strong> nel prefab: è un popup a schermo intero che viene attivato quando il giocatore apre la schermata dell'Ingegnere, non una vista sempre presente.</p>
+</header>
+<main>
+
+<section>
+  <h2>Header e controlli principali</h2>
+  <p class="region-path">Path: <code>bg/</code>, <code>unlockOfferButton</code>, <code>infoButton</code>, <code>engineerLevel</code>, <code>chat</code>, <code>closeButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/tilesNew/*, bg/props/*</td><td>decorazione</td><td>Sfondo della stanza (muro/pavimento/mattoni) e props (elementi di sfondo, scudo); hanno <code>MenuVfxEntityComponent</code> per effetti/parallax ma nessuna interazione.</td></tr>
+      <tr><td class="path">bg/engineer</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Il personaggio animato (Spine) dell'Ingegnere sullo sfondo; toccarlo probabilmente avvia una battuta/animazione di reazione.</td></tr>
+      <tr><td class="path">bg/engineer/engineer</td><td>grafica Spine</td><td>Skeleton animato del personaggio (figlio grafico del bottone sopra).</td></tr>
+      <tr><td class="path">unlockOfferButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Offerta a tempo per sbloccare qualcosa (probabilmente una macchina da guerra); <code>UnlockOfferButtonInteraction</code> + timer in <code>canvasGroup/time</code> e icona in <code>canvasGroup/unitIcon</code>. Visibile solo quando l'offerta è attiva.</td></tr>
+      <tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo/spiegazione sulla schermata Ingegnere (<code>InfoButtonAnimation</code>).</td></tr>
+      <tr><td class="path">engineerLevel</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro con livello dell'Ingegnere (<code>RankView</code>) e barra di progresso XP (<code>levelProgressBarFill</code>, <code>levelProgressText</code>); cliccabile per aprire il dettaglio del livello/rank.</td></tr>
+      <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat/community (<code>ChatInteraction</code>); mostra una campanella di notifica con contatore non letti (<code>notification/amountTMP</code>).</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Ingegnere.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Contatore risorsa (strumenti)</h2>
+  <p class="region-path">Path: <code>counters/counterInteraction/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore risorsa (probabilmente apre il negozio/dettaglio della valuta "strumenti").</td></tr>
+      <tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stessa azione del bottone di sfondo.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della risorsa posseduta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato temporaneamente quando la risorsa aumenta.</td></tr>
+      <tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone "Ottieni di più", nascosto di default: appare probabilmente solo quando la risorsa scende sotto una soglia, per aprire l'acquisto.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Produzione strumenti (tab di default)</h2>
+  <p class="region-path">Path: <code>submenus/bg/engineerSubmenu/</code> — script <code>EngineerEngineerSubmenuViewController</code>, prima scheda selezionata all'apertura.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">engineerSubmenuTitleText</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della scheda.</td></tr>
+      <tr><td class="path">effectsForEngineerLevelText</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione "effetti per livello dell'Ingegnere".</td></tr>
+      <tr><td class="path">engineerBonusSection/*</td><td><span class="tag tag-txt">testo</span></td><td>Riquadro bonus attuale: icona attributo (<code>attributeIcon</code>) + descrizione (<code>effectDesc</code>) + valore (<code>effectBg/effect</code>).</td></tr>
+      <tr><td class="path">toolsProductionSection/toolProductionText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "produzione strumenti".</td></tr>
+      <tr><td class="path">toolsProductionSection/currencyReward</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro con icona valuta e quantità prodotta (<code>CurrencyRewardInteraction</code>); probabilmente apre un dettaglio/tooltip sulla ricompensa.</td></tr>
+      <tr><td class="path">toolsProductionSection/claimToolsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritira gli strumenti prodotti dall'Ingegnere. Ha due stati figli: <code>cooldownOff</code> (testo "Ritira", attivo) e <code>cooldownOn</code> (inattivo di default, mostra countdown in <code>cooldownTimeLeft</code> quando la produzione è in cooldown).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Formazione squadre</h2>
+  <p class="region-path">Path: <code>submenus/bg/squadsSubmenu/</code> — script <code>SquadsEngineerSubmenuViewController</code>, nodo <strong>inattivo di default</strong> (visibile solo selezionando la relativa scheda).</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">squadsSubmenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo scheda.</td></tr>
+      <tr><td class="path">battleFormation/warMachineGrid/emptySpot (0..4)</td><td>slot vuoto</td><td>Placeholder "slot vuoto" della griglia di formazione; gli indici (0),(1),(2),(3) risultano <span class="tag tag-off">inattivi</span> nel prefab (probabilmente perché coperti da una macchina da guerra assegnata), mentre (4) è attivo di default.</td></tr>
+      <tr><td class="path">battleFormation/warMachineGrid/warMachineSquare (0..4)</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">x5, indici 0-4</span></td><td>Slot cliccabile per una macchina da guerra assegnata alla formazione (<code>WarMachineInteractionSquare</code>); apre probabilmente la selezione/dettaglio dell'unità. Ogni slot ha <code>icon</code>, <code>levelBg/level</code>, 5 stelle in <code>starsParent</code> e un badge <code>notificationCircle</code> (inattivo di default). Lo slot <strong>(4) risulta interamente inattivo</strong> (bottone incluso): probabilmente lo slot non è ancora sbloccato.</td></tr>
+      <tr><td class="path">battleFormation/warMachineGrid/editButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la modifica della formazione squadre.</td></tr>
+      <tr><td class="path">battleFormation/battlePower/text, arenaPower/text</td><td><span class="tag tag-txt">testo</span></td><td>Valori di potenza mostrati per la formazione (battaglia/arena).</td></tr>
+      <tr><td class="path">squadsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nome poco esplicito: probabilmente porta alla schermata completa di gestione squadre; verificare dal vivo.</td></tr>
+      <tr><td class="path">squadsSubmenuExplanation</td><td><span class="tag tag-txt">testo</span></td><td>Testo esplicativo della funzione "squadre".</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Macchine da guerra preferite</h2>
+  <p class="region-path">Path: <code>submenus/bg/favoredWMSubmenu/</code> — script <code>FavoredWMSubmenuViewController</code>, nodo <strong>inattivo di default</strong>.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">favoredWMSubmenuTitleText</td><td><span class="tag tag-txt">testo</span></td><td>Titolo scheda.</td></tr>
+      <tr><td class="path">unlocked/*</td><td>gruppo condizionale</td><td>Contenuto mostrato quando la funzione "preferite" è sbloccata: stessa struttura del sottomenu squadre (griglia <code>emptySpot</code>/<code>warMachineSquare (0..4)</code> con icona, livello, stelle, badge notifica; lo slot (4) è <span class="tag tag-off">inattivo</span>), più <code>editButton</code> e testo <code>favoredExplanation</code>.</td></tr>
+      <tr><td class="path">unlocked/.../warMachineSquare (0..4)</td><td><span class="tag tag-btn">BOTTONE</span> <span class="note">x5, indici 0-4</span></td><td>Slot cliccabile per assegnare una macchina da guerra preferita (<code>WarMachineInteractionSquare</code>).</td></tr>
+      <tr><td class="path">unlocked/.../editButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Modifica le macchine da guerra preferite.</td></tr>
+      <tr><td class="path">locked</td><td>gruppo condizionale <span class="tag tag-off">inattivo</span></td><td>Vista alternativa mostrata quando la funzione è bloccata: icona lucchetto (<code>lock</code>) + <code>lockedDescription</code> con la condizione di sblocco.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu: Conduttori arcani</h2>
+  <p class="region-path">Path: <code>submenus/bg/arcaneConduitsSubmenu/</code> — script <code>ArcaneConduitsSubmenuViewController</code>, nodo <strong>inattivo di default</strong>.</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">arcaneConduitsSubmenuTitleText</td><td><span class="tag tag-txt">testo</span></td><td>Titolo scheda.</td></tr>
+      <tr><td class="path">requirements/requirementsText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "requisiti".</td></tr>
+      <tr><td class="path">requirements/requirementsLayout/chaosTurbine, energyCore, manaReactor</td><td>requisito (non cliccabile)</td><td>Tre righe requisito materiali (icona + nome + quantità richiesta) per sbloccare/potenziare i conduttori arcani; nessun componente Button.</td></tr>
+      <tr><td class="path">explanation</td><td><span class="tag tag-txt">testo</span></td><td>Testo esplicativo della funzione.</td></tr>
+      <tr><td class="path">lockedWM</td><td>immagine</td><td>Icona/illustrazione mostrata quando la funzione è bloccata.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab e bottone Macchine da Guerra</h2>
+  <p class="region-path">Path: <code>submenus/submenuButtons/</code> (barra schede) e <code>warMachinesButton</code> (radice)</p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenus/submenuButtons/engineer</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Ingegnere" (produzione strumenti), selezionata di default; badge notifica in <code>notification/amountTMP</code>.</td></tr>
+      <tr><td class="path">submenus/submenuButtons/squads</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Formazione squadre".</td></tr>
+      <tr><td class="path">submenus/submenuButtons/favoredWM</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Macchine da guerra preferite"; mostra un'icona <code>locked/icon</code> + <code>lock</code> sovrapposta quando la funzione non è ancora sbloccata.</td></tr>
+      <tr><td class="path">submenus/submenuButtons/arcaneConduits</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tab "Conduttori arcani".</td></tr>
+      <tr><td class="path">warMachinesButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Porta alla schermata delle Macchine da Guerra; freccia animata (<code>arrowParent/swingingArrow</code>, <code>ArrowMover</code>) usata come richiamo visivo/tutorial verso il bottone.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Engineer</code>. Nota: il path radice completo non è stato verificato risalendo la gerarchia della scena live — è dedotto per nome/contesto (popup di gestione raggiungibile dal menu principale) dato che il dump è stato estratto staticamente a partire dal solo prefab. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

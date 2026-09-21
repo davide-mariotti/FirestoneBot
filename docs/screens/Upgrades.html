@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Potenziamenti (Upgrades)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Potenziamenti (Upgrades)</div>
+  <h1>⬆️ Potenziamenti (Upgrades)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Il nodo radice <code>Upgrades</code> risulta disattivo di default nel prefab: è un popup/menu che viene attivato a runtime dal controller <code>UpgradesViewController</code>.</p>
+</header>
+<main>
+
+<section>
+  <h2>Testata e controlli generali</h2>
+  <p class="region-path">Path relativo: <code>Upgrades/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Potenziamenti.</td></tr>
+    <tr><td class="path">closeButton/icon</td><td>immagine</td><td>Icona (X) del bottone chiudi.</td></tr>
+    <tr><td class="path">titleText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Testo del titolo della schermata (localizzato); disattivo nel prefab, probabilmente riabilitato/riusato dal codice a runtime.</td></tr>
+    <tr><td class="path">counters</td><td>contenitore (GridLayoutGroup)</td><td>Layout che dispone il/i contatore/i di valuta in alto.</td></tr>
+    <tr><td class="path">counters/counterInteraction</td><td>script <code>CounterInteraction</code></td><td>Controller del widget del contatore valuta (probabilmente la valuta usata per i potenziamenti).</td></tr>
+    <tr><td class="path">counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore; funzione esatta non chiara dal nome, verificare dal vivo (possibile apertura shop/dettaglio valuta).</td></tr>
+    <tr><td class="path">counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona cliccabile della valuta; stessa area funzionale di <code>bg</code>.</td></tr>
+    <tr><td class="path">counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale della valuta posseduta.</td></tr>
+    <tr><td class="path">counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo/animazione dell'importo appena aggiunto (es. "+50").</td></tr>
+    <tr><td class="path">counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Bottone per ottenere altra valuta (probabile shop/IAP); disattivo di default, compare solo in certe condizioni (es. valuta insufficiente).</td></tr>
+    <tr><td class="path">counters/counterInteraction/getMore/collider</td><td>immagine (area click)</td><td>Estende l'area cliccabile di <code>getMore</code>.</td></tr>
+    <tr><td class="path">changeViewButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la modalità di visualizzazione della lista potenziamenti (es. lista compatta/estesa); dedotto dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">changeViewButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta localizzata del bottone.</td></tr>
+    <tr><td class="path">changeLevelUpModeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Cambia la modalità di potenziamento (es. singolo livello vs. potenziamento multiplo/massimo); dedotto dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">changeLevelUpModeButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta localizzata del bottone.</td></tr>
+    <tr><td class="path">helpingLine2</td><td>immagine</td><td>Linea/separatore puramente decorativo.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Lista potenziamenti</h2>
+  <p class="region-path">Path relativo: <code>Upgrades/upgradesList</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">upgradesList</td><td>contenitore (GridLayoutGroup, Canvas)</td><td>Griglia che contiene tutti gli slot potenziabili: il potenziamento speciale, il Guardiano e i 5 eroi.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Slot potenziamento speciale (customUpgrade)</h2>
+  <p class="region-path">Path relativo: <code>Upgrades/upgradesList/customUpgrade</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">customUpgrade</td><td>contenitore (Image, Canvas)</td><td>Slot dedicato a un potenziamento "personalizzato"/speciale, distinto dagli eroi e dal Guardiano; natura esatta non chiara dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">tutorialArrowParent</td><td>contenitore <span class="tag tag-off">inattivo</span></td><td>Contenitore della freccia tutorial che punta a questo slot; attivato solo durante il tutorial guidato.</td></tr>
+    <tr><td class="path">tutorialArrowParent/arrowParent/swingingArrow</td><td>immagine animata</td><td>Freccia oscillante (<code>ArrowMoverFast</code>) usata per indicare lo slot durante il tutorial.</td></tr>
+    <tr><td class="path">portraitElements/upgradeImage</td><td>immagine</td><td>Icona/ritratto del potenziamento.</td></tr>
+    <tr><td class="path">portraitElements/customUpgradeProgressBg</td><td>immagine</td><td>Sfondo della barra di progresso verso il prossimo livello.</td></tr>
+    <tr><td class="path">portraitElements/customUpgradeProgressBg/customUpgradeLvlText</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale del potenziamento.</td></tr>
+    <tr><td class="path">portraitElements/portraitLvlUpEffect</td><td>VFX (Spine)</td><td>Animazione riprodotta quando il potenziamento sale di livello.</td></tr>
+    <tr><td class="path">upgradeEffect/upgradeEffectType</td><td><span class="tag tag-txt">testo</span></td><td>Nome/tipo della statistica potenziata (es. "Danno").</td></tr>
+    <tr><td class="path">upgradeEffect/upgradeEffect</td><td><span class="tag tag-txt">testo</span></td><td>Valore attuale dell'effetto del potenziamento.</td></tr>
+    <tr><td class="path">buyButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista/applica il potenziamento speciale (supporta pressione ripetuta, ha <code>RepeatAction</code>).</td></tr>
+    <tr><td class="path">buyButton/costBg</td><td>immagine</td><td>Sfondo del riquadro costo.</td></tr>
+    <tr><td class="path">buyButton/goldImg</td><td>immagine</td><td>Icona della valuta di costo.</td></tr>
+    <tr><td class="path">buyButton/buyCost</td><td><span class="tag tag-txt">testo</span></td><td>Costo dell'acquisto.</td></tr>
+    <tr><td class="path">buyButton/buyDesc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione localizzata dell'azione di acquisto.</td></tr>
+    <tr><td class="path">buyButton/buyNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero di acquisti/livelli ottenibili con l'azione corrente.</td></tr>
+    <tr><td class="path">buyButton/BtnLvlUpEffect</td><td>VFX (Spine) <span class="tag tag-off">inattivo</span></td><td>Effetto grafico riprodotto al momento dell'acquisto/level up; disattivo finché non serve.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Slot Guardiano (guardianSlot)</h2>
+  <p class="region-path">Path relativo: <code>Upgrades/upgradesList/guardianSlot</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guardianSlot</td><td>contenitore (Image)</td><td>Slot dedicato al potenziamento del Guardiano.</td></tr>
+    <tr><td class="path">GuardianPortrait/guardianImage</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritratto cliccabile del Guardiano, apre probabilmente i dettagli/selezione del Guardiano.</td></tr>
+    <tr><td class="path">GuardianPortrait/guardianLvlProgressBg</td><td>immagine</td><td>Sfondo barra di progresso livello.</td></tr>
+    <tr><td class="path">.../guardianLvlProgressFill/guardianLvlProgressFillMasked</td><td>immagine (mascherata)</td><td>Riempimento della barra di progresso, ritagliato da <code>RectMask2D</code>.</td></tr>
+    <tr><td class="path">GuardianPortrait/guardianLvlProgressBg/guardianLvlText</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale del Guardiano.</td></tr>
+    <tr><td class="path">GuardianPortrait/portraitLvlUpEffect</td><td>VFX (Spine)</td><td>Animazione al level up del Guardiano.</td></tr>
+    <tr><td class="path">attributes/damageIcon</td><td>immagine</td><td>Icona dell'attributo danno.</td></tr>
+    <tr><td class="path">attributes/damageValue</td><td><span class="tag tag-txt">testo</span></td><td>Valore attuale del danno del Guardiano.</td></tr>
+    <tr><td class="path">lvlUpButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sale di livello il Guardiano (supporta pressione ripetuta, ha <code>RepeatAction</code>).</td></tr>
+    <tr><td class="path">lvlUpButton/costBg</td><td>immagine</td><td>Sfondo del riquadro costo.</td></tr>
+    <tr><td class="path">lvlUpButton/goldImg</td><td>immagine</td><td>Icona della valuta di costo.</td></tr>
+    <tr><td class="path">lvlUpButton/lvlUpCost</td><td><span class="tag tag-txt">testo</span></td><td>Costo del level up.</td></tr>
+    <tr><td class="path">lvlUpButton/lvlUpDesc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione localizzata dell'azione.</td></tr>
+    <tr><td class="path">lvlUpButton/lvlUpNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero di livelli ottenibili con l'azione corrente.</td></tr>
+    <tr><td class="path">lvlUpButton/BtnLvlUpEffect</td><td>VFX (Spine) <span class="tag tag-off">inattivo</span></td><td>Effetto grafico al level up; disattivo finché non serve.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Slot Eroe (heroSlot) — template ripetuto x5</h2>
+  <p class="region-path">Path relativo: <code>Upgrades/upgradesList/heroSlot (N)</code> con N = 0..4 (5 slot identici, uno per ciascuno dei 5 eroi mostrati nella schermata). Struttura riportata una sola volta per evitare ripetizioni.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">heroSlot (N)</td><td>contenitore (Image, <code>UpgradeSlotInteraction</code>)</td><td>Slot dell'eroe N-esimo nella lista dei potenziamenti.</td></tr>
+    <tr><td class="path">portraitElements/heroImage</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritratto cliccabile dell'eroe, apre probabilmente i dettagli/scheda dell'eroe.</td></tr>
+    <tr><td class="path">portraitElements/heroLvlProgressBg</td><td>immagine</td><td>Sfondo barra di progresso livello.</td></tr>
+    <tr><td class="path">.../heroLvlProgressFill/heroLvlProgressFillMasked</td><td>immagine (mascherata)</td><td>Riempimento della barra di progresso, ritagliato da <code>RectMask2D</code>.</td></tr>
+    <tr><td class="path">portraitElements/heroLvlProgressBg/heroLvlText</td><td><span class="tag tag-txt">testo</span></td><td>Livello attuale dell'eroe.</td></tr>
+    <tr><td class="path">portraitElements/portraitLvlUpEffect</td><td>VFX (Spine)</td><td>Animazione al level up dell'eroe.</td></tr>
+    <tr><td class="path">attributes/damageIcon, damageValue</td><td>immagine + <span class="tag tag-txt">testo</span></td><td>Icona e valore dell'attributo danno.</td></tr>
+    <tr><td class="path">attributes/healthIcon, healthValue</td><td>immagine + <span class="tag tag-txt">testo</span></td><td>Icona e valore dell'attributo salute.</td></tr>
+    <tr><td class="path">attributes/armorIcon, armorValue</td><td>immagine + <span class="tag tag-txt">testo</span></td><td>Icona e valore dell'attributo armatura.</td></tr>
+    <tr><td class="path">BtnLvlUpEffect</td><td>VFX (Spine) <span class="tag tag-off">inattivo</span></td><td>Effetto grafico al level up dello slot; disattivo finché non serve.</td></tr>
+    <tr><td class="path">lvlUpButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sale di livello l'eroe (supporta pressione ripetuta, ha <code>RepeatAction</code>).</td></tr>
+    <tr><td class="path">lvlUpButton/costBg, goldImg</td><td>immagini</td><td>Sfondo del costo e icona della valuta.</td></tr>
+    <tr><td class="path">lvlUpButton/lvlUpCost</td><td><span class="tag tag-txt">testo</span></td><td>Costo del level up.</td></tr>
+    <tr><td class="path">lvlUpButton/lvlUpDesc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione localizzata dell'azione.</td></tr>
+    <tr><td class="path">lvlUpButton/lvlUpNum</td><td><span class="tag tag-txt">testo</span></td><td>Numero di livelli ottenibili con l'azione corrente.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Upgrades</code>. Nota: il path radice è dedotto solo dal nome del GameObject e dal contenuto della schermata (menu di potenziamento eroi/Guardiano), senza aver risalito la gerarchia live della scena — da confermare con un'ispezione a runtime. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

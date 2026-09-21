@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Impostazioni</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Impostazioni</div>
+  <h1>⚙️ Impostazioni</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura del popup e barra dei tab</h2>
+  <p class="region-path">Radice: <code>Settings</code> (Canvas + GraphicRaycaster + <code>SettingsViewController</code>, risulta inattiva di default nel prefab: viene attivata quando il giocatore apre le Impostazioni). Overlay, pannello di sfondo, barra dei 4 tab e bottone di chiusura.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">background</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Overlay a schermo intero dietro al pannello; probabilmente chiude il popup se si clicca fuori dal pannello (da verificare dal vivo).</td></tr>
+    <tr><td class="path">bg</td><td>pannello (Image)</td><td>Sfondo/contenitore visivo principale del popup Impostazioni.</td></tr>
+    <tr><td class="path">bg/submenuButtons</td><td>griglia (GridLayoutGroup)</td><td>Barra dei tab in alto del popup.</td></tr>
+    <tr><td class="path">bg/submenuButtons/general</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu "Generale".</td></tr>
+    <tr><td class="path">bg/submenuButtons/general/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab "Generale".</td></tr>
+    <tr><td class="path">bg/submenuButtons/gameplay</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu "Gameplay".</td></tr>
+    <tr><td class="path">bg/submenuButtons/gameplay/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab "Gameplay".</td></tr>
+    <tr><td class="path">bg/submenuButtons/graphics</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu "Grafica".</td></tr>
+    <tr><td class="path">bg/submenuButtons/graphics/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab "Grafica".</td></tr>
+    <tr><td class="path">bg/submenuButtons/more</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il sotto-menu "Altro".</td></tr>
+    <tr><td class="path">bg/submenuButtons/more/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab "Altro".</td></tr>
+    <tr><td class="path">bg/closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup Impostazioni.</td></tr>
+    <tr><td class="path">bg/closeButton/icon</td><td>icona (Image)</td><td>Icona del bottone di chiusura.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Generale — Account</h2>
+  <p class="region-path"><code>bg/submenus/general</code> (script <code>SettingsGeneralSubmenuViewController</code>, risulta inattivo nel prefab come gli altri 3 sotto-menu: viene mostrato solo quando il tab "Generale" è selezionato) → <code>accountData</code>.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/general/accountData</td><td>pannello (Image, layout orizzontale)</td><td>Riquadro con i dati dell'account collegato.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/accountState</td><td><span class="tag tag-txt">testo</span></td><td>Stato dell'account (es. collegato/non collegato a una piattaforma).</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/userData/userName</td><td><span class="tag tag-txt">testo</span></td><td>Nome utente/account visualizzato.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/userData/idParent</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra/copia lo User ID (script <code>ButtonOnHoverActions</code> gestisce l'interazione al passaggio del mouse).</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/userData/idParent/userId</td><td><span class="tag tag-txt">testo</span></td><td>Testo dello User ID.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/userData/idParent/icon</td><td>icona (Image)</td><td>Icona associata al bottone ID (es. icona di copia).</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/kongLoginButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Login con Kongregate; inattivo di default, compare solo sulla build/piattaforma Kongregate.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/crazyGamesLoginButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Login con CrazyGames; inattivo di default, compare solo sulla build/piattaforma CrazyGames.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/yandexLoginButton</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Login con Yandex; inattivo di default, compare solo sulla build/piattaforma Yandex.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/yandexLoginButton/signInWithAppleText</td><td><span class="tag tag-txt">testo</span></td><td>Nome del nodo non coerente col bottone padre (probabile riuso di un prefab "Sign in with Apple" per il bottone Yandex); verificare dal vivo.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/platformAchievements</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre gli achievement della piattaforma (Steam/Google Play/Game Center, a seconda della build).</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/platformAchievements/icon</td><td>icona (Image)</td><td>Icona achievement piattaforma.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/signInWithAppleButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Login con "Sign in with Apple".</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/signInWithAppleButton/signInWithAppleIcon</td><td>icona (Image)</td><td>Icona Apple.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/signInWithAppleButton/signInWithAppleText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Sign in with Apple".</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/platformSignInOutButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Login/logout generico della piattaforma corrente.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/platformSignInOutButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta login/logout, presumibilmente dinamica in base allo stato dell'account.</td></tr>
+    <tr><td class="path">bg/submenus/general/accountData/platformSignInOutButton/platformIcon</td><td>icona (Image)</td><td>Icona della piattaforma corrente.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Generale — Audio, salvataggio, lingua e server</h2>
+  <p class="region-path"><code>bg/submenus/general/settingsBg</code> — controlli audio, salvataggio manuale, cambio lingua e cambio server.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg</td><td>pannello (Image, layout orizzontale)</td><td>Riquadro con le impostazioni generali (audio, salvataggio, lingua, server).</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/soundTitle</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Suono" (interruttore audio generale).</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/soundToggle</td><td>interruttore (Slider usato come toggle)</td><td>Attiva/disattiva tutto l'audio del gioco.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/soundToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore audio generale.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/musicTitle</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Musica".</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/musicSlider</td><td>cursore (Slider)</td><td>Regola il volume della musica (trascinabile, nessun bottone dedicato).</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/SFXtitle</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "Effetti sonori".</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/sfxSlider</td><td>cursore (Slider)</td><td>Regola il volume degli effetti sonori (trascinabile).</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/music/line</td><td>separatore (Image)</td><td>Linea divisoria puramente visiva.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/gameSaving</td><td>contenitore <span class="tag tag-off">inattivo</span></td><td>Blocco "Salvataggio"; inattivo di default, probabilmente mostrato solo su piattaforme con salvataggio manuale (es. build Steam).</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/gameSaving/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo sezione "Salvataggio".</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/gameSaving/saveGame</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Salva la partita manualmente.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/gameSaving/saveGame/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone di salvataggio.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/gameSaving/autosaveDesc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione del salvataggio automatico.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/gameSaving/autoSaveSeconds</td><td><span class="tag tag-txt">testo</span></td><td>Mostra il conto alla rovescia/intervallo del prossimo autosalvataggio.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/gameSaving/line (1)</td><td>separatore (Image)</td><td>Linea divisoria.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/language/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo sezione "Lingua".</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/language/languageIcon</td><td>icona (Image)</td><td>Icona bandiera/lingua corrente.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/language/languages</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il selettore della lingua.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/language/languages/desc</td><td><span class="tag tag-txt">testo</span></td><td>Nome della lingua correntemente selezionata.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/language/line (2)</td><td>separatore (Image)</td><td>Linea divisoria.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/servers/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo sezione "Server".</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/servers/serverName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del server corrente.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/servers/switchServer</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il cambio server.</td></tr>
+    <tr><td class="path">bg/submenus/general/settingsBg/servers/switchServer/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione del bottone cambio server.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Generale — Footer e versione</h2>
+  <p class="region-path"><code>bg/submenus/general/footer</code> e <code>bg/submenus/general/gameVersionBg</code> — link rapidi e numero di versione, in fondo al tab Generale.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/general/footer</td><td>pannello (Image, layout orizzontale)</td><td>Riquadro con i link rapidi in basso nel tab Generale.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/discord</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il Discord ufficiale del gioco.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/discord/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bottone Discord (testo non localizzato: manca <code>I2.Loc.Localize</code>).</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/discord/icon</td><td>icona (Image)</td><td>Icona Discord.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/patchNotes</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre le note di aggiornamento (patch notes).</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/patchNotes/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bottone patch notes.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/patchNotes/icon</td><td>icona (Image)</td><td>Icona patch notes.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/support</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il supporto/assistenza.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/support/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bottone supporto.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/support/icon</td><td>icona (Image)</td><td>Icona supporto.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/chatRules</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre le regole della chat.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/chatRules/icon</td><td>icona (Image)</td><td>Icona regole chat.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/chatRules/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bottone regole chat.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/saveAndExitButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Salva la partita ed esce dal gioco.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/saveAndExitButton/icon</td><td>icona (Image)</td><td>Icona salva ed esci.</td></tr>
+    <tr><td class="path">bg/submenus/general/footer/saveAndExitButton/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bottone salva ed esci.</td></tr>
+    <tr><td class="path">bg/submenus/general/gameVersionBg</td><td>pannello (Image)</td><td>Riquadro con la versione del gioco.</td></tr>
+    <tr><td class="path">bg/submenus/general/gameVersionBg/gameVersion</td><td><span class="tag tag-txt">testo</span></td><td>Numero di versione del gioco/build.</td></tr>
+    <tr><td class="path">bg/submenus/general/line</td><td>separatore (Image)</td><td>Linea divisoria del tab Generale.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Gameplay — elenco impostazioni</h2>
+  <p class="region-path"><code>bg/submenus/gameplay</code> (script <code>SettingsGameplaySubmenuViewController</code>, inattivo finché non selezionato) → <code>bg/scroll/viewport/grid</code>. La lista è dentro una <code>ScrollRect</code>: il bot potrebbe dover scorrere per raggiungere le voci più in basso. Molte voci hanno sia <code>description</code> che <code>desc</code> (a volte anche <code>desc2</code>): probabile titolo + descrizione estesa/valore, non certo dal solo nome.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/gameplay/bg/scroll</td><td>area scorrevole (ScrollRect)</td><td>Contenitore scorrevole di tutte le impostazioni gameplay.</td></tr>
+    <tr><td class="path">.../grid/notation</td><td>riquadro impostazione (Image)</td><td>Voce "Notazione numeri" (es. formato K/M/B per i numeri grandi).</td></tr>
+    <tr><td class="path">.../grid/notation/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/notation/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione/valore corrente della voce.</td></tr>
+    <tr><td class="path">.../grid/notation/desc2</td><td><span class="tag tag-txt">testo</span></td><td>Terzo testo associato alla voce; uso non chiaro dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">.../grid/notation/notationToggle</td><td>interruttore (Slider)</td><td>Interruttore per il formato di notazione dei numeri.</td></tr>
+    <tr><td class="path">.../grid/notation/notationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore notazione.</td></tr>
+    <tr><td class="path">.../grid/dps</td><td>riquadro impostazione (Image)</td><td>Voce relativa alla visualizzazione del DPS (danni al secondo).</td></tr>
+    <tr><td class="path">.../grid/dps/description</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo (non localizzato: manca <code>I2.Loc.Localize</code>).</td></tr>
+    <tr><td class="path">.../grid/dps/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione della voce DPS.</td></tr>
+    <tr><td class="path">.../grid/dps/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva la voce DPS.</td></tr>
+    <tr><td class="path">.../grid/dps/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore DPS.</td></tr>
+    <tr><td class="path">.../grid/cooldowns</td><td>riquadro impostazione (Image)</td><td>Voce relativa ai tempi di ricarica (cooldown) delle abilità.</td></tr>
+    <tr><td class="path">.../grid/cooldowns/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/cooldowns/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/cooldowns/timeTextConfirmationToggle</td><td>interruttore (Slider)</td><td>Mostra/nasconde il testo del tempo rimanente sui cooldown.</td></tr>
+    <tr><td class="path">.../grid/cooldowns/timeTextConfirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore cooldown.</td></tr>
+    <tr><td class="path">.../grid/spendConfirmation</td><td>riquadro impostazione (Image)</td><td>Voce "Conferma spesa" (chiede conferma prima di spendere risorse).</td></tr>
+    <tr><td class="path">.../grid/spendConfirmation/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/spendConfirmation/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/spendConfirmation/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva la richiesta di conferma spesa.</td></tr>
+    <tr><td class="path">.../grid/spendConfirmation/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../grid/levelUpRounding</td><td>riquadro impostazione (Image)</td><td>Voce "Arrotondamento level up" (probabile arrotondamento dei numeri mostrati quando si sale di livello).</td></tr>
+    <tr><td class="path">.../grid/levelUpRounding/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/levelUpRounding/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/levelUpRounding/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva l'arrotondamento.</td></tr>
+    <tr><td class="path">.../grid/levelUpRounding/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../grid/clickFeedback</td><td>riquadro impostazione (Image)</td><td>Voce "Feedback al click" (effetto visivo/numerico su click/tap).</td></tr>
+    <tr><td class="path">.../grid/clickFeedback/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/clickFeedback/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/clickFeedback/clickFeedbackToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva il feedback visivo al click.</td></tr>
+    <tr><td class="path">.../grid/clickFeedback/clickFeedbackToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../grid/cursorMode</td><td>riquadro impostazione (Image)</td><td>Voce relativa alla modalità del cursore; dettaglio non chiaro dal nome, verificare dal vivo.</td></tr>
+    <tr><td class="path">.../grid/cursorMode/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/cursorMode/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/cursorMode/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva la modalità cursore.</td></tr>
+    <tr><td class="path">.../grid/cursorMode/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../grid/bigGoldCounter</td><td>riquadro impostazione <span class="tag tag-off">inattivo</span></td><td>Voce "Contatore oro esteso"; inattiva di default, forse condizionata al progresso/quantità d'oro accumulata.</td></tr>
+    <tr><td class="path">.../grid/bigGoldCounter/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/bigGoldCounter/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/bigGoldCounter/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva il contatore oro esteso.</td></tr>
+    <tr><td class="path">.../grid/bigGoldCounter/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Area cliccabile dell'interruttore; compare solo quando il nodo padre "bigGoldCounter" viene attivato.</td></tr>
+    <tr><td class="path">.../grid/battleLayout</td><td>riquadro impostazione (Image)</td><td>Voce "Layout battaglia" con menu a tendina.</td></tr>
+    <tr><td class="path">.../grid/battleLayout/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/battleLayout/dropdown</td><td>menu a tendina (TMP_Dropdown, script <code>DropdownSelectionClearerInteraction</code>)</td><td>Selettore del layout di battaglia.</td></tr>
+    <tr><td class="path">.../battleLayout/dropdown/backWhenOpen/backWhenOpenBtn</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Overlay cliccabile per chiudere il menu quando è aperto; inattivo finché il dropdown non viene aperto.</td></tr>
+    <tr><td class="path">.../battleLayout/dropdown/Label</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta statica del dropdown.</td></tr>
+    <tr><td class="path">.../battleLayout/dropdown/LabelPlaceholder</td><td><span class="tag tag-txt">testo</span></td><td>Testo dell'opzione attualmente selezionata.</td></tr>
+    <tr><td class="path">.../battleLayout/dropdown/Arrow</td><td>icona (Image)</td><td>Freccia del dropdown.</td></tr>
+    <tr><td class="path">.../battleLayout/dropdown/Template</td><td>lista opzioni <span class="tag tag-off">inattivo</span> (script <code>DropdownOverrideSorting</code>, <code>MenuVfxEntityComponent</code>)</td><td>Pannello con le opzioni del layout; inattivo finché il dropdown non viene aperto.</td></tr>
+    <tr><td class="path">.../Template/Viewport/Content/Item</td><td>opzione selezionabile (Toggle, script <code>DropdownOptionInteraction</code>)</td><td>Singola opzione del dropdown (template ripetuto/clonato per ogni layout disponibile).</td></tr>
+    <tr><td class="path">.../Template/Viewport/Content/Item/battleImage</td><td>icona (Image)</td><td>Anteprima grafica del layout di battaglia.</td></tr>
+    <tr><td class="path">.../Template/Viewport/Content/Item/Item Label</td><td><span class="tag tag-txt">testo</span></td><td>Nome del layout.</td></tr>
+    <tr><td class="path">.../Template/Viewport/Content/Item/divisor</td><td>separatore (Image)</td><td>Linea divisoria tra le opzioni della lista.</td></tr>
+    <tr><td class="path">.../grid/profanityFilter</td><td>riquadro impostazione <span class="tag tag-off">inattivo</span></td><td>Voce "Filtro linguaggio volgare" (chat); inattiva di default, forse mostrata solo con chat/community abilitata.</td></tr>
+    <tr><td class="path">.../grid/profanityFilter/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/profanityFilter/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/profanityFilter/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva il filtro sul linguaggio volgare in chat.</td></tr>
+    <tr><td class="path">.../grid/profanityFilter/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Area cliccabile dell'interruttore; compare solo quando il nodo padre viene attivato.</td></tr>
+    <tr><td class="path">.../grid/lastMessagePreview</td><td>riquadro impostazione (Image)</td><td>Voce "Anteprima ultimo messaggio" in chat.</td></tr>
+    <tr><td class="path">.../grid/lastMessagePreview/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/lastMessagePreview/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/lastMessagePreview/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva l'anteprima dell'ultimo messaggio.</td></tr>
+    <tr><td class="path">.../grid/lastMessagePreview/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../grid/letterSize</td><td>riquadro impostazione (Image)</td><td>Voce "Dimensione testo" della chat.</td></tr>
+    <tr><td class="path">.../grid/letterSize/letterSizeTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/letterSize/letterSlider</td><td>cursore (Slider)</td><td>Regola la dimensione del testo in chat (trascinabile, nessun bottone dedicato).</td></tr>
+    <tr><td class="path">.../grid/chatCompact</td><td>riquadro impostazione (Image)</td><td>Voce "Chat compatta".</td></tr>
+    <tr><td class="path">.../grid/chatCompact/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/chatCompact/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/chatCompact/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva la modalità compatta della chat.</td></tr>
+    <tr><td class="path">.../grid/chatCompact/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../grid/mainScreenBuffs</td><td>riquadro impostazione (Image)</td><td>Voce relativa alla visualizzazione dei buff nella schermata principale.</td></tr>
+    <tr><td class="path">.../grid/mainScreenBuffs/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della voce.</td></tr>
+    <tr><td class="path">.../grid/mainScreenBuffs/desc</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della voce.</td></tr>
+    <tr><td class="path">.../grid/mainScreenBuffs/confirmationToggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva la visualizzazione dei buff in schermata principale.</td></tr>
+    <tr><td class="path">.../grid/mainScreenBuffs/confirmationToggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">bg/submenus/gameplay/bg/hotkeysButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la schermata/popup delle scorciatoie da tastiera (hotkeys).</td></tr>
+    <tr><td class="path">bg/submenus/gameplay/bg/hotkeysButton/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone hotkeys.</td></tr>
+  </table>
+  <p class="note">Percorsi abbreviati con <code>...</code> = <code>bg/submenus/gameplay/bg/scroll/viewport/grid/</code>. Omessi (puramente decorativi, chrome standard di Slider/ScrollRect/Dropdown): nodi <code>Background</code>, <code>Fill Area</code>, <code>Fill</code>, <code>Handle Slide Area</code>, <code>Handle</code> di ogni Slider, e <code>viewport</code>/<code>Viewport</code>/<code>Content</code> bare.</p>
+</section>
+
+<section>
+  <h2>Grafica</h2>
+  <p class="region-path"><code>bg/submenus/graphics</code> (script <code>SettingsGraphicsSubmenuViewController</code>; a differenza degli altri 3 sotto-menu non risulta "(inactive)" nel dump — verificare dal vivo se viene comunque nascosto quando non selezionato). Toggle grafici, elenco risoluzioni e schermo intero.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/graphics/infoBg</td><td>pannello <span class="tag tag-off">inattivo</span></td><td>Banner informativo/avviso; inattivo di default, forse mostrato solo in certe condizioni (es. dopo un cambio impostazione che richiede riavvio).</td></tr>
+    <tr><td class="path">bg/submenus/graphics/infoBg/desc</td><td><span class="tag tag-txt">testo</span></td><td>Testo del banner informativo.</td></tr>
+    <tr><td class="path">bg/submenus/graphics/layout</td><td>pannello (layout orizzontale)</td><td>Contenitore principale delle impostazioni grafiche.</td></tr>
+    <tr><td class="path">.../layout/bg/battleTexts</td><td>voce impostazione</td><td>Voce "Testi di battaglia" (mostra/nasconde i numeri di danno ecc. in combattimento).</td></tr>
+    <tr><td class="path">.../layout/bg/battleTexts/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione della voce.</td></tr>
+    <tr><td class="path">.../layout/bg/battleTexts/toggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva i testi di battaglia.</td></tr>
+    <tr><td class="path">.../layout/bg/battleTexts/toggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../layout/bg/animatedMenus</td><td>voce impostazione</td><td>Voce "Menu animati".</td></tr>
+    <tr><td class="path">.../layout/bg/animatedMenus/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione della voce.</td></tr>
+    <tr><td class="path">.../layout/bg/animatedMenus/toggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva le animazioni dei menu.</td></tr>
+    <tr><td class="path">.../layout/bg/animatedMenus/toggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../layout/bg/sideScrolling</td><td>voce impostazione</td><td>Voce "Scorrimento laterale" (probabile scrolling orizzontale della scena di battaglia).</td></tr>
+    <tr><td class="path">.../layout/bg/sideScrolling/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione della voce.</td></tr>
+    <tr><td class="path">.../layout/bg/sideScrolling/toggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva lo scorrimento laterale.</td></tr>
+    <tr><td class="path">.../layout/bg/sideScrolling/toggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../layout/bg/persistentHealthbars</td><td>voce impostazione</td><td>Voce "Barre vita persistenti" (mostra sempre le barre vita dei nemici).</td></tr>
+    <tr><td class="path">.../layout/bg/persistentHealthbars/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione della voce.</td></tr>
+    <tr><td class="path">.../layout/bg/persistentHealthbars/toggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva le barre vita persistenti.</td></tr>
+    <tr><td class="path">.../layout/bg/persistentHealthbars/toggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">.../layout/bg/regionalBossesEffects</td><td>voce impostazione</td><td>Voce "Effetti boss regionali".</td></tr>
+    <tr><td class="path">.../layout/bg/regionalBossesEffects/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione della voce.</td></tr>
+    <tr><td class="path">.../layout/bg/regionalBossesEffects/toggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva gli effetti grafici dei boss regionali.</td></tr>
+    <tr><td class="path">.../layout/bg/regionalBossesEffects/toggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">bg/submenus/graphics/layout/resolutionBg</td><td>pannello (Image)</td><td>Riquadro selezione risoluzione schermo.</td></tr>
+    <tr><td class="path">.../resolutionBg/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo sezione "Risoluzione".</td></tr>
+    <tr><td class="path">.../resolutionBg/resolutionsScrollView</td><td>area scorrevole (ScrollRect)</td><td>Elenco scorrevole delle risoluzioni disponibili.</td></tr>
+    <tr><td class="path">.../viewport/resolutionList</td><td>griglia (GridLayoutGroup)</td><td>Contenitore delle voci risoluzione.</td></tr>
+    <tr><td class="path">.../resolutionList/resolutionButton (0)</td><td><span class="tag tag-btn">BOTTONE</span> (script <code>ScreenResolutionComp</code>)</td><td>Voce/template di una risoluzione selezionabile; l'indice "(0)" suggerisce un prototipo clonato a runtime per ogni risoluzione disponibile.</td></tr>
+    <tr><td class="path">.../resolutionButton (0)/resText</td><td><span class="tag tag-txt">testo</span></td><td>Testo della risoluzione (es. "1920x1080").</td></tr>
+    <tr><td class="path">.../resolutionButton (0)/tick</td><td>icona (Image)</td><td>Segno di spunta sulla risoluzione attualmente selezionata.</td></tr>
+    <tr><td class="path">.../resolutionBg/fullScreenToggling</td><td>voce impostazione</td><td>Voce "Schermo intero".</td></tr>
+    <tr><td class="path">.../fullScreenToggling/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/descrizione della voce.</td></tr>
+    <tr><td class="path">.../fullScreenToggling/toggle</td><td>interruttore (Slider)</td><td>Attiva/disattiva la modalità schermo intero.</td></tr>
+    <tr><td class="path">.../fullScreenToggling/toggle/clickElement</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Area cliccabile dell'interruttore.</td></tr>
+    <tr><td class="path">bg/submenus/graphics/fullScreen</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone separato (Image+Button, senza <code>ButtonAnimation</code>) legato allo schermo intero; relazione esatta con "fullScreenToggling" non chiara dalla sola gerarchia statica, verificare dal vivo.</td></tr>
+    <tr><td class="path">bg/submenus/graphics/fullScreen/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone.</td></tr>
+  </table>
+  <p class="note">Percorsi abbreviati con <code>...</code> = <code>bg/submenus/graphics/</code> più il prefisso indicato nella riga precedente completa.</p>
+</section>
+
+<section>
+  <h2>Altro</h2>
+  <p class="region-path"><code>bg/submenus/more</code> (script <code>SettingsMoreSubmenuViewController</code>, inattivo finché non selezionato) — segnalazione bug, crediti/legal, community, codice supporto, ricompensa email settimanale, eliminazione account.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenus/more/reportBug</td><td>riquadro <span class="tag tag-off">inattivo</span></td><td>Sezione "Segnala un bug"; inattiva di default, forse mostrata solo su certe piattaforme/build.</td></tr>
+    <tr><td class="path">bg/submenus/more/reportBug/description</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo della segnalazione bug.</td></tr>
+    <tr><td class="path">bg/submenus/more/reportBug/reportBugButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il modulo/link per segnalare un bug.</td></tr>
+    <tr><td class="path">bg/submenus/more/reportBug/reportBugButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone segnala bug.</td></tr>
+    <tr><td class="path">.../holydayStudios/.../copyright/copyrightsDesc</td><td><span class="tag tag-txt">testo</span></td><td>Testo di copyright dello studio (Holyday Studios).</td></tr>
+    <tr><td class="path">.../holydayStudios/.../copyright/holydayLogo</td><td>icona (Image)</td><td>Logo dello studio.</td></tr>
+    <tr><td class="path">.../holydayStudios/.../buttons/privacyPolicy</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la Privacy Policy.</td></tr>
+    <tr><td class="path">.../buttons/privacyPolicy/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone Privacy Policy.</td></tr>
+    <tr><td class="path">.../holydayStudios/.../buttons/termsOfUse</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre i Termini di Utilizzo.</td></tr>
+    <tr><td class="path">.../buttons/termsOfUse/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone Termini di Utilizzo.</td></tr>
+    <tr><td class="path">bg/submenus/more/layoutGroup/findUs/description</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della sezione community ("Seguici"/"Trovaci").</td></tr>
+    <tr><td class="path">bg/submenus/more/layoutGroup/findUs/discord</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il Discord ufficiale (duplicato del link presente nel tab Generale).</td></tr>
+    <tr><td class="path">.../findUs/discord/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bottone Discord (testo non localizzato).</td></tr>
+    <tr><td class="path">.../findUs/discord/icon</td><td>icona (Image)</td><td>Icona Discord.</td></tr>
+    <tr><td class="path">bg/submenus/more/layoutGroup/findUs/support</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il supporto/assistenza (duplicato del link presente nel tab Generale).</td></tr>
+    <tr><td class="path">.../findUs/support/desc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bottone supporto.</td></tr>
+    <tr><td class="path">.../findUs/support/icon</td><td>icona (Image)</td><td>Icona supporto.</td></tr>
+    <tr><td class="path">bg/submenus/more/supportCode/description</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione del campo "codice di supporto" (es. codice regalo/coupon).</td></tr>
+    <tr><td class="path">bg/submenus/more/supportCode/submitCodeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Invia/riscatta il codice inserito.</td></tr>
+    <tr><td class="path">bg/submenus/more/supportCode/submitCodeButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone invio codice.</td></tr>
+    <tr><td class="path">bg/submenus/more/supportCode/inputField</td><td>campo di testo (TMP_InputField)</td><td>Campo dove inserire il codice di supporto.</td></tr>
+    <tr><td class="path">.../inputField/Text Area/Placeholder</td><td><span class="tag tag-txt">testo</span></td><td>Testo segnaposto del campo codice.</td></tr>
+    <tr><td class="path">.../inputField/Text Area/Text</td><td><span class="tag tag-txt">testo</span></td><td>Testo effettivamente digitato dall'utente.</td></tr>
+    <tr><td class="path">bg/submenus/more/weeklyRewards/description</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione della ricompensa settimanale via email.</td></tr>
+    <tr><td class="path">.../weeklyRewards/emailParent/yourEmailDesc</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "La tua email".</td></tr>
+    <tr><td class="path">.../weeklyRewards/emailParent/yourEmail</td><td><span class="tag tag-txt">testo</span></td><td>Email attualmente impostata sull'account.</td></tr>
+    <tr><td class="path">.../weeklyRewards/emailParent/setEmailButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Imposta/modifica l'email per le ricompense settimanali.</td></tr>
+    <tr><td class="path">.../emailParent/setEmailButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone imposta email.</td></tr>
+    <tr><td class="path">bg/submenus/more/deleteAccountButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Elimina l'account collegato; azione distruttiva/irreversibile, da non automatizzare senza conferma esplicita.</td></tr>
+    <tr><td class="path">bg/submenus/more/deleteAccountButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone elimina account.</td></tr>
+  </table>
+  <p class="note">Percorsi abbreviati con <code>...</code> = <code>bg/submenus/more/layoutGroup/</code> (più il segmento indicato) per le righe di copyright/legal/community.</p>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Settings</code>. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+  <p class="note">Nota: il path radice sopra è dedotto solo dal nome del GameObject e dal tipo di schermata (popup di menu globale, non specifico della battaglia); non è stato verificato risalendo la gerarchia della scena live, quindi va confermato con un'ispezione a runtime.</p>
+</footer>
+</body>
+</html>

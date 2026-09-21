@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Negozio della Gilda</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Negozio della Gilda</div>
+  <h1>🛒 Negozio della Gilda</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata (<code>GuildShopViewController</code>). La schermata ha 8 tab/sottomenu diversi (Gettoni Gilda, Forniture, Negozio Oggetti, Forzieri di Gioielli, Offerta Speciale, Offerte Giornaliere, Offerte Settimanali, Saldi) più una barra valuta e un pulsante di chiusura.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale</h2>
+  <p class="region-path">Path: <code>(radice)</code> / <code>bgElements</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">GuildShop</td>
+      <td>controller <span class="tag tag-off">inattivo</span></td>
+      <td>Radice della schermata (<code>Canvas</code>, <code>GraphicRaycaster</code>, <code>GuildShopViewController</code>); risulta disattiva nel prefab perché viene istanziata/attivata dinamicamente all'apertura del negozio.</td>
+    </tr>
+    <tr>
+      <td class="path">bgElements/bgTop, bgBottom, bgTiledRight, bgTiledLeft</td>
+      <td>immagini decorative</td>
+      <td>Cornici/fondali grafici della schermata, nessuna interazione.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab (sottomenu)</h2>
+  <p class="region-path">Path: <code>bg/submenuButtons</code> — un bottone per ciascun sottomenu, disposti in una griglia orizzontale</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/submenuButtons/sale/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Saldi" (<code>submenus/sale</code>). Ha in più un <code>timeLeftBg/timeLeft</code> col conto alla rovescia della promozione.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/valueBundles/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Offerta Speciale" (<code>submenus/extremeValueBundles</code>) — il nome del tab e quello del sottomenu non coincidono nel prefab, associazione dedotta dall'ordine e non verificata dal vivo.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/valueBundlesDaily/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Offerte Giornaliere" (<code>submenus/valueBundlesDaily</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/valueBundlesWeekly/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Offerte Settimanali" (<code>submenus/valueBundlesWeekly</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/shop/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Gettoni Gilda" (<code>submenus/shop</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/jewelChests/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Forzieri di Gioielli" (<code>submenus/jewelChests</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/itemShop/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Negozio Oggetti" (<code>submenus/itemShop</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/supplies/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Forniture" (<code>submenus/supplies</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">.../button/text/notification/amountTMP</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Pattern comune a quasi tutti i tab (assente su shop/jewelChests/itemShop): campanella + contatore che segnala nuove offerte/novità disponibili nel sottomenu.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Gettoni Gilda" (shop)</h2>
+  <p class="region-path">Path: <code>bg/submenus/shop</code> (<code>GuildShopShopSubmenuViewController</code>, inattivo finché non selezionato) → <code>items/guildShopMoneyProduct (0)</code> ×4 (slot 0-3, tutti strutturalmente identici)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">items/guildShopMoneyProduct (0..3)</td>
+      <td>container (<code>GuildShopMoneyProductInteraction</code>)</td>
+      <td>Una card per ciascun pacchetto acquistabile con valuta reale che dà Gettoni Gilda ed Gettoni Spedizione.</td>
+    </tr>
+    <tr>
+      <td class="path">.../itemName</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome del pacchetto.</td>
+    </tr>
+    <tr>
+      <td class="path">.../bonusBg/value, bonusBg/text</td>
+      <td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span> (su alcuni slot)</td>
+      <td>Badge bonus (es. percentuale extra), visibile solo su alcuni pacchetti.</td>
+    </tr>
+    <tr>
+      <td class="path">.../productsGrid/guildCoins, productsGrid/expeditionTokens</td>
+      <td>container + <span class="tag tag-txt">testo</span></td>
+      <td>Anteprima delle due valute incluse nel pacchetto (icona + quantità base/doppia).</td>
+    </tr>
+    <tr>
+      <td class="path">.../ribbon/bulkBonus, ribbon/extraText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nastro con eventuale bonus quantità sul pacchetto.</td>
+    </tr>
+    <tr>
+      <td class="path">.../purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+      <td>Acquista il pacchetto al prezzo normale in valuta reale. Risulta disattivo di default nel prefab: probabilmente è nascosto finché il pacchetto non è già stato comprato almeno una volta, lasciando il posto a <code>purchaseButtonFirstTime</code> — da verificare dal vivo.</td>
+    </tr>
+    <tr>
+      <td class="path">.../purchaseButtonFirstTime</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista con l'offerta "prima volta" (probabile sconto/bonus riservato al primo acquisto); attivo di default.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Forniture" (supplies)</h2>
+  <p class="region-path">Path: <code>bg/submenus/supplies</code> (<code>GuildShopSuppliesSubmenuViewController</code>, inattivo finché non selezionato) → <code>items/freePickaxe</code>, <code>items/pickaxes</code>, <code>items/pickaxesBulk</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">items/freePickaxe/claimBg/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Ritira il piccone gratuito periodico (etichetta "Free"/priceHolder/freeText).</td>
+    </tr>
+    <tr>
+      <td class="path">items/freePickaxe/claimBg/claimedBG (+ claimedObj/text, tickImg)</td>
+      <td>container <span class="tag tag-off">inattivo</span></td>
+      <td>Stato "già ritirato" con spunta, mostrato dopo il claim al posto del bottone.</td>
+    </tr>
+    <tr>
+      <td class="path">items/freePickaxe/nextFreeObj/desc, progressBarBg/progressBarFill, progressBarBg/timeLeftText</td>
+      <td><span class="tag tag-txt">testo</span> + barra</td>
+      <td>Barra di avanzamento e conto alla rovescia verso il prossimo piccone gratuito.</td>
+    </tr>
+    <tr>
+      <td class="path">items/freePickaxe/maxFreeObj/desc</td>
+      <td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td>
+      <td>Messaggio mostrato quando si è raggiunto il numero massimo di picconi gratuiti accumulabili.</td>
+    </tr>
+    <tr>
+      <td class="path">items/pickaxes/claimBg/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span> (<code>GuildShopSuppliesInteraction</code> sul nodo padre)</td>
+      <td>Acquista un piccone singolo con valuta di gioco (priceHolder/currencyIcon + purchaseCost).</td>
+    </tr>
+    <tr>
+      <td class="path">items/pickaxesBulk/claimBg/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un lotto multiplo di picconi.</td>
+    </tr>
+    <tr>
+      <td class="path">items/pickaxesBulk/claimBg/salesFrame/percentage, salesFrame/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Badge percentuale di sconto sull'acquisto in blocco.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Negozio Oggetti" (itemShop)</h2>
+  <p class="region-path">Path: <code>bg/submenus/itemShop/ScrollView/Viewport/items</code> (<code>GuildShopItemShopSubmenuViewController</code>, inattivo finché non selezionato) — griglia scorrevole di 8 prodotti (<code>GuildShopPremiumProductItemInteraction</code>), ciascuno in versione singola e "Bulk" (lotto)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">items/elixirOfLifeBulk/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un lotto di Elisir di Vita.</td>
+    </tr>
+    <tr>
+      <td class="path">items/elixirOfLife/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista una singola Elisir di Vita.</td>
+    </tr>
+    <tr>
+      <td class="path">items/toolsBulk/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un lotto di Attrezzi.</td>
+    </tr>
+    <tr>
+      <td class="path">items/tools/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un singolo Attrezzo.</td>
+    </tr>
+    <tr>
+      <td class="path">items/emblemsOfValorBulk/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un lotto di Emblemi del Valore.</td>
+    </tr>
+    <tr>
+      <td class="path">items/emblemsOfValor/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un singolo Emblema del Valore.</td>
+    </tr>
+    <tr>
+      <td class="path">items/blueprintsBulk/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un lotto di Progetti.</td>
+    </tr>
+    <tr>
+      <td class="path">items/blueprints/priceFrame</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista un singolo Progetto.</td>
+    </tr>
+    <tr>
+      <td class="path">items/&lt;nome&gt;/itemName, itemQuantity, bonusBg/text1, bonusBg/text2</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Pattern comune a tutti gli 8 prodotti: nome oggetto, quantità inclusa ed eventuale badge bonus (<code>bonusBg</code> risulta inattivo su alcuni oggetti).</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Forzieri di Gioielli" (jewelChests)</h2>
+  <p class="region-path">Path: <code>bg/submenus/jewelChests/Scroll View/Viewport/chests/guildShopJewelChest (0)</code> ×6 (slot 0-5, tutti strutturalmente identici, <code>PremiumProductJewelChestInteraction</code>) — carte scorrevoli orizzontalmente, ognuna con un lato "fronte" e uno "retro" (info)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">.../chestName</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome del forziere.</td>
+    </tr>
+    <tr>
+      <td class="path">.../frontSide/info/infoAreaButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Area cliccabile che mostra le informazioni del forziere (presumibilmente gira la carta sul retro).</td>
+    </tr>
+    <tr>
+      <td class="path">.../frontSide/info/infoButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Icona "i" con la stessa funzione del bottone sopra (mostra le info).</td>
+    </tr>
+    <tr>
+      <td class="path">.../frontSide/quantity</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Quantità disponibile/posseduta del forziere.</td>
+    </tr>
+    <tr>
+      <td class="path">.../frontSide/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista il forziere (priceHolder/currencyIcon + costText mostrano il prezzo).</td>
+    </tr>
+    <tr>
+      <td class="path">.../frontSide/bestValue/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Badge "Miglior Valore" mostrato sui forzieri più convenienti.</td>
+    </tr>
+    <tr>
+      <td class="path">.../backSide</td>
+      <td>container <span class="tag tag-off">inattivo</span></td>
+      <td>Lato posteriore della carta con il dettaglio delle ricompense possibili; disattivo di default, mostrato al tocco di <code>infoButton</code>/<code>infoAreaButton</code>.</td>
+    </tr>
+    <tr>
+      <td class="path">.../backSide/infoBackAreaButton, backSide/infoBackButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Tornano al lato fronte della carta.</td>
+    </tr>
+    <tr>
+      <td class="path">.../backSide/dynamicArea/inventoryItemsReward, gearReward</td>
+      <td>container + <span class="tag tag-txt">testo</span></td>
+      <td>Anteprima ricompensa oggetti da inventario / equipaggiamento inclusi nel forziere.</td>
+    </tr>
+    <tr>
+      <td class="path">.../backSide/dynamicArea/guaranteedGear/guaranteedgearGrid/low, /high</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Tabella dell'equipaggiamento garantito per fascia di rarità (bassa/alta) con relativo numero garantito.</td>
+    </tr>
+    <tr>
+      <td class="path">.../backSide/dynamicArea/sealReward/sealDesc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Anteprima della ricompensa "sigillo" inclusa nel forziere.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Offerta Speciale" (extremeValueBundles)</h2>
+  <p class="region-path">Path: <code>bg/submenus/extremeValueBundles/items/extremeValueBundle</code> (<code>GuildShopValueBundleSubmenuViewController</code> / <code>ValueBundleInteraction</code>, inattivo finché non selezionato) — un singolo bundle premium con più slot di ricompensa</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">Graphics/itemName</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome del bundle.</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/mainBG/products/currencyReward (0..3)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> ×4</td>
+      <td>Slot ricompensa valuta incluso nel bundle (<code>CurrencyRewardInteraction</code>); probabilmente apre un dettaglio/tooltip al tocco.</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/mainBG/products/gearChest</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Slot ricompensa "Forziere Equipaggiamento" (<code>GearChestInteraction</code>), con sotto-icona info separata (<code>gearChest/info</code>, non cliccabile).</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/mainBG/products/celestialChest</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Slot ricompensa "Forziere Celeste" (<code>CelestialChestInteraction</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/mainBG/products/jewelChest</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Slot ricompensa "Forziere di Gioielli" (<code>JewelChestInteraction</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/mainBG/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista l'intero bundle in valuta reale (priceHolder/realCurrencyIcon + purchaseCost).</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/mainBG/claimedBG (+ claimedObj)</td>
+      <td>container <span class="tag tag-off">inattivo</span></td>
+      <td>Stato "già acquistato/riscattato", mostrato dopo l'acquisto al posto del bottone.</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/mysteryBox, Graphics/oraclesGift</td>
+      <td>container (non cliccabile)</td>
+      <td>Anteprime di ricompensa "scatola misteriosa" e "dono dell'oracolo" incluse nel bundle (<code>GenericInfoInteraction</code>, nessun <code>Button</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">Graphics/ExtraValueInteraction/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Badge di valore extra del bundle (es. "+X% di valore").</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Offerte Giornaliere" (valueBundlesDaily)</h2>
+  <p class="region-path">Path: <code>bg/submenus/valueBundlesDaily/Scroll View/Viewport/items/valueBundle (0)</code> ×3 (slot 0-2, <code>GuildShopValueBundleDailySubmenuViewController</code>, inattivo finché non selezionato) — stessa struttura del bundle "Offerta Speciale" sopra, ripetuta in una lista scorrevole</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">valueBundle (0..2)/Graphics/mainBG/products/currencyReward (0..3)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> ×4 per slot</td>
+      <td>Slot ricompensa valuta, come nel bundle "Offerta Speciale".</td>
+    </tr>
+    <tr>
+      <td class="path">.../products/gearChest, celestialChest, jewelChest</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Slot forziere inclusi nell'offerta giornaliera.</td>
+    </tr>
+    <tr>
+      <td class="path">.../mainBG/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista l'offerta giornaliera (priceHolder/realCurrencyIcon + purchaseCost).</td>
+    </tr>
+    <tr>
+      <td class="path">.../mainBG/claimedBG, Graphics/mysteryBox, Graphics/oraclesGift, Graphics/itemName</td>
+      <td>container / <span class="tag tag-txt">testo</span></td>
+      <td>Stesso pattern del bundle "Offerta Speciale": stato già riscattato, ricompense extra e nome del pacchetto.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Offerte Settimanali" (valueBundlesWeekly)</h2>
+  <p class="region-path">Path: <code>bg/submenus/valueBundlesWeekly/Scroll View/Viewport/items/valueBundle (0)</code> ×4 (slot 0-3, <code>GuildShopValueBundleWeeklySubmenuViewController</code>, inattivo finché non selezionato) — identica struttura del sottomenu "Offerte Giornaliere", con cadenza settimanale</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">valueBundle (0..3)/Graphics/mainBG/products/currencyReward (0..3)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> ×4 per slot</td>
+      <td>Slot ricompensa valuta, come nei bundle precedenti.</td>
+    </tr>
+    <tr>
+      <td class="path">.../products/gearChest, celestialChest, jewelChest</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Slot forziere inclusi nell'offerta settimanale.</td>
+    </tr>
+    <tr>
+      <td class="path">.../mainBG/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista l'offerta settimanale.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Saldi" (sale)</h2>
+  <p class="region-path">Path: <code>bg/submenus/sale/items/panel</code> (<code>GuildShopSaleSubmenuViewController</code>, inattivo finché non selezionato) — un unico pannello promozionale a tempo</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">panel/title</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo del saldo.</td>
+    </tr>
+    <tr>
+      <td class="path">panel/timeLeftBg/timeLeft</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Conto alla rovescia prima della scadenza del saldo.</td>
+    </tr>
+    <tr>
+      <td class="path">panel/bonusBg/value, bonusBg/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Badge bonus del saldo.</td>
+    </tr>
+    <tr>
+      <td class="path">panel/productsGrid/product (0), product (1)</td>
+      <td>container + <span class="tag tag-txt">testo</span> ×2 (slot 0-1)</td>
+      <td>Anteprima delle due ricompense incluse (icona, nome, quantità).</td>
+    </tr>
+    <tr>
+      <td class="path">panel/ribbonBg/text</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nastro promozionale sul pannello.</td>
+    </tr>
+    <tr>
+      <td class="path">panel/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista il pacchetto in saldo (currencyHolder/currencyIcon + purchaseCost).</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Valuta, reset offerte e chiusura</h2>
+  <p class="region-path">Path: <code>bg/counters</code>, <code>StoreResetTimeInfo</code>, <code>closeButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/counters/counterInteraction Guild (1)/bg</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Area di sfondo del contatore valuta Gilda (<code>CounterInteraction</code> sul nodo padre); cliccabile, funzione non chiara dal nome, verificare dal vivo (probabile apertura di un popup di dettaglio/acquisto valuta).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/counters/counterInteraction Guild (1)/icon</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Icona della valuta Gilda, presumibilmente con la stessa funzione del bottone <code>bg</code> sopra.</td>
+    </tr>
+    <tr>
+      <td class="path">.../quantity, .../quantityAdded</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Saldo attuale di valuta Gilda e variazione mostrata in animazione quando cambia.</td>
+    </tr>
+    <tr>
+      <td class="path">.../getMore</td>
+      <td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+      <td>Bottone "Ottieni di più", presumibilmente attivato solo quando il saldo è insufficiente per un acquisto in corso.</td>
+    </tr>
+    <tr>
+      <td class="path">StoreResetTimeInfo/bg/infoText, bg/timeText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Informazione su quando le offerte del negozio si aggiornano/resettano.</td>
+    </tr>
+    <tr>
+      <td class="path">closeButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Chiude la schermata "Negozio della Gilda".</td>
+    </tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/GuildShop</code> (stima non verificata: il dump è stato ottenuto solo dal nome del GameObject "GuildShop", senza risalire la gerarchia della scena live — trattandosi di una schermata di negozio raggiungibile dai menu principali/dalla Gilda, e non di un overlay di battaglia, il path più probabile è quello dei menu classici). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

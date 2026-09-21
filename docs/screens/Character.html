@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Personaggio</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Personaggio</div>
+  <h1>🧑 Personaggio</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Radice: <code>Character</code> (componenti <code>Canvas, GraphicRaycaster, CharacterViewController</code>) — 1897 nodi totali, 167 bottoni. Il pannello è organizzato in 5 sottoschede (tab): Personaggio, Talenti, Obiettivi, Statistiche, Missioni; solo una è attiva alla volta (le altre risultano <code>(inactive)</code> nel prefab finché non vengono selezionate).</p>
+</header>
+<main>
+
+<section>
+  <h2>Barra dei tab e struttura root</h2>
+  <p class="region-path">Path: <code>background</code>, <code>bg/submenuButtons</code>, <code>bg/counters</code>, <code>bg/closeButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">background</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo semitrasparente dietro il pannello: cliccandolo fuori dal pannello si chiude probabilmente il popup Personaggio.</td></tr>
+    <tr><td class="path">bg/submenuButtons/character</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la sottoscheda "Personaggio" (profilo, eroi, gilda, macchine da guerra...).</td></tr>
+    <tr><td class="path">bg/submenuButtons/character/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del tab (localizzata, es. "Personaggio").</td></tr>
+    <tr><td class="path">bg/submenuButtons/talents</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la sottoscheda "Talenti".</td></tr>
+    <tr><td class="path">bg/submenuButtons/talents/notification/amountTMP</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Badge numerico con punti talento disponibili da spendere; il nodo <code>notification</code> è inattivo di default e compare solo quando c'è qualcosa da notificare. Il tab ha anche un'icona <code>lock</code> per lo stato bloccato.</td></tr>
+    <tr><td class="path">bg/submenuButtons/achievements</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la sottoscheda "Obiettivi".</td></tr>
+    <tr><td class="path">bg/submenuButtons/statistics</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la sottoscheda "Statistiche".</td></tr>
+    <tr><td class="path">bg/submenuButtons/quests</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la sottoscheda "Missioni".</td></tr>
+    <tr><td class="path">bg/submenuButtons/quests/notification/amountTMP</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Badge missioni completabili/da ritirare, visibile solo quando ce ne sono.</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riquadro del contatore valuta in alto; probabile apertura dello shop relativo (script <code>CounterInteraction</code> sul genitore).</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona della valuta, stessa area cliccabile del contatore.</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta della valuta mostrata in questo contatore.</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo animato "+N" mostrato quando la valuta aumenta.</td></tr>
+    <tr><td class="path">bg/counters/counterInteraction/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Pulsante "ottieni di più", compare solo in condizioni specifiche (es. valuta esaurita o promo attiva).</td></tr>
+    <tr><td class="path">bg/closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Personaggio e torna al menu/schermata precedente.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Personaggio" — intestazione utente</h2>
+  <p class="region-path">Path: <code>bg/submenus/character</code> e <code>.../userInfo/Scroll View/Viewport/Content/scrollablePanel/userData/topInfoColumn</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">username</td><td><span class="tag tag-txt">testo</span></td><td>Nome utente del giocatore visualizzato.</td></tr>
+    <tr><td class="path">username/flagIcon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bandiera nazionalità (script <code>FlagInteraction</code>); apre selezione/dettaglio bandiera.</td></tr>
+    <tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra un tooltip informativo sulla scheda Personaggio (animazione Spine <code>spineInfo</code>).</td></tr>
+    <tr><td class="path">userInfo/.../topInfoColumn/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar del giocatore (script <code>PlayerAvatarInteraction</code>); apre il cambio avatar. Mostra anche il livello nel badge <code>levelBg/level</code>.</td></tr>
+    <tr><td class="path">userInfo/.../topInfoColumn/playerLevel</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta/valore del livello giocatore.</td></tr>
+    <tr><td class="path">userInfo/.../topInfoColumn/levelProgressBarBg/visualXPText</td><td><span class="tag tag-txt">testo</span></td><td>Testo di progresso XP verso il prossimo livello, sopra la barra di riempimento.</td></tr>
+    <tr><td class="path">userInfo/.../topInfoColumn/idParent/userID</td><td><span class="tag tag-txt">testo</span></td><td>ID univoco dell'account del giocatore.</td></tr>
+    <tr><td class="path">userInfo/.../topInfoColumn/idParent/userID/copyToClipboard</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Copia l'ID utente negli appunti (script <code>ButtonOnHoverActions</code>).</td></tr>
+    <tr><td class="path">userInfo/.../topInfoColumn/descriptionBg/.../userMessage</td><td><span class="tag tag-txt">testo</span></td><td>Bio/messaggio personale del giocatore, in un'area scrollabile.</td></tr>
+    <tr><td class="path">userInfo/.../topInfoColumn/editProfileButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la modifica del profilo (nome, avatar, bandiera, bio...); visibile solo sul proprio profilo.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Personaggio" — azioni social</h2>
+  <p class="region-path">Path: <code>bg/submenus/character/userInfo/Scroll View/Viewport/Content/scrollablePanel/userData/topInfoColumn/actions</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">actions/messageFriend</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Invia un messaggio all'amico; attivo solo quando si guarda il profilo di un amico.</td></tr>
+    <tr><td class="path">actions/removeFriend</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Rimuove l'amicizia; condizionale, visibile solo se già amici.</td></tr>
+    <tr><td class="path">actions/sentFriendRequest</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Invia richiesta di amicizia (o ne mostra lo stato "inviata"); funzione esatta da verificare dal vivo.</td></tr>
+    <tr><td class="path">actions/mute</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Silenzia l'utente in chat; condizionale, alternativo a <code>unmute</code>.</td></tr>
+    <tr><td class="path">actions/unmute</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riattiva la chat per l'utente (stato di default nel prefab, quindi non ancora silenziato).</td></tr>
+    <tr><td class="path">actions/modMute</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Silenzia come moderatore; probabilmente visibile solo con permessi di moderazione.</td></tr>
+    <tr><td class="path">actions/report</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Segnala il giocatore visualizzato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Personaggio" — statistiche riassuntive</h2>
+  <p class="region-path">Path: <code>bg/submenus/character/userInfo/Scroll View/Viewport/Content/scrollablePanel/userData/stats</code> — sola lettura, nessun bottone</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">stats/rankHeader/rankNumberBg/rankNumber</td><td><span class="tag tag-txt">testo</span></td><td>Numero di posizione in classifica (rank) del giocatore.</td></tr>
+    <tr><td class="path">stats/rankHeader/rankNumberBg/rankName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del rango/lega del giocatore.</td></tr>
+    <tr><td class="path">stats/verticalLayout/mapMissionsWonBg (mapMissionsWon + title)</td><td><span class="tag tag-txt">testo</span></td><td>Numero di missioni di mappa vinte, con relativa etichetta.</td></tr>
+    <tr><td class="path">stats/verticalLayout/maxStageBg (maxStage + title)</td><td><span class="tag tag-txt">testo</span></td><td>Stage massimo raggiunto in campagna.</td></tr>
+    <tr><td class="path">stats/verticalLayout/achievementsBg (achievements + title)</td><td><span class="tag tag-txt">testo</span></td><td>Numero di obiettivi completati.</td></tr>
+    <tr><td class="path">stats/verticalLayout/campaignStarsBg (stars + title)</td><td><span class="tag tag-txt">testo</span></td><td>Stelle totali di campagna.</td></tr>
+    <tr><td class="path">stats/verticalLayout/awakeningLvlBg (awakenings + title)</td><td><span class="tag tag-txt">testo</span></td><td>Livello totale di risveglio (awakening) degli eroi.</td></tr>
+    <tr><td class="path">stats/verticalLayout/tolLvlBg (tolLevels + title)</td><td><span class="tag tag-txt">testo</span></td><td>Livelli "ToL" (funzione non chiara dal nome, verificare dal vivo — probabile Torre/sistema con abbreviazione "ToL").</td></tr>
+    <tr><td class="path">stats/verticalLayout/engineerLvlBg (engineerLevels + title)</td><td><span class="tag tag-txt">testo</span></td><td>Livello ingegnere (legato alle macchine da guerra).</td></tr>
+    <tr><td class="path">stats/verticalLayout/gearPowerLvlBg (gearPower + title)</td><td><span class="tag tag-txt">testo</span></td><td>Potenza totale dell'equipaggiamento.</td></tr>
+    <tr><td class="path">stats/verticalLayout/jewelLvlBg (jewelPower + title)</td><td><span class="tag tag-txt">testo</span></td><td>Potenza totale dei gioielli.</td></tr>
+    <tr><td class="path">stats/verticalLayout/soulstoneLvlBg (soulstonePower + title)</td><td><span class="tag tag-txt">testo</span></td><td>Potenza totale delle pietre anima.</td></tr>
+    <tr><td class="path">stats/verticalLayout/oracleLvlBg (oracleLevel + title)</td><td><span class="tag tag-txt">testo</span></td><td>Livello dell'oracolo.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Personaggio" — Gilda e Fratellanza</h2>
+  <p class="region-path">Path: <code>bg/submenus/character/userInfo/Scroll View/Viewport/Content/scrollablePanel/panels/guildFellowshipPanel</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guildFellowshipPanel/guild/guildBanner (+ guildName)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Stemma/banner della gilda con nome; apre la schermata/gestione della gilda.</td></tr>
+    <tr><td class="path">guildFellowshipPanel/guild/guildRankBg/text</td><td><span class="tag tag-txt">testo</span></td><td>Ruolo/rango del giocatore nella gilda.</td></tr>
+    <tr><td class="path">guildFellowshipPanel/noGuild/text</td><td><span class="tag tag-txt">testo</span></td><td>Messaggio mostrato quando il giocatore non appartiene a nessuna gilda.</td></tr>
+    <tr><td class="path">guildFellowshipPanel/spirit/value</td><td><span class="tag tag-txt">testo</span></td><td>Valore dell'attributo "Spirito" (bonus di gilda), con icona e possibile lucchetto se non sbloccato.</td></tr>
+    <tr><td class="path">guildFellowshipPanel/fellowship/fellowshipIcon (+ fellowshipName)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona/nome della fratellanza (fellowship); apre la relativa schermata.</td></tr>
+    <tr><td class="path">guildFellowshipPanel/noFellowship/text</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Messaggio mostrato quando non si appartiene a nessuna fratellanza.</td></tr>
+    <tr><td class="path">guildFellowshipPanel/battleCry/value</td><td><span class="tag tag-txt">testo</span></td><td>Valore dell'attributo "Grido di battaglia" (battle cry).</td></tr>
+    <tr><td class="path">guildFellowshipPanel/fate/value</td><td><span class="tag tag-txt">testo</span></td><td>Valore dell'attributo "Fato".</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Personaggio" — Eroi, Guardiani, Macchine da guerra, Amuleti</h2>
+  <p class="region-path">Path: <code>bg/submenus/character/userInfo/Scroll View/Viewport/Content/scrollablePanel/panels</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">panels/heroes/heroesBg/header (totalHeroes, heroesTotalPower)</td><td><span class="tag tag-txt">testo</span></td><td>Numero totale di eroi posseduti e loro potenza totale.</td></tr>
+    <tr><td class="path">panels/heroes/heroesBg/heroGrid/heroSquare (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×N (griglia dinamica: nel prefab esiste un solo template "(0)", i restanti slot vengono istanziati a runtime). Apre i dettagli/potenziamento dell'eroe (script <code>HeroInteractionSquare</code>).</td></tr>
+    <tr><td class="path">panels/guardians/guardiansBg/totalGuardiansTitleFrame/heroesTotalPower</td><td><span class="tag tag-txt">testo</span></td><td>Potenza totale dei guardiani (il campo riusa il nome "heroesTotalPower").</td></tr>
+    <tr><td class="path">panels/guardians/guardiansBg/guardianList/guardian (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×N (template dinamico, come heroSquare). Apre i dettagli del guardiano (script <code>GuardianServerInteractionSquare</code>).</td></tr>
+    <tr><td class="path">panels/warMachinesBg/tabsRow/warMachinesAllButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Filtra la griglia mostrando tutte le macchine da guerra.</td></tr>
+    <tr><td class="path">panels/warMachinesBg/tabsRow/warMachinesArenaButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Filtra mostrando solo le macchine da guerra assegnate all'Arena.</td></tr>
+    <tr><td class="path">panels/warMachinesBg/warMachinesInfo/labelsContainer (totalWm, power)</td><td><span class="tag tag-txt">testo</span></td><td>Numero totale e potenza totale delle macchine da guerra.</td></tr>
+    <tr><td class="path">panels/warMachinesBg/warMachinesInfo/noWarMachinesText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Messaggio mostrato quando non si possiedono macchine da guerra.</td></tr>
+    <tr><td class="path">panels/warMachinesBg/warMachinesInfo/warMachineGrid/warMachineSquare (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×N (template dinamico). Apre i dettagli della macchina da guerra (script <code>WarMachineInteractionSquare</code>); include un badge di notifica <code>notificationCircle</code> condizionale.</td></tr>
+    <tr><td class="path">panels/warMachinesBg/warMachinesSquads/warMachinesArena/arenaOfKings</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Rango e potenza nell'"Arena dei Re"; l'intera sezione <code>warMachinesSquads</code> risulta inattiva di default (probabile sottoscheda condizionale del tab macchine da guerra).</td></tr>
+    <tr><td class="path">panels/warMachinesBg/warMachinesSquads/.../squad/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della squadra di macchine da guerra assegnata all'Arena.</td></tr>
+    <tr><td class="path">panels/warMachinesBg/warMachinesSquads/.../squad/warMachineGrid/warMachineSquare (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×N (template dinamico). Macchina da guerra nello slot della squadra Arena.</td></tr>
+    <tr><td class="path">panels/amuletsParent/amuletsBg/titleBg/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della sezione Amuleti.</td></tr>
+    <tr><td class="path">panels/amuletsParent/amuletsBg/noAmuletsText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Messaggio mostrato quando non si possiedono amuleti.</td></tr>
+    <tr><td class="path">panels/amuletsParent/amuletsBg/amuletGrid/amulet (0)</td><td>slot griglia (script <code>AmuletInteraction</code>, nessun <code>Button</code>)</td><td>Slot amuleto; a differenza degli altri slot non ha un componente Button nel prefab — l'interazione è gestita interamente dallo script, verificare dal vivo se/come è cliccabile.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Personaggio" — pannello inferiore: Artefatti, Bestie, Medaglie</h2>
+  <p class="region-path">Path: <code>bg/submenus/character/userInfo/Scroll View/Viewport/Content/bottomPanel</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bottomPanel/artifactsParent/artifactsBg/titleBg/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della sezione Artefatti Antichi.</td></tr>
+    <tr><td class="path">bottomPanel/artifactsParent/artifactsBg/noArtifactsText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Messaggio mostrato quando non si possiedono artefatti.</td></tr>
+    <tr><td class="path">bottomPanel/artifactsParent/artifactsBg/artifactGrid/ancientArtifactOnGrid (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×N (template dinamico). Apre i dettagli dell'artefatto antico (script <code>AAOnListInteraction</code>).</td></tr>
+    <tr><td class="path">bottomPanel/beastsParent/beastsBg/titleBg/title</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della sezione Bestie.</td></tr>
+    <tr><td class="path">bottomPanel/beastsParent/beastsBg/noBeastsText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Messaggio mostrato quando non si possiedono bestie.</td></tr>
+    <tr><td class="path">bottomPanel/beastsParent/beastsBg/beastGrid/BeastAvatar (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×N (template dinamico). Apre i dettagli della bestia (script <code>BeastOnListInteraction</code>).</td></tr>
+    <tr><td class="path">bottomPanel/medalsParent/medalsBg/medals/infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra un tooltip informativo sulle medaglie.</td></tr>
+    <tr><td class="path">bottomPanel/medalsParent/medalsBg/medals/medalsBg/currentMedalNum (+title)</td><td><span class="tag tag-txt">testo</span></td><td>Numero di medaglie correnti possedute.</td></tr>
+    <tr><td class="path">bottomPanel/medalsParent/medalsBg/medals/fateBg/effect (+title)</td><td><span class="tag tag-txt">testo</span></td><td>Effetto/bonus del Fato legato alle medaglie.</td></tr>
+    <tr><td class="path">bottomPanel/medalsParent/medalsBg/noMedals</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Messaggio mostrato quando non si possiedono medaglie.</td></tr>
+    <tr><td class="path">bottomPanel/medalsParent/medalsBg/medalGrid/medalInteraction (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×N (template dinamico). Apre i dettagli della medaglia (mese/anno) tramite script <code>MedalInteraction</code>.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Talenti"</h2>
+  <p class="region-path">Path: <code>bg/submenus/talents</code> (root <code>TalentTreeSubmenuViewController</code>, inattivo finché non selezionato)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/talentTreeScroll/talentsInfoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra un tooltip informativo sull'albero dei talenti.</td></tr>
+    <tr><td class="path">bg/talentTreeScroll/Viewport/content/talentTree/talentInteraction (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>×89 (slot 0-88, albero dei talenti a layout fisso, non un pool dinamico). Ogni nodo (script <code>TalentsInteraction</code>) mostra il livello investito e apre il dettaglio/investimento del talento.</td></tr>
+    <tr><td class="path">bg/talentPreviewMessage/talentsText</td><td><span class="tag tag-txt">testo</span></td><td>Messaggio di anteprima/istruzioni mostrato sull'albero talenti.</td></tr>
+    <tr><td class="path">bg/talentsSaveButton (+ desc)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Salva/conferma la configurazione di talenti scelta.</td></tr>
+    <tr><td class="path">bg/talentPoints/container/pointInfo (talentsLeftDesc, talentsText)</td><td><span class="tag tag-txt">testo</span></td><td>Punti talento rimanenti da spendere.</td></tr>
+    <tr><td class="path">bg/talentPoints/container/resetTalentsButton (+ desc, costText)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Resetta tutti i talenti assegnati; <code>costText</code> mostra il costo dell'operazione.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Obiettivi" (Achievements)</h2>
+  <p class="region-path">Path: <code>bg/submenus/achievements</code> (root <code>AchievementsSubmenuViewController</code>, inattivo finché non selezionato)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">platformAchievements</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre gli obiettivi/achievement nativi della piattaforma (Steam/store), fuori dalla scheda in-game.</td></tr>
+    <tr><td class="path">bg/totalBonuses/totalBonusesTitleBg/totalBonusesTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della sezione "bonus totali" ottenuti dagli obiettivi completati.</td></tr>
+    <tr><td class="path">bg/totalBonuses/grid/achievementBonusListing (0) (name + effectBg/effect)</td><td><span class="tag tag-txt">testo</span></td><td>×5 (slot 0-4, layout fisso). Ogni riga mostra nome della categoria e il bonus/effetto totale ottenuto dagli obiettivi di quella categoria.</td></tr>
+    <tr><td class="path">bg/achievementsList/Scroll View/Viewport/grid</td><td>contenitore (vuoto nel prefab)</td><td>Lista scrollabile dei singoli obiettivi; nel prefab non contiene elementi template, viene popolata interamente a runtime (probabile prefab separato istanziato via codice).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Statistiche"</h2>
+  <p class="region-path">Path: <code>bg/submenus/statistics/totalStats/Scroll View/Viewport/grid</code> (root <code>StatisticsSubmenuViewController</code>, inattivo finché non selezionato) — sola lettura, nessun bottone</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">grid/statisticListing (0) (name + statNumber)</td><td><span class="tag tag-txt">testo</span></td><td>×23 (slot 0-22, layout fisso, script <code>StatisticView</code>). Ogni riga è una statistica di gioco (nome della metrica + valore numerico, es. danno totale, nemici uccisi, oro guadagnato — nomi specifici non risolvibili dal solo dump statico).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottoscheda "Missioni" (Quests)</h2>
+  <p class="region-path">Path: <code>bg/submenus/quests</code> (root <code>QuestsSubmenuViewController</code>, inattivo finché non selezionato)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">bg/submenuButtons/dailyButton (+ text, notificationImg/notificationText)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra le missioni giornaliere; il badge di notifica indica quante sono da ritirare.</td></tr>
+    <tr><td class="path">bg/submenuButtons/weeklyButton (+ text, notificationImg/notificationText)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra le missioni settimanali; stesso schema di notifica del tab giornaliero.</td></tr>
+    <tr><td class="path">bg/submenus/dailyQuestsScroll/Viewport/grid/quest (0)</td><td>vedi colonne sotto</td><td>×9 (slot 0-8, layout fisso) — missioni giornaliere. Struttura di ogni riga descritta di seguito.</td></tr>
+    <tr><td class="path">.../quest (0)/name, /description</td><td><span class="tag tag-txt">testo</span></td><td>Nome e descrizione della missione.</td></tr>
+    <tr><td class="path">.../quest (0)/progressBarBg/progressText</td><td><span class="tag tag-txt">testo</span></td><td>Testo di avanzamento (es. "3/5").</td></tr>
+    <tr><td class="path">.../quest (0)/reward/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità della ricompensa associata.</td></tr>
+    <tr><td class="path">.../quest (0)/claimedText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Etichetta "Riscattata", visibile solo dopo aver ritirato la ricompensa.</td></tr>
+    <tr><td class="path">.../quest (0)/claimButton (+ desc)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Ritira la ricompensa della missione completata.</td></tr>
+    <tr><td class="path">.../quest (0)/goToButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Porta alla schermata pertinente per completare la missione (es. la mappa o la modalità richiesta).</td></tr>
+    <tr><td class="path">bg/submenus/weeklyQuestsScroll/Viewport/grid/quest (0)</td><td>stessa struttura sopra</td><td>×10 (slot 0-9, layout fisso) — missioni settimanali, identica struttura di name/description/progressBarBg/reward/claimedText/claimButton/goToButton delle giornaliere.</td></tr>
+    <tr><td class="path">questsRenewBg/questsRenewText</td><td><span class="tag tag-txt">testo</span></td><td>Testo del conto alla rovescia per il rinnovo delle missioni (giornaliere/settimanali).</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Character</code>. Nota: il path esatto non è verificato risalendo la gerarchia della scena live — è dedotto dal fatto che la radice ha componenti <code>Canvas + GraphicRaycaster + CharacterViewController</code> tipici di un popup di menu (profilo giocatore), non di un overlay di battaglia; da confermare al primo avvio reale del gioco. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

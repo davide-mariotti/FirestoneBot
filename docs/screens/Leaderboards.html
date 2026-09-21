@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Classifiche</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Classifiche</div>
+  <h1>🏆 Classifiche</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Root: <code>Leaderboards</code> (304 nodi, 40 componenti Button). Componente sul root: <code>LeaderboardsViewController</code>.</p>
+</header>
+<main>
+
+<section>
+<h2>Sfondo, chiusura e info</h2>
+<p class="region-path">Path relativo: <code>(root)</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">bg (+ glow, glow (1)-(3), rays/ray, ray (1)-(8))</td><td>sfondo decorativo</td><td>Sfondo animato con bagliori e raggi di luce (14 nodi, tutti <code>Image + MenuVfxEntityComponent</code>). Puramente estetico, nessuna interazione.</td></tr>
+<tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata Classifiche e torna al menu precedente. Il figlio <code>icon</code> è solo l'immagine della X.</td></tr>
+<tr><td class="path">infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre un popup informativo sulla schermata (probabile spiegazione/tutorial delle classifiche). Componente <code>HolydayStudios.InfoButtonAnimation</code>; il figlio <code>spineInfo</code> è solo l'icona animata (Spine).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Selettore ambito classifica</h2>
+<p class="region-path">Path relativo: <code>scope</code> (VerticalLayoutGroup)</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">personal</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa alla classifica personale (statistiche individuali del giocatore). Icona + etichetta localizzata (<code>I2.Loc.Localize</code>) come figli.</td></tr>
+<tr><td class="path">fellowship</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa alla classifica di fratellanza (gruppo sociale ristretto).</td></tr>
+<tr><td class="path">guild</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa alla classifica di gilda.</td></tr>
+<tr><td class="path">hallOfFame</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Passa alla Sala della Fama (classifiche di eventi/competizioni stagionali).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Categorie classifica — ambito Personale</h2>
+<p class="region-path">Path relativo: <code>leaderboardCategories/Scroll View/Viewport/buttonsGroupPersonal</code> — lista scrollabile visibile quando lo scope attivo è "personal". <code>line1Inner</code>/<code>line2Inner</code> sono separatori grafici (Image + LayoutElement), omessi dalla tabella.</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">level</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Livello" come metrica della classifica personale. Figli <code>arrow</code> (probabile indicatore di selezione) e <code>parent/icon</code>+<code>parent/text</code> (etichetta localizzata).</td></tr>
+<tr><td class="path">maxStage</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Stadio massimo raggiunto".</td></tr>
+<tr><td class="path">heroesPower</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Potenza eroi".</td></tr>
+<tr><td class="path">warMachinePower</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Potenza macchina da guerra".</td></tr>
+<tr><td class="path">battleCry</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Grido di battaglia" (Battle Cry).</td></tr>
+<tr><td class="path">fatePersonal</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Fato" (risorsa/progressione "fate") in ambito personale.</td></tr>
+<tr><td class="path">spiritPersonal</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Spirito" in ambito personale.</td></tr>
+<tr><td class="path">mapMissions</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Missioni sulla mappa".</td></tr>
+<tr><td class="path">awakenings</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona la categoria "Risvegli" (Awakenings).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Categorie classifica — ambito Gilda (inattivo)</h2>
+<p class="region-path">Path relativo: <code>leaderboardCategories/buttonsGroupGuild</code> — attivato solo quando lo scope è "guild". <code>line1</code>/<code>line2</code> sono separatori grafici, omessi.</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">level</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-btn">BOTTONE</span></td><td>Seleziona "Livello di gilda". Compare solo con scope Gilda attivo.</td></tr>
+<tr><td class="path">heroesPower</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-btn">BOTTONE</span></td><td>Seleziona "Potenza eroi" totale della gilda.</td></tr>
+<tr><td class="path">crystalLevel</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-btn">BOTTONE</span></td><td>Seleziona "Livello cristallo" (probabile risorsa/edificio di gilda).</td></tr>
+<tr><td class="path">spiritLevel</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-btn">BOTTONE</span></td><td>Seleziona "Livello spirito" di gilda.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Categorie classifica — ambito Fratellanza (inattivo)</h2>
+<p class="region-path">Path relativo: <code>leaderboardCategories/buttonsGroupFellowship</code> — attivato solo quando lo scope è "fellowship". <code>line1</code>/<code>line2</code> sono separatori grafici, omessi.</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">battleCry</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-btn">BOTTONE</span></td><td>Seleziona "Grido di battaglia" della fratellanza.</td></tr>
+<tr><td class="path">heroesPower</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-btn">BOTTONE</span></td><td>Seleziona "Potenza eroi" totale della fratellanza.</td></tr>
+<tr><td class="path">fate</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-btn">BOTTONE</span></td><td>Seleziona "Fato" totale della fratellanza.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Pannello classifica — intestazione</h2>
+<p class="region-path">Path relativo: <code>leaderboardBg</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">hofEventButtons/emperor</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sotto-scheda evento "Emperor" della Sala della Fama, visibile con scope hallOfFame.</td></tr>
+<tr><td class="path">hofEventButtons/warfront</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sotto-scheda evento "Warfront" della Sala della Fama.</td></tr>
+<tr><td class="path">leaderboardName</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Titolo/nome della classifica correntemente mostrata. Disattivo di default nel prefab: probabilmente attivato solo per alcune categorie/eventi.</td></tr>
+<tr><td class="path">rankDesc/layout/rankImg</td><td>immagine</td><td>Icona del rango/lega attuale del giocatore per la classifica corrente.</td></tr>
+<tr><td class="path">rankDesc/layout/rankTxt</td><td><span class="tag tag-txt">testo</span></td><td>Descrizione testuale del rango/lega attuale (es. nome della lega).</td></tr>
+<tr><td class="path">infoDesc/rank</td><td><span class="tag tag-txt">testo</span></td><td>Intestazione di colonna "Posizione" per la lista sottostante.</td></tr>
+<tr><td class="path">infoDesc/name</td><td><span class="tag tag-txt">testo</span></td><td>Intestazione di colonna "Nome".</td></tr>
+<tr><td class="path">infoDesc/type</td><td><span class="tag tag-txt">testo</span></td><td>Intestazione di colonna con il tipo/etichetta della statistica classificata (es. "Potenza").</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Righe della classifica (lista)</h2>
+<p class="region-path">Path relativo: <code>leaderboardBg/ScrollView/Viewport/Content/leaderboardRow (0)</code> — il prefab contiene 4 istanze template (<code>(0)</code>-<code>(3)</code>) dentro un <code>GridLayoutGroup</code>; a runtime la lista viene popolata/riciclata con il numero reale di giocatori. Le righe <code>(1)</code>, <code>(2)</code>, <code>(3)</code> sono cloni identici e non sono ripetute in tabella.</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">leaderboardRow (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riga cliccabile della classifica. Componente custom <code>LeaderboardRowViewAvatar</code>: apre probabilmente il dettaglio/profilo del giocatore o della gilda in quella posizione.</td></tr>
+<tr><td class="path">horizontalLayoutGroup/rankingMain/ranking</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Numero di posizione testuale (es. "42"). Attivo solo oltre i primi posti, quando non c'è un badge grafico dedicato.</td></tr>
+<tr><td class="path">horizontalLayoutGroup/rankingMain/rankingImg</td><td>immagine</td><td>Badge grafico di posizione (es. medaglie per i primi 3 classificati).</td></tr>
+<tr><td class="path">horizontalLayoutGroup/rankingMain/badgeImg</td><td>immagine</td><td>Badge aggiuntivo per la riga (es. lega/rango del giocatore).</td></tr>
+<tr><td class="path">horizontalLayoutGroup/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar del giocatore/gilda in classifica. Componente <code>PlayerAvatarInteraction</code>: apre il popup profilo al tap. Figlio <code>avatarIcon</code> è solo l'immagine.</td></tr>
+<tr><td class="path">horizontalLayoutGroup/guildAvatar</td><td><span class="tag tag-off">inattivo</span></td><td>Icona stemma di gilda, attivata solo nelle classifiche con scope Gilda.</td></tr>
+<tr><td class="path">horizontalLayoutGroup/flagIcon</td><td>immagine</td><td>Bandiera/icona associata al giocatore o al server.</td></tr>
+<tr><td class="path">horizontalLayoutGroup/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome del giocatore o della gilda in questa riga.</td></tr>
+<tr><td class="path">horizontalLayoutGroup/statValue</td><td><span class="tag tag-txt">testo</span></td><td>Valore della statistica classificata per questa riga (es. potenza, livello).</td></tr>
+<tr><td class="path">promotionLineBg (+ promotionLine/leftArrowBg, leagueFrameBg/leagueFrame/leagueText, rightArrowBg)</td><td>indicatore</td><td>Linea/indicatore di "promozione" mostrata sopra la riga soglia che separa chi sale di lega; <code>leagueText</code> mostra il nome della lega successiva. Composto solo da <code>Image</code> decorative + un testo.</td></tr>
+<tr><td class="path">demotionLineBg (+ demotionLine/leftArrowBg, leagueFrameBg/leagueFrame/leagueText, rightArrowBg)</td><td>indicatore</td><td>Stesso indicatore ma per la soglia di "retrocessione" verso la lega inferiore.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Stato evento, filtri e posizione personale</h2>
+<p class="region-path">Path relativo: <code>leaderboardBg</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">eventStillActiveTMP</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Testo mostrato quando l'evento/stagione della classifica corrente è ancora in corso (probabile messaggio di stato o countdown).</td></tr>
+<tr><td class="path">leagueButtons/myRank</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorre la lista fino alla posizione del giocatore corrente.</td></tr>
+<tr><td class="path">leagueButtons/top25</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra/filtra solo i primi 25 classificati.</td></tr>
+<tr><td class="path">yourRankingInteraction</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riga fissa (fuori dalla lista scrollabile) con la posizione del giocatore corrente. Componente <code>LeaderboardRowViewAvatar</code>: apre probabilmente il proprio profilo al tap. Stessa struttura interna della riga template (ranking, avatar, nome, valore).</td></tr>
+<tr><td class="path">yourRankingInteraction/horizontalLayoutGroup/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Avatar del giocatore nella riga fissa. Componente <code>PlayerAvatarInteraction</code>.</td></tr>
+<tr><td class="path">yourRankingInteraction/horizontalLayoutGroup/name</td><td><span class="tag tag-txt">testo</span></td><td>Nome del giocatore (te stesso) nella riga fissa.</td></tr>
+<tr><td class="path">yourRankingInteraction/horizontalLayoutGroup/statValue</td><td><span class="tag tag-txt">testo</span></td><td>Valore statistico del giocatore per la classifica corrente.</td></tr>
+<tr><td class="path">yourRankingInteraction/lockedText</td><td><span class="tag tag-off">inattivo</span> <span class="tag tag-txt">testo</span></td><td>Testo mostrato quando la posizione del giocatore non è ancora disponibile/sbloccata (es. non ancora classificato).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Elenco server — Sala della Fama (inattivo)</h2>
+<p class="region-path">Path relativo: <code>leaderboardHoFServers</code> — attivato solo con scope hallOfFame, per scegliere il server/mondo di cui vedere la classifica. <code>Scroll View/line1</code>/<code>line2</code> sono separatori grafici, omessi.</p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">Scroll View/Viewport/serverButtons/serverButton (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona un server specifico per la classifica Sala della Fama. Componente custom <code>LeaderboardsHoFServerInteraction</code>. Figli <code>arrow</code> e <code>text</code> (nome/etichetta del server) sono solo decorativi/informativi.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Eventi a tempo</h2>
+<p class="region-path">Path relativo: <code>competitionButtons</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">newServerEventButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la competizione dedicata ai server di nuova apertura.</td></tr>
+<tr><td class="path">newServerEventButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone.</td></tr>
+<tr><td class="path">newServerEventButton/timeLeft</td><td><span class="tag tag-txt">testo</span></td><td>Tempo rimanente (countdown) prima della fine dell'evento.</td></tr>
+<tr><td class="path">competitionButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre una competizione/evento generale a tempo.</td></tr>
+<tr><td class="path">competitionButton/text</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del bottone.</td></tr>
+<tr><td class="path">competitionButton/timeLeft</td><td><span class="tag tag-txt">testo</span></td><td>Tempo rimanente (countdown) prima della fine dell'evento.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section>
+<h2>Decorazione — Aurelia</h2>
+<p class="region-path">Path relativo: <code>aurelia/aureliaTransform</code></p>
+<table>
+<thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td class="path">AureliaGlow</td><td>Spine.Unity.SkeletonGraphic</td><td>Effetto di bagliore animato dietro il personaggio. Puramente decorativo.</td></tr>
+<tr><td class="path">AureliaSpine</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Personaggio animato (Spine) cliccabile, presente anche in altre schermate di menu. Funzione non chiara dal solo nome: verificare dal vivo (probabile hint/dialogo, potrebbe non avere azione visibile in questa schermata).</td></tr>
+</tbody>
+</table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Leaderboards</code>. Nota: il path radice è dedotto solo dal nome del GameObject e dal contenuto della schermata (menu a schermo intero con proprio <code>closeButton</code>, coerente con le altre schermate di menu come Social/HallOfHeroes), senza risalire la gerarchia della scena live — verificare con un'ispezione a runtime.<br>
+  Nodi omessi dal dump originale perché puramente decorativi: <code>bg/glow (1)-(3)</code>, <code>bg/rays/ray (1)-(8)</code> (duplicati dell'effetto VFX già riassunto in tabella); i separatori <code>line1</code>/<code>line2</code>/<code>line1Inner</code>/<code>line2Inner</code> dentro <code>leaderboardCategories</code> e <code>leaderboardHoFServers</code>; <code>leaderboardBg/separator</code> (linea divisoria tra intestazione e lista). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

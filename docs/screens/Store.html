@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Negozio</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Negozio</div>
+  <h1>🛒 Negozio</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Schermata grande (1851 nodi, 273 bottoni nel dump): i pattern ripetuti (slot/pacchetti/ricompense identici) sono mostrati una sola volta con nota "×N".</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale e testata (contatore valuta, categoria in evidenza)</h2>
+  <p class="region-path">Path relativo alla radice: <code>Store/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">Store</td><td>Root, <code>Canvas</code>, <code>GraphicRaycaster</code>, script <code>StoreViewController</code></td><td>Nodo radice del popup Negozio, disattivo di default nel prefab; il controller gestisce il cambio tab tra i 9 sottomenu e il refresh dei prezzi/disponibilità.</td></tr>
+      <tr><td class="path">background</td><td>Immagine</td><td>Sfondo scena dietro al popup.</td></tr>
+      <tr><td class="path">bg</td><td>Immagine</td><td>Pannello di sfondo principale del popup.</td></tr>
+      <tr><td class="path">bg/upper</td><td>Immagine</td><td>Fascia superiore del popup.</td></tr>
+      <tr><td class="path">bg/upper/submenuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del tab/sottomenu attualmente selezionato (es. "Negozio Gemme"), localizzato via <code>I2.Loc.Localize</code>; cambia con il tab attivo.</td></tr>
+      <tr><td class="path">bg/lower</td><td>Immagine, <code>RectMask2D</code></td><td>Fascia inferiore della testata, contiene il contatore valuta.</td></tr>
+      <tr><td class="path">bg/lower/counters</td><td><code>HorizontalLayoutGroup</code></td><td>Contenitore del contatore valuta in alto nel popup.</td></tr>
+      <tr><td class="path">bg/lower/counters/counterInteractionStore</td><td>Script <code>CounterInteraction</code></td><td>Widget del contatore valuta (gemme), probabilmente condiviso/riusato con altre schermate del negozio.</td></tr>
+      <tr><td class="path">counterInteractionStore/bg</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Sfondo cliccabile del contatore; verosimilmente apre il tab "Negozio Gemme" o un dettaglio della valuta.</td></tr>
+      <tr><td class="path">counterInteractionStore/icon</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona valuta cliccabile, stesso comportamento del bottone sopra.</td></tr>
+      <tr><td class="path">counterInteractionStore/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità attuale posseduta della valuta mostrata.</td></tr>
+      <tr><td class="path">counterInteractionStore/quantityAdded</td><td><span class="tag tag-txt">testo</span></td><td>Testo "+N" mostrato in animazione quando la valuta aumenta.</td></tr>
+      <tr><td class="path">counterInteractionStore/getMore</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Pulsante "+" per acquistare altra valuta; inattivo di default, probabilmente compare solo quando la quantità è insufficiente per un acquisto in corso.</td></tr>
+      <tr><td class="path">counterInteractionStore/getMore/collider</td><td>Immagine</td><td>Area di collisione invisibile che allarga la zona cliccabile di <code>getMore</code>.</td></tr>
+      <tr><td class="path">bg/catBg</td><td>Immagine</td><td>Riquadro con mascotte/illustrazione della categoria in evidenza per il tab corrente.</td></tr>
+      <tr><td class="path">bg/catBg/info</td><td><code>VerticalLayoutGroup</code>, <code>ContentSizeFitter</code></td><td>Blocco informativo testuale accanto alla mascotte.</td></tr>
+      <tr><td class="path">catBg/info/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome/titolo mostrato nel riquadro categoria (probabilmente ripete il nome del tab attivo). Non chiaro al 100% dal nome, verificare dal vivo.</td></tr>
+      <tr><td class="path">catBg/info/textBg</td><td>Immagine</td><td>Sfondo del testo descrittivo della categoria.</td></tr>
+      <tr><td class="path">catBg/info/textBg/text</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo/sottotitolo della categoria in evidenza.</td></tr>
+      <tr><td class="path">bg/catBg/cat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Illustrazione/mascotte animata della categoria corrente. Effetto esatto del click non chiaro dal nome, verificare dal vivo (probabile solo feedback/animazione, non un'azione funzionale).</td></tr>
+      <tr><td class="path">catBg/cat/cat</td><td><code>Spine.Unity.SkeletonGraphic</code>, <code>MenuVfxEntityComponent</code></td><td>Animazione Spine della mascotte.</td></tr>
+      <tr><td class="path">bg/catBg/gemOverlay</td><td><code>Spine.Unity.SkeletonGraphic</code>, <code>MenuVfxEntityComponent</code></td><td>Effetto particellare (gemme fluttuanti) sovrapposto, verosimilmente attivo per il tab "Negozio Gemme".</td></tr>
+      <tr><td class="path">bg/catBg/seperator</td><td>Immagine</td><td>Linea separatrice decorativa sotto la testata.</td></tr>
+      <tr><td class="path">bg/submenus</td><td>Contenitore (nessun componente utile)</td><td>Contiene i 9 pannelli dei sottomenu/tab del negozio (uno attivo alla volta, vedi sezioni seguenti).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab e chiusura</h2>
+  <p class="region-path">Path relativo: <code>submenuButtons/grid/</code>, <code>StoreResetTimeInfo/</code>, <code>closeButton</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenuButtons</td><td>Contenitore</td><td>Barra dei tab principali del negozio (in fondo allo schermo, fuori da <code>bg</code>).</td></tr>
+      <tr><td class="path">submenuButtons/grid</td><td><code>GridLayoutGroup</code></td><td>Griglia orizzontale dei pulsanti tab.</td></tr>
+      <tr><td class="path">grid/dailyRewardsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Ricompense giornaliere".</td></tr>
+      <tr><td class="path">dailyRewardsButton/graphic</td><td>Immagine</td><td>Icona del tab.</td></tr>
+      <tr><td class="path">dailyRewardsButton/notification</td><td>Immagine, <code>NotificationAnimation</code></td><td>Badge di notifica (es. ricompensa disponibile da riscattare); struttura identica (<code>notification/bell</code> Spine + <code>notification/amountTMP</code> testo col numero) ripetuta anche su <code>amuletsButton</code>, <code>valueBundleButton</code>, <code>valueBundleWeeklyButton</code>, <code>valueBundleDailyButton</code>.</td></tr>
+      <tr><td class="path">grid/avatarsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Avatar".</td></tr>
+      <tr><td class="path">grid/amuletsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Amuleti" (con badge notifica come sopra).</td></tr>
+      <tr><td class="path">grid/itemShopButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Negozio oggetti".</td></tr>
+      <tr><td class="path">grid/gearChestsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Forzieri equipaggiamento".</td></tr>
+      <tr><td class="path">grid/gemStoreButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Negozio gemme".</td></tr>
+      <tr><td class="path">grid/valueBundleButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Pacchetti speciali" (sottomenu interno <code>extremeValueBundles</code>), con badge notifica.</td></tr>
+      <tr><td class="path">grid/valueBundleWeeklyButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Pacchetti settimanali", con badge notifica.</td></tr>
+      <tr><td class="path">grid/valueBundleDailyButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il tab "Pacchetti giornalieri", con badge notifica.</td></tr>
+      <tr><td class="path">StoreResetTimeInfo</td><td>Contenitore</td><td>Cartiglio con il conto alla rovescia per il reset di alcune offerte del negozio.</td></tr>
+      <tr><td class="path">StoreResetTimeInfo/bg</td><td>Immagine, <code>HorizontalLayoutGroup</code></td><td>Sfondo del cartiglio.</td></tr>
+      <tr><td class="path">bg/infoText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta del cartiglio (es. "Si rinnova tra:").</td></tr>
+      <tr><td class="path">bg/timeText</td><td><span class="tag tag-txt">testo</span></td><td>Countdown numerico del reset.</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup Negozio.</td></tr>
+      <tr><td class="path">closeButton/icon</td><td>Immagine</td><td>Icona (X) del pulsante di chiusura.</td></tr>
+      <tr><td class="path">tutorialMain/OpenDailyRewards</td><td>Contenitore <span class="tag tag-off">inattivo</span></td><td>Freccia animata di tutorial che indica il tab "Ricompense giornaliere" durante l'onboarding.</td></tr>
+      <tr><td class="path">tutorialMain/ClaimDailyRewards</td><td>Contenitore <span class="tag tag-off">inattivo</span></td><td>Freccia animata di tutorial che indica dove riscattare la ricompensa giornaliera durante l'onboarding.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab: Negozio Gemme (<code>gemStore</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/gemStore/Viewport/gemPacks/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/gemStore</td><td>Script <code>GemStoreSubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Negozio Gemme"; attivo solo quando il tab è selezionato.</td></tr>
+      <tr><td class="path">gemStore/Viewport/gemPacks</td><td><code>GridLayoutGroup</code></td><td>Griglia dei pacchetti gemme in vendita.</td></tr>
+      <tr><td class="path">gemPacks/gemProduct (0)</td><td>Script <code>GemPackInteraction</code></td><td>Slot pacchetto gemme, ×6 (slot 0-5, un pacchetto per taglia/prezzo).</td></tr>
+      <tr><td class="path">gemProduct (0)/outline</td><td>Immagine <span class="tag tag-off">inattivo</span></td><td>Bordo evidenziato, probabilmente per il pacchetto più conveniente/consigliato.</td></tr>
+      <tr><td class="path">gemProduct (0)/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del pacchetto gemme.</td></tr>
+      <tr><td class="path">gemProduct (0)/QuantityParent/currencyQuantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità di gemme incluse nel pacchetto (+ <code>currencyQuantityExtra</code> per l'eventuale bonus).</td></tr>
+      <tr><td class="path">gemProduct (0)/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il pacchetto al prezzo intero (valuta reale); prezzo in <code>currencyHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">gemProduct (0)/purchaseButtonx2</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Variante di acquisto "x2" dello stesso pacchetto (probabile offerta doppia quantità/doppio prezzo); stesso layout prezzo di <code>purchaseButton</code>.</td></tr>
+      <tr><td class="path">gemProduct (0)/ribbon/bulkBonus</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bonus (es. "+20%") sul nastro del pacchetto (+ <code>ribbon/extraText</code> localizzato).</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Struttura di <code>gemProduct (0)</code> ripetuta identica per gli slot (1)-(5): 6 pacchetti gemme totali, ciascuno con i propri <code>purchaseButton</code>/<code>purchaseButtonx2</code>.</p>
+</section>
+
+<section>
+  <h2>Tab: Forzieri Equipaggiamento (<code>gearChests</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/gearChests/gearChestsScrollView/Viewport/chests/gearChestStore (0)/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/gearChests</td><td>Script <code>GearChestsSubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Forzieri Equipaggiamento".</td></tr>
+      <tr><td class="path">gearChestsScrollView/Viewport/chests</td><td><code>GridLayoutGroup</code>, <code>Canvas</code>, <code>GraphicRaycaster</code>, <code>ContentSizeFitter</code></td><td>Griglia scrollabile dei forzieri in vendita. Nel prefab statico è presente un solo template (<code>gearChestStore (0)</code>): la lista reale è probabilmente popolata/duplicata a runtime con più forzieri disponibili.</td></tr>
+      <tr><td class="path">chests/gearChestStore (0)</td><td>Script <code>PremiumProductGearChestInteraction</code></td><td>Card del forziere; ha due facce alternative nello stesso nodo: <code>main</code> (vista compatta) e <code>info</code> (vista dettagli), probabilmente si scambiano con un flip.</td></tr>
+      <tr><td class="path">gearChestStore (0)/nameBg/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome del forziere.</td></tr>
+      <tr><td class="path">gearChestStore (0)/main/infoAreaButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la vista dettagli (<code>info</code>) del forziere, probabilmente copre l'intera area della card.</td></tr>
+      <tr><td class="path">gearChestStore (0)/main/infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona "i" dedicata per aprire la vista dettagli (<code>HolydayStudios.InfoButtonAnimation</code>).</td></tr>
+      <tr><td class="path">main/itemImage, main/itemQuantity</td><td>Immagine / <span class="tag tag-txt">testo</span></td><td>Immagine e quantità del forziere.</td></tr>
+      <tr><td class="path">main/ribbon/firstPurchaseText</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta "prima offerta"/sconto al primo acquisto.</td></tr>
+      <tr><td class="path">gearChestStore (0)/main/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista il forziere; prezzo in <code>currencyHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">gearChestStore (0)/info/infoBackAreaButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Torna dalla vista dettagli alla vista <code>main</code> (area cliccabile ampia).</td></tr>
+      <tr><td class="path">gearChestStore (0)/info/infoBackButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Icona dedicata per tornare alla vista <code>main</code>.</td></tr>
+      <tr><td class="path">info/dynamicArea/inventoryItemsReward</td><td>Contenitore</td><td>Riga ricompensa "oggetti inventario" inclusa nel forziere: <code>inventoryItemIcon</code>, <code>quantity</code> (testo), <code>rewardName</code> (testo).</td></tr>
+      <tr><td class="path">info/dynamicArea/gearReward</td><td>Contenitore</td><td>Riga ricompensa "equipaggiamento" inclusa: <code>swordIcon</code>, <code>quantity</code> (testo), <code>rewardName</code> (testo).</td></tr>
+      <tr><td class="path">info/dynamicArea/guaranteedGear</td><td>Contenitore</td><td>Blocco "equip garantito": <code>title</code> (testo) + griglia <code>guaranteedgearGrid/low</code> e <code>/high</code>, ciascuna con <code>rarityName</code> (testo) e <code>guaranteedItemsNumber</code> (testo) — quante copie garantite di quella rarità.</td></tr>
+      <tr><td class="path">info/dynamicArea/sealReward</td><td>Contenitore</td><td>Ricompensa "sigillo" inclusa: <code>sealFrame/gearItem</code> (immagine) + <code>sealDesc</code> (testo).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab: Pacchetti Speciali (<code>extremeValueBundles</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/extremeValueBundles/bundles/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/extremeValueBundles</td><td>Script <code>ValueBundleSubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Pacchetti Speciali".</td></tr>
+      <tr><td class="path">extremeValueBundles/bundles</td><td><code>Canvas</code>, <code>GraphicRaycaster</code>, <code>HorizontalLayoutGroup</code>, <code>ContentSizeFitter</code></td><td>Riga con due card fisse (non a lista numerata): <code>mysteryBox</code> ed <code>extremeValueBundle</code>.</td></tr>
+      <tr><td class="path">bundles/mysteryBox/Graphics/header/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome della card "scatola misteriosa" fissa; <code>renewText</code> (testo) mostra il countdown di rinnovo, <code>description</code> (testo) la descrizione.</td></tr>
+      <tr><td class="path">mysteryBox/Graphics/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista/apre la mystery box; <code>priceHolder/freeText</code> (testo) suggerisce che può essere gratuita (es. prima apertura).</td></tr>
+      <tr><td class="path">mysteryBox/Graphics/claimedBG/claimedObj</td><td>Contenitore</td><td>Stato "già riscattata": <code>text</code> (testo) + <code>tickImg</code> (spunta).</td></tr>
+      <tr><td class="path">bundles/extremeValueBundle</td><td>Script <code>ValueBundleInteraction</code></td><td>Card fissa del pacchetto "valore estremo"; <code>Graphics/itemName</code> (testo) il nome.</td></tr>
+      <tr><td class="path">extremeValueBundle/.../products/currencyReward (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot valuta inclusa nel pacchetto (script <code>CurrencyRewardInteraction</code>), ×4 (slot 0-3), con <code>currencyImage</code> e <code>quantity</code> (testo).</td></tr>
+      <tr><td class="path">.../products/gearChest</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Forziere equipaggiamento incluso nel pacchetto (<code>GearChestInteraction</code>), con <code>quantity</code> (testo) e sotto-nodo <code>info</code> (<code>GearChestInfoInteraction</code>, non bottone).</td></tr>
+      <tr><td class="path">.../products/celestialChest</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Forziere celestiale incluso (<code>CelestialChestInteraction</code>).</td></tr>
+      <tr><td class="path">.../products/jewelChest</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Forziere di gioielli incluso (<code>JewelChestInteraction</code>).</td></tr>
+      <tr><td class="path">extremeValueBundle/Graphics/mainBG/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'intero pacchetto; prezzo in <code>priceHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">mainBG/claimedBG/claimedObj</td><td>Contenitore <span class="tag tag-off">inattivo</span></td><td>Stato "già acquistato/riscattato" (testo + spunta), inattivo di default.</td></tr>
+      <tr><td class="path">extremeValueBundle/Graphics/mysteryBox</td><td>Script <code>GenericInfoInteraction</code> (non bottone)</td><td>Icona informativa extra inclusa nel pacchetto (mystery box bonus), con <code>quantity</code> (testo).</td></tr>
+      <tr><td class="path">extremeValueBundle/Graphics/oraclesGift</td><td>Script <code>GenericInfoInteraction</code> (non bottone)</td><td>Icona informativa extra "dono dell'Oracolo" incluso, con <code>quantity</code> (testo). Funzione precisa non chiara dal nome, verificare dal vivo.</td></tr>
+      <tr><td class="path">extremeValueBundle/Graphics/ExtraValueInteraction</td><td>Script <code>ExtraValueInteraction</code> (non bottone)</td><td>Badge/testo che evidenzia il "valore extra" del pacchetto rispetto al prezzo pagato.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab: Pacchetti Giornalieri e Settimanali (<code>valueBundleDaily</code> / <code>valueBundleWeekly</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/valueBundleDaily/Scroll View/Viewport/bundles/</code> e <code>bg/submenus/valueBundleWeekly/Scroll View/Viewport/bundles/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/valueBundleDaily</td><td>Script <code>ValueBundleDailySubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Pacchetti Giornalieri".</td></tr>
+      <tr><td class="path">valueBundleDaily/.../bundles/mysteryBox</td><td>Immagine</td><td>Card fissa "scatola misteriosa", stessa struttura vista in <code>extremeValueBundles</code> (purchaseButton, claimedBG, ecc.).</td></tr>
+      <tr><td class="path">valueBundleDaily/.../bundles/valueBundle (0)</td><td>Script <code>ValueBundleInteraction</code></td><td>Card pacchetto a slot, stessa struttura di <code>extremeValueBundle/Graphics</code> (background, stars, itemName testo, mainBG/products con <code>currencyReward (0-3)</code>/<code>gearChest</code>/<code>celestialChest</code>/<code>jewelChest</code> tutti [BUTTON], <code>mainBG/purchaseButton</code> [BUTTON], <code>mainBG/claimedBG/claimedObj</code>, <code>mysteryBox</code>/<code>oraclesGift</code> informativi). Ripetuto identico ×3 (slot 0-2): i pacchetti giornalieri in vendita oggi.</td></tr>
+      <tr><td class="path">valueBundleDaily/timeRenewBackground/renewText</td><td><span class="tag tag-txt">testo</span></td><td>Countdown al prossimo rinnovo dell'offerta giornaliera (nodo padre <span class="tag tag-off">inattivo</span> di default).</td></tr>
+      <tr><td class="path">bg/submenus/valueBundleWeekly</td><td>Script <code>ValueBundleWeeklySubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Pacchetti Settimanali".</td></tr>
+      <tr><td class="path">valueBundleWeekly/.../bundles/valueBundle (0)</td><td>Script <code>ValueBundleInteraction</code></td><td>Identica struttura a <code>valueBundleDaily/valueBundle (N)</code> sopra, ripetuta ×5 (slot 0-4). Non è presente una <code>mysteryBox</code> fissa in questo tab.</td></tr>
+      <tr><td class="path">valueBundleWeekly/timeRenewBackground/renewText</td><td><span class="tag tag-txt">testo</span></td><td>Countdown al rinnovo settimanale dell'offerta.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab: Negozio Oggetti (<code>itemShop</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/itemShop/itemsScrollView/Viewport/items/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/itemShop</td><td>Script <code>ItemShopSubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Negozio Oggetti".</td></tr>
+      <tr><td class="path">itemShop/itemsScrollView/Viewport/items</td><td><code>GridLayoutGroup</code>, <code>ContentSizeFitter</code>, <code>Canvas</code>, <code>GraphicRaycaster</code></td><td>Griglia scrollabile degli oggetti in vendita.</td></tr>
+      <tr><td class="path">items/premiumItem0</td><td>Script <code>ItemStoreInteraction</code></td><td>Slot oggetto in vendita, ×12 (slot <code>premiumItem0</code>-<code>premiumItem11</code>).</td></tr>
+      <tr><td class="path">premiumItem0/header/itemName</td><td><span class="tag tag-txt">testo</span></td><td>Nome dell'oggetto in vendita.</td></tr>
+      <tr><td class="path">premiumItem0/itemQuantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità dell'oggetto inclusa nell'acquisto singolo.</td></tr>
+      <tr><td class="path">premiumItem0/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquisto singolo dell'oggetto; prezzo in <code>currencyHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">premiumItem0/ribbon/bulkBonus</td><td><span class="tag tag-txt">testo</span></td><td>Etichetta bonus sul nastro (+ <code>ribbon/ribbonTextDesc</code> localizzato).</td></tr>
+      <tr><td class="path">premiumItem0/purchaseButtonBulk</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquisto multiplo/bundle dello stesso oggetto (quantità maggiore), stesso layout prezzo di <code>purchaseButton</code>.</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Struttura di <code>premiumItem0</code> ripetuta identica per <code>premiumItem1</code>-<code>premiumItem11</code>: 12 oggetti totali in vendita, ciascuno con <code>purchaseButton</code> e <code>purchaseButtonBulk</code> propri.</p>
+</section>
+
+<section>
+  <h2>Tab: Ricompense Giornaliere (<code>dailyRewards</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/dailyRewards/Viewport/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/dailyRewards</td><td>Script <code>DailyRewardsSubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Ricompense Giornaliere".</td></tr>
+      <tr><td class="path">Viewport/topBanner/active</td><td>Contenitore <span class="tag tag-off">inattivo</span></td><td>Banner mostrato quando il boost "doppie ricompense" è attivo: <code>textX2Active</code> (testo), <code>textRemainingRewards</code>/<code>textRemainingRewardsNum</code> (testo) indicano quante ricompense doppie restano.</td></tr>
+      <tr><td class="path">Viewport/topBanner/inactive</td><td>Contenitore</td><td>Banner mostrato quando il boost NON è attivo: <code>textEndsIn</code>/<code>textEndsInTimer</code> (testo) countdown, più il bottone di sblocco sotto.</td></tr>
+      <tr><td class="path">topBanner/inactive/unlockDoubleRewardsButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre l'offerta per sbloccare le ricompense doppie (verosimilmente apre <code>popupDailyRewards</code> più sotto); <code>desc</code> (testo) descrizione.</td></tr>
+      <tr><td class="path">Viewport/rewardsMask/weeks/week (0)</td><td>Contenitore</td><td>Una settimana del calendario ricompense; <code>weekText</code> (testo) mostra l'etichetta "Settimana N".</td></tr>
+      <tr><td class="path">week (0)/dailyRewardStore (0)</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Riscatta la ricompensa del giorno N della settimana (script <code>DailyRewardInteraction</code>), ×7 per settimana (slot 0-6); <code>canClaim</code> (immagine, inattiva di default) evidenzia il giorno riscattabile oggi, <code>rewardIcon</code>/<code>quantity</code> (testo) mostrano la ricompensa, <code>claimedFrame</code> (frame+tick) segnala i giorni già riscattati.</td></tr>
+      <tr><td class="path">Viewport/transparentFrame/checkIn</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Check-in/riscatta la ricompensa del giorno corrente; <code>desc</code> (testo) descrizione. <code>textHolder/timer</code>+<code>timeLeftText</code> (testo) mostrano il countdown al prossimo giorno riscattabile; <code>claimRewardText</code> (testo, inattivo) appare quando pronto per il riscatto.</td></tr>
+      <tr><td class="path">Viewport/btnWeekPrev</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra la settimana precedente del calendario (ha <code>RepeatAction</code>: tenendo premuto scorre più volte).</td></tr>
+      <tr><td class="path">Viewport/btnWeekNext</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Mostra la settimana successiva del calendario (stesso comportamento "tieni premuto").</td></tr>
+      <tr><td class="path">Viewport/popupDailyRewards/normalOption</td><td>Contenitore</td><td>Opzione "normale" del popup upsell doppie ricompense: <code>titleText</code>/<code>textActiveFor</code>/<code>textX2DailyRewards</code> (testo).</td></tr>
+      <tr><td class="path">normalOption/purchaseObject</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'opzione "normale" del boost x2; prezzo in <code>priceHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">popupDailyRewards/boostedOption</td><td>Contenitore</td><td>Opzione "potenziata" (boosted) del popup, con effetti grafici extra (<code>glows</code>) e <code>titleText</code>/<code>textActiveFor</code>/<code>textX2DailyRewards</code> (testo).</td></tr>
+      <tr><td class="path">boostedOption/itemsBg/extraProductsBg/currencyReward</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Valuta extra inclusa nell'opzione potenziata (<code>CurrencyRewardInteraction</code>); presenti 2 slot (base + <code>currencyReward (1)</code>).</td></tr>
+      <tr><td class="path">boostedOption/itemsBg/extraProductsBg/gearChest</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Forziere extra incluso nell'opzione potenziata (<code>GearChestInteraction</code>); presenti 2 slot (base + <code>gearChest (1)</code>).</td></tr>
+      <tr><td class="path">popupDailyRewards/boostedOption/purchaseObject</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'opzione "potenziata"; prezzo in <code>priceHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">popupDailyRewards/textOr</td><td><span class="tag tag-txt">testo</span></td><td>Separatore "oppure" tra le due opzioni del popup.</td></tr>
+      <tr><td class="path">popupDailyRewards/textEndsIn / textEndsInTimer</td><td><span class="tag tag-txt">testo</span></td><td>Countdown di validità dell'offerta mostrata nel popup.</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Struttura della settimana (0) ripetuta identica per <code>week (1)</code>-<code>week (3)</code>: 4 settimane totali, 28 giorni di ricompense giornaliere in tutto.</p>
+</section>
+
+<section>
+  <h2>Tab: Amuleti (<code>amulets</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/amulets/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/amulets</td><td>Script <code>AmuletsSubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Amuleti".</td></tr>
+      <tr><td class="path">amulets/dailyAmuletStore</td><td>Script <code>AmuletStoreInteraction</code></td><td>Card dell'amuleto del giorno; <code>header/name</code>/<code>description</code> (testo) nome e descrizione, <code>effectBg/effectDesc</code>+<code>effect</code> (testo) descrivono il bonus dell'amuleto.</td></tr>
+      <tr><td class="path">dailyAmuletStore/purchaseButtonMoney</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'amuleto del giorno con valuta reale; prezzo in <code>priceHolder/purchaseCost</code>.</td></tr>
+      <tr><td class="path">dailyAmuletStore/purchaseButtonGems</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'amuleto del giorno con gemme.</td></tr>
+      <tr><td class="path">dailyAmuletStore/purchaseButtonKeys</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'amuleto del giorno con chiavi.</td></tr>
+      <tr><td class="path">dailyAmuletStore/orText</td><td><span class="tag tag-txt">testo</span></td><td>Separatore "oppure" tra le tre modalità di acquisto.</td></tr>
+      <tr><td class="path">dailyAmuletStore/claimedObj</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Stato "già riscattato/posseduto oggi" (<code>parentGroup/text</code> testo + <code>tickImg</code>), inattivo di default.</td></tr>
+      <tr><td class="path">amulets/availableAmulets</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre l'elenco degli amuleti posseduti/disponibili (schermata/lista non presente in questo dump, verificare dal vivo); <code>text</code> (testo) etichetta il bottone.</td></tr>
+      <tr><td class="path">availableAmulets/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Numero mostrato nel badge (es. amuleti nuovi/disponibili).</td></tr>
+      <tr><td class="path">amulets/timeLeftText</td><td><span class="tag tag-txt">testo</span></td><td>Countdown al rinnovo dell'amuleto giornaliero.</td></tr>
+      <tr><td class="path">amulets/noAmuletsText</td><td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Testo mostrato quando non ci sono amuleti disponibili.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab: Avatar (<code>avatars</code>)</h2>
+  <p class="region-path">Path relativo: <code>bg/submenus/avatars/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">bg/submenus/avatars</td><td><code>RectMask2D</code>, script <code>AvatarStoreSubmenuViewController</code> <span class="tag tag-off">inattivo</span></td><td>Pannello del tab "Avatar", con due sotto-tab interni (Guardiani/Alleati).</td></tr>
+      <tr><td class="path">avatars/submenus/guardiansScrollView</td><td><code>ScrollRect</code>, Immagine</td><td>Sotto-tab "Guardiani": griglia scrollabile di avatar acquistabili.</td></tr>
+      <tr><td class="path">guardiansScrollView/.../avatarGrid/avatarStore (0)</td><td>Script <code>AvatarStoreInteraction</code>, <code>AvatarStoreViewController</code></td><td>Slot avatar "Guardiani", ×20 (slot 0-19); <code>avatarNameBg/name</code> (testo) nome dell'avatar, <code>title</code> (testo) sottotitolo/rarità.</td></tr>
+      <tr><td class="path">avatarStore (0)/playerAvatar</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona/equipaggia questo avatar come immagine profilo (script <code>PlayerAvatarInteraction</code>), con <code>avatarIcon</code> come icona figlia.</td></tr>
+      <tr><td class="path">avatarStore (0)/purchaseButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Acquista l'avatar; prezzo in <code>purchaseButtonGems/purchaseCost</code>.</td></tr>
+      <tr><td class="path">avatarStore (0)/claimedObj</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Stato "già posseduto" (<code>parentGroup/text</code> testo + <code>tickImg</code>), inattivo di default.</td></tr>
+      <tr><td class="path">avatars/submenus/alliesScrollView</td><td><code>ScrollRect</code>, Immagine</td><td>Sotto-tab "Alleati": identica struttura di <code>guardiansScrollView</code> (<code>alliesGrid/avatarStore (0)</code>-<code>(12)</code>, stessi <code>playerAvatar</code>/<code>purchaseButton</code>/<code>claimedObj</code>), ×13 slot (slot 0-12).</td></tr>
+      <tr><td class="path">avatars/submenuButtons/grid/guardians</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il sotto-tab "Guardiani"; <code>text</code> (testo) etichetta.</td></tr>
+      <tr><td class="path">avatars/submenuButtons/grid/allies</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il sotto-tab "Alleati"; <code>text</code> (testo) etichetta.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Store</code> (stimato per nome del GameObject, non verificato risalendo la gerarchia della scena live — potrebbe differire; il negozio potrebbe anche essere raggiungibile come overlay da più punti del menu). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

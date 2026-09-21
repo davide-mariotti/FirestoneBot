@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Sezione Gilda (Town)</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Sezione Gilda (Town)</div>
+  <h1>🛡️ Sezione Gilda (Town)</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata. Dump sorgente: 325 nodi, 59 componenti Button.</p>
+</header>
+<main>
+
+<section>
+  <h2>Radice della schermata</h2>
+  <p class="region-path">Path: <code>TownGuild</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">. (root)</td>
+      <td>Image + controller</td>
+      <td>Radice del prefab, componente <code>TownGuildViewController</code> — controller principale della schermata (edifici, sblocchi, notifiche). Nel dump non risulta <code>(inactive)</code>: a differenza di <code>TownIrongard</code>, qui il nodo radice sembra restare attivo; la visibilità effettiva è probabilmente gestita dal controller stesso o da un parent più in alto non incluso in questo dump.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sfondo e titolo</h2>
+  <p class="region-path">Path: <code>townBg</code>, <code>bg/</code>, <code>menuTitleBg/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">townBg</td><td>Image</td><td>Sfondo pieno della schermata.</td></tr>
+    <tr><td class="path">bg/guildBgLeft, bg/guildBgRight</td><td>Image</td><td>Illustrazione di sfondo del villaggio della gilda, divisa in due layer (sinistra/destra).</td></tr>
+    <tr><td class="path">bg/riverSpine</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione del fiume/corso d'acqua nello sfondo, non interattiva.</td></tr>
+    <tr><td class="path">bg/waves</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione delle onde, non interattiva.</td></tr>
+    <tr><td class="path">bg/doodads/barrel1..4, tiki1, tiki2</td><td>Image</td><td>Elementi decorativi statici sparsi nello sfondo (barili, totem tiki), non cliccabili.</td></tr>
+    <tr><td class="path">menuTitleBg/menuTitle</td><td><span class="tag tag-txt">testo</span></td><td>Titolo della schermata, testo localizzato (I2.Loc.Localize) — verosimilmente "Gilda".</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Decorazioni animate cliccabili (cespugli, alberi)</h2>
+  <p class="region-path">Path: <code>bg/Trees N' Bushes/{bushes,trees}/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">Trees N' Bushes/bushes/Bush1 .. Bush14</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>×14 istanze, ognuna con animazione Spine (<code>Spine.Unity.SkeletonGraphic</code> + <code>MenuVfxEntityComponent</code>). Cliccabili ma nessuna funzione di gioco nota dal nome: probabile solo micro-animazione decorativa al tocco. Verificare dal vivo se non necessario per l'automazione.</td>
+    </tr>
+    <tr>
+      <td class="path">Trees N' Bushes/bushes/BushForbidden</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Cespuglio con nome distinto dagli altri, probabilmente posizionato vicino all'edificio <code>forbiddenKnowledge</code> a tema; stessa presunta funzione puramente decorativa, verificare dal vivo.</td>
+    </tr>
+    <tr>
+      <td class="path">Trees N' Bushes/trees/Tree1 .. Tree8, Tree10 .. Tree26</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>×25 istanze (numerazione con "buco" su Tree9, verosimilmente rinominato/spostato — vedi <code>expeditionsTree</code> più sotto), stesso pattern dei cespugli: alberi animati (Spine) cliccabili senza funzione nota, puramente decorativi.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Intestazione gilda (banner, nome, livello)</h2>
+  <p class="region-path">Path: <code>guildInfo/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guildInfo</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Intero banner cliccabile (Image + Button + <code>ButtonAnimation</code>), probabile apertura scheda/profilo completo della gilda.</td></tr>
+    <tr><td class="path">guildInfo/guildBanner</td><td>Image</td><td>Icona/stemma (bandiera) della gilda.</td></tr>
+    <tr><td class="path">guildInfo/infoButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone "i" di informazioni innestato <b>dentro</b> il banner <code>guildInfo</code> (anch'esso un Button): un click qui potrebbe intercettare l'evento prima del banner padre. Componente custom <code>HolydayStudios.InfoButtonAnimation</code>; il figlio <code>spineInfo</code> è solo l'icona animata (Spine), non cliccabile a sé.</td></tr>
+    <tr><td class="path">guildInfo/guildName</td><td><span class="tag tag-txt">testo</span></td><td>Nome della gilda corrente.</td></tr>
+    <tr><td class="path">guildInfo/guildProgressBarBg</td><td>Image</td><td>Sfondo della barra di progresso/livello gilda.</td></tr>
+    <tr><td class="path">guildInfo/guildProgressBarBg/progressBarMask/guildProgressBarFill</td><td>Image (mascherata da <code>RectMask2D</code>)</td><td>Riempimento proporzionale della barra livello/esperienza gilda.</td></tr>
+    <tr><td class="path">guildInfo/guildProgressBarBg/guildLevelText</td><td><span class="tag tag-txt">testo</span></td><td>Numero di livello della gilda, testo localizzato.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Edifici e funzioni della gilda</h2>
+  <p class="region-path">Path: <code>{edificio}/</code> — schema comune: bottone principale (Spine + <code>MenuVfxEntityComponent</code> per l'animazione) + <code>textBg/text</code> (etichetta localizzata) + <code>textBg/notification/amountTMP</code> (badge contatore, con icona campanella animata) + <code>lock</code> (overlay se non ancora sbloccato). Le eccezioni allo schema sono indicate in Note.</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guildShop</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il negozio della gilda (schema standard: badge notifica + lock). Corrisponde alla schermata documentata in <a href="GuildShop.html">GuildShop</a>.</td></tr>
+    <tr><td class="path">goblinMerchant</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre l'offerta a tempo del "Mercante Goblin". Non segue lo schema standard: al posto di <code>text</code>/<code>notification</code> ha <code>textBg/timeLeft</code> (countdown), <code>textBg/saleText</code> (testo offerta) e <code>textBg/timerIcon</code>; componente custom <code>ChangingText</code>. Ha anche <code>Canvas</code>/<code>GraphicRaycaster</code> propri. Nessun <code>lock</code>. Non ancora documentato come schermata separata.</td></tr>
+    <tr><td class="path">guildHall</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la "Sala della Gilda" — funzione esatta non chiara dal solo nome (presumibile gestione membri/richieste/donazioni), verificare dal vivo. Schema notifica raddoppiato: ha sia <code>textBg/notification</code> che <code>textBg/notificationLogs</code> (probabile badge separato per un log/registro attività). Ha <code>lock</code>. Non ancora documentato come schermata separata.</td></tr>
+    <tr><td class="path">bank</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la tesoreria della gilda. Ha solo <code>textBg/notificationLogs</code> (nessun <code>notification</code> semplice) e <code>lock</code>. Corrisponde presumibilmente alla schermata documentata in <a href="GuildBank.html">GuildBank</a>.</td></tr>
+    <tr><td class="path">expeditions</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre le "Spedizioni" di gilda — funzione esatta non chiara dal solo nome (presumibile missione cooperativa a più membri), verificare dal vivo. Schema standard (notifica + lock). Non ancora documentata come schermata separata.</td></tr>
+    <tr><td class="path">treeOfLife</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre l'"Albero della Vita". A differenza degli altri non ha né <code>notification</code> né <code>lock</code> nel dump. Corrisponde alla schermata documentata in <a href="TreeOfLife.html">TreeOfLife</a>.</td></tr>
+    <tr><td class="path">chaosRift</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il "Chaos Rift". Nodo più complesso degli altri: oltre allo spine principale (<code>guildBossSpine</code>) ha un layer <code>guildBossSpineUnder</code> e un gruppo di <code>ParticleSystem</code> (<code>townGuildBossVFX</code>: ignition, flame, ember, sparks, smoke) per l'effetto fuoco del boss di gilda. Schema standard (notifica + lock). Corrisponde alla schermata documentata in <a href="ChaosRift.html">ChaosRift</a> (evento mensile guild vs guild).</td></tr>
+    <tr><td class="path">arcaneCrystal</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il "Cristallo Arcano" (schema standard: notifica + lock). Corrisponde alla schermata documentata in <a href="ArcaneCrystal.html">ArcaneCrystal</a>.</td></tr>
+    <tr><td class="path">awakening</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre il "Risveglio" eroi (schema standard: notifica + lock). Corrisponde alla schermata documentata in <a href="Awakening.html">Awakening</a>.</td></tr>
+    <tr><td class="path">forbiddenKnowledge</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la "Conoscenza Proibita" (schema standard: notifica + lock). Corrisponde alla schermata documentata in <a href="ForbiddenKnowledge.html">ForbiddenKnowledge</a>.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Decorazioni extra vicino agli edifici</h2>
+  <p class="region-path">Path: <code>expeditionsTree</code>, <code>goblinMerchantTree1..3</code>, <code>goblinMerchantBarrel1</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">expeditionsTree</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Albero animato (Spine) posizionato accanto all'edificio <code>expeditions</code>; probabile il "Tree9" mancante nella numerazione del gruppo <code>Trees N' Bushes</code>. Stessa presunta funzione puramente decorativa degli altri alberi, verificare dal vivo.</td></tr>
+    <tr><td class="path">goblinMerchantTree1, goblinMerchantTree2, goblinMerchantTree3</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Tre alberi animati (Spine) posizionati accanto al <code>goblinMerchant</code>, stessa presunta funzione decorativa.</td></tr>
+    <tr><td class="path">goblinMerchantBarrel1</td><td>Image</td><td>Barile decorativo statico vicino al mercante goblin, non cliccabile.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Chat di gilda</h2>
+  <p class="region-path">Path: <code>chat/</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">chat</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre la chat della gilda. Componente custom <code>ChatInteraction</code>. Il figlio <code>collider</code> (Image) è verosimilmente solo un'area di hit invisibile più grande dell'icona.</td></tr>
+    <tr><td class="path">chat/notification/amountTMP</td><td><span class="tag tag-txt">testo</span></td><td>Badge con il conteggio messaggi/notifiche non lette, dentro <code>chat/notification</code> (Image + <code>NotificationAnimation</code>).</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Ricerca gilda</h2>
+  <p class="region-path">Path: <code>guildFinder</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">guildFinder</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone con solo un'etichetta testuale (<code>text</code>, localizzata), verosimilmente "Trova/Cerca Gilda". Non risulta <code>(inactive)</code> nel dump, ma è plausibile che il controller lo mostri/nasconda dinamicamente a seconda che il giocatore sia già in una gilda o no — non verificabile dal solo dump statico.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Chiusura schermata e overlay</h2>
+  <p class="region-path">Path: <code>closeButton</code>, <code>overlay</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude la schermata gilda (torna probabilmente a <code>TownIrongard</code>). Componente <code>ButtonAnimation</code> per feedback visivo al tap; il figlio <code>icon</code> è solo l'immagine della X.</td></tr>
+    <tr><td class="path">overlay</td><td><span class="tag tag-off">inattivo</span></td><td>Image a piena schermata, disattiva di default — probabile overlay di oscuramento usato per popup o transizioni di stato, non chiaro dal solo nome, verificare dal vivo.</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/TownGuild</code>. Nota: il path radice è dedotto solo dal nome del GameObject, dal controller <code>TownGuildViewController</code> e dal fatto che la schermata si apre dal bottone "guild" di <code>TownIrongard</code> (schermata di tipo menu, non di battaglia), senza risalire la gerarchia della scena live — verificare con l'ispettore a runtime se serve un aggancio preciso. Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

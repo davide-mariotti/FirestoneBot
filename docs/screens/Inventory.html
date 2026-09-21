@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Inventario</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Inventario</div>
+  <h1>🎒 Inventario</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale</h2>
+  <p class="region-path">Path relativo alla radice: <code>Inventory/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">Inventory</td><td>Root, script <code>InventoryViewController</code></td><td>Nodo radice del popup, disattivo di default nel prefab (viene attivato quando l'utente apre l'inventario); il controller gestisce probabilmente il cambio tab e il refresh dei dati.</td></tr>
+      <tr><td class="path">background</td><td>Immagine</td><td>Sfondo decorativo del popup.</td></tr>
+      <tr><td class="path">titleText</td><td><span class="tag tag-txt">testo</span></td><td>Titolo del popup (testo localizzato via <code>I2.Loc.Localize</code>), es. "Inventario".</td></tr>
+      <tr><td class="path">description</td><td><span class="tag tag-txt">testo</span></td><td>Testo descrittivo/sottotitolo sotto il titolo, localizzato.</td></tr>
+      <tr><td class="path">closeButton</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Chiude il popup Inventario.</td></tr>
+      <tr><td class="path">closeButton/icon</td><td>Immagine</td><td>Icona (X) del pulsante di chiusura.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Tab dei sottomenu</h2>
+  <p class="region-path">Path relativo: <code>Inventory/submenuButtons/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenuButtons</td><td>Contenitore, <code>GridLayoutGroup</code></td><td>Barra dei quattro tab di categoria dell'inventario.</td></tr>
+      <tr><td class="path">submenuButtons/inventoryItems</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Oggetti" (consumabili/item vari).</td></tr>
+      <tr><td class="path">submenuButtons/inventoryItems/icon</td><td>Immagine</td><td>Icona del tab Oggetti.</td></tr>
+      <tr><td class="path">submenuButtons/scrolls</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Pergamene" (scrolls, es. potenziamenti a tempo come "Speed").</td></tr>
+      <tr><td class="path">submenuButtons/scrolls/icon</td><td>Immagine</td><td>Icona del tab Pergamene.</td></tr>
+      <tr><td class="path">submenuButtons/chests</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Forzieri" (chests).</td></tr>
+      <tr><td class="path">submenuButtons/chests/icon</td><td>Immagine</td><td>Icona del tab Forzieri.</td></tr>
+      <tr><td class="path">submenuButtons/currencies</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Seleziona il tab "Valute" (currencies).</td></tr>
+      <tr><td class="path">submenuButtons/currencies/icon</td><td>Immagine</td><td>Icona del tab Valute.</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Nel dump statico è presente un solo pannello contenuti (<code>submenus/items</code>): è probabile che i quattro tab non aprano pannelli separati ma filtrino gli elementi mostrati nella stessa griglia sottostante — da confermare osservando il comportamento a runtime.</p>
+</section>
+
+<section>
+  <h2>Griglia oggetti (contenuto scrollabile)</h2>
+  <p class="region-path">Path relativo: <code>Inventory/submenus/items/ScrollView/Viewport/Content/</code></p>
+  <table>
+    <thead><tr><th>Path</th><th>Tipo</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="path">submenus</td><td>Immagine</td><td>Contenitore dei pannelli sottomenu.</td></tr>
+      <tr><td class="path">submenus/items</td><td>Contenitore (nessun componente utile)</td><td>Pannello del tab "Oggetti"/griglia principale.</td></tr>
+      <tr><td class="path">submenus/items/ScrollView</td><td><code>ScrollRect</code></td><td>Area scrollabile della griglia oggetti.</td></tr>
+      <tr><td class="path">submenus/items/ScrollView/Viewport</td><td><code>RectMask2D</code></td><td>Maschera di ritaglio dello scroll (contenuti fuori area non visibili).</td></tr>
+      <tr><td class="path">submenus/items/ScrollView/Viewport/Content</td><td><code>GridLayoutGroup</code>, <code>ContentSizeFitter</code></td><td>Griglia che dispone dinamicamente le celle degli oggetti/slot sottostanti.</td></tr>
+
+      <tr><td class="path">Content/midasTouch</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Slot oggetto "Midas Touch" (<code>InventoryItemInteraction</code>); inattivo di default, probabilmente appare solo se posseduto/disponibile. Effetto esatto non chiaro dal nome, verificare dal vivo.</td></tr>
+      <tr><td class="path">Content/midasTouch/cooldownImg</td><td>Immagine</td><td>Overlay che indica il cooldown attivo sull'oggetto.</td></tr>
+      <tr><td class="path">Content/midasTouch/activeImg</td><td>Immagine</td><td>Overlay che indica l'effetto correntemente attivo.</td></tr>
+      <tr><td class="path">Content/midasTouch/itemFrame</td><td>Immagine</td><td>Cornice/bordo grafico dello slot.</td></tr>
+      <tr><td class="path">Content/midasTouch/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta dell'oggetto.</td></tr>
+
+      <tr><td class="path">Content/commonChestbox</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Slot "forziere comune" (<code>GearChestInteraction</code>): apre/consuma un forziere di equipaggiamento comune. Inattivo di default, compare solo in certe condizioni (probabilmente quando se ne possiede almeno uno).</td></tr>
+      <tr><td class="path">Content/commonChestbox/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità di forzieri comuni posseduti.</td></tr>
+
+      <tr><td class="path">Content/jewelChest</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Slot "forziere di gioielli" (<code>JewelChestInteraction</code>). Inattivo di default, condizionale come sopra.</td></tr>
+      <tr><td class="path">Content/jewelChest/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità di forzieri di gioielli posseduti.</td></tr>
+
+      <tr><td class="path">Content/celestialChest</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Slot "forziere celestiale" (<code>CelestialChestInteraction</code>), verosimilmente il forziere di rarità più alta. Inattivo di default, condizionale.</td></tr>
+      <tr><td class="path">Content/celestialChest/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità di forzieri celestiali posseduti.</td></tr>
+
+      <tr><td class="path">Content/StrangeDust</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Slot valuta "Strange Dust" (<code>CurrencyRewardInteraction</code>); probabilmente riscatta/mostra il dettaglio di questa valuta. Inattivo di default, condizionale.</td></tr>
+      <tr><td class="path">Content/StrangeDust/currencyImage</td><td>Immagine</td><td>Icona della valuta.</td></tr>
+      <tr><td class="path">Content/StrangeDust/itemFrame</td><td>Immagine</td><td>Cornice/bordo grafico dello slot.</td></tr>
+      <tr><td class="path">Content/StrangeDust/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta.</td></tr>
+
+      <tr><td class="path">Content/Speed</td><td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td><td>Slot pergamena "Speed" (<code>ScrollInteraction</code>), verosimilmente un consumabile che aumenta la velocità. Inattivo di default, condizionale.</td></tr>
+      <tr><td class="path">Content/Speed/scrollImg</td><td>Immagine</td><td>Icona della pergamena.</td></tr>
+      <tr><td class="path">Content/Speed/cooldownImg</td><td>Immagine <span class="tag tag-off">inattivo</span></td><td>Overlay di cooldown, attivato solo mentre l'effetto è in raffreddamento.</td></tr>
+      <tr><td class="path">Content/Speed/activeImg</td><td>Immagine <span class="tag tag-off">inattivo</span></td><td>Overlay che segnala l'effetto attualmente attivo.</td></tr>
+      <tr><td class="path">Content/Speed/itemFrame</td><td>Immagine</td><td>Cornice/bordo grafico dello slot.</td></tr>
+      <tr><td class="path">Content/Speed/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta.</td></tr>
+
+      <tr><td class="path">Content/mysteryBox</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot "scatola misteriosa" (<code>CurrencyInteraction</code>); attivo di default, a differenza degli altri slot. Apre/utilizza la mystery box.</td></tr>
+      <tr><td class="path">Content/mysteryBox/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta.</td></tr>
+
+      <tr><td class="path">Content/oraclesGift</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Slot "dono dell'Oracolo" (<code>CurrencyInteraction</code>); attivo di default. Funzione precisa non chiara dal solo nome, verificare dal vivo.</td></tr>
+      <tr><td class="path">Content/oraclesGift/quantity</td><td><span class="tag tag-txt">testo</span></td><td>Quantità posseduta.</td></tr>
+
+      <tr><td class="path">Content/emptySlot0</td><td>Immagine</td><td>Slot vuoto segnaposto, usato dal <code>GridLayoutGroup</code> per riempire la griglia quando gli elementi reali non la saturano.</td></tr>
+    </tbody>
+  </table>
+  <p class="note"><code>mysteryBox</code> e <code>oraclesGift</code> risultano attivi di default nel prefab, a differenza di tutti gli altri slot oggetto/forziere/pergamena/valuta che sono inattivi: probabile logica di visibilità condizionale gestita a runtime dal <code>InventoryViewController</code> in base al possesso/disponibilità di ciascun elemento.</p>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/Inventory</code> (stimato per nome del GameObject, non verificato risalendo la gerarchia della scena live — potrebbe differire). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>

@@ -1,0 +1,62 @@
+MainBattleview
+
+Profile
+battleRoot/battleMain/battleCanvas/SafeArea/topLeftSideUI/playerAvatar
+
+StageBar Text
+battleRoot/battleMain/battleCanvas/SafeArea/topSideUI/stageProgression/currentStage/stageNum
+battleRoot/battleMain/battleCanvas/SafeArea/topSideUI/stageProgression/nextStage/stageNum
+StageBar/ Button
+battleRoot/battleMain/battleCanvas/SafeArea/topSideUI/stageProgression/goBackStage
+battleRoot/battleMain/battleCanvas/SafeArea/topSideUI/stageProgression/goForthStage
+
+Settings
+battleRoot/battleMain/battleCanvas/SafeArea/topRightSideUINew/settingsButton
+
+Heroes
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/LeaderPanel/leaderPanelNew/lvlUpButtonBig
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/layout/battleEntitySlot (0)/lvlUpButtonBig
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/layout/battleEntitySlot (1)/lvlUpButtonBig
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/layout/battleEntitySlot (2)/lvlUpButtonBig
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/layout/battleEntitySlot (3)/lvlUpButtonBig
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/layout/battleEntitySlot (4)/lvlUpButtonBig
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/layout/battleEntitySlot (5)/lvlUpButtonBig
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUINew/bgBlack/rightSide/changeLevelUpModeButton
+
+Party
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop/menuButtons/partyButtonUI
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop/menuButtons/fellowshipButtonUI
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop/menuButtons/inventoryButtonUI
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop/menuButtons/upgradesButtonUI
+
+RightMenu
+battleRoot/battleMain/battleCanvas/SafeArea/rightSideUI/menuButtons/townButton
+battleRoot/battleMain/battleCanvas/SafeArea/rightSideUI/menuButtons/mapButton
+battleRoot/battleMain/battleCanvas/SafeArea/rightSideUI/menuButtons/guildButton
+battleRoot/battleMain/battleCanvas/SafeArea/rightSideUI/menuButtons/storeButton
+RightMenuButton
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop/pathOfGloryButton
+battleRoot/battleMain/battleCanvas/SafeArea/bottomSideUIDesktop/eventsButton
+
+Notify
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/BeerExchange
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/Engineer
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/WarfrontCampaign
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/FreePickaxes
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/Expeditions
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/Quests
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/GuardianTraining
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/MeteoriteResearch
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/FirestoneResearch
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/TemplePrestige
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/Experiments
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/TalentAvailable
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/OracleRituals
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/OraclesGift
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/MapMissions
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/CheckIn
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/MysteryBox
+battleRoot/battleMain/battleCanvas/SafeArea/leftSideUI/notifications/Viewport/grid/ScarabGame
+
+Chat
+battleRoot/battleMain/battleCanvas/SafeArea/bottomLeftSideUI/mail

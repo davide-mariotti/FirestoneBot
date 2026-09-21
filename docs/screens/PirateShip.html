@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Firestone — Nave dei Pirati</title>
+<style>
+  :root {
+    --bg: #14161c; --panel: #1d2029; --border: #2c3040; --text: #e8e9ee;
+    --muted: #9aa0b4; --accent: #f2b84b; --btn: #4fc3f7; --warn: #ef5350; --ok: #66bb6a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; }
+  header { position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 20px; z-index: 10; }
+  h1 { margin: 0 0 4px; font-size: 1.3rem; }
+  .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .sub { color: var(--muted); font-size: 0.82rem; max-width: 900px; }
+  .sub code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  section { margin-bottom: 36px; }
+  section h2 { font-size: 1.05rem; border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-bottom: 4px; }
+  .region-path { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  .region-path code { color: var(--btn); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; font-size: 0.82rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: rgba(255,255,255,0.03); }
+  tr:last-child td { border-bottom: none; }
+  td.path { font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; }
+  .tag { display: inline-block; font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  .tag-btn { background: rgba(79,195,247,0.15); color: var(--btn); border: 1px solid var(--btn); }
+  .tag-txt { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+  .tag-off { background: rgba(239,83,80,0.1); color: var(--warn); border: 1px solid var(--warn); }
+  .note { color: var(--muted); font-size: 0.78rem; }
+  footer { color: var(--muted); font-size: 0.78rem; padding: 24px 20px 50px; max-width: 1100px; margin: 0 auto; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7fb; --panel: #ffffff; --border: #e1e4ee; --text: #1c1e26;
+      --muted: #6b7080; --accent: #c9861f; --btn: #0288d1; --warn: #c62828; --ok: #2e7d32;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb"><a href="../index.html">Indice</a> / Nave dei Pirati</div>
+  <h1>🏴‍☠️ Nave dei Pirati</h1>
+  <p class="sub">Estratta senza avviare il gioco, analizzando staticamente <code>Firestone_Data/resources.assets</code>. Ogni riga è un GameObject reale del prefab di questa schermata (<code>PirateShipViewController</code>, 722 nodi, 52 bottoni). La schermata ha 4 tab/sottomenu (Bottino dei Pirati, Mercenari, Skin Nave, Offerta Personalizzata) più una barra valuta e un pulsante di chiusura; a differenza degli altri sottomenu, "Offerta Personalizzata" risulta attivo di default nel prefab, quindi è probabilmente il contenuto mostrato all'apertura della schermata.</p>
+</header>
+<main>
+
+<section>
+  <h2>Struttura generale</h2>
+  <p class="region-path">Path: <code>(radice)</code> / <code>bgElements</code> / <code>bg</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">PirateShip</td>
+      <td>controller <span class="tag tag-off">inattivo</span></td>
+      <td>Radice della schermata (<code>PirateShipViewController</code>); risulta disattiva nel prefab perché viene istanziata/attivata dinamicamente all'apertura.</td>
+    </tr>
+    <tr>
+      <td class="path">bgElements/bgSea, bgElements/PirateShipWaves, bgElements/PirateShipBGSeagull</td>
+      <td>immagine + particellari</td>
+      <td>Fondale marino e effetti particellari decorativi (onde, gabbiani), nessuna interazione.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/Ship</td>
+      <td>animazione Spine</td>
+      <td>Illustrazione animata della nave dei pirati sullo sfondo della schermata.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons</td>
+      <td>container</td>
+      <td>Barra dei tab in alto, vedi sezione dedicata sotto.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenus</td>
+      <td>container</td>
+      <td>Contiene i 4 pannelli di contenuto (uno per tab), vedi sezioni dedicate sotto.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Barra dei tab (sottomenu)</h2>
+  <p class="region-path">Path: <code>bg/submenuButtons</code> — un bottone per ciascun sottomenu, disposti in griglia orizzontale</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/submenuButtons/piratesPrize/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Bottino dei Pirati" (<code>submenus/piratesPrize</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/mercenaries/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Mercenari" (<code>submenus/mercenaries</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/mercenaries/button/text/lock, .../customizedOffer/button/text/lock</td>
+      <td>icona <span class="tag tag-off">inattivo</span></td>
+      <td>Lucchetto mostrato sul tab quando il relativo contenuto non è ancora sbloccato.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/skins</td>
+      <td>container <span class="tag tag-off">inattivo</span></td>
+      <td>L'intero tab "Skin Nave" risulta disattivo nel prefab: probabilmente il tab compare solo quando la funzionalità skin è sbloccata.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/skins/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Skin Nave" (<code>submenus/skins</code>), quando il tab è visibile.</td>
+    </tr>
+    <tr>
+      <td class="path">bg/submenuButtons/customizedOffer/button</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre il sottomenu "Offerta Personalizzata" (<code>submenus/customizedOffer</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">.../button/text/notification/bell, .../notification/amountTMP</td>
+      <td>animazione + <span class="tag tag-txt">testo</span></td>
+      <td>Pattern comune a piratesPrize/mercenaries/customizedOffer: campanella + contatore che segnala novità/ricompense disponibili nel sottomenu.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Mercenari" (mercenaries)</h2>
+  <p class="region-path">Path: <code>bg/submenus/mercenaries</code> (<code>MercenariesSubmenuViewController</code>, inattivo finché non selezionato) → <code>scrollView/viewport/content/mercenaryCard</code> (template, <code>MercenaryCardInteraction</code>) + <code>purchasePanel</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">.../mercenaryCard/bg/panel</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Seleziona la card del mercenario nella lista scorrevole.</td>
+    </tr>
+    <tr>
+      <td class="path">.../mercenaryCard/header (+ classText, nameText)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Intestazione della card con classe e nome del mercenario; cliccabile, probabilmente apre un dettaglio.</td>
+    </tr>
+    <tr>
+      <td class="path">.../mercenaryCard/header/viewIcon</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Mostra l'anteprima/scheda del mercenario a schermo intero.</td>
+    </tr>
+    <tr>
+      <td class="path">.../mercenaryCard/header/tickIcon</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Spunta di conferma/selezione sulla card; funzione esatta non chiara dal nome, verificare dal vivo.</td>
+    </tr>
+    <tr>
+      <td class="path">.../mercenaryCard/attributes/attributeDamageBg, attributeStyleBg, attributeResourceBg (+ attributeIcon)</td>
+      <td>container (<code>AttributeInteraction</code>, non cliccabile)</td>
+      <td>Tre icone-attributo del mercenario (danno, stile, risorsa).</td>
+    </tr>
+    <tr>
+      <td class="path">.../mercenaryCard/claimedObj/claimedText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "riscattato/posseduto" mostrata sulla card del mercenario già ottenuto.</td>
+    </tr>
+    <tr>
+      <td class="path">selectMercenary (+ selectMercenaryText)</td>
+      <td>container <span class="tag tag-off">inattivo</span></td>
+      <td>Messaggio "seleziona un mercenario" mostrato quando nessuna card è ancora selezionata.</td>
+    </tr>
+    <tr>
+      <td class="path">purchasePanel/mercenaryAvatarBg/mercenaryAvatar, purchasePanel/recruitText</td>
+      <td>immagine + <span class="tag tag-txt">testo</span></td>
+      <td>Ritratto e testo "recluta" del mercenario attualmente selezionato.</td>
+    </tr>
+    <tr>
+      <td class="path">purchasePanel/purchaseButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Recluta/acquista il mercenario selezionato. Il prezzo mostrato varia tra tre varianti mutuamente esclusive del figlio: <code>discounted</code> e <code>fullPrice</code> (con <code>crossLine</code> barrato) partono <span class="tag tag-off">inattivi</span>, <code>normal</code> è attivo di default — probabilmente <code>discounted</code>/<code>fullPrice</code> si attivano insieme durante un'offerta a tempo.</td>
+    </tr>
+    <tr>
+      <td class="path">purchasePanel/firstPurchaseText</td>
+      <td><span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td>
+      <td>Messaggio mostrato solo sul primo acquisto (probabile bonus/sconto "prima volta").</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Bottino dei Pirati" (piratesPrize)</h2>
+  <p class="region-path">Path: <code>bg/submenus/piratesPrize</code> (<code>PiratesPrizeSubmenuViewController</code>, inattivo finché non selezionato) — un pass a livelli (tier) con premi gratuiti e a pagamento, navigabile con frecce</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">navigator/tierText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Numero/nome del livello (tier) attualmente inquadrato.</td>
+    </tr>
+    <tr>
+      <td class="path">navigator/leftArrow, navigator/rightArrow (+ notification/bell, amountTMP)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Scorrono la visuale dei livelli indietro/avanti (<code>RepeatAction</code>: tenendo premuto probabilmente scorre a ripetizione); il pallino di notifica segnala premi da riscattare in quella direzione.</td>
+    </tr>
+    <tr>
+      <td class="path">.../content/previousSection/previousTierInteraction (+ title, tier)</td>
+      <td>container (<code>PPpreviousTierInteraction</code>)</td>
+      <td>Riepilogo del livello precedente già superato, con nome e numero tier.</td>
+    </tr>
+    <tr>
+      <td class="path">.../previousTierInteraction/gridLayout/gameItemRewardInteraction</td>
+      <td>container (<code>GameItemRewardInteraction</code>)</td>
+      <td>Slot ricompensa del livello precedente: icona (<code>rewardIcon</code>/<code>chestIcon</code>), quantità, stato "riscattabile" (<code>canClaim</code>) o "già riscattato" (<code>claimedFrame</code>+<code>tick</code>), tutti inattivi di default e attivati in base allo stato reale.</td>
+    </tr>
+    <tr>
+      <td class="path">.../previousTierInteraction/purchasePrice</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Riscatta/sblocca in un colpo solo i premi mancanti del livello precedente (currencyHolder/currencyIcon + purchaseCost mostrano il costo).</td>
+    </tr>
+    <tr>
+      <td class="path">.../content/currentSection/paidRewardsButton (+ title)</td>
+      <td>container</td>
+      <td>Riepilogo della fascia premium (a pagamento) del livello corrente.</td>
+    </tr>
+    <tr>
+      <td class="path">.../paidRewardsButton/purchasePrice</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista/sblocca la fascia premium del pass (currencyHolder + saleFrame/textHolder con eventuale sconto).</td>
+    </tr>
+    <tr>
+      <td class="path">.../currentSection/freeRewards/title, currentSection/levelBg/level</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo della fascia gratuita e numero di livello del giocatore mostrato al centro della sezione corrente.</td>
+    </tr>
+    <tr>
+      <td class="path">.../rewardsTierSection/ppTierInteraction (<code>PPTierInteraction</code>)</td>
+      <td>container, ripetuto per ogni livello del pass</td>
+      <td>Blocco di un singolo livello: colonna premi a pagamento + colonna premi gratuiti + indicatore di progresso.</td>
+    </tr>
+    <tr>
+      <td class="path">.../ppTierInteraction/piratesPrizePaidInteraction (+ stars/star ×4, gameItemRewardInteraction)</td>
+      <td>container</td>
+      <td>Premio della fascia a pagamento del livello, con stelle decorative e slot ricompensa (stesso pattern <code>gameItemRewardInteraction</code> di sopra); il <code>lock</code> qui è <span class="tag tag-off">inattivo</span> di default.</td>
+    </tr>
+    <tr>
+      <td class="path">.../piratesPrizePaidInteraction/purchasePremiumButton (+ textCurrency)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Sblocca la fascia premium per riscattare questo specifico premio a pagamento.</td>
+    </tr>
+    <tr>
+      <td class="path">.../ppTierInteraction/piratesPrizeFreeInteraction (+ gameItemRewardInteraction)</td>
+      <td>container</td>
+      <td>Premio della fascia gratuita del livello, stesso pattern di slot ricompensa; qui il <code>lock</code> è attivo di default (mostrato finché il livello non è raggiunto).</td>
+    </tr>
+    <tr>
+      <td class="path">.../piratesPrizeFreeInteraction/purchaseFreeButton (+ textCurrency)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Riscatta il premio gratuito del livello (nonostante il nome "purchase", il testo suggerisce sia il claim della fascia free, o uno sblocco anticipato a pagamento — verificare dal vivo).</td>
+    </tr>
+    <tr>
+      <td class="path">.../rewardsTierSection/progressBarBg (+ progressBarMask/progressBarFill)</td>
+      <td>barra di progresso</td>
+      <td>Barra di avanzamento verso il livello successivo del pass.</td>
+    </tr>
+    <tr>
+      <td class="path">.../progressBarBg/circleBg (+ circleCompleted, level) (<code>PPprogressBarInteraction</code>)</td>
+      <td>container</td>
+      <td>Indicatore circolare con il numero di livello, sul bordo della barra di progresso.</td>
+    </tr>
+    <tr>
+      <td class="path">missingClaimsButtonLeft, missingClaimsButtonRight (+ missingClaims)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Saltano rispettivamente al premio non riscattato più vicino a sinistra/destra nella timeline dei livelli (effetto Spine di richiamo visivo).</td>
+    </tr>
+    <tr>
+      <td class="path">banner/bannerText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Banner informativo/promozionale in cima al sottomenu.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Skin Nave" (skins)</h2>
+  <p class="region-path">Path: <code>bg/submenus/skins</code> (<code>PirateShipSkinsSubmenuViewController</code>, inattivo finché non selezionato) → <code>scrollView/viewport/content/skinInteraction (0)</code> ×2 (slot 0-1, <code>PirateShipSkinMoneyInteraction</code>, tutti strutturalmente identici)</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">skinInteraction (0..1)/purchaseButton (+ bg/glow, bg/panelUnlocked, rays, spine)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Card della skin nave: selezionabile/acquistabile; mostra l'anteprima animata (spine) della skin.</td>
+    </tr>
+    <tr>
+      <td class="path">.../purchaseButton/header/nameText, header/titleText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Nome e sottotitolo della skin.</td>
+    </tr>
+    <tr>
+      <td class="path">.../purchaseButton/header/viewIcon</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Mostra un'anteprima ingrandita della skin.</td>
+    </tr>
+    <tr>
+      <td class="path">.../purchaseButton/unlockedObj/claimedText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "sbloccata/posseduta" mostrata al posto del prezzo quando la skin è già ottenuta.</td>
+    </tr>
+    <tr>
+      <td class="path">.../purchaseButton/requirementsObj/currencyHolder (+ currencyIcon, purchaseCost)</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Costo/requisito per sbloccare la skin, mostrato quando non ancora posseduta.</td>
+    </tr>
+    <tr>
+      <td class="path">tip/selectMercenaryText</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Testo di suggerimento in fondo al sottomenu; il nome del nodo ("selectMercenaryText") sembra riciclato da un altro sottomenu — il contenuto reale va verificato dal vivo.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Sottomenu "Offerta Personalizzata" (customizedOffer)</h2>
+  <p class="region-path">Path: <code>bg/submenus/customizedOffer</code> (<code>PirateShipCustomizedOfferSubmenuViewController</code>, <strong>attivo di default</strong> nel prefab, a differenza degli altri 3 sottomenu) — un bundle "componi la tua offerta" a più fasi (step1-step4) più un'anteprima e uno stato "già acquistato"</p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">offerPreview/info/textHeader, offerPreview/info/textFooter, offerPreview/title</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo dell'offerta e testi introduttivo/di chiusura dell'anteprima.</td>
+    </tr>
+    <tr>
+      <td class="path">offerPreview/info/options/reward (0..4)</td>
+      <td>container (<code>GameItemRewardInteraction</code>) ×5 (slot 0-4)</td>
+      <td>Anteprima delle ricompense già confermate nel bundle (icona + quantità), non cliccabili in questa vista.</td>
+    </tr>
+    <tr>
+      <td class="path">offerPreview/info/options/dummyItem (0..4)</td>
+      <td>immagine <span class="tag tag-off">inattivo</span> ×5 (slot 0-4)</td>
+      <td>Segnaposto con punto interrogativo per uno slot ricompensa non ancora scelto dal giocatore.</td>
+    </tr>
+    <tr>
+      <td class="path">offerPreview/purchaseButton (+ priceHolder/realCurrencyIcon, purchaseCost)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Acquista in valuta reale l'offerta personalizzata così come composta.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step1/header/title, steps/step1/desc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo e descrizione del primo passo di composizione dell'offerta.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step1/offers/offer (0..3) (+ selected/frame, selected/tick, text, icon)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> ×4 (slot 0-3)</td>
+      <td>Sceglie una delle 4 opzioni/categorie di partenza per l'offerta; <code>selected</code> evidenzia l'opzione scelta.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step2/header/title, steps/step2/desc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo e descrizione del secondo passo.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step2/options/option1 (+ frame/tick, reward)</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Prima alternativa del passo 2: un singolo premio (<code>reward</code> è a sua volta un bottone che inoltra il tocco al genitore tramite <code>ForwardPointerToParentButton</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step2/options/div (1)/or</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Separatore "OPPURE" tra le due alternative del passo 2.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step2/options/option2 (+ frame/tick, reward, plus, reward (1))</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Seconda alternativa del passo 2: un pacchetto con due premi (<code>reward</code> + <code>reward (1)</code> separati da <code>plus</code>).</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step3/header/title, steps/step3/desc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo e descrizione del terzo passo.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step3/rewards/reward (0..11) (+ frame, rewardIcon, quantity, selected/itemFrame+tick)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> ×12 (slot 0-11, <code>GameItemRewardCustomizedOfferInteraction</code>)</td>
+      <td>Griglia di 12 oggetti tra cui scegliere per il passo 3; <code>selected</code> evidenzia gli slot scelti.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step4/header/title, steps/step4/desc</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Titolo e descrizione del quarto e ultimo passo.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/step4/rewards/reward (0..3)</td>
+      <td><span class="tag tag-btn">BOTTONE</span> ×4 (slot 0-3)</td>
+      <td>Griglia di 4 oggetti tra cui scegliere per il passo 4, stesso pattern del passo 3.</td>
+    </tr>
+    <tr>
+      <td class="path">steps/plus1, steps/plus2</td>
+      <td>icona decorativa</td>
+      <td>Simboli "+" mostrati tra i blocchi step, nessuna interazione.</td>
+    </tr>
+    <tr>
+      <td class="path">offerPurchased (+ Graphics/offerName, Graphics/title)</td>
+      <td>container <span class="tag tag-off">inattivo</span> (<code>ValueBundleInteraction</code>)</td>
+      <td>Schermata di riepilogo mostrata dopo l'acquisto, al posto degli step, con nome e titolo dell'offerta comprata.</td>
+    </tr>
+    <tr>
+      <td class="path">offerPurchased/Graphics/mainBG/products/reward (0..4)</td>
+      <td>container (<code>GameItemRewardInteraction</code>) ×5 (slot 0-4)</td>
+      <td>Elenco delle ricompense effettivamente incluse nel bundle acquistato.</td>
+    </tr>
+    <tr>
+      <td class="path">offerPurchased/Graphics/mainBG/claimedBG/claimedObj (+ text, tickImg)</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Etichetta "riscattato" con spunta sul riepilogo dell'offerta acquistata.</td>
+    </tr>
+    <tr>
+      <td class="path">offerPurchased/Graphics/oraclesGift (+ oraclesGiftIcon, quantity)</td>
+      <td>container (<code>GenericInfoInteraction</code>, non cliccabile)</td>
+      <td>Ricompensa bonus "dono dell'oracolo" inclusa nel bundle acquistato.</td>
+    </tr>
+    <tr>
+      <td class="path">timerBG/timeText, timerBG/timeLeft</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Conto alla rovescia prima della scadenza dell'offerta personalizzata.</td>
+    </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Valuta e chiusura</h2>
+  <p class="region-path">Path: <code>bg/infoButton</code>, <code>bg/counters</code>, <code>closeButton</code></p>
+  <table>
+    <tr><th>Path</th><th>Tipo</th><th>Note</th></tr>
+    <tr>
+      <td class="path">bg/infoButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Apre un popup informativo sulla schermata "Nave dei Pirati".</td>
+    </tr>
+    <tr>
+      <td class="path">bg/counters/counterInteraction/bg, .../counterInteraction/icon</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Area e icona del contatore valuta (<code>CounterInteraction</code> sul nodo padre); cliccabile, funzione non chiara dal nome, verificare dal vivo (probabile apertura popup di dettaglio/acquisto valuta).</td>
+    </tr>
+    <tr>
+      <td class="path">.../counterInteraction/quantity, .../quantityAdded</td>
+      <td><span class="tag tag-txt">testo</span></td>
+      <td>Saldo attuale della valuta e variazione mostrata in animazione quando cambia.</td>
+    </tr>
+    <tr>
+      <td class="path">.../counterInteraction/getMore</td>
+      <td><span class="tag tag-btn">BOTTONE</span> <span class="tag tag-off">inattivo</span></td>
+      <td>Bottone "Ottieni di più", presumibilmente attivato solo quando il saldo è insufficiente per un acquisto in corso.</td>
+    </tr>
+    <tr>
+      <td class="path">closeButton</td>
+      <td><span class="tag tag-btn">BOTTONE</span></td>
+      <td>Chiude la schermata "Nave dei Pirati".</td>
+    </tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Path radice completo: <code>menusRoot/menuCanvasParent/SafeArea/menuCanvas/menus/PirateShip</code> (stima non verificata: il dump è stato ottenuto solo dal nome del GameObject "PirateShip", senza risalire la gerarchia della scena live — trattandosi di una schermata con bottoni di navigazione/valuta e chiusura tipici dei menu classici, e non di un overlay agganciato alla battaglia, il path più probabile è quello dei menu principali). Vedi anche la <a href="../path.firestone.html">schermata di battaglia</a>.
+</footer>
+</body>
+</html>
