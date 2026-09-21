@@ -20,6 +20,17 @@ public static partial class Paths
                 public const string DailyRewardsBtn = Root + "/dailyRewardsButton";
 
                 public const string ValueBundleDailyBtn = Root + "/valueBundleDailyButton";
+
+                // "Pacchetti Speciali" ("Extreme Value Bundle") - a SEPARATE tab from
+                // ValueBundleDailyBtn above, confirmed via docs/screens/Store.html
+                // (grid/valueBundleButton opens submenu "extremeValueBundles"). This tab has its own
+                // independent free mystery box (see ExtremeValueBundlesLoc below) that the daily-tab
+                // claim never touches - root cause of the claim never firing on accounts that land on
+                // this tab (2026-09-21 live diagnostic: Steam-1's badge stayed lit and
+                // DailyStoreOffersTask kept re-triggering off Notifications.MysteryBox every ~8s
+                // without ever clearing it, while Steam-0 - which had already bought the paid
+                // extremeValueBundle - showed valueBundleDaily instead and claimed fine).
+                public const string ValueBundleBtn = Root + "/valueBundleButton";
             }
 
             public static class DailyRewardsLoc
@@ -42,6 +53,23 @@ public static partial class Paths
                     Root + "/Scroll View/Viewport/bundles/mysteryBox/Graphics/purchaseButton";
 
                 public const string RenewTxt = Root + "/timeRenewBackground/renewText";
+            }
+
+            // "Pacchetti Speciali" tab (opened via TabsLoc.ValueBundleBtn) - confirmed via
+            // docs/screens/Store.html: "extremeValueBundles/bundles" is a fixed HorizontalLayoutGroup
+            // row (not a ScrollView like ValueBundleDailyLoc) holding exactly two fixed cards,
+            // "mysteryBox" and "extremeValueBundle". Same claim-button shape as ValueBundleDailyLoc's
+            // mysteryBox (purchaseButton + priceHolder/freeText when free, claimedBG/claimedObj once
+            // claimed) but a genuinely separate GameObject/claim state from it - both must be claimed
+            // independently.
+            public static class ExtremeValueBundlesLoc
+            {
+                private const string Root = StoreLoc.Root + "/bg/submenus/extremeValueBundles/bundles";
+
+                // The free mystery box card - NOT "extremeValueBundle" (the sibling card in this same
+                // row), which is the real-money paid bundle and must never be auto-clicked, same rule
+                // as ValueBundleDailyLoc's numbered valueBundle slots.
+                public const string FreeMysteryBoxBtn = Root + "/mysteryBox/Graphics/purchaseButton";
             }
         }
 

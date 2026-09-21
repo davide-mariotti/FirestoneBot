@@ -37,4 +37,17 @@ public static class Store
 
     public static DateTime ValueBundleDailyRenewTime =>
         new GameText(Paths.MenusLoc.StoreLoc.ValueBundleDailyLoc.RenewTxt).Time;
+
+    // "Pacchetti Speciali" tab - a separate tab from ValueBundleDaily above, with its own
+    // independent free mystery box (see Paths.MenusLoc.StoreLoc.ExtremeValueBundlesLoc's doc
+    // comment for why this is a distinct claim rather than a duplicate of ClaimFreeMysteryBox).
+    public static IEnumerator OpenExtremeValueBundleTab =>
+        new GameButton(Paths.MenusLoc.StoreLoc.TabsLoc.ValueBundleBtn).Click();
+
+    /// <summary>
+    ///     Claims ONLY the free mystery box card in this tab. The sibling "extremeValueBundle" card
+    ///     is a real-money purchase - never wire that up here.
+    /// </summary>
+    public static IEnumerator ClaimFreeMysteryBoxExtreme =>
+        new GameButton(Paths.MenusLoc.StoreLoc.ExtremeValueBundlesLoc.FreeMysteryBoxBtn).Click();
 }

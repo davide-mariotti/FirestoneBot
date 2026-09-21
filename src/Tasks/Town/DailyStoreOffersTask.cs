@@ -64,6 +64,13 @@ public class DailyStoreOffersTask : BotTask
         yield return Store.ClaimFreeMysteryBox;
         var mysteryBoxNext = Store.ValueBundleDailyRenewTime;
 
+        // Separate tab, separate free mystery box - see Store.ClaimFreeMysteryBoxExtreme's doc
+        // comment. Root cause of the claim never firing on some accounts: this tab was never opened
+        // at all before, so its independent claim state was left untouched regardless of what
+        // happened in valueBundleDaily above.
+        yield return Store.OpenExtremeValueBundleTab;
+        yield return Store.ClaimFreeMysteryBoxExtreme;
+
         yield return Store.Close;
 
         NextRunTime = EarliestValid(checkInNext, mysteryBoxNext) ?? DateTime.Now + FallbackRetryDelay;
