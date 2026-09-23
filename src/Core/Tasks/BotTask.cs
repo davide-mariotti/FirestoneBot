@@ -32,7 +32,8 @@ public enum TaskGroup
     Map,
     Warfront,
     Character,
-    ScarabGame
+    ScarabGame,
+    Events
 }
 
 public abstract class BotTask

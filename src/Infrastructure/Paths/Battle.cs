@@ -267,6 +267,13 @@ public static partial class Paths
             public const string InventoryBtn = Root + "/menuButtons/inventoryButtonUI";
 
             public const string PartyBtn = Root + "/menuButtons/partyButtonUI";
+
+            // Confirmed present in the same offersLayout row as PathOfGloryBtn (per this class's own
+            // comment above), never wired to any task until now (2026-09-23). Unlike PathOfGlory,
+            // no BottomSideUIDesktopLoc/RightSideUILoc sibling is confirmed for this one yet - only
+            // this single location, so EventManager.Open can't use the same tri-fallback
+            // UiVariantButton pattern until/if those turn out to exist too.
+            public const string EventsBtn = Root + "/offersLayout/eventsButton";
         }
 
         public static class BottomSideUINewLoc
