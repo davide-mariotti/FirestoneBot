@@ -7,9 +7,15 @@ namespace Firebot.Infrastructure;
 ///     account the user has access to right now - New Player Event is a one-time onboarding event,
 ///     not one of the recurring seasonal ones (Halloween/Winter/Valentine's/Spring/Tropicana/Space)
 ///     the user wants covered long-term, and had already ended on the account first screenshotted.
-///     Root mounts (EventManagerLoc, DecoratedHeroesShopLoc) are inferred by analogy with every other
-///     full-screen menu in this codebase ("menus/X", not "popups/X") - not yet observed live, same
-///     caveat as ChaosRiftLoc/FrostfireFestival's own doc comments about this exact class of guess.
+///     Root mounts (EventManagerLoc, DecoratedHeroesShopLoc) live under "events/", NOT "menus/" like
+///     most other full-screen menus in this codebase - the initial guess assumed the usual "menus/X"
+///     convention and was wrong. Live-confirmed, 2026-09-23, via Watchdog's own generic sweep: it
+///     dynamically enumerates the REAL live children of menusRoot/.../menuCanvas/events (see
+///     Paths.WatchdogLoc.EventsRoot) and found "EventManager" and "DecoratedHeroesShop" listed there
+///     by name - not a guess, an actual runtime child-name dump, the same kind of ground truth this
+///     codebase's diagnostic dumps elsewhere are built from. (This also explains the pre-existing
+///     "events/DecoratedHeroesPromotion" nuisance-popup path already seen in earlier Watchdog
+///     activity - same root, a different one-time promo popup, unrelated to this event's own shop.)
 ///     Designed to be reusable: EventManagerLoc/EventManager (GameModel) are fully generic (any
 ///     event's hub card), only a per-event shop screen like DecoratedHeroesShopLoc needs to be added
 ///     per new event, reusing the same Challenges/Exchange shapes.
@@ -18,7 +24,7 @@ public static partial class Paths
 {
     public static class EventManagerLoc
     {
-        public const string Root = MenusLoc.Root + "/menus/EventManager";
+        public const string Root = MenusLoc.Root + "/events/EventManager";
 
         public const string CloseBtn = Root + "/bg/closeButton";
 
@@ -46,7 +52,7 @@ public static partial class Paths
     /// </summary>
     public static class DecoratedHeroesShopLoc
     {
-        public const string Root = MenusLoc.Root + "/menus/DecoratedHeroesShop";
+        public const string Root = MenusLoc.Root + "/events/DecoratedHeroesShop";
 
         public const string CloseBtn = Root + "/bg/closeButton";
 

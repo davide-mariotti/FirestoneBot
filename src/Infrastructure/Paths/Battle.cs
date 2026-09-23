@@ -193,6 +193,16 @@ public static partial class Paths
             public const string PathOfGloryBtn = Root + "/pathOfGloryButton";
 
             public const string PathOfGloryNotification = PathOfGloryBtn + "/notification";
+
+            // Live-confirmed, 2026-09-23, via a recursive live scan (4 manual diagnostic rounds on
+            // both known bottom-bar variants and their sub-containers all came up empty first -
+            // docs/path.firestone.html's static dump placing eventsButton inside bottomSideUIDesktop
+            // is stale/incomplete, likely predating this button being added here instead): real,
+            // active children on that session were "spineEvents" (icon animation) and "eventText"
+            // (label) - no "notification" child, so unlike PathOfGlory this button doesn't double as
+            // its own badge. Same reasoning as PathOfGloryBtn above for why every known location is
+            // tried via UiVariantButton rather than assuming this one location is "the" active one.
+            public const string EventsBtn = Root + "/eventsButton";
         }
 
         // A third, independent live-confirmed location for Inventory/Party (2026-09-17 recursive
@@ -248,6 +258,15 @@ public static partial class Paths
             // same menuButtons row as InventoryBtn above (not independently confirmed live, but high
             // confidence given InventoryBtn's confirmation covers this exact HUD region).
             public const string PartyBtn = Root + "/menuButtons/partyButtonUI";
+
+            // Live-confirmed, 2026-09-23 (docs/path.firestone.html's own static dump, section
+            // #hud-desktop): a DIRECT child of this root here, unlike BottomSideUIMobileLoc's
+            // "offersLayout/eventsButton" - the two variants don't share the same sub-path for this
+            // button. Root-caused EventManager.Open never opening anything on this client: it only
+            // tried the Mobile variant (hidden/inactive here, per BottomSideUIMobileLoc's own doc
+            // comment predicting exactly this gap), so every path under menus/EventManager downstream
+            // resolved as fully broken since the hub was never actually opened.
+            public const string EventsBtn = Root + "/eventsButton";
         }
 
         // The "Mobile" HUD variant - live-confirmed (PathOfGloryTask diagnostic, 2026-09-17) as the
@@ -269,10 +288,12 @@ public static partial class Paths
             public const string PartyBtn = Root + "/menuButtons/partyButtonUI";
 
             // Confirmed present in the same offersLayout row as PathOfGloryBtn (per this class's own
-            // comment above), never wired to any task until now (2026-09-23). Unlike PathOfGlory,
-            // no BottomSideUIDesktopLoc/RightSideUILoc sibling is confirmed for this one yet - only
-            // this single location, so EventManager.Open can't use the same tri-fallback
-            // UiVariantButton pattern until/if those turn out to exist too.
+            // comment above). A BottomSideUIDesktopLoc sibling IS confirmed too (see its own doc
+            // comment, added 2026-09-23 after this Mobile-only version turned out inactive - no
+            // hidden/inactive - on a live Desktop-variant client) - EventManager.Open tries both, same
+            // UiVariantButton pattern as BattlePass.Open. No RightSideUILoc sibling exists for this one
+            // per docs/path.firestone.html's own explicit note that Events/Battle Pass live only under
+            // the bottom bar, not the right-side menu.
             public const string EventsBtn = Root + "/offersLayout/eventsButton";
         }
 

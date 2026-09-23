@@ -5,6 +5,7 @@ using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
+using UnityEngine;
 
 namespace Firebot.GameModel.Features.Events;
 
@@ -18,8 +19,49 @@ public static class EventManager
 {
     public static bool IsVisible => new GameElement(Paths.EventManagerLoc.Root).IsVisible();
 
-    public static IEnumerator Open =>
-        new GameButton(Paths.BattleLoc.BottomSideUIMobileLoc.EventsBtn).Click();
+    // See UiVariantButton - same three-location situation as BattlePass.Open's PathOfGloryBtn.
+    // Live-confirmed, 2026-09-23 (4 rounds of live diagnostics after both bottom-bar variants and
+    // several of their sub-containers turned out empty on a real session): the actual real button is
+    // RightSideUILoc.EventsBtn (rightSideUI/menuButtons/eventsButton, alongside Town/Map/Guild/Store)
+    // - missing from docs/path.firestone.html's static dump, likely added after that dump was taken.
+    // Bottom-bar candidates kept as fallbacks in case a session genuinely uses one of them instead,
+    // same defensive reasoning as PathOfGlory.
+    public static IEnumerator Open => OpenRoutine();
+
+    private static readonly WaitForSeconds OpenPollWait = new(0.5f);
+    private const int MaxOpenPolls = 10;
+
+    /// <summary>
+    ///     Live-confirmed, 2026-09-23 (round 5 diagnostics): plain Click() (button.onClick.Invoke())
+    ///     on eventsButton never throws and never fails IsClickable, but the hub genuinely never opens
+    ///     even after polling up to 5s - same "real Button component, zero onClick listeners, driven
+    ///     by something else instead" shape already documented on Store.Open's storeButton. Uses
+    ///     ClickSimulated (real IPointerDown/Up/ClickHandler events) instead, same fix.
+    /// </summary>
+    private static IEnumerator OpenRoutine()
+    {
+        var candidates = new[]
+        {
+            new GameButton(Paths.BattleLoc.RightSideUILoc.EventsBtn),
+            new GameButton(Paths.BattleLoc.BottomSideUIMobileLoc.EventsBtn),
+            new GameButton(Paths.BattleLoc.BottomSideUIDesktopLoc.EventsBtn)
+        };
+
+        var target = candidates.FirstOrDefault(c => c.IsVisible()) ?? candidates[^1];
+        yield return target.ClickSimulated();
+
+        // Same reasoning as DecoratedHeroesShop.WaitUntilOpen: a hub transition can outlast the
+        // standard interaction_delay - poll instead of checking immediately. Live-confirmed,
+        // 2026-09-23: with ClickSimulated above, the hub opens and ActiveEventsRoot/UpcomingEventsRoot
+        // (bg/verticalLayout/Scroll View/Viewport/Content/...) resolve exactly as originally guessed -
+        // that internal structure was fine all along, just unreachable while the click itself no-opped.
+        var pollsLeft = MaxOpenPolls;
+        while (pollsLeft > 0 && !IsVisible)
+        {
+            yield return OpenPollWait;
+            pollsLeft--;
+        }
+    }
 
     public static IEnumerator Close => new GameButton(Paths.EventManagerLoc.CloseBtn).Click();
 

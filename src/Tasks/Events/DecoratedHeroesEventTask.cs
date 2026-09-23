@@ -45,10 +45,16 @@ public class DecoratedHeroesEventTask : BotTask
             yield return DecoratedHeroesShop.BuyItem(TargetExchangeItem);
 
             yield return DecoratedHeroesShop.Close;
+
+            // Only schedule the long recheck on an actual completed pass - same reasoning as
+            // ForbiddenKnowledgeTask's own early-bail comment: if the shop never opened (event not
+            // running, a stale path, a timing hiccup), leaving NextRunTime untouched lets
+            // BotManager's 2-minute idle floor retry soon instead of going dark for 4 hours on
+            // every failure - live-confirmed this was masking the events/ root-path fix for hours,
+            // 2026-09-23.
+            NextRunTime = DateTime.Now + RecheckDelay;
         }
 
         yield return EventManager.Close;
-
-        NextRunTime = DateTime.Now + RecheckDelay;
     }
 }
