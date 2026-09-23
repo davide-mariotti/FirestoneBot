@@ -83,11 +83,23 @@ public class ChaosRiftTask : BotTask
         {
             yield return ChaosRift.EnsureAutoHitOn();
 
+            // Per the user (2026-09-23): use the bulk-hit multiplier when available instead of
+            // clicking one at a time - see ChaosRift.TrySetBestQuantity. Falls back to individual
+            // clicks if none of the known candidate values turn up (not fully confirmed live).
+            yield return ChaosRift.TrySetBestQuantity();
+
+            var hitThisRun = false;
             for (var i = 0; i < MaxHits; i++)
             {
                 if (!ChaosRift.HitBtn.IsClickable()) break;
                 yield return ChaosRift.HitBtn.Click();
+                hitThisRun = true;
             }
+
+            // Per the user (2026-09-23): wait for the last hit's animation to actually resolve
+            // before navigating to the shop - previously this moved on immediately, which cut the
+            // animation short (same class of bug Awakening's own AwakenAnimationWait was added for).
+            if (hitThisRun) yield return ChaosRift.WaitForHitResult();
 
             yield return ChaosRift.OpenShop;
         }

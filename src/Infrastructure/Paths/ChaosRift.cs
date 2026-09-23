@@ -32,6 +32,15 @@ public static partial class Paths
 
         public const string AutoHitToggleBtn = UiRoot + "/autoHitToggle";
 
+        // Live-confirmed present, 2026-09-23 (fresh UnityPy dump of UIElements' full sibling list) -
+        // a direct sibling of autoHitToggle, same Button+text shape as ArcaneCrystal.ChangeQuantityBtn
+        // / Tavern.ChangePlayQuantityBtn (a single cycling multiplier, not distinct buttons per value
+        // like Awakening). The exact cycle values it shows aren't confirmed live yet - see
+        // ChaosRift.TrySetQuantityTo.
+        public const string ChangeHitQuantityBtn = UiRoot + "/changeHitQuantity";
+
+        public const string HitQuantityTxt = ChangeHitQuantityBtn + "/text";
+
         public const string ShopBtn = UiRoot + "/actionButtons/shop";
 
         // Live-confirmed present, 2026-09-20 (a diagnostic dump of actionButtons' 3 children:

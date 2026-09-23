@@ -67,8 +67,20 @@ public class FirestoneResearchTask : BotTask
     ///     Picks the next talent to research. A priority-name match (see PriorityTerms) always wins
     ///     and stops the scan the instant one is found - no more comparing across trees once one
     ///     turns up. Only when no priority candidate exists anywhere reachable does the FIRST
-    ///     unlocked, not-yet-maxed candidate encountered win (per the user, 2026-09-23: stop
-    ///     comparing by time-to-complete across all nodes - that meant opening/closing a preview
+    ///     unlocked, not-yet-maxed, LEVEL-0 candidate encountered wins - not any not-yet-maxed
+    ///     candidate regardless of level. This matters because of how columns unlock (per the wiki's
+    ///     "Unlock Requirements" section on each tree page): column N+1 needs only a small TOTAL level
+    ///     count (4-8) summed across column N and earlier, spread across however many nodes exist
+    ///     there - not any one node maxed out. Picking "first available at any level" would grind the
+    ///     very first node all the way to its own max (e.g. level 50) before ever touching a later
+    ///     column, which is far slower to reach a priority node gated behind several columns (like
+    ///     Raining Gold) than briefly touching every node in each column once (satisfying the next
+    ///     column's unlock threshold quickly) and circling back for depth later - per the user,
+    ///     2026-09-23, who caught this after the click-reduction change below. Falls back to "first
+    ///     available at any level" (the old fallback) only once a full scan finds no level-0 candidate
+    ///     left anywhere reachable. Preview.CurrentLevel is read from the same popup already open for
+    ///     the unlock/maxed checks, so this costs no extra clicks over the priority-match logic below.
+    ///     Stop comparing by time-to-complete across all nodes - that meant opening/closing a preview
     ///     popup for every one of up to 3 trees x 16 nodes on every single slot-fill, a real CPU/click
     ///     cost multiplied across 16 bot instances; a priority match is common enough that this
     ///     usually stops the scan within the first tree or two instead of exhausting all of them).
@@ -95,10 +107,13 @@ public class FirestoneResearchTask : BotTask
 
             int? bestIndex = null;
             int? bestTreeOffset = null;
+            int? fallbackIndex = null;
+            int? fallbackTreeOffset = null;
             var foundPriority = false;
+            var foundFresh = false;
 
             var treeOffset = 0;
-            while (treeOffset < TreeCount && !foundPriority)
+            while (treeOffset < TreeCount && !foundPriority && !foundFresh)
             {
                 for (var index = 1; index <= NodeCount; index++)
                 {
@@ -115,19 +130,31 @@ public class FirestoneResearchTask : BotTask
                             break;
                         }
 
-                        // First non-priority candidate found, kept only as a fallback - scanning
-                        // continues in case a priority match still turns up in a later tree.
-                        if (bestIndex == null)
+                        if (Preview.CurrentLevel == 0)
                         {
+                            // First fresh (untouched) candidate found - stop scanning immediately,
+                            // same reasoning as a priority match: this is exactly what unlocks the
+                            // next column soonest, no need to keep comparing further.
                             bestIndex = index;
                             bestTreeOffset = treeOffset;
+                            foundFresh = true;
+                            yield return Preview.Close;
+                            break;
+                        }
+
+                        // First already-touched candidate found, kept only as a last-resort
+                        // fallback in case no level-0 candidate exists anywhere reachable.
+                        if (fallbackIndex == null)
+                        {
+                            fallbackIndex = index;
+                            fallbackTreeOffset = treeOffset;
                         }
                     }
 
                     yield return Preview.Close;
                 }
 
-                if (foundPriority) break;
+                if (foundPriority || foundFresh) break;
 
                 if (treeOffset < TreeCount - 1)
                 {
@@ -151,9 +178,17 @@ public class FirestoneResearchTask : BotTask
                 treeOffset++;
             }
 
+            // No priority and no fresh (level-0) candidate turned up anywhere reachable - fall back
+            // to the first already-touched candidate found, same as the old behavior.
+            if (bestIndex == null)
+            {
+                bestIndex = fallbackIndex;
+                bestTreeOffset = fallbackTreeOffset;
+            }
+
             if (bestIndex == null) yield break;
 
-            // The scan above ends on the tree it actually stopped at (a priority hit, a locked
+            // The scan above ends on the tree it actually stopped at (a priority/fresh hit, a locked
             // tree, or the last reachable one) - step back from there to the tree with the picked
             // node. Works regardless of whether the tree carousel wraps around or clamps at the
             // ends, since we only ever move backward from a known position toward a lower one.
@@ -161,7 +196,8 @@ public class FirestoneResearchTask : BotTask
             for (var back = lastReachedTree; back > bestTreeOffset; back--)
                 yield return node.PreviousTree;
 
-            Debug($"[INFO] Selected talent #{bestIndex} on tree offset {bestTreeOffset} (priority={foundPriority}).");
+            Debug($"[INFO] Selected talent #{bestIndex} on tree offset {bestTreeOffset} " +
+                  $"(priority={foundPriority}, fresh={foundFresh}).");
 
             yield return node.Select(bestIndex.Value);
             if (Preview.IsUnlocked && !Preview.IsMaxed) yield return Preview.Start;
