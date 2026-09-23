@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town.Library.FirestoneResearch;
 using Firebot.GameModel.Primitives;
@@ -53,19 +54,29 @@ public class FirestoneResearchTask : BotTask
         yield return TownScreen.Close;
     }
 
+    // Per the user (2026-09-23): a priority-name match always wins and stops the scan immediately
+    // (no more comparing across trees) - matches the wiki's confirmed node names in the Firestone
+    // Research trees ("Battle Cry"/"Librarian" don't appear in these trees at all, only in Personal
+    // Tree/Talent Tree - see TreeOfLife.PriorityUpgrades and TalentsTask instead).
+    private static readonly string[] PriorityTerms = { "Raining Gold", "Firestone Finder", "Firestone Effect" };
+
+    private static bool IsPriority(string name) =>
+        PriorityTerms.Any(t => name.Contains(t, StringComparison.OrdinalIgnoreCase));
+
     /// <summary>
-    ///     Picks the next talent to research purely by shortest time-to-complete, across all 3 trees.
-    ///     Rushing one talent to a high level over many days while the rest of the tree sits at 0 is a
-    ///     worse use of time than spreading the same total time across many cheaper talents - so the
-    ///     fastest currently-researchable option wins, EXCEPT "Raining Gold" always wins over
-    ///     everything else when it's an unlocked option (an external tips guide the user found rates
-    ///     it top priority - "Raining Gold ★★★★★" - and the user asked to prioritize it here; among
-    ///     multiple unlocked Raining Gold instances across the 3 trees, still picks the fastest one).
-    ///     Re-scans and compares every node in every tree each time a slot frees up - but only as
-    ///     far as trees actually unlocked in-game go; trees unlock sequentially (confirmed live:
-    ///     the game blocks navigation to tree N+1 with "complete tree N first" until tree N is
-    ///     done), so scanning stops at the first tree that turns out to still be locked instead of
-    ///     wastefully re-scanning the same reachable tree(s) again under each locked attempt.
+    ///     Picks the next talent to research. A priority-name match (see PriorityTerms) always wins
+    ///     and stops the scan the instant one is found - no more comparing across trees once one
+    ///     turns up. Only when no priority candidate exists anywhere reachable does the FIRST
+    ///     unlocked, not-yet-maxed candidate encountered win (per the user, 2026-09-23: stop
+    ///     comparing by time-to-complete across all nodes - that meant opening/closing a preview
+    ///     popup for every one of up to 3 trees x 16 nodes on every single slot-fill, a real CPU/click
+    ///     cost multiplied across 16 bot instances; a priority match is common enough that this
+    ///     usually stops the scan within the first tree or two instead of exhausting all of them).
+    ///     Re-scans each time a slot frees up - but only as far as trees actually unlocked in-game
+    ///     go; trees unlock sequentially (confirmed live: the game blocks navigation to tree N+1 with
+    ///     "complete tree N first" until tree N is done), so scanning stops at the first tree that
+    ///     turns out to still be locked instead of wastefully re-scanning the same reachable tree(s)
+    ///     again under each locked attempt.
     /// </summary>
     private IEnumerator RunSelection()
     {
@@ -84,11 +95,10 @@ public class FirestoneResearchTask : BotTask
 
             int? bestIndex = null;
             int? bestTreeOffset = null;
-            var bestTime = TimeSpan.MaxValue;
-            var bestIsGold = false;
+            var foundPriority = false;
 
             var treeOffset = 0;
-            for (; treeOffset < TreeCount; treeOffset++)
+            while (treeOffset < TreeCount && !foundPriority)
             {
                 for (var index = 1; index <= NodeCount; index++)
                 {
@@ -96,24 +106,28 @@ public class FirestoneResearchTask : BotTask
 
                     if (Preview.IsUnlocked && !Preview.IsMaxed)
                     {
-                        var isGold = Preview.Name.Contains("Raining Gold", StringComparison.OrdinalIgnoreCase);
-                        var time = Preview.TimeRequired;
-
-                        // A gold candidate always beats a non-gold one, regardless of time; among two
-                        // candidates of the same gold-ness, the faster one wins.
-                        var better = isGold != bestIsGold ? isGold : time < bestTime;
-
-                        if (better)
+                        if (IsPriority(Preview.Name))
                         {
-                            bestTime = time;
                             bestIndex = index;
                             bestTreeOffset = treeOffset;
-                            bestIsGold = isGold;
+                            foundPriority = true;
+                            yield return Preview.Close;
+                            break;
+                        }
+
+                        // First non-priority candidate found, kept only as a fallback - scanning
+                        // continues in case a priority match still turns up in a later tree.
+                        if (bestIndex == null)
+                        {
+                            bestIndex = index;
+                            bestTreeOffset = treeOffset;
                         }
                     }
 
                     yield return Preview.Close;
                 }
+
+                if (foundPriority) break;
 
                 if (treeOffset < TreeCount - 1)
                 {
@@ -133,20 +147,21 @@ public class FirestoneResearchTask : BotTask
                         break;
                     }
                 }
+
+                treeOffset++;
             }
 
             if (bestIndex == null) yield break;
 
-            // The scan above ends on the last tree it actually reached (TreeCount - 1 normally,
-            // or earlier if a later tree turned out to be locked) - step back from there to the
-            // tree with the cheapest pick. Works regardless of whether the tree carousel wraps
-            // around or clamps at the ends, since we only ever move backward from a known
-            // position toward a lower one.
+            // The scan above ends on the tree it actually stopped at (a priority hit, a locked
+            // tree, or the last reachable one) - step back from there to the tree with the picked
+            // node. Works regardless of whether the tree carousel wraps around or clamps at the
+            // ends, since we only ever move backward from a known position toward a lower one.
             var lastReachedTree = Math.Min(treeOffset, TreeCount - 1);
             for (var back = lastReachedTree; back > bestTreeOffset; back--)
                 yield return node.PreviousTree;
 
-            Debug($"[INFO] Selected talent #{bestIndex} on tree offset {bestTreeOffset} ({bestTime} to complete).");
+            Debug($"[INFO] Selected talent #{bestIndex} on tree offset {bestTreeOffset} (priority={foundPriority}).");
 
             yield return node.Select(bestIndex.Value);
             if (Preview.IsUnlocked && !Preview.IsMaxed) yield return Preview.Start;

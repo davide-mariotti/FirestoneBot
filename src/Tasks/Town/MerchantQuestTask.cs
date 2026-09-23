@@ -6,6 +6,7 @@ using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
+using MelonLoader;
 using UnityEngine;
 using InventoryScreen = Firebot.GameModel.Features.Inventory.Inventory;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
@@ -35,6 +36,10 @@ namespace Firebot.Tasks.Town;
 ///     4. User-requested: immediately claims the (now-completed) "Merchant" quest afterward instead
 ///        of waiting for QuestsTask's own schedule - reuses the same generic claim-every-completed-
 ///        quest routine (safe no-op on anything not actually claimable yet).
+///     Per the user (2026-09-23): once today's quest is claimed, skip the whole routine (including
+///     the gold-item usage) until the date changes - previously this re-sold items, re-bought an
+///     upgrade and re-attempted the claim every 6h regardless of whether today's quest was already
+///     done, wasting clicks across 16 bot instances.
 /// </summary>
 public class MerchantQuestTask : BotTask
 {
@@ -59,8 +64,30 @@ public class MerchantQuestTask : BotTask
     // populate its real content instantly, so scanning for gold items right away found nothing.
     private static readonly WaitForSeconds ItemListPopulateDelay = new(1.5f);
 
+    private MelonPreferences_Entry<string> _lastDoneDate;
+
+    protected override void OnConfigure(MelonPreferences_Category category)
+    {
+        if (_lastDoneDate != null) return;
+
+        _lastDoneDate = category.CreateEntry(
+            "last_done_date",
+            "",
+            "Last Done Date",
+            "(auto-managed, don't edit) - the last date today's Merchant quest was already claimed. " +
+            "Skips the whole task until the date changes."
+        );
+    }
+
     public override IEnumerator Execute()
     {
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        if (_lastDoneDate?.Value == today)
+        {
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return InventoryScreen.Open;
         yield return InventoryScreen.OpenItemsTab;
         yield return ItemListPopulateDelay;
@@ -113,6 +140,8 @@ public class MerchantQuestTask : BotTask
             foreach (var claimButton in CharacterScreen.DailyQuestClaimButtons())
                 yield return claimButton.Click();
             yield return CharacterScreen.Close;
+
+            if (_lastDoneDate != null) _lastDoneDate.Value = today;
         }
 
         NextRunTime = DateTime.Now + RecheckDelay;

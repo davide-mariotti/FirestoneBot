@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,9 +73,11 @@ public static class ChestOpening
     /// <summary>
     ///     Opens chests of the given slot (relative to Inventory.Content, e.g. "/commonChestbox")
     ///     down to (not below) targetRemaining. Safe no-op if the slot doesn't exist or is already
-    ///     at/below target - every click here is gated by IsClickable() first.
+    ///     at/below target - every click here is gated by IsClickable() first. onOpened, if given, is
+    ///     invoked once at the end with the actual number opened (per the user, 2026-09-23, so
+    ///     callers can track daily quest progress without re-reading screen state themselves).
     /// </summary>
-    public static IEnumerator OpenDownTo(string slotPath, int targetRemaining)
+    public static IEnumerator OpenDownTo(string slotPath, int targetRemaining, Action<int> onOpened = null)
     {
         var slot = new GameButton(slotPath, Inventory.Content);
         if (!slot.IsClickable()) yield break;
@@ -82,6 +85,8 @@ public static class ChestOpening
         var quantityTxt = new GameText(slotPath + "/quantity", Inventory.Content);
         var remainingToOpen = quantityTxt.GetParsedInt() - targetRemaining;
         if (remainingToOpen <= 0) yield break;
+
+        var totalToOpen = remainingToOpen;
 
         // Confirmed live, 2026-09-17: this slot is a pooled ScrollView list item (like Path of
         // Glory's reward cells) whose click isn't wired to Button.onClick - see GameButton.ClickSimulated.
@@ -124,8 +129,11 @@ public static class ChestOpening
 
         yield return new GameButton(Paths.ChestOpeningLoc.CloseBtn).Click();
         yield return new GameButton(Paths.ChestOpenPreviewLoc.CloseBtn).Click(); // safe no-op if already closed
+
+        onOpened?.Invoke(totalToOpen - remainingToOpen);
     }
 
     /// <summary>Opens every owned chest of the given slot (down to 0).</summary>
-    public static IEnumerator OpenAll(string slotPath) => OpenDownTo(slotPath, 0);
+    public static IEnumerator OpenAll(string slotPath, Action<int> onOpened = null) =>
+        OpenDownTo(slotPath, 0, onOpened);
 }

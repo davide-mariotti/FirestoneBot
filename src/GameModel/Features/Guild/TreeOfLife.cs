@@ -21,13 +21,16 @@ public static class TreeOfLife
         "Tank Specialization", "Damage Specialization", "Healer Specialization"
     };
 
-    // Per the user: prioritize this group of 3 over the other 17 - not strictly ranked against each
-    // other, the cheapest (lowest current level) of whichever are affordable wins, same as the other
-    // two within their own tier. Mirrors the "Raining Gold always wins" override already used for
-    // Firestone/Meteorite Research, generalized from one name to a small set.
+    // Per the user: prioritize this group over the rest - not strictly ranked against each other,
+    // the cheapest (lowest current level) of whichever are affordable wins, same as the other tier.
+    // Mirrors the "Raining Gold always wins" override already used for Firestone/Meteorite Research,
+    // generalized from one name to a small set. "Battle Cry" added 2026-09-23 per the user (matches
+    // an external tips guide's "war cry" priority) - confirmed via the wiki as a real Personal Tree
+    // node (fellowship effect contribution), unlike "Librarian" (research speed), which the wiki
+    // confirms only exists in the Talent Tree/Amulets/Guild Perk, never the Personal Tree.
     private static readonly HashSet<string> PriorityUpgrades = new()
     {
-        "Raining Gold", "Firestone Finder", "Firestone Effect"
+        "Raining Gold", "Firestone Finder", "Firestone Effect", "Battle Cry"
     };
 
     public static int PersonalUpgradeCount => PersonalUpgradeNames.Length;

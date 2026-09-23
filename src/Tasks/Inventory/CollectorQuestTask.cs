@@ -27,12 +27,23 @@ namespace Firebot.Tasks.Inventory;
 ///     up unopened - notably from Pharaoh's Vault rewards) even though they don't count toward the
 ///     "Collector" quest itself, which only requires gear chests per the wiki - simplest to fold into
 ///     this same generic scan rather than a separate task.
+///     Per the user (2026-09-23): once 4 gear chests are opened today, stop the WHOLE task (including
+///     jewel/celestial) until the date changes - previously this reopened every chest slot every 6h
+///     regardless of how many gear chests had already been opened that day, wasting clicks across 16
+///     bot instances. jewelChest/celestialChest never count toward the tracked total (see
+///     GearChestTarget), matching the wiki's actual quest requirement.
 /// </summary>
 public class CollectorQuestTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Quests;
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
+
+    // The "Collector" quest's exact requirement - see class doc comment.
+    private const int GearChestTarget = 4;
+
+    // Not counted toward GearChestTarget - see class doc comment.
+    private static readonly HashSet<string> NonGearChestSlots = new() { "jewelChest", "celestialChest" };
 
     // Live-confirmed, 2026-09-17: the Chests tab's real gear-chest slots (5 populated slots seen on
     // screen: commonChestbox + 4 others) don't exist yet in Content.GetChildren() right after
@@ -44,6 +55,8 @@ public class CollectorQuestTask : BotTask
     private static readonly WaitForSeconds ChestListPopulateDelay = new(1.5f);
 
     private MelonPreferences_Entry<int> _minCommonReserve;
+    private MelonPreferences_Entry<int> _gearChestsOpenedToday;
+    private MelonPreferences_Entry<string> _gearChestsDate;
 
     protected override void OnConfigure(MelonPreferences_Category category)
     {
@@ -56,16 +69,46 @@ public class CollectorQuestTask : BotTask
             "Common gear chests are never opened below this count, so there's always at least one " +
             "left to open for tomorrow's Collector quest too. Default: 10."
         );
+
+        _gearChestsOpenedToday = category.CreateEntry(
+            "gear_chests_opened_today",
+            0,
+            "Gear Chests Opened Today",
+            "(auto-managed, don't edit) - how many gear chests are already opened today. Resets " +
+            "automatically once the date changes."
+        );
+
+        _gearChestsDate = category.CreateEntry(
+            "gear_chests_date",
+            "",
+            "Gear Chests Date",
+            "(auto-managed, don't edit) - the date gear_chests_opened_today is counting for."
+        );
     }
 
     public override IEnumerator Execute()
     {
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+
+        if (_gearChestsDate?.Value != today)
+        {
+            if (_gearChestsOpenedToday != null) _gearChestsOpenedToday.Value = 0;
+            if (_gearChestsDate != null) _gearChestsDate.Value = today;
+        }
+
+        if (_gearChestsOpenedToday?.Value >= GearChestTarget)
+        {
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return InventoryScreen.Open;
         yield return InventoryScreen.OpenChestsTab;
         yield return ChestListPopulateDelay;
 
         var slotNames = InventoryScreen.Content.GetChildren().Select(c => c.Name).ToList();
         var nonChestSlots = new HashSet<string>(Paths.InventoryLoc.KnownNonChestSlots);
+        var gearOpenedThisRun = 0;
 
         foreach (var name in slotNames)
         {
@@ -74,13 +117,21 @@ public class CollectorQuestTask : BotTask
             if (nonChestSlots.Contains(name)) continue;
             if (name.StartsWith("emptySlot")) continue;
 
-            yield return ChestOpening.OpenAll("/" + name);
+            var isGear = !NonGearChestSlots.Contains(name);
+            yield return ChestOpening.OpenAll("/" + name, opened =>
+            {
+                if (isGear) gearOpenedThisRun += opened;
+            });
         }
 
         var minReserve = _minCommonReserve?.Value ?? 10;
-        yield return ChestOpening.OpenDownTo(Paths.InventoryLoc.CommonChestSlot, minReserve);
+        yield return ChestOpening.OpenDownTo(
+            Paths.InventoryLoc.CommonChestSlot, minReserve, opened => gearOpenedThisRun += opened);
 
         yield return InventoryScreen.Close;
+
+        if (_gearChestsOpenedToday != null)
+            _gearChestsOpenedToday.Value = (_gearChestsOpenedToday.Value) + gearOpenedThisRun;
 
         NextRunTime = DateTime.Now + RecheckDelay;
     }

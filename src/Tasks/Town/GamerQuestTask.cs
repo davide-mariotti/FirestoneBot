@@ -26,6 +26,12 @@ namespace Firebot.Tasks.Town;
 ///     spent) so it can't be reused on a later run the same day; only counts as "used" once it
 ///     actually plays an extra round, so a day with genuinely 0 tokens left keeps the bypass available
 ///     for a later run once some tokens trickle back in.
+///     Per the user (2026-09-23): once all 10 plays for today are done, skip the whole routine (no
+///     Tavern screen open, no token/quantity reads) until the date changes - previously this reopened
+///     Tavern and re-checked everything every 6h even on a day already fully played, wasted clicks
+///     across 16 bot instances. Tracked via plays_done_today/plays_done_date, separate from the
+///     reserve override tracking above (a day can finish its 10 plays without ever needing the
+///     override).
 /// </summary>
 public class GamerQuestTask : BotTask
 {
@@ -37,6 +43,8 @@ public class GamerQuestTask : BotTask
 
     private MelonPreferences_Entry<int> _minTokenReserve;
     private MelonPreferences_Entry<string> _reserveOverrideUsedDate;
+    private MelonPreferences_Entry<int> _playsDoneToday;
+    private MelonPreferences_Entry<string> _playsDoneDate;
 
     protected override void OnConfigure(MelonPreferences_Category category)
     {
@@ -58,27 +66,59 @@ public class GamerQuestTask : BotTask
             "(auto-managed, don't edit) - the last date the token reserve was bypassed to finish " +
             "today's quest. Resets automatically once the date changes."
         );
+
+        _playsDoneToday = category.CreateEntry(
+            "plays_done_today",
+            0,
+            "Plays Done Today",
+            "(auto-managed, don't edit) - how many of today's 10 card draws are already done. " +
+            "Resets automatically once the date changes."
+        );
+
+        _playsDoneDate = category.CreateEntry(
+            "plays_done_date",
+            "",
+            "Plays Done Date",
+            "(auto-managed, don't edit) - the date plays_done_today is counting for."
+        );
     }
 
     public override IEnumerator Execute()
     {
+        var today = DateTime.Now.ToString("yyyy-MM-dd");
+
+        if (_playsDoneDate?.Value != today)
+        {
+            if (_playsDoneToday != null) _playsDoneToday.Value = 0;
+            if (_playsDoneDate != null) _playsDoneDate.Value = today;
+        }
+
+        if (_playsDoneToday?.Value >= PlayCount)
+        {
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return TownScreen.Open;
         yield return TownScreen.OpenTavern;
 
         var minReserve = _minTokenReserve?.Value ?? 10;
+        var alreadyDone = _playsDoneToday?.Value ?? 0;
+        var remaining = PlayCount - alreadyDone;
         var playsDone = 0;
 
-        // Only attempted with enough headroom above the reserve for the full x10 cost (confirmed
-        // linear: 10 tokens) - if that's wrong for some reason, the game's own affordability gate on
-        // the button keeps it non-clickable and this safely falls through to the per-round loop below.
-        if (Tavern.GameTokenCount - minReserve >= PlayCount)
+        // Only attempted with enough headroom above the reserve for the full remaining-plays cost
+        // (confirmed linear: 1 token/play) - if that's wrong for some reason, the game's own
+        // affordability gate on the button keeps it non-clickable and this safely falls through to
+        // the per-round loop below.
+        if (remaining > 1 && Tavern.GameTokenCount - minReserve >= remaining)
         {
-            yield return Tavern.TrySetPlayQuantityTo(PlayCount);
+            yield return Tavern.TrySetPlayQuantityTo(remaining);
 
-            if (Tavern.IsPlayQuantitySetTo(PlayCount) && Tavern.PlayBtn.IsClickable())
+            if (Tavern.IsPlayQuantitySetTo(remaining) && Tavern.PlayBtn.IsClickable())
             {
                 yield return Tavern.PlayRound();
-                playsDone += PlayCount;
+                playsDone += remaining;
             }
             else
             {
@@ -86,7 +126,7 @@ public class GamerQuestTask : BotTask
             }
         }
 
-        while (playsDone < PlayCount && Tavern.GameTokenCount > minReserve)
+        while (playsDone < remaining && Tavern.GameTokenCount > minReserve)
         {
             if (!Tavern.PlayBtn.IsClickable()) break;
 
@@ -94,12 +134,11 @@ public class GamerQuestTask : BotTask
             playsDone++;
         }
 
-        var today = DateTime.Now.ToString("yyyy-MM-dd");
-        if (playsDone < PlayCount && _reserveOverrideUsedDate?.Value != today)
+        if (playsDone < remaining && _reserveOverrideUsedDate?.Value != today)
         {
             var playsBeforeOverride = playsDone;
 
-            while (playsDone < PlayCount && Tavern.GameTokenCount > 0)
+            while (playsDone < remaining && Tavern.GameTokenCount > 0)
             {
                 if (!Tavern.PlayBtn.IsClickable()) break;
 
@@ -110,6 +149,8 @@ public class GamerQuestTask : BotTask
             if (playsDone > playsBeforeOverride && _reserveOverrideUsedDate != null)
                 _reserveOverrideUsedDate.Value = today;
         }
+
+        if (_playsDoneToday != null) _playsDoneToday.Value = alreadyDone + playsDone;
 
         yield return Tavern.Close;
         yield return TownScreen.Close;

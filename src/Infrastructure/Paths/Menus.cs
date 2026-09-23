@@ -514,6 +514,15 @@ public static partial class Paths
 
             public const string MeteoriteResearchTabBtn = Root + "/submenuButtons/meteoriteResearch";
 
+            // Currency counter shown at the Library screen's root level (sibling of "submenus", not
+            // nested inside a specific tab) - confirmed via a fresh UnityPy dump of the whole Library
+            // prefab, 2026-09-23 (only one "counterInteraction" exists here, so it's the shared
+            // Meteorites balance both research tabs spend from, not a per-tab counter - matches the
+            // wiki's confirmed single "Meteorites" currency for both Meteorite Research and gear tier
+            // unlocks). No prior precedent - the user asked for a meteorite reserve threshold and this
+            // was the missing piece to read the actual balance instead of guessing from node cost.
+            public const string MeteoriteBalanceTxt = Root + "/counters/counterInteraction/quantity";
+
             public static class ResearchPanelLoc
             {
                 public const string Root = LibraryLoc.Root + "/submenus/firestoneResearch/researchPanel";
