@@ -173,4 +173,33 @@ public static partial class Paths
             public const string ItemBuyBtn = "/purchaseButton";
         }
     }
+
+    /// <summary>
+    ///     "Mass Production"'s real screen - the game recycles an old "MiniEvents" prefab/script name
+    ///     for it (live-confirmed, 2026-09-24, Steam-2, via Watchdog.DumpActiveScreens right after
+    ///     clicking the "Mass Production" card in EventManager). Two tabs: "offers" (default, real-
+    ///     money packs - deliberately never touched, same convention as every other event shop's
+    ///     excluded real-money tab) and "challenges" (a day-by-day challenge track - per the user,
+    ///     2026-09-24, claim every currently-available one).
+    /// </summary>
+    public static class MiniEventsLoc
+    {
+        public const string Root = MenusLoc.Root + "/events/MiniEvents";
+
+        public const string CloseBtn = Root + "/bg/closeButton";
+
+        public const string ChallengesTabBtn = Root + "/bg/submenuButtons/challenges";
+
+        // Live-confirmed structure, 2026-09-24: miniEventChallengeInteraction (N), one per day, unlocked
+        // day-by-day (later days show "locked" active instead of "unlocked") - same
+        // "whole grid, click whatever's currently clickable" idiom as DecoratedHeroesShopLoc's own
+        // ChallengeGridRoot.
+        public const string ChallengesGridRoot =
+            Root + "/bg/submenus/challenges/bg/challengesLayout";
+
+        // Relative to a challenge card GameElement (a "miniEventChallengeInteraction (N)" child of
+        // ChallengesGridRoot) - nested under "unlocked" (only present/active once that day's challenge
+        // is unlocked), unlike DecoratedHeroesShopLoc's claim button which sits directly on the card.
+        public const string ChallengeClaimBtn = "/unlocked/reward/claimButton";
+    }
 }
