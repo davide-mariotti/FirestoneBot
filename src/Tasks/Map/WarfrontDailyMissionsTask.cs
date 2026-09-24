@@ -74,12 +74,19 @@ public class WarfrontDailyMissionsTask : BotTask
             var fightBtn = new GameButton(Paths.WFLiberationMissionsLoc.FightBtn, mission);
             var clickable = fightBtn.IsClickable();
             Logger.Debug($"[WarfrontDailyMissionsTask] Mission {i}: fightBtn.IsClickable={clickable}, " +
-                         $"screenOpen={IsLiberationMissionsScreenOpen()}.");
+                         $"screenOpen={WarfrontLiberationMissions.IsVisible}.");
 
             if (!clickable) continue;
 
+            // Live-confirmed, 2026-09-24 (Steam-10, via DumpOpenPopups): fightBtn can open WFBattleSim
+            // (the formation preview, needing its own "start" press) OR skip straight to the real
+            // battle (menus/WFBattle) - seemingly whenever the formation from a previous fight is
+            // already accepted/unchanged, no preview needed. Code that only recognized WFBattleSim
+            // concluded "didn't start" and abandoned the mission while the battle was already running
+            // underneath, explaining "fought 0" runs where a real fight was actually in progress.
             var simOpened = false;
-            for (var attempt = 1; attempt <= MaxFightAttempts && !simOpened; attempt++)
+            var battleAlreadyRunning = false;
+            for (var attempt = 1; attempt <= MaxFightAttempts && !simOpened && !battleAlreadyRunning; attempt++)
             {
                 if (attempt > 1 && !fightBtn.IsClickable())
                 {
@@ -88,27 +95,28 @@ public class WarfrontDailyMissionsTask : BotTask
                     break;
                 }
 
-                yield return fightBtn.Click(); // opens WFBattleSim (squad already set up by the user)
+                yield return fightBtn.Click();
 
                 var simPolls = MaxSimOpenPolls;
-                while (!WFBattleSim.IsVisible && simPolls > 0)
+                while (!WFBattleSim.IsVisible && !WFBattle.IsVisible && !WFBattleResult.IsDecided && simPolls > 0)
                 {
                     yield return SimOpenPollWait;
                     simPolls--;
                 }
 
                 simOpened = WFBattleSim.IsVisible;
+                battleAlreadyRunning = WFBattle.IsVisible || WFBattleResult.IsDecided;
                 Logger.Debug($"[WarfrontDailyMissionsTask] Mission {i} attempt {attempt}/{MaxFightAttempts}: " +
-                             $"WFBattleSim visible={simOpened} (waited {MaxSimOpenPolls - simPolls} extra poll(s)), " +
-                             $"screenOpen={IsLiberationMissionsScreenOpen()}.");
+                             $"WFBattleSim visible={simOpened}, battle already running={battleAlreadyRunning} " +
+                             $"(waited {MaxSimOpenPolls - simPolls} extra poll(s)), screenOpen={WarfrontLiberationMissions.IsVisible}.");
             }
 
-            if (!simOpened)
+            if (!simOpened && !battleAlreadyRunning)
             {
                 // If the list itself is gone too, we're not on either screen the rest of this loop
                 // expects - stop instead of burning through the remaining stale entries logging the
                 // same "unclickable/closed" result for each one.
-                if (!IsLiberationMissionsScreenOpen())
+                if (!WarfrontLiberationMissions.IsVisible)
                 {
                     Logger.Debug($"[WarfrontDailyMissionsTask] Mission list closed after {MaxFightAttempts} attempt(s) " +
                                  $"on mission {i} - stopping this pass. Open popups/menus: {DumpOpenPopups()}");
@@ -118,7 +126,7 @@ public class WarfrontDailyMissionsTask : BotTask
                 continue; // e.g. mission turned out locked/already resolved
             }
 
-            yield return WFBattleSim.Fight; // starts the real battle
+            if (simOpened) yield return WFBattleSim.Fight; // starts the real battle - already running otherwise
 
             var pollsLeft = MaxBattlePolls;
             while (!WFBattleResult.IsDecided && pollsLeft > 0)
@@ -135,7 +143,7 @@ public class WarfrontDailyMissionsTask : BotTask
             yield return WFBattleResult.Close;
 
             Logger.Debug($"[WarfrontDailyMissionsTask] Mission {i}: after Close - " +
-                         $"WFBattleSim.IsVisible={WFBattleSim.IsVisible}, screenOpen={IsLiberationMissionsScreenOpen()}.");
+                         $"WFBattleSim.IsVisible={WFBattleSim.IsVisible}, screenOpen={WarfrontLiberationMissions.IsVisible}.");
         }
 
         Logger.Debug($"[WarfrontDailyMissionsTask] Done: fought {fought}/{missions.Count} mission(s).");
@@ -147,13 +155,6 @@ public class WarfrontDailyMissionsTask : BotTask
         yield return WarfrontDailyMissions.Close;
         yield return WorldMap.Close;
     }
-
-    // Diagnostic only, 2026-09-24: per the user, only the first liberation mission in a run ever
-    // completes - the rest silently do nothing. Checks whether the WFLiberationMissions popup itself
-    // is still open between missions, to see if it's getting left behind/deactivated by something
-    // WFBattleSim or the battle result popups do on close, rather than a per-mission cell issue.
-    private static bool IsLiberationMissionsScreenOpen() =>
-        new GameElement(Paths.WFLiberationMissionsLoc.CloseBtn).IsVisible();
 
     // Diagnostic only, 2026-09-24: WFBattleSim never appeared even after a full 5s poll, yet
     // WFLiberationMissions also read as closed - something else is showing. Reuses Watchdog's own

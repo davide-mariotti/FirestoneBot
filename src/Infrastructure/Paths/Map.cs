@@ -78,9 +78,19 @@ public static partial class Paths
         public const string FightBtn = Root + "/bg/mask/fightBtn";
     }
 
-    // Real-time battle screen opened by WFBattleSimLoc.FightBtn, resolving into either
-    // WFBattleWonLoc or WFBattleDefeatLoc. No path defined for WFBattle itself - nothing on it needs
-    // clicking (its own closeButton would forfeit mid-battle); the bot only waits for a result popup.
+    // Real-time battle screen, resolving into either WFBattleWonLoc or WFBattleDefeatLoc - nothing on
+    // it needs clicking (its own closeButton would forfeit mid-battle), so only a bare root is needed,
+    // purely to detect it's showing. Live-confirmed, 2026-09-24 (Steam-10, via Watchdog's own known-root
+    // dump): lives under "menus/", NOT "popups/" as the WFBattleSim/Won/Defeat siblings do - and a
+    // liberation mission's fightBtn can open THIS directly, skipping WFBattleSim's formation-preview
+    // step entirely, whenever the formation from a previous fight is already accepted/unchanged. Code
+    // that only waited for WFBattleSim to appear would misread that as "mission didn't start" and move
+    // on while the real battle was already running underneath - see WarfrontDailyMissionsTask.
+    public static class WFBattleLoc
+    {
+        public const string Root = MenusLoc.Root + "/menus/WFBattle";
+    }
+
     public static class WFBattleWonLoc
     {
         private const string Root = MenusLoc.Root + "/popups/WFBattleWon";
