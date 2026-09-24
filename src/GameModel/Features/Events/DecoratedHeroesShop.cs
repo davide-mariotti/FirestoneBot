@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using UnityEngine;
 using Logger = Firebot.Core.Logger;
@@ -105,10 +106,14 @@ public static class DecoratedHeroesShop
 
     /// <summary>
     ///     Scans the Exchange list for an item whose name matches itemName (case-insensitive, partial
-    ///     match) and buys it repeatedly until unaffordable/capped - the buy button's own IsClickable()
-    ///     handles the "Claimed: X/50"-style cap seen in the user's screenshot, same safe-click
-    ///     pattern used everywhere else in this codebase. Matched by name, not list position, so this
-    ///     doesn't depend on the 16 items staying in the same order.
+    ///     match) and buys it repeatedly until unaffordable/capped. Live-confirmed, 2026-09-24 (user
+    ///     screenshot: Golden key costs 1.000 Stars of Recognition, only 280 on hand, Claimed 5/50):
+    ///     the buy button's own IsClickable() does NOT reflect real affordability here - same
+    ///     "spend action's button stays clickable regardless of balance" shape CurrencyMissingPopup
+    ///     already exists for (Tree of Life, War Machines). Every click here now checks for that popup
+    ///     and stops immediately once it appears, instead of blindly hammering an unaffordable button
+    ///     up to maxBuys times. Matched by name, not list position, so this doesn't depend on the 16
+    ///     items staying in the same order.
     /// </summary>
     public static IEnumerator BuyItem(string itemName, int maxBuys = 100)
     {
@@ -127,6 +132,14 @@ public static class DecoratedHeroesShop
             for (var i = 0; i < maxBuys && buyBtn.IsClickable(); i++)
             {
                 yield return buyBtn.Click();
+
+                if (CurrencyMissingPopup.IsShowing)
+                {
+                    Logger.Debug($"[DecoratedHeroesShop] BuyItem: currency ran out after {bought} real purchase(s) - this click didn't go through.");
+                    yield return CurrencyMissingPopup.Close;
+                    break;
+                }
+
                 bought++;
             }
 
