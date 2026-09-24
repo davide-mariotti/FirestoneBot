@@ -37,10 +37,16 @@ public static class DecoratedHeroesShop
     public static IEnumerator OpenExchangeTab =>
         new GameButton(Paths.DecoratedHeroesShopLoc.ExchangeTabBtn).Click();
 
+    // Per the user (2026-09-24): each of the 8 challenge cards can be claimed up to 3 times (3 reward
+    // tiers per challenge, not just one) - re-checks IsClickable() between attempts so this is a safe
+    // no-op once a card runs out of tiers, without needing to know its exact tier count up front.
+    private const int MaxClaimsPerChallenge = 3;
+
     /// <summary>
-    ///     Claims every one of the (up to 8, per the user's screenshot) challenge cards that's
-    ///     currently clickable - no comparison needed, every challenge is independently completable
-    ///     and worth claiming regardless of the others, unlike Research's priority-vs-cheapest choice.
+    ///     Claims every one of the (up to 8, per the user's screenshot) challenge cards, up to
+    ///     MaxClaimsPerChallenge times each - no comparison needed, every challenge is independently
+    ///     completable and worth claiming regardless of the others, unlike Research's
+    ///     priority-vs-cheapest choice.
     /// </summary>
     public static IEnumerator ClaimAllChallenges()
     {
@@ -51,13 +57,14 @@ public static class DecoratedHeroesShop
         foreach (var card in cards)
         {
             var claimBtn = new GameButton(Paths.DecoratedHeroesShopLoc.ChallengeClaimBtn, card);
-            if (!claimBtn.IsClickable()) continue;
-
-            yield return claimBtn.Click();
-            claimed++;
+            for (var i = 0; i < MaxClaimsPerChallenge && claimBtn.IsClickable(); i++)
+            {
+                yield return claimBtn.Click();
+                claimed++;
+            }
         }
 
-        Logger.Debug($"[DecoratedHeroesShop] ClaimAllChallenges: claimed {claimed}/{cards.Count}.");
+        Logger.Debug($"[DecoratedHeroesShop] ClaimAllChallenges: claimed {claimed} time(s) across {cards.Count} card(s).");
     }
 
     private static GameButton ExchangeQuantityBtn => new(Paths.DecoratedHeroesShopLoc.ExchangeQuantityBtn);

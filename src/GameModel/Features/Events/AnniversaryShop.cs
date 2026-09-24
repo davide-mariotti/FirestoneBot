@@ -6,6 +6,7 @@ using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using UnityEngine;
+using UnityEngine.UI;
 using Logger = Firebot.Core.Logger;
 
 namespace Firebot.GameModel.Features.Events;
@@ -60,25 +61,73 @@ public static class AnniversaryShop
     ///     structure dump, Steam-10): the real claim button is nested at unlocked/claimButton, not on
     ///     the milestone card itself (that first guess was live-disproven: "Component &lt;Button&gt;
     ///     missing" on the card) - it's only active once that milestone's reward is actually ready to
-    ///     collect (inactive otherwise, including after being claimed), so IsClickable() alone already
-    ///     covers "not ready" and "already claimed".
+    ///     collect (inactive otherwise, including after being claimed).
+    ///     Per the user (2026-09-24): only the first few days (1-4) were ever actually being claimed -
+    ///     days further down the list (needing a scroll to see on screen) silently never got claimed.
+    ///     Root cause, same bug class already found and fixed for Pirate's Prize's tier list (see
+    ///     PiratesPrizeTask's own doc comment): only the first 4 milestone siblings get a unique Unity
+    ///     name ("milestone (0)".."milestone (3)") - every one after that is a clone sharing the exact
+    ///     same name ("milestone (3)(Clone)", confirmed live), and GameElement/GameButton always
+    ///     re-resolve a child by NAME via its string path (see GameElement's own "Always resolve from
+    ///     Path; do not cache transforms" comment) - so every later milestone's ClaimBtn path always
+    ///     re-resolved to the SAME first "(Clone)"-named sibling instead of its own, silently repeating
+    ///     one claim attempt instead of reaching the real target. Fixed the same way Pirate's Prize
+    ///     was: walk raw Transform children by INDEX (never by re-resolving a shared name) and resolve
+    ///     each milestone's own claim button straight from that already-known Transform.
     /// </summary>
     public static IEnumerator ClaimActivityMilestones()
     {
-        var milestones = new GameElement(Paths.AnniversaryShopLoc.ActivityLoc.MilestonesRoot).GetChildren().ToList();
-        Logger.Debug($"[AnniversaryShop] ClaimActivityMilestones: {milestones.Count} milestone(s) found.");
+        var milestonesRoot = ResolveRawTransform(Paths.AnniversaryShopLoc.ActivityLoc.MilestonesRoot);
 
-        var claimed = 0;
-        foreach (var milestone in milestones)
+        if (milestonesRoot == null)
         {
-            var btn = new GameButton(Paths.AnniversaryShopLoc.ActivityLoc.ClaimBtn, milestone);
-            if (!btn.IsClickable()) continue;
-
-            yield return btn.Click();
-            claimed++;
+            Logger.Debug("[AnniversaryShop] ClaimActivityMilestones: milestones root not found - skipping.");
+            yield break;
         }
 
-        Logger.Debug($"[AnniversaryShop] ClaimActivityMilestones: claimed {claimed}/{milestones.Count}.");
+        Logger.Debug($"[AnniversaryShop] ClaimActivityMilestones: {milestonesRoot.childCount} milestone(s) found.");
+
+        var claimed = 0;
+        for (var i = 0; i < milestonesRoot.childCount; i++)
+            if (TryClaimMilestone(milestonesRoot.GetChild(i)))
+            {
+                claimed++;
+                Logger.Debug($"[AnniversaryShop] ClaimActivityMilestones: claimed index {i} ('{milestonesRoot.GetChild(i).name}').");
+            }
+
+        Logger.Debug($"[AnniversaryShop] ClaimActivityMilestones: claimed {claimed}/{milestonesRoot.childCount}.");
+        yield break;
+    }
+
+    /// <summary>Resolves a shared Paths.*Loc path string ("rootObjectName/relative/path") straight to
+    ///     its Transform - see ClaimActivityMilestones' own doc comment for why this bypasses
+    ///     GameElement/GameButton's name-based re-resolution. Same helper shape as
+    ///     PiratesPrizeTask.ResolveRawTransform.</summary>
+    private static Transform ResolveRawTransform(string path)
+    {
+        var slashIndex = path.IndexOf('/');
+        var rootObject = GameObject.Find(slashIndex == -1 ? path : path[..slashIndex]);
+        if (rootObject == null) return null;
+
+        return slashIndex == -1 ? rootObject.transform : rootObject.transform.Find(path[(slashIndex + 1)..]);
+    }
+
+    /// <summary>Resolves and clicks THIS specific milestone's claim button via its own already-known
+    ///     Transform (never by re-resolving "unlocked/claimButton" as a name-based path, which several
+    ///     siblings share past the 4th milestone).</summary>
+    private static bool TryClaimMilestone(Transform milestone)
+    {
+        var unlocked = milestone.Find("unlocked");
+        var claimButton = unlocked != null ? unlocked.Find("claimButton") : null;
+        if (claimButton == null || !claimButton.gameObject.activeInHierarchy) return false;
+
+        if (!claimButton.TryGetComponent<Button>(out var button) || !button.enabled || !button.interactable)
+            return false;
+
+        // Plain onClick.Invoke() - live-confirmed working this way for milestone 0 before this fix,
+        // unlike Pirate's Prize's tier claim button which needed a simulated ExecuteEvents click.
+        button.onClick.Invoke();
+        return true;
     }
 
     private static GameButton ExchangeQuantityBtn => new(Paths.AnniversaryShopLoc.ExchangeLoc.ChangeQuantityBtn);
