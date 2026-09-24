@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Linq;
+using Firebot.Core;
 using Firebot.Core.Tasks;
-using Firebot.GameModel.Base;
 using Firebot.GameModel.Features.Map;
 using Firebot.GameModel.Features.Map.WarfrontCampaign;
 using Firebot.GameModel.Primitives;
@@ -119,7 +119,7 @@ public class WarfrontDailyMissionsTask : BotTask
                 if (!WarfrontLiberationMissions.IsVisible)
                 {
                     Logger.Debug($"[WarfrontDailyMissionsTask] Mission list closed after {MaxFightAttempts} attempt(s) " +
-                                 $"on mission {i} - stopping this pass. Open popups/menus: {DumpOpenPopups()}");
+                                 $"on mission {i} - stopping this pass. Open popups/menus: {Watchdog.DumpActiveScreens()}");
                     break;
                 }
 
@@ -154,21 +154,5 @@ public class WarfrontDailyMissionsTask : BotTask
 
         yield return WarfrontDailyMissions.Close;
         yield return WorldMap.Close;
-    }
-
-    // Diagnostic only, 2026-09-24: WFBattleSim never appeared even after a full 5s poll, yet
-    // WFLiberationMissions also read as closed - something else is showing. Reuses Watchdog's own
-    // known roots (read-only here, no clicking) to see which real popup/menu is actually active.
-    private static string DumpOpenPopups()
-    {
-        var popups = new GameElement(Paths.WatchdogLoc.PopupsRoot).GetChildren()
-            .Where(p => p.IsVisible()).Select(p => $"popups/{p.Name}");
-        var menus = new GameElement(Paths.WatchdogLoc.MenusRoot).GetChildren()
-            .Where(m => m.IsVisible()).Select(m => $"menus/{m.Name}");
-        var events = new GameElement(Paths.WatchdogLoc.EventsRoot).GetChildren()
-            .Where(e => e.IsVisible()).Select(e => $"events/{e.Name}");
-
-        var all = popups.Concat(menus).Concat(events).ToList();
-        return all.Count == 0 ? "(none active)" : string.Join(", ", all);
     }
 }
