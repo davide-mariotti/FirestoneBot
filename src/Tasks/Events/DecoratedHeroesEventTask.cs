@@ -32,8 +32,11 @@ public class DecoratedHeroesEventTask : BotTask
     public override IEnumerator Execute()
     {
         yield return EventManager.Open;
+        Debug($"[INFO] EventManager hub visible after Open: {EventManager.IsVisible}");
+
         yield return EventManager.OpenEvent("Decorated heroes");
         yield return DecoratedHeroesShop.WaitUntilOpen();
+        Debug($"[INFO] DecoratedHeroesShop visible after OpenEvent: {DecoratedHeroesShop.IsVisible}");
 
         if (DecoratedHeroesShop.IsVisible)
         {
@@ -53,6 +56,10 @@ public class DecoratedHeroesEventTask : BotTask
             // every failure - live-confirmed this was masking the events/ root-path fix for hours,
             // 2026-09-23.
             NextRunTime = DateTime.Now + RecheckDelay;
+        }
+        else
+        {
+            Debug("[INFO] DecoratedHeroesShop never opened - see EventManager/OpenEvent debug lines above for why.");
         }
 
         yield return EventManager.Close;

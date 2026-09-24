@@ -6,6 +6,7 @@ using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using UnityEngine;
+using Logger = Firebot.Core.Logger;
 
 namespace Firebot.GameModel.Features.Events;
 
@@ -30,6 +31,7 @@ public static class EventManager
 
     private static readonly WaitForSeconds OpenPollWait = new(0.5f);
     private const int MaxOpenPolls = 10;
+    private const int MaxClickAttempts = 3;
 
     /// <summary>
     ///     Live-confirmed, 2026-09-23 (round 5 diagnostics): plain Click() (button.onClick.Invoke())
@@ -37,29 +39,41 @@ public static class EventManager
     ///     even after polling up to 5s - same "real Button component, zero onClick listeners, driven
     ///     by something else instead" shape already documented on Store.Open's storeButton. Uses
     ///     ClickSimulated (real IPointerDown/Up/ClickHandler events) instead, same fix.
+    ///
+    ///     Live-confirmed, 2026-09-24: even ClickSimulated is INTERMITTENT, not just slow - a full
+    ///     successful run (108-112s, real challenge claims + a Golden key purchase) proves the
+    ///     mechanism genuinely works, but a later attempt found "events/EventManager" didn't exist at
+    ///     all (a hard ResolvePath failure, not just inactive) for the ENTIRE 5s poll window - the
+    ///     simulated pointer event simply had no effect that time. Retries the click itself (not just
+    ///     the poll) up to MaxClickAttempts times before giving up, since re-sending the same cheap,
+    ///     in-process event costs little and directly addresses "sometimes doesn't land" rather than
+    ///     "takes longer than expected".
     /// </summary>
     private static IEnumerator OpenRoutine()
     {
-        var candidates = new[]
+        for (var attempt = 1; attempt <= MaxClickAttempts && !IsVisible; attempt++)
         {
-            new GameButton(Paths.BattleLoc.RightSideUILoc.EventsBtn),
-            new GameButton(Paths.BattleLoc.BottomSideUIMobileLoc.EventsBtn),
-            new GameButton(Paths.BattleLoc.BottomSideUIDesktopLoc.EventsBtn)
-        };
+            var candidates = new[]
+            {
+                new GameButton(Paths.BattleLoc.RightSideUILoc.EventsBtn),
+                new GameButton(Paths.BattleLoc.BottomSideUIMobileLoc.EventsBtn),
+                new GameButton(Paths.BattleLoc.BottomSideUIDesktopLoc.EventsBtn)
+            };
 
-        var target = candidates.FirstOrDefault(c => c.IsVisible()) ?? candidates[^1];
-        yield return target.ClickSimulated();
+            var target = candidates.FirstOrDefault(c => c.IsVisible()) ?? candidates[^1];
+            Logger.Debug($"[EventManager] Open attempt {attempt}/{MaxClickAttempts}: clicking eventsButton at '{target.FullPath}'.");
+            yield return target.ClickSimulated();
 
-        // Same reasoning as DecoratedHeroesShop.WaitUntilOpen: a hub transition can outlast the
-        // standard interaction_delay - poll instead of checking immediately. Live-confirmed,
-        // 2026-09-23: with ClickSimulated above, the hub opens and ActiveEventsRoot/UpcomingEventsRoot
-        // (bg/verticalLayout/Scroll View/Viewport/Content/...) resolve exactly as originally guessed -
-        // that internal structure was fine all along, just unreachable while the click itself no-opped.
-        var pollsLeft = MaxOpenPolls;
-        while (pollsLeft > 0 && !IsVisible)
-        {
-            yield return OpenPollWait;
-            pollsLeft--;
+            // Same reasoning as DecoratedHeroesShop.WaitUntilOpen: a hub transition can outlast the
+            // standard interaction_delay - poll instead of checking immediately.
+            var pollsLeft = MaxOpenPolls;
+            while (pollsLeft > 0 && !IsVisible)
+            {
+                yield return OpenPollWait;
+                pollsLeft--;
+            }
+
+            Logger.Debug($"[EventManager] Open attempt {attempt}/{MaxClickAttempts}: hub visible={IsVisible}.");
         }
     }
 
@@ -78,14 +92,29 @@ public static class EventManager
     /// </summary>
     public static IEnumerator OpenEvent(string eventName)
     {
-        foreach (var card in AllCards)
+        var cards = AllCards.ToList();
+        Logger.Debug($"[EventManager] OpenEvent('{eventName}'): scanning {cards.Count} card(s): " +
+                     string.Join(", ", cards.Select(c => $"{c.Name}='{new GameText(Paths.EventManagerLoc.CardTitleTxt, c).GetParsedText()}'")));
+
+        foreach (var card in cards)
         {
             var title = new GameText(Paths.EventManagerLoc.CardTitleTxt, card).GetParsedText();
             if (!title.Contains(eventName, StringComparison.OrdinalIgnoreCase)) continue;
 
             var button = new GameButton(parent: card);
-            if (button.IsClickable()) yield return button.Click();
+            if (button.IsClickable())
+            {
+                Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) is clickable - clicking.");
+                yield return button.Click();
+            }
+            else
+            {
+                Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) found but NOT clickable.");
+            }
+
             yield break;
         }
+
+        Logger.Debug($"[EventManager] No card matching '{eventName}' found.");
     }
 }

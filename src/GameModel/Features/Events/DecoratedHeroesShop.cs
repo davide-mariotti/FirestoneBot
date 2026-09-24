@@ -5,6 +5,7 @@ using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using UnityEngine;
+using Logger = Firebot.Core.Logger;
 
 namespace Firebot.GameModel.Features.Events;
 
@@ -42,11 +43,20 @@ public static class DecoratedHeroesShop
     /// </summary>
     public static IEnumerator ClaimAllChallenges()
     {
-        foreach (var card in new GameElement(Paths.DecoratedHeroesShopLoc.ChallengeGridRoot).GetChildren())
+        var cards = new GameElement(Paths.DecoratedHeroesShopLoc.ChallengeGridRoot).GetChildren().ToList();
+        Logger.Debug($"[DecoratedHeroesShop] ClaimAllChallenges: {cards.Count} card(s) under ChallengeGridRoot.");
+
+        var claimed = 0;
+        foreach (var card in cards)
         {
             var claimBtn = new GameButton(Paths.DecoratedHeroesShopLoc.ChallengeClaimBtn, card);
-            if (claimBtn.IsClickable()) yield return claimBtn.Click();
+            if (!claimBtn.IsClickable()) continue;
+
+            yield return claimBtn.Click();
+            claimed++;
         }
+
+        Logger.Debug($"[DecoratedHeroesShop] ClaimAllChallenges: claimed {claimed}/{cards.Count}.");
     }
 
     private static GameButton ExchangeQuantityBtn => new(Paths.DecoratedHeroesShopLoc.ExchangeQuantityBtn);
@@ -63,10 +73,13 @@ public static class DecoratedHeroesShop
     /// </summary>
     public static IEnumerator TrySetBestQuantity()
     {
-        if (QuantityCandidatesDescending.Any(c => ExchangeQuantityTxt.GetParsedText().Contains(c)))
+        var startText = ExchangeQuantityTxt.GetParsedText();
+        Logger.Debug($"[DecoratedHeroesShop] TrySetBestQuantity: current quantity text = '{startText}'.");
+
+        if (QuantityCandidatesDescending.Any(c => startText.Contains(c)))
             yield break;
 
-        var original = ExchangeQuantityTxt.GetParsedText();
+        var original = startText;
         var found = false;
 
         for (var i = 0; i < 6; i++)
@@ -81,6 +94,8 @@ public static class DecoratedHeroesShop
 
             if (ExchangeQuantityTxt.GetParsedText() == original) break; // full loop back - none exist
         }
+
+        Logger.Debug($"[DecoratedHeroesShop] TrySetBestQuantity: found={found}, ended at '{ExchangeQuantityTxt.GetParsedText()}'.");
 
         if (found) yield break;
 
@@ -97,16 +112,28 @@ public static class DecoratedHeroesShop
     /// </summary>
     public static IEnumerator BuyItem(string itemName, int maxBuys = 100)
     {
-        foreach (var item in new GameElement(Paths.DecoratedHeroesShopLoc.ExchangeItemsRoot).GetChildren())
+        var items = new GameElement(Paths.DecoratedHeroesShopLoc.ExchangeItemsRoot).GetChildren().ToList();
+        var names = string.Join(", ", items.Select(i =>
+            new GameText(Paths.DecoratedHeroesShopLoc.ExchangeItemNameTxt, i).GetParsedText()));
+        Logger.Debug($"[DecoratedHeroesShop] BuyItem('{itemName}'): {items.Count} item(s) scanned: {names}");
+
+        foreach (var item in items)
         {
             var name = new GameText(Paths.DecoratedHeroesShopLoc.ExchangeItemNameTxt, item).GetParsedText();
             if (!name.Contains(itemName, StringComparison.OrdinalIgnoreCase)) continue;
 
             var buyBtn = new GameButton(Paths.DecoratedHeroesShopLoc.ExchangeItemBuyBtn, item);
+            var bought = 0;
             for (var i = 0; i < maxBuys && buyBtn.IsClickable(); i++)
+            {
                 yield return buyBtn.Click();
+                bought++;
+            }
 
+            Logger.Debug($"[DecoratedHeroesShop] BuyItem: matched '{name}', bought {bought}x.");
             yield break;
         }
+
+        Logger.Debug($"[DecoratedHeroesShop] BuyItem: no item matching '{itemName}' found.");
     }
 }
