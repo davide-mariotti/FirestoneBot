@@ -1,3 +1,4 @@
+using System.Collections;
 using Firebot.BotActions;
 using Firebot.Core;
 using MelonLoader;
@@ -45,8 +46,24 @@ public class Main : MelonMod
             // overriding whatever was set before the scene loaded.
             BotSettings.ApplyLowResourceModeOnce();
             if (BotSettings.AutoStart) BotManager.Start();
+
+            // Temporary diagnostic (2026-09-24): the user reports an "offline progress" popup and an
+            // event "what's new" popup staying open across a fresh boot, surviving Watchdog.ForceClearAll
+            // - logs what's actually active under events/popups/menus a few times as the scene settles,
+            // to find their real screen names/roots since neither is currently mapped anywhere in the
+            // codebase. Remove once found.
+            MelonCoroutines.Start(DumpActiveScreensOverTime());
         }
         else BotManager.Stop();
+    }
+
+    private static IEnumerator DumpActiveScreensOverTime()
+    {
+        foreach (var delay in new[] { 2f, 5f, 10f, 20f })
+        {
+            yield return new WaitForSeconds(delay);
+            Logger.Info($"[StartupPopupDiag] +{delay}s active screens: {Watchdog.DumpActiveScreens()}");
+        }
     }
 
     public override void OnUpdate()
