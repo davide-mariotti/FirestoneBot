@@ -42,6 +42,37 @@ public class GameText : GameElement
             : fallback;
     }
 
+    private static readonly Regex FirstDigitRun = new(@"\d+", RegexOptions.Compiled);
+
+    /// <summary>
+    ///     Same idea as GetParsedLeadingInt, but for text with a non-numeric label glued in front of the
+    ///     number instead of (or in addition to) a "/total" suffix - e.g. TalentPreview's rank counter
+    ///     reads "Level 1/25", not "1/25" (live-confirmed, 2026-09-24), which GetParsedLeadingInt can't
+    ///     handle since "Level 1" doesn't parse as a plain int. Takes the first contiguous run of digits
+    ///     found anywhere in the text, ignoring everything else.
+    /// </summary>
+    public int GetParsedFirstInt(int fallback = 0)
+    {
+        var match = FirstDigitRun.Match(GetParsedText());
+        return match.Success ? int.Parse(match.Value, CultureInfo.InvariantCulture) : fallback;
+    }
+
+    /// <summary>
+    ///     Symmetric with GetParsedLeadingInt - for "current/total" style counters, takes the number
+    ///     after the last '/' instead (the "total" side), or the whole (trimmed) text if there isn't
+    ///     one. First needed by Talents.TotalPointsAwarded to get the talent tree's cumulative spent
+    ///     total in one read instead of summing every node's live rank.
+    /// </summary>
+    public int GetParsedTrailingInt(int fallback = 0)
+    {
+        var text = GetParsedText();
+        var slashIndex = text.LastIndexOf('/');
+        var tail = slashIndex >= 0 ? text[(slashIndex + 1)..] : text;
+        return int.TryParse(tail.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : fallback;
+    }
+
     public double GetParsedDouble(double fallback = 0)
     {
         var parsedText = GetParsedText();

@@ -13,6 +13,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- TalentEngine is its own project (dependency-free, unit-tested) - exclude its files from
+             this project's default **/*.cs glob, which would otherwise recompile them here too. -->
+        <Compile Remove="TalentEngine\**\*.cs" />
+        <ProjectReference Include="TalentEngine\Firebot.TalentEngine.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Reference Include="MelonLoader">
             <HintPath>$(MelonLoaderNetDir)\MelonLoader.dll</HintPath>
         </Reference>

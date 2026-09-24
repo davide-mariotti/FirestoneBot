@@ -1,90 +1,83 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Character;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
+using Firebot.TalentEngine;
 using MelonLoader;
 
 namespace Firebot.Tasks.Character;
 
 /// <summary>
-///     Spends talent points (Character screen, Talents tab) following the priority order in
-///     GameModel/Features/Character/Talents.cs, transcribed from the user's docs/talents-guide.html.
-///     This whole feature is new.
-///     Fully stateless PER RUN by design: each run re-opens the guide's nodes in order (starting from
-///     guide_start_index, see below) until it finds the first one still below its planned target rank,
-///     invests there, and continues until either points run out or the plan is fully satisfied - it
-///     never persists "where it left off" between runs beyond that one calibrated starting index.
-///     Per the user's explicit choice, once every planned entry is satisfied but more points remain
-///     (the guide covers only the tree's first ~420 of 2037 total points), the task stops and leaves
-///     the rest unspent rather than guessing - a wrong guess isn't free (a full tree reset costs 100
-///     gems per the wiki).
-///     Confirmed by the user: upgradeTalentButton only stages a point, real investment happens on
-///     talentsSaveButton. Saved after every single node visited (not batched across the whole plan)
-///     so a later re-visit to the same talent (the plan revisits several - see Talents.Plan) always
-///     reads back a real committed rank instead of needing to know whether the preview's rank display
-///     reflects an unsaved pending change.
-///     Guide/real-account divergence (found live, 2026-09-18, left disabled until now - see
-///     TESTING.md row 30 and git history): on an account that already invested points by hand before
-///     this task ever ran, blindly walking the guide from entry 0 every run means "catching up" any
-///     entry still behind target, in guide order, even ones the account deliberately skipped long ago
-///     - potentially spending every available point backfilling ancient history instead of the
-///     account's real current frontier. Fixed by calibrating guide_start_index ONCE (see
-///     CalibrateGuideStartIndex): find the longest unbroken PREFIX of Plan (from entry 0) that the
-///     account's real ranks already satisfy, and only ever operate on entries from just past that
-///     point onward - never re-examined, only ever advances forward, persisted so later runs skip
-///     recalibrating. Per the user (2026-09-20): kept overridable - set guide_start_index directly in
-///     the cfg if the auto-calibration picks a starting point that doesn't match what was actually
-///     intended by hand.
-///     Works fine on an account that diverged from the guide's exact order WITHIN the calibrated
-///     range too, without needing to know its history: every entry only ever compares the node's
-///     CURRENT live rank against that entry's target, so a talent the account already pushed ahead of
-///     plan (post-calibration) reads as "nothing to invest" and is skipped, while one that's behind
-///     gets topped up toward the same target it would have reached by following the guide from empty.
-///     The one case this can't route around: a guide-covered talent whose OWN direct prerequisite (a
-///     specific earlier talent in its branch, not just the tree's cumulative point total - see the
-///     wiki) never got a single point from the account's real history stays locked no matter how many
-///     points are available - skipped for this run (see IsPreviewLocked below) rather than guessed at.
+///     Spends talent points to maximize how deep the account can push into the 46-tier tree - see
+///     TalentEngine.TalentAllocator for the actual decision algorithm and TalentTreeData for the tree's
+///     real shape (both live-verified node-by-node on Steam-0, 2026-09-24). Per the user's explicit
+///     design: the current state is only ever read as a snapshot - points already spent are never
+///     touched or second-guessed, and every run recomputes the best allocation from scratch instead of
+///     resuming a fixed sequence. This replaces the previous guide_start_index/CalibrateGuideStartIndex
+///     approach entirely (a single hand-transcribed priority list covering only the tree's first ~448
+///     of 2037 points, which the user never fully trusted enough to enable - see TESTING.md row 30).
+///     The tree's real per-node "direct predecessor" prerequisite (the wiki: "also spend >=1 point in
+///     the directly preceding talent") is deliberately NOT pre-mapped as static data - reverse-
+///     engineering the exact pairs would need a fresh, zero-invested account to observe reliably, which
+///     isn't available. Instead this task discovers a lock reactively (Paths.TalentPreviewLoc.LockedRoot,
+///     the same signal the old task used) and replans around it: if a step the allocator expected to be
+///     open comes back locked live, that node is excluded and Plan() is called again from the current
+///     (already-applied) state. This converges within at most 89 replans (one new exclusion per replan,
+///     89 nodes total) since the allocator always prefers other open candidates first.
+///     Bootstrapping the account's current ranks only reads nodes whose tier is already open (a node in
+///     a not-yet-reached tier is guaranteed rank 0 - it can never have received points) and skips
+///     anything already recorded in known_maxed_nodes from a previous run, since a maxed node's rank can
+///     never drop. This keeps the live-read cost bounded to the account's actual "frontier" instead of
+///     rescanning the whole tree every run.
 /// </summary>
 public class TalentsTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Character;
 
-    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(2);
-
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.TalentAvailable;
 
-    private MelonPreferences_Entry<int> _guideStartIndex;
+    private MelonPreferences_Entry<string> _priorityOverrides;
+    private MelonPreferences_Entry<string> _knownMaxedNodes;
 
     protected override void OnConfigure(MelonPreferences_Category category)
     {
-        if (_guideStartIndex != null) return;
+        if (_priorityOverrides != null) return;
 
-        _guideStartIndex = category.CreateEntry(
-            "guide_start_index",
-            -1,
-            "Guide Start Index",
-            "Which entry of the talent guide (Talents.Plan, 0-based) to start investing from - " +
-            "entries before this are never touched. -1 (default) means 'not calibrated yet': the " +
-            "next run auto-calibrates it once, by finding the longest unbroken run of guide entries " +
-            "(from the very first one) the account's real talent ranks already satisfy, then starts " +
-            "just past that point. Check the log after the first run and set this manually if the " +
-            "auto-calibrated value doesn't match what you actually intended by hand - it is never " +
-            "recalculated automatically once set."
+        _priorityOverrides = category.CreateEntry(
+            "priority_overrides",
+            "",
+            "Priority Overrides",
+            "Overrides the default per-talent priority (higher = invested first, see " +
+            "TalentBuildConfig.DefaultPriorities). Comma-separated 'Name:Priority' pairs, e.g. " +
+            "'Fate:100,Alchemy:80'. Names must match a real talent name - unmatched or malformed " +
+            "entries are logged and ignored. Anything not listed here keeps its default priority."
+        );
+
+        _knownMaxedNodes = category.CreateEntry(
+            "known_maxed_nodes",
+            "",
+            "Known Maxed Nodes",
+            "(auto-managed, don't edit) - comma-separated catalog indices already confirmed at max " +
+            "rank, so future runs don't need to re-open them just to read their level."
         );
     }
 
     public override IEnumerator Execute()
     {
+        // Notification-gated only, per the user (2026-09-24): this task must never fire off an idle
+        // timer, only when the game's own TalentAvailable badge is actually showing - set unconditionally
+        // up front (regardless of how this run ends) so IsReady's OR(notificationVisible, Now >=
+        // NextRunTime) never takes the time branch for this task after its very first execution.
+        NextRunTime = DateTime.MaxValue;
+
         // Fast path - safe no-op if not up.
         yield return Notifications.TalentAvailable;
 
         // Guaranteed path regardless of the notification - same reasoning as every other task.
-        // CharacterScreen.Open() retries internally (see its own doc comment) - if it still hasn't
-        // opened after that, bail out rather than proceeding to calibrate/invest against garbage
-        // reads (every path would resolve as "broken", which - before this guard existed - got
-        // live-confirmed to silently miscalibrate guide_start_index to 0 instead of a real value).
         yield return CharacterScreen.Open();
         if (!CharacterScreen.IsOpen)
         {
@@ -94,82 +87,132 @@ public class TalentsTask : BotTask
 
         yield return CharacterScreen.OpenTalentsTab;
 
-        if (_guideStartIndex.Value < 0) yield return CalibrateGuideStartIndex();
-
         var availablePoints = Talents.AvailablePoints;
+
         if (availablePoints > 0)
         {
-            for (var planIndex = _guideStartIndex.Value; planIndex < Talents.Plan.Length; planIndex++)
-            {
-                var (catalogIndex, targetRank) = Talents.Plan[planIndex];
-                yield return Talents.OpenNode(catalogIndex);
+            var totalSpent = Talents.TotalPointsAwarded - availablePoints;
+            Debug($"Available points: {availablePoints}, total spent: {totalSpent}.");
 
-                if (Talents.IsPreviewLocked)
+            var tree = TalentTreeData.Tree;
+            var priorities = TalentBuildConfig.Resolve(_priorityOverrides.Value);
+            var knownMaxed = ParseIndexSet(_knownMaxedNodes.Value);
+            var lockedNodes = new HashSet<int>();
+            var ranks = new int[tree.Nodes.Count];
+
+            for (var i = 0; i < tree.Nodes.Count; i++)
+            {
+                var node = tree.Nodes[i];
+                if (tree.TierThresholds[node.Tier] > totalSpent) continue; // tier not open - rank is always 0
+
+                if (knownMaxed.Contains(i))
                 {
-                    // Shouldn't happen on an account that only ever invested through this same
-                    // plan, in order - but a divergent account's real history might never have put
-                    // a point in this branch's specific predecessor (see the class doc). Skip just
-                    // this one entry rather than giving up on the whole run: a later entry may
-                    // still be perfectly investable.
-                    yield return Talents.ClosePreview;
+                    ranks[i] = node.MaxRank;
+                    Debug($"  [{i}] '{node.Name}' tier={node.Tier} rank={ranks[i]}/{node.MaxRank} (cached maxed) priority={PriorityOf(priorities, node.Name)}");
                     continue;
                 }
 
-                var currentRank = Talents.PreviewCurrentRank;
-                var toInvest = Math.Min(targetRank - currentRank, availablePoints);
-                var invested = 0;
+                yield return Talents.OpenNode(i);
 
-                for (var i = 0; i < toInvest && Talents.UpgradeButton.IsClickable(); i++)
+                if (Talents.IsPreviewLocked)
                 {
-                    yield return Talents.UpgradeButton.Click();
-                    availablePoints--;
-                    invested++;
+                    lockedNodes.Add(i);
+                    Debug($"  [{i}] '{node.Name}' tier={node.Tier} LOCKED priority={PriorityOf(priorities, node.Name)}");
+                }
+                else
+                {
+                    ranks[i] = Talents.PreviewCurrentRank;
+                    if (ranks[i] >= node.MaxRank) MarkMaxed(i, knownMaxed);
+                    Debug($"  [{i}] '{node.Name}' tier={node.Tier} rank={ranks[i]}/{node.MaxRank} priority={PriorityOf(priorities, node.Name)}");
                 }
 
                 yield return Talents.ClosePreview;
+            }
 
-                if (invested > 0) yield return Talents.Save;
+            // Every pass re-plans from the just-corrected ranks/locks, so a bootstrap misread or a
+            // node that turns out already maxed (real cap reached sooner than the read suggested)
+            // is accounted for on the next iteration instead of silently leaving points unspent.
+            var progressMade = true;
+            while (availablePoints > 0 && progressMade)
+            {
+                var plan = TalentAllocator.Plan(tree, ranks, lockedNodes, availablePoints, priorities,
+                    TalentBuildConfig.DefaultPriority);
+                if (plan.Count == 0)
+                {
+                    Debug("Plan() returned no steps - nothing more can be invested this run.");
+                    break;
+                }
 
-                if (availablePoints <= 0) break;
+                Debug($"Plan: {string.Join(", ", plan.Select(s => $"'{tree.Nodes[s.NodeIndex].Name}'+{s.PointsToAdd}"))}");
+
+                progressMade = false;
+
+                foreach (var step in plan)
+                {
+                    if (availablePoints <= 0) break;
+
+                    var node = tree.Nodes[step.NodeIndex];
+                    yield return Talents.OpenNode(step.NodeIndex);
+
+                    if (Talents.IsPreviewLocked)
+                    {
+                        // Wasn't caught during the bootstrap read above - either this node's tier only
+                        // opened via this same plan's own earlier steps, or it's genuinely the tree's
+                        // unmapped per-node prerequisite. Either way, exclude it and let the next pass
+                        // replan around it.
+                        Debug($"  '{node.Name}' unexpectedly locked at investment time - excluding and replanning.");
+                        lockedNodes.Add(step.NodeIndex);
+                        yield return Talents.ClosePreview;
+                        progressMade = true; // state changed (a new exclusion) - worth another pass
+                        continue;
+                    }
+
+                    var invested = 0;
+                    for (var i = 0; i < step.PointsToAdd && availablePoints > 0 &&
+                                    Talents.UpgradeButton.IsClickable(); i++)
+                    {
+                        yield return Talents.UpgradeButton.Click();
+                        availablePoints--;
+                        invested++;
+                    }
+
+                    Debug($"  Invested {invested} in '{node.Name}' (wanted {step.PointsToAdd}).");
+
+                    yield return Talents.ClosePreview;
+                    if (invested > 0) yield return Talents.Save;
+
+                    // A real cap hit sooner than the (possibly stale) bootstrap read expected shows up
+                    // as IsClickable() going false before PointsToAdd was reached, with points still
+                    // left to spend - trust the game over the read and snap straight to MaxRank so the
+                    // next pass's candidate pool correctly excludes it instead of retrying forever.
+                    var hitRealCap = invested < step.PointsToAdd && availablePoints > 0;
+                    ranks[step.NodeIndex] = hitRealCap ? node.MaxRank : ranks[step.NodeIndex] + invested;
+                    if (hitRealCap || ranks[step.NodeIndex] >= node.MaxRank) MarkMaxed(step.NodeIndex, knownMaxed);
+
+                    // Either real spend happened, or we just learned this candidate's true (lower) cap -
+                    // both change the candidate pool enough to be worth another Plan() pass.
+                    if (invested > 0 || hitRealCap) progressMade = true;
+                }
             }
         }
 
         yield return CharacterScreen.Close;
-
-        NextRunTime = DateTime.Now + RecheckDelay;
     }
 
-    /// <summary>
-    ///     Runs ONCE ever (see guide_start_index's -1 sentinel) - opens each guide entry from the very
-    ///     start in order, stopping at the first one NOT already satisfied by the account's real
-    ///     ranks (or locked, which necessarily means "never invested" - rank 0 can't satisfy any
-    ///     positive target). Everything before that point is assumed deliberately skipped by hand and
-    ///     is never revisited; everything from that point on is handled by Execute()'s normal
-    ///     top-up-if-behind loop, unchanged.
-    /// </summary>
-    private IEnumerator CalibrateGuideStartIndex()
+    private static int PriorityOf(IReadOnlyDictionary<string, int> priorities, string name) =>
+        priorities.TryGetValue(name, out var p) ? p : TalentBuildConfig.DefaultPriority;
+
+    private void MarkMaxed(int nodeIndex, HashSet<int> knownMaxed)
     {
-        var startIndex = 0;
-
-        for (var i = 0; i < Talents.Plan.Length; i++)
-        {
-            var (catalogIndex, targetRank) = Talents.Plan[i];
-            yield return Talents.OpenNode(catalogIndex);
-
-            var satisfied = !Talents.IsPreviewLocked && Talents.PreviewCurrentRank >= targetRank;
-            yield return Talents.ClosePreview;
-
-            if (!satisfied) break;
-            startIndex = i + 1;
-        }
-
-        _guideStartIndex.Value = startIndex;
-
-        var description = startIndex < Talents.Plan.Length
-            ? $"'{Talents.CatalogName(Talents.Plan[startIndex].CatalogIndex)}' (target rank " +
-              $"{Talents.Plan[startIndex].TargetRank})"
-            : "past the end of the guide - nothing left to invest";
-        Debug($"Talents: calibrated guide_start_index = {startIndex} -> {description}. " +
-              "Override guide_start_index in the cfg if this doesn't match what you actually invested by hand.");
+        if (!knownMaxed.Add(nodeIndex)) return;
+        _knownMaxedNodes.Value = string.Join(",", knownMaxed.OrderBy(i => i));
     }
+
+    private static HashSet<int> ParseIndexSet(string csv) =>
+        string.IsNullOrWhiteSpace(csv)
+            ? new HashSet<int>()
+            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => int.TryParse(s.Trim(), out var v) ? v : -1)
+                .Where(v => v >= 0)
+                .ToHashSet();
 }

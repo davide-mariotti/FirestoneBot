@@ -39,12 +39,16 @@ public static partial class Paths
     // button" pattern as MeteoriteResearchPreviewLoc/FirestoneResearchPreviewLoc above.
     public static class TalentPreviewLoc
     {
-        private const string Root = MenusLoc.Root + "/popups/TalentPreview";
+        public const string Root = MenusLoc.Root + "/popups/TalentPreview";
 
         public const string CloseBtn = Root + "/bg/closeButton";
 
-        // Exact text format ("5" vs "5/25" vs something else) not verified live - parsed
-        // defensively, see Talents.PreviewCurrentRank.
+        // Live-confirmed, 2026-09-24, Steam-0: the preview's displayed talent name - used to verify
+        // TalentTreeData's node names against the real game.
+        public const string NameTxt = Root + "/bg/talentName";
+
+        // Live-confirmed, 2026-09-24: reads "Level N/M" (e.g. "Level 1/25") - see
+        // Talents.PreviewCurrentRank/GameText.GetParsedFirstInt for the parsing this needs.
         public const string LevelTxt = Root + "/bg/talentLevelText";
 
         // Shown instead of talentUpgrades when this tier's prerequisites aren't met yet.
