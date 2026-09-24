@@ -41,6 +41,13 @@ public static partial class Paths
 
         // Relative to a card GameElement (an "eventInteraction" child of the two roots above).
         public const string CardTitleTxt = "/mainElements/title";
+
+        // Live-confirmed, 2026-09-24 (Steam-12/13/14/15): an "active" event card can still be
+        // individually level/time-locked for a young account (structure dump showed mainElements/lock,
+        // fadeLevelLocked/locked and fadeTimeLocked/timer all active) - clicking it never opens
+        // anything, which is correct/expected, not a click bug. Checked before attempting a click at
+        // all, so a locked card is skipped immediately instead of wasting retries on it every run.
+        public const string CardLockIndicator = "/mainElements/lock";
     }
 
     /// <summary>

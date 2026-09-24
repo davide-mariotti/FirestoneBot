@@ -86,9 +86,15 @@ public static class EventManager
     /// <summary>
     ///     Scans both the active and upcoming event lists for a card whose title text matches
     ///     eventName (case-insensitive, partial match - same style as the priority-name matching in
-    ///     FirestoneResearchTask), and clicks it if found and clickable. Safe no-op otherwise (e.g.
-    ///     the event isn't currently running, or is upcoming/locked) - the caller's own IsVisible
-    ///     check on the resulting shop screen is what actually confirms success.
+    ///     FirestoneResearchTask), and clicks it if found and not individually locked. Safe no-op
+    ///     otherwise (e.g. the event isn't currently running, or this specific card is locked for the
+    ///     account - see Paths.EventManagerLoc.CardLockIndicator) - the caller's own IsVisible check on
+    ///     the resulting shop screen is what actually confirms success.
+    ///     Uses ClickSimulated (not plain Click) with the same poll+retry shape as this class's own
+    ///     Open(): live-confirmed elsewhere (Open's own eventsButton) that a real Button component can
+    ///     have zero onClick listeners, so ClickSimulated is the safer default for every card click here
+    ///     too - but the lock check runs first so a genuinely locked card (the common case for young
+    ///     accounts) is skipped immediately instead of wasting retries on it every run.
     /// </summary>
     public static IEnumerator OpenEvent(string eventName)
     {
@@ -101,16 +107,32 @@ public static class EventManager
             var title = new GameText(Paths.EventManagerLoc.CardTitleTxt, card).GetParsedText();
             if (!title.Contains(eventName, StringComparison.OrdinalIgnoreCase)) continue;
 
+            if (new GameElement(Paths.EventManagerLoc.CardLockIndicator, card).IsVisible())
+            {
+                Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) is locked for this account - skipping.");
+                yield break;
+            }
+
             var button = new GameButton(parent: card);
-            if (button.IsClickable())
+
+            for (var attempt = 1; attempt <= MaxClickAttempts && IsVisible; attempt++)
             {
-                Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) is clickable - clicking.");
-                yield return button.Click();
+                Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) - click attempt {attempt}/{MaxClickAttempts}.");
+                yield return button.ClickSimulated();
+
+                var pollsLeft = MaxOpenPolls;
+                while (pollsLeft > 0 && IsVisible)
+                {
+                    yield return OpenPollWait;
+                    pollsLeft--;
+                }
+
+                if (!IsVisible) break; // the hub itself closed - the event's own shop screen opened
             }
-            else
-            {
-                Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) found but NOT clickable.");
-            }
+
+            if (IsVisible)
+                Logger.Debug($"[EventManager] DIAG: '{title}' never opened after {MaxClickAttempts} ClickSimulated attempts, " +
+                             $"despite not showing as locked - card structure:\n{Firebot.Core.Watchdog.DumpChildrenRecursive(card.FullPath, 4)}");
 
             yield break;
         }
