@@ -17,26 +17,25 @@ Non è un cap/limite di memoria: è uno "svuotamento" periodico. Un processo che
 torna ad essere usato intensamente riprenderà a occupare RAM finché non viene
 rieseguito il trim.
 
-### Cosa NON viene mai toccato
+### Cosa viene toccato (2026-09-26: approccio semplificato)
 
-- **Il processo in primo piano** (la finestra che stai usando in quel momento),
-  rilevato automaticamente ad ogni esecuzione — così non c'è mai stutter
-  sull'app attiva.
-- **Firestone** (il gioco), **Steam** (client + `steamwebhelper`, il suo
-  componente CEF/GPU per overlay e notifiche), **UnityCrashHandler**, **Visual
-  Studio / VS Code** (`devenv`, `Code`) — esclusi sempre per nome,
-  indipendentemente da cosa hai in primo piano. Steam è stato aggiunto dopo aver
-  osservato crash di `steamwebhelper.exe` e di `Firestone.exe` (2026-09-25) con
-  17+ istanze attive insieme - l'overlay di Steam è agganciato dentro il
-  processo del gioco, quindi svuotarne la memoria a forza ogni 5 minuti può
-  destabilizzare entrambi.
-- Processi di sistema critici (`explorer`, `dwm`, `lsass`, `csrss`, `svchost`,
-  `winlogon`, `services`, `System`, `Registry`, ecc.) — mai toccati per evitare
-  qualunque instabilità.
-- Processi già piccoli (sotto i 20MB di working set): non vale la pena.
+La prima versione trimmava "tutto tranne una blacklist" (Steam/Firestone
+esclusi, il resto del sistema si'). Anche dopo aver escluso esplicitamente
+Steam e Firestone, le istanze continuavano a crashare spesso con 17+ istanze
+attive insieme - probabilmente per pressione di memoria indiretta sul resto
+del sistema. Ora la lista si è capovolta: invece di una blacklist ampia, c'è
+una whitelist molto stretta.
 
-Modifica le liste `$systemExclude` e `$neverTrimContains` all'inizio di
-`trim_ram.ps1` se vuoi aggiungere altre esclusioni.
+**Viene trimmato solo `steamwebhelper.exe`** — il componente CEF/GPU di Steam
+per overlay e notifiche. Ne gira una copia per ogni istanza Steam attiva, è
+pesante (è essenzialmente un mini-Chromium), ed è l'unico componente di Steam
+non direttamente coinvolto nell'hosting del gioco.
+
+Tutto il resto — `steam.exe`, `Firestone.exe`, `UnityCrashHandler`, qualunque
+altro processo di sistema o applicazione — non viene mai toccato.
+
+Modifica la lista `$trimOnlyContains` all'inizio di `trim_ram.ps1` se vuoi
+includere altri processi nel trim.
 
 ## Uso manuale (una tantum)
 
