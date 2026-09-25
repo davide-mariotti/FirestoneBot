@@ -22,8 +22,14 @@ rieseguito il trim.
 - **Il processo in primo piano** (la finestra che stai usando in quel momento),
   rilevato automaticamente ad ogni esecuzione — così non c'è mai stutter
   sull'app attiva.
-- **Firestone** (il gioco), **Visual Studio / VS Code** (`devenv`, `Code`) —
-  esclusi sempre per nome, indipendentemente da cosa hai in primo piano.
+- **Firestone** (il gioco), **Steam** (client + `steamwebhelper`, il suo
+  componente CEF/GPU per overlay e notifiche), **UnityCrashHandler**, **Visual
+  Studio / VS Code** (`devenv`, `Code`) — esclusi sempre per nome,
+  indipendentemente da cosa hai in primo piano. Steam è stato aggiunto dopo aver
+  osservato crash di `steamwebhelper.exe` e di `Firestone.exe` (2026-09-25) con
+  17+ istanze attive insieme - l'overlay di Steam è agganciato dentro il
+  processo del gioco, quindi svuotarne la memoria a forza ogni 5 minuti può
+  destabilizzare entrambi.
 - Processi di sistema critici (`explorer`, `dwm`, `lsass`, `csrss`, `svchost`,
   `winlogon`, `services`, `System`, `Registry`, ecc.) — mai toccati per evitare
   qualunque instabilità.
@@ -42,14 +48,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Repos\FirestoneBot\tools
 
 ## Uso automatico (consigliato)
 
-Per farlo girare da solo ogni 5 minuti, crea un'attività pianificata di Windows
-(comando da lanciare una sola volta, non serve amministratore):
+Per farlo girare da solo ogni 20 minuti, crea un'attività pianificata di
+Windows (comando da lanciare una sola volta, non serve amministratore):
 
 ```powershell
-schtasks /Create /TN "PCRamTrim" /TR "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"C:\Repos\FirestoneBot\tools\SteamRamTrim\trim_ram.ps1`"" /SC MINUTE /MO 5 /F
+schtasks /Create /TN "PCRamTrim" /TR "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"C:\Repos\FirestoneBot\tools\SteamRamTrim\trim_ram.ps1`"" /SC MINUTE /MO 20 /F
 ```
 
-Per cambiare la frequenza, modifica `/MO 5` (minuti).
+Per cambiare la frequenza, modifica `/MO 20` (minuti). 5 minuti (il valore
+usato in precedenza) è più aggressivo del necessario con molte istanze
+Steam+Firestone attive insieme - un intervallo più lungo riduce quanto spesso
+Windows deve ripaginare in memoria i processi appena svuotati.
 
 ### Rimuovere l'attività
 

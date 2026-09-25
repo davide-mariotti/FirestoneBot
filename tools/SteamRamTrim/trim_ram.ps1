@@ -17,7 +17,15 @@ $systemExclude = @(
 )
 
 # Processi da NON trimmare mai (nome contiene una di queste stringhe, case-insensitive)
-$neverTrimContains = @("firestone", "devenv", "code")
+# "steam" copre anche steamwebhelper (il componente CEF/GPU di Steam, usato per overlay e
+# notifiche) - live-osservato, 2026-09-25: con 17+ istanze di Steam+Firestone attive insieme,
+# svuotarne il working set ogni 5 minuti ha coinciso con crash sia di steamwebhelper.exe
+# (EXCEPTION_BREAKPOINT, tipico di un allocatore che rileva uno stato di memoria inatteso) sia
+# di Firestone.exe stesso (l'overlay di Steam è agganciato dentro il processo del gioco, quindi
+# un problema nel componente Steam che lo coordina puo' ripercuotersi anche li').
+# "unitycrashhandler" e' il watchdog di crash-report che ogni istanza di Firestone avvia
+# accanto a se' - legato al gioco, non serve trimmarlo.
+$neverTrimContains = @("firestone", "devenv", "code", "steam", "unitycrashhandler")
 
 # Soglia minima: non vale la pena trimmare processi gia' piccoli
 $minWorkingSetBytes = 20MB
