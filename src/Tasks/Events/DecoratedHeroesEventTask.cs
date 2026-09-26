@@ -19,15 +19,16 @@ public class DecoratedHeroesEventTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Events;
 
-    // Per the user (2026-09-23): buy Golden Key with Stars of Recognition - the wiki/screenshot
-    // shows a "Claimed: X/50" cap enforced by the buy button's own IsClickable(), same as everywhere
-    // else in this codebase.
-    private const string TargetExchangeItem = "Golden key";
+    // Per the user (2026-09-26): buy Beer with Stars of Recognition instead of Golden key - Beer
+    // is more valuable to the account. Exchange list order (1 Legendary chest, 2 Golden chest, 3
+    // Beer, 4 Golden key, 5 Contract, 6 Blueprints, 7 Dragon blood) - the buy button's own
+    // IsClickable() enforces the "Claimed: X/50" cap, same as everywhere else in this codebase.
+    private const string TargetExchangeItem = "Beer";
 
-    // Recurring event, no fixed daily reset like a quest - recheck a few times a day so new
-    // challenges (they reset periodically per the screenshot's "Challenges will be renewed in:
-    // 17:25:05") get claimed without needing to wait a full day.
-    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(4);
+    // Per the user (2026-09-26): recheck hourly instead of every 4h, so newly-unlocked challenges
+    // (they reset periodically per the screenshot's "Challenges will be renewed in: 17:25:05") and
+    // exchange purchases happen promptly instead of piling up.
+    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(1);
 
     public override IEnumerator Execute()
     {

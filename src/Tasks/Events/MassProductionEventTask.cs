@@ -16,10 +16,9 @@ public class MassProductionEventTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Events;
 
-    // Recurring event, no fixed daily reset like a quest - recheck a few times a day so a newly
-    // unlocked day's challenge gets claimed promptly, same cadence reasoning as
-    // DecoratedHeroesEventTask.
-    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(4);
+    // Per the user (2026-09-26): recheck hourly instead of every 4h, so a newly unlocked day's
+    // challenge gets claimed promptly, same cadence reasoning as DecoratedHeroesEventTask.
+    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(1);
 
     public override IEnumerator Execute()
     {

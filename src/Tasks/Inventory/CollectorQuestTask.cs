@@ -38,7 +38,9 @@ public class CollectorQuestTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Quests;
 
-    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
+    // Per the user (2026-09-26): recheck hourly instead of every 6h, so newly-accumulated chests get
+    // opened promptly instead of piling up in the inventory across a fleet of many instances.
+    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(1);
 
     // The "Collector" quest's exact requirement - see class doc comment.
     private const int GearChestTarget = 4;

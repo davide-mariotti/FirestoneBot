@@ -10,21 +10,23 @@ namespace Firebot.Tasks.Events;
 ///     "New Player Event" - the real in-game screen is a recycled "AnniversaryShop" prefab/script
 ///     (see AnniversaryShop's own doc comment for how this was discovered via live diagnostics,
 ///     2026-09-24, Steam-10). Per the user: claims the daily check-in, claims activity milestones
-///     (earned by staying online a certain amount of time that day), and buys "Rare chest" from the
-///     Exchange (the account's target item - the user described it by its position, "first" in the
-///     Exchange list). Avatars/Skins/the real-money Shop tab deliberately untouched, same convention
+///     (earned by staying online a certain amount of time that day), and buys "Meteorite" from the
+///     Exchange (the account's target item, changed 2026-09-26 from "Rare chest" - Meteorite is more
+///     valuable). Avatars/Skins/the real-money Shop tab deliberately untouched, same convention
 ///     as DecoratedHeroesEventTask's own excluded tabs.
 /// </summary>
 public class NewPlayerEventTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Events;
 
-    private const string TargetExchangeItem = "Rare chest";
+    // Per the user (2026-09-26): buy Meteorite instead of the first chest-type item - more valuable
+    // to the account. Exchange list order: Epic chest, Golden chest, Exotic coin, Pickaxe, Strange
+    // dust, Honor, Beer, Meteorite (last).
+    private const string TargetExchangeItem = "Meteorite";
 
-    // Recurring check, no fixed daily reset like a quest - recheck a few times a day so the daily
-    // check-in and any newly-unlocked activity milestone get claimed promptly, same cadence reasoning
-    // as DecoratedHeroesEventTask.
-    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(4);
+    // Per the user (2026-09-26): recheck hourly instead of every 4h, so the daily check-in and any
+    // newly-unlocked activity milestone get claimed promptly instead of piling up.
+    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(1);
 
     public override IEnumerator Execute()
     {
