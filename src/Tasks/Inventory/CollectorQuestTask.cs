@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.Infrastructure;
+using Firebot.Utilities;
 using MelonLoader;
 using UnityEngine;
 using ChestOpening = Firebot.GameModel.Features.Inventory.ChestOpening;
@@ -88,7 +89,7 @@ public class CollectorQuestTask : BotTask
 
     public override IEnumerator Execute()
     {
-        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        var today = GameDay.Today();
 
         if (_gearChestsDate?.Value != today)
         {

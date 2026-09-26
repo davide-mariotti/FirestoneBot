@@ -6,6 +6,7 @@ using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
+using Firebot.Utilities;
 using MelonLoader;
 using UnityEngine;
 using InventoryScreen = Firebot.GameModel.Features.Inventory.Inventory;
@@ -81,7 +82,7 @@ public class MerchantQuestTask : BotTask
 
     public override IEnumerator Execute()
     {
-        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        var today = GameDay.Today();
         if (_lastDoneDate?.Value == today)
         {
             NextRunTime = DateTime.Now + RecheckDelay;

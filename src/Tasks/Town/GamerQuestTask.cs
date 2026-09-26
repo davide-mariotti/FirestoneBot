@@ -3,6 +3,7 @@ using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town;
 using Firebot.Infrastructure;
+using Firebot.Utilities;
 using MelonLoader;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
@@ -85,7 +86,7 @@ public class GamerQuestTask : BotTask
 
     public override IEnumerator Execute()
     {
-        var today = DateTime.Now.ToString("yyyy-MM-dd");
+        var today = GameDay.Today();
 
         if (_playsDoneDate?.Value != today)
         {
