@@ -80,19 +80,26 @@ public static class ChestOpening
     public static IEnumerator OpenDownTo(string slotPath, int targetRemaining, Action<int> onOpened = null)
     {
         var slot = new GameButton(slotPath, Inventory.Content);
-        if (!slot.IsClickable()) yield break;
+        var slotClickable = slot.IsClickable();
 
         var quantityTxt = new GameText(slotPath + "/quantity", Inventory.Content);
+        if (!slotClickable) yield break;
+
         var remainingToOpen = quantityTxt.GetParsedInt() - targetRemaining;
         if (remainingToOpen <= 0) yield break;
 
         var totalToOpen = remainingToOpen;
 
-        // Confirmed live, 2026-09-17: this slot is a pooled ScrollView list item (like Path of
-        // Glory's reward cells) whose click isn't wired to Button.onClick - see GameButton.ClickSimulated.
+        // Live-confirmed, 2026-09-26 via Watchdog.DumpActiveScreens() right after the click: these
+        // slots are pooled ScrollView cells whose Button.onClick has zero listeners wired, exactly the
+        // case ClickSimulated's own doc comment describes - plain Click() is a complete no-op here
+        // (confirmed: active screen stayed "menus/Inventory" indefinitely, no popup ever appeared).
         yield return slot.ClickSimulated(); // opens ChestOpenPreview
 
         var onPreview = true;
+        var openPreviewAttempts = 0;
+        const int MaxOpenPreviewAttempts = 3;
+
         while (remainingToOpen > 0)
         {
             var openX10 = new GameButton(onPreview
@@ -111,16 +118,33 @@ public static class ChestOpening
 
             if (remainingToOpen >= 10 && openX10.IsClickable())
             {
+                Firebot.Core.Logger.Debug($"[ChestOpening] '{slotPath}': clicking openX10 (onPreview={onPreview}).");
                 yield return openX10.Click();
                 remainingToOpen -= 10;
             }
             else if (openX1.IsClickable())
             {
+                Firebot.Core.Logger.Debug($"[ChestOpening] '{slotPath}': clicking openX1 (onPreview={onPreview}).");
                 yield return openX1.Click();
                 remainingToOpen -= 1;
             }
+            else if (onPreview && ++openPreviewAttempts < MaxOpenPreviewAttempts)
+            {
+                // Live-confirmed, 2026-09-26: the very first slot processed in a run intermittently
+                // fails to open ChestOpenPreview at all on the first click (its whole popup path
+                // never resolves, not just its buttons) - every later slot in the same run opens on
+                // the first try, so this isn't the click method, just the first click after the
+                // Chests tab settles occasionally not landing. Retry the slot click itself instead
+                // of concluding "no chests" on real, present ones.
+                Firebot.Core.Logger.Debug($"[ChestOpening] '{slotPath}': neither button available after poll " +
+                                           $"(attempt {openPreviewAttempts}/{MaxOpenPreviewAttempts}) - retrying slot click.");
+                yield return slot.ClickSimulated();
+                continue;
+            }
             else
             {
+                Firebot.Core.Logger.Debug($"[ChestOpening] '{slotPath}': giving up, neither button ever became " +
+                                           $"available (onPreview={onPreview}, openPreviewAttempts={openPreviewAttempts}).");
                 break; // neither button ever became available - out of chests, or the flow ended on its own
             }
 
@@ -130,7 +154,9 @@ public static class ChestOpening
         yield return new GameButton(Paths.ChestOpeningLoc.CloseBtn).Click();
         yield return new GameButton(Paths.ChestOpenPreviewLoc.CloseBtn).Click(); // safe no-op if already closed
 
-        onOpened?.Invoke(totalToOpen - remainingToOpen);
+        var actuallyOpened = totalToOpen - remainingToOpen;
+        Firebot.Core.Logger.Debug($"[ChestOpening] '{slotPath}': done, opened {actuallyOpened}/{totalToOpen}.");
+        onOpened?.Invoke(actuallyOpened);
     }
 
     /// <summary>Opens every owned chest of the given slot (down to 0).</summary>

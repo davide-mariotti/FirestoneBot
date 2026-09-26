@@ -27,7 +27,9 @@ public static partial class Paths
         // Live-confirmed, 2026-09-17: the real slot name is "Common" (capitalized, no "chestbox"
         // suffix) - the previously-assumed "commonChestbox" never existed at all. Siblings found
         // the same way: "Uncommon", "Rare", "Epic" (not individually wired up - the generic scan in
-        // CollectorQuestTask picks up any of these by not being in KnownNonChestSlots).
+        // CollectorQuestTask picks up any of these by not being in KnownNonChestSlots). Two more
+        // gear-chest rarities surfaced live 2026-09-26: "Wooden" and "Iron" (plus "Legendary", also
+        // undocumented until then) - same generic-scan handling, no dedicated constant needed.
         public const string CommonChestSlot = "/Common";
 
         // Confirmed non-chest slot names sharing this same Content list - excluded when scanning for
