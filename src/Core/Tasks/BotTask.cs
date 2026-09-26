@@ -207,7 +207,15 @@ public abstract class BotTask
     public bool IsReady(bool notificationVisible)
         => IsEnabled && MeetsLevelRequirement && (notificationVisible || DateTime.Now >= NextRunTime);
 
-    public bool IsNotificationVisible()
+    /// <summary>
+    ///     Virtual so a task whose badge is known to stay lit for reasons unrelated to whether IT
+    ///     specifically still has something to do (see MinerQuestTask, 2026-09-26 - the Arcane
+    ///     Crystal badge never clears once today's 5 hits are already done, live-confirmed via the
+    ///     status table showing "Notification" nonstop) can add its own "already satisfied" check on
+    ///     top - otherwise a permanently-lit badge unconditionally wins PickEligibleTask's round-robin
+    ///     every single scan tick forever, re-running a task that immediately no-ops.
+    /// </summary>
+    public virtual bool IsNotificationVisible()
         => IsEnabled && MeetsLevelRequirement && NotificationElements != null &&
            UiVariantButton.AnyVisible(NotificationElements);
 

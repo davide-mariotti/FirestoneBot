@@ -1,7 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
@@ -26,33 +24,6 @@ public static class Inventory
     public static IEnumerator Close => new GameButton(Paths.InventoryLoc.CloseBtn).Click();
 
     public static GameElement Content => new(Paths.InventoryLoc.ContentRoot);
-
-    /// <summary>
-    ///     Clicks every item slot (in whichever tab is currently open) whose name looks like one of
-    ///     the "instant gold" conversion items (Pouch/Bucket/Crate/Pile of Gold - these convert to
-    ///     meteorites when used, per the user). No confirmed exact slot names found via UnityPy (the
-    ///     only "gold" GameObjects found were a VFX holder, not the clickable slot itself), so this
-    ///     matches generically by name instead of hardcoding possibly-wrong names - safe no-op on
-    ///     anything that isn't actually clickable.
-    /// </summary>
-    public static IEnumerator UseAllGoldItems()
-    {
-        // Live-confirmed, 2026-09-18: consuming a gold slot can compact the grid (later items shift
-        // into the now-empty position) - clicking a cached path name repeatedly ended up hitting
-        // whatever unrelated item slid in after the gold ran out (the user saw totems get consumed
-        // this way). Re-reading the real name at each position fresh every iteration instead of
-        // trusting a name captured once up front.
-        while (true)
-        {
-            var goldSlot = Content.GetChildren()
-                .FirstOrDefault(c => !string.IsNullOrEmpty(c.Name) && c.Name.ToLowerInvariant().Contains("gold"));
-            if (goldSlot == null) yield break;
-
-            var slot = new GameButton("/" + goldSlot.Name, Content);
-            if (!slot.IsClickable()) yield break;
-            yield return slot.ClickSimulated();
-        }
-    }
 }
 
 /// <summary>

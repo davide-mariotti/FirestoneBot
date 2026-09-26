@@ -33,9 +33,10 @@ public class NewPlayerEventTask : BotTask
         yield return EventManager.Open;
         Debug($"[INFO] EventManager hub visible after Open: {EventManager.IsVisible}");
 
-        yield return EventManager.OpenEvent("New Player Event");
+        var cardFound = false;
+        yield return EventManager.OpenEvent("New Player Event", found => cardFound = found);
         yield return AnniversaryShop.WaitUntilOpen();
-        Debug($"[INFO] AnniversaryShop visible after OpenEvent: {AnniversaryShop.IsVisible}");
+        Debug($"[INFO] AnniversaryShop visible after OpenEvent: {AnniversaryShop.IsVisible}, cardFound: {cardFound}");
 
         if (AnniversaryShop.IsVisible)
         {
@@ -55,6 +56,15 @@ public class NewPlayerEventTask : BotTask
             // DecoratedHeroesEventTask's own fix (2026-09-24): if the shop never opened, leaving
             // NextRunTime untouched lets BotManager's 2-minute idle floor retry soon instead of
             // going dark for 4 hours on every failure.
+            NextRunTime = DateTime.Now + RecheckDelay;
+        }
+        else if (!cardFound)
+        {
+            // Live-confirmed, 2026-09-26 (Steam-0): the event isn't even in the account's list
+            // anymore (outgrown the new-player window) - retrying every 2 minutes forever wastes a
+            // full scan cycle for nothing, unlike a genuinely transient failure. Back off to the
+            // normal cadence instead; it'll pick back up on its own if the event ever reappears.
+            Debug("[INFO] 'New Player Event' isn't in this account's event list - backing off to the normal cadence.");
             NextRunTime = DateTime.Now + RecheckDelay;
         }
         else

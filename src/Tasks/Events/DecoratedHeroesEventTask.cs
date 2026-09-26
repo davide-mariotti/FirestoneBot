@@ -35,9 +35,10 @@ public class DecoratedHeroesEventTask : BotTask
         yield return EventManager.Open;
         Debug($"[INFO] EventManager hub visible after Open: {EventManager.IsVisible}");
 
-        yield return EventManager.OpenEvent("Decorated heroes");
+        var cardFound = false;
+        yield return EventManager.OpenEvent("Decorated heroes", found => cardFound = found);
         yield return DecoratedHeroesShop.WaitUntilOpen();
-        Debug($"[INFO] DecoratedHeroesShop visible after OpenEvent: {DecoratedHeroesShop.IsVisible}");
+        Debug($"[INFO] DecoratedHeroesShop visible after OpenEvent: {DecoratedHeroesShop.IsVisible}, cardFound: {cardFound}");
 
         if (DecoratedHeroesShop.IsVisible)
         {
@@ -56,6 +57,14 @@ public class DecoratedHeroesEventTask : BotTask
             // BotManager's 2-minute idle floor retry soon instead of going dark for 4 hours on
             // every failure - live-confirmed this was masking the events/ root-path fix for hours,
             // 2026-09-23.
+            NextRunTime = DateTime.Now + RecheckDelay;
+        }
+        else if (!cardFound)
+        {
+            // Live-confirmed, 2026-09-26 (Steam-0, New Player Event's identical situation): if the
+            // event isn't even in the account's list, retrying every 2 minutes forever wastes a full
+            // scan cycle for nothing - back off to the normal cadence instead.
+            Debug("[INFO] 'Decorated heroes' isn't in this account's event list - backing off to the normal cadence.");
             NextRunTime = DateTime.Now + RecheckDelay;
         }
         else

@@ -25,9 +25,10 @@ public class MassProductionEventTask : BotTask
         yield return EventManager.Open;
         Debug($"[INFO] EventManager hub visible after Open: {EventManager.IsVisible}");
 
-        yield return EventManager.OpenEvent("Mass Production");
+        var cardFound = false;
+        yield return EventManager.OpenEvent("Mass Production", found => cardFound = found);
         yield return MiniEvents.WaitUntilOpen();
-        Debug($"[INFO] MiniEvents visible after OpenEvent: {MiniEvents.IsVisible}");
+        Debug($"[INFO] MiniEvents visible after OpenEvent: {MiniEvents.IsVisible}, cardFound: {cardFound}");
 
         if (MiniEvents.IsVisible)
         {
@@ -40,6 +41,14 @@ public class MassProductionEventTask : BotTask
             // DecoratedHeroesEventTask's own fix: if the shop never opened, leaving NextRunTime
             // untouched lets BotManager's 2-minute idle floor retry soon instead of going dark for
             // 4 hours on every failure.
+            NextRunTime = DateTime.Now + RecheckDelay;
+        }
+        else if (!cardFound)
+        {
+            // Live-confirmed, 2026-09-26 (Steam-0, New Player Event's identical situation): if the
+            // event isn't even in the account's list, retrying every 2 minutes forever wastes a full
+            // scan cycle for nothing - back off to the normal cadence instead.
+            Debug("[INFO] 'Mass Production' isn't in this account's event list - backing off to the normal cadence.");
             NextRunTime = DateTime.Now + RecheckDelay;
         }
         else

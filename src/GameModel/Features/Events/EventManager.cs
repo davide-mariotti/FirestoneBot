@@ -95,8 +95,15 @@ public static class EventManager
     ///     have zero onClick listeners, so ClickSimulated is the safer default for every card click here
     ///     too - but the lock check runs first so a genuinely locked card (the common case for young
     ///     accounts) is skipped immediately instead of wasting retries on it every run.
+    ///     onCardFound, if given, is invoked once with whether a matching card exists in the list at
+    ///     all (true even if it's locked or the click ultimately fails to open its shop) - added
+    ///     2026-09-26 so callers can tell "this event genuinely isn't available for this account right
+    ///     now" (false) apart from "found it but the shop transiently failed to open" (true), and back
+    ///     off accordingly instead of retrying an event that isn't even in the list every couple of
+    ///     minutes forever (live-confirmed on Steam-0: New Player Event isn't in this account's list
+    ///     at all anymore, yet the task kept retrying on BotManager's 2-minute idle floor indefinitely).
     /// </summary>
-    public static IEnumerator OpenEvent(string eventName)
+    public static IEnumerator OpenEvent(string eventName, Action<bool> onCardFound = null)
     {
         var cards = AllCards.ToList();
         Logger.Debug($"[EventManager] OpenEvent('{eventName}'): scanning {cards.Count} card(s): " +
@@ -106,6 +113,8 @@ public static class EventManager
         {
             var title = new GameText(Paths.EventManagerLoc.CardTitleTxt, card).GetParsedText();
             if (!title.Contains(eventName, StringComparison.OrdinalIgnoreCase)) continue;
+
+            onCardFound?.Invoke(true);
 
             if (new GameElement(Paths.EventManagerLoc.CardLockIndicator, card).IsVisible())
             {
@@ -138,5 +147,6 @@ public static class EventManager
         }
 
         Logger.Debug($"[EventManager] No card matching '{eventName}' found.");
+        onCardFound?.Invoke(false);
     }
 }

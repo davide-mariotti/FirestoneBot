@@ -32,6 +32,13 @@ public class MinerQuestTask : BotTask
     // for scheduling now, not just the opportunistic click below.
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.ArcaneCrystal;
 
+    // Live-confirmed, 2026-09-26: this badge does NOT clear once today's 5 hits are already done (it
+    // tracks something else at the Arcane Crystal screen, not specifically "this quest still needs
+    // doing") - without this override, IsReady() saw it lit forever and re-ran this task's instant
+    // no-op branch every ~5s scan tick nonstop (183 times in 18 minutes on one instance alone),
+    // burning a full Watchdog cleanup + status-table print each time for nothing.
+    public override bool IsNotificationVisible() => base.IsNotificationVisible() && _lastDoneDate?.Value != GameDay.Today();
+
     private const int HitCount = 5;
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
 

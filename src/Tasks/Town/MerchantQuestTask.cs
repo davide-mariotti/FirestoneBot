@@ -8,8 +8,6 @@ using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Firebot.Utilities;
 using MelonLoader;
-using UnityEngine;
-using InventoryScreen = Firebot.GameModel.Features.Inventory.Inventory;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
@@ -17,30 +15,31 @@ namespace Firebot.Tasks.Town;
 /// <summary>
 ///     Progresses the daily quest "Merchant" (sell 10 items at the Exotic Merchant) - level 30 per
 ///     the wiki quest table. Never automated before.
-///     1. Uses up any "instant gold" items (Pouch/Bucket/Crate/Pile of Gold) from the bag FIRST -
-///        these convert to meteorites and should never be sold (per the user).
-///     2. Sells fixed quantities from the sell grid's first 4 slots (3+3+3+1 = 10) instead of
+///     1. Sells fixed quantities from the sell grid's first 4 slots (3+3+3+1 = 10) instead of
 ///        scanning for 10 different item types one each - simplified per the user, 2026-09-20: the
 ///        "one of each, up to 10 distinct types" approach silently under-delivered whenever fewer
 ///        than 10 sellable types were available that run, never actually completing the quest. Per
 ///        the user's own screenshot, the first 4 grid slots are always Scroll of Speed/Damage/Health
 ///        then Midas' Touch, always present in large enough quantities that selling a few of each
 ///        never risks depleting/hiding the slot mid-run (unlike the old approach, which had to dodge
-///        a real grid-compaction bug from fully-depleted stacks disappearing) - gold items always
-///        sort after these 4, per the user, so a defensive "skip if named gold" check is kept anyway
-///        since skipping is always safe. Note this now DOES sell Midas' Touch (1x), reversing the
-///        prior exclusion - explicit per the user this time, not the wiki-driven guess from before.
-///     3. Spends the resulting exotic coins on one upgrade - whichever is cheapest/first affordable
+///        a real grid-compaction bug from fully-depleted stacks disappearing) - "instant gold" items
+///        (Pouch/Bucket/Crate/Pile of Gold) always sort after these 4, per the user, so a defensive
+///        "skip if named gold" check is kept anyway since skipping is always safe. This task never
+///        opens/uses those items itself (per the user, 2026-09-26: they're too valuable to consume
+///        generically - opening them needs a specific, deliberate approach, not an automatic sweep).
+///        Note this now DOES sell Midas' Touch (1x), reversing the prior exclusion - explicit per the
+///        user this time, not the wiki-driven guess from before.
+///     2. Spends the resulting exotic coins on one upgrade - whichever is cheapest/first affordable
 ///        in the currently-displayed tree (not scanning across all ~25 trees for the globally
 ///        cheapest - the user confirmed picking the first available is fine, and Exotic Upgrades
 ///        aren't the primary progression lever Firestone/Meteorite Research are).
-///     4. User-requested: immediately claims the (now-completed) "Merchant" quest afterward instead
+///     3. User-requested: immediately claims the (now-completed) "Merchant" quest afterward instead
 ///        of waiting for QuestsTask's own schedule - reuses the same generic claim-every-completed-
 ///        quest routine (safe no-op on anything not actually claimable yet).
-///     Per the user (2026-09-23): once today's quest is claimed, skip the whole routine (including
-///     the gold-item usage) until the date changes - previously this re-sold items, re-bought an
-///     upgrade and re-attempted the claim every 6h regardless of whether today's quest was already
-///     done, wasting clicks across 16 bot instances.
+///     Per the user (2026-09-23): once today's quest is claimed, skip the whole routine until the
+///     date changes - previously this re-sold items, re-bought an upgrade and re-attempted the claim
+///     every 6h regardless of whether today's quest was already done, wasting clicks across 16 bot
+///     instances.
 /// </summary>
 public class MerchantQuestTask : BotTask
 {
@@ -56,14 +55,9 @@ public class MerchantQuestTask : BotTask
     // (Scroll of Speed, Scroll of Damage, Scroll of Health, Midas' Touch) - sums to SellTarget.
     private static readonly int[] SellCountsByGridIndex = { 3, 3, 3, 1 };
 
-    // Defensive only - see class doc comment. Gold items are used separately (see
-    // InventoryScreen.UseAllGoldItems), never sold.
+    // Defensive only - see class doc comment: "instant gold" items are never sold, and this task
+    // never opens/uses them either.
     private const string NeverSellTerm = "gold";
-
-    // Live-confirmed, 2026-09-18: same pooled-ScrollView populate delay as Collector Quest's chest
-    // list (see CollectorQuestTask.ChestListPopulateDelay) - switching to the Items tab doesn't
-    // populate its real content instantly, so scanning for gold items right away found nothing.
-    private static readonly WaitForSeconds ItemListPopulateDelay = new(1.5f);
 
     private MelonPreferences_Entry<string> _lastDoneDate;
 
@@ -88,12 +82,6 @@ public class MerchantQuestTask : BotTask
             NextRunTime = DateTime.Now + RecheckDelay;
             yield break;
         }
-
-        yield return InventoryScreen.Open;
-        yield return InventoryScreen.OpenItemsTab;
-        yield return ItemListPopulateDelay;
-        yield return InventoryScreen.UseAllGoldItems();
-        yield return InventoryScreen.Close;
 
         yield return TownScreen.Open;
         yield return TownScreen.OpenExoticMerchant;
