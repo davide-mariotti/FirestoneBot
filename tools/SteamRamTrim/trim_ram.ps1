@@ -7,12 +7,17 @@ public static extern bool EmptyWorkingSet(IntPtr hProcess);
 # blacklist" (Steam/Firestone esclusi, il resto del sistema si', incluso qualunque processo di
 # terze parti), ed e' rimasta comunque associata a crash frequenti delle istanze anche dopo aver
 # escluso Steam/Firestone esplicitamente - probabilmente per pressione di memoria indiretta sul
-# resto del sistema con 17+ istanze attive. Ora si trimma SOLO steamwebhelper.exe (il componente
-# CEF/GPU di Steam per overlay e notifiche: ne gira una copia per ogni istanza Steam, e' pesante,
-# ed e' l'unico pezzo di Steam non direttamente coinvolto nell'hosting del gioco). steam.exe,
-# Firestone.exe e unitycrashhandler restano intoccati, e nessun altro processo di sistema viene
+# resto del sistema con 17+ istanze attive. Poi si e' provato a trimmare SOLO steamwebhelper.exe:
+# ATTENZIONE - questo e' esattamente cio' che l'incidente del 2026-09-25 aveva gia' indicato come
+# causa dei crash di steamwebhelper.exe e Firestone.exe (l'overlay Steam e' agganciato dentro il
+# processo del gioco). Ora lo scope e' stato allargato di nuovo a "steam" (copre steam.exe,
+# steamwebhelper.exe, steamservice.exe, steamerrorreporter.exe) per test - riprovare in scenari
+# reali se i crash si ripresentano; potrebbe non essere il trim la causa principale, dato che lo
+# stesso giorno e' stato osservato anche un crash di SbieSvc.exe (STACK_OVERFLOW) indipendente da
+# questo script. Firestone.exe e unitycrashhandler restano sempre esclusi, e nessun processo di
+# sistema o di Sandboxie (SbieSvc/SandMan/Start.exe, nessuno contiene "steam" nel nome) viene mai
 # toccato.
-$trimOnlyContains = @("steamwebhelper")
+$trimOnlyContains = @("steam")
 
 # Soglia minima: non vale la pena trimmare processi gia' piccoli
 $minWorkingSetBytes = 20MB

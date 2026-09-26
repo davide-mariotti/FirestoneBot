@@ -5,6 +5,19 @@ senza chiudere nulla e senza interrompere quello che stai usando attivamente.
 
 Non serve per far girare il bot: è solo un'utility a parte, tenuta qui per comodità.
 
+## Blocchi con 17 istanze: la causa vera è il commit limit (2026-09-26)
+
+I blocchi totali (dwm.exe che crasha con `c00001ad`, VS Code / steamwebhelper
+con `0xE0000008` = OOM, evento 2004 "memoria virtuale insufficiente" ogni 5
+minuti) sono dovuti all'esaurimento del **commit limit** (RAM + pagefile),
+non della RAM fisica. Il pagefile automatico è limitato a 1/8 del disco
+(~29 GB su C: da 232 GB) → limite 61 GB, mentre 17 Steam + 17 Firestone ne
+chiedono ~65. Il trim del working set non cambia il commit, quindi non può
+risolverlo.
+
+Soluzione: `4_pagefile.ps1` (da Amministratore, poi riavvio) imposta un
+pagefile fisso da 56 GB → commit limit ~88 GB.
+
 ## Come funziona
 
 Chiama l'API di Windows `EmptyWorkingSet` su (quasi) tutti i processi in
