@@ -23,6 +23,7 @@ public static class BotSettings
     private static MelonPreferences_Entry<int> _windowHeight;
     private static MelonPreferences_Entry<bool> _windowGridEnabled;
     private static MelonPreferences_Entry<int> _windowGridColumns;
+    private static MelonPreferences_Entry<int> _windowGridFirstInstance;
 
     private static string _configPath;
     public static float FreeSpeedupSeconds => Mathf.Clamp(_freeSpeedupSeconds.Value, 0.0f, 180.0f);
@@ -125,10 +126,19 @@ public static class BotSettings
 
         _windowGridColumns = _category.CreateEntry("window_grid_columns", 5, "Window Grid Columns",
             "How many instances per row when window_grid_enabled is on. Default: 5 - pair with " +
-            "window_width=512/window_height=384 for a 5x3 grid of 15 instances on a 2560x1440 " +
-            "monitor with no overlap and no distortion of the game's 4:3 aspect ratio (that pairing " +
-            "isn't the window_width/window_height field defaults, which stay 640x480 for anyone not " +
-            "using grid mode - set them explicitly alongside window_grid_enabled).");
+            "window_width=504/window_height=316 for a 5x4 grid of up to 20 instances on a 2560x1440 " +
+            "monitor: each window's visible frame is then 506x348 (the grid adds the title bar and " +
+            "border on top of these client sizes), so 4 rows end exactly at the taskbar (1392px) and " +
+            "5 columns leave ~30px free on the right, with no overlap. That pairing isn't the " +
+            "window_width/window_height field defaults, which stay 640x480 for anyone not using grid " +
+            "mode - set them explicitly alongside window_grid_enabled.");
+
+        _windowGridFirstInstance = _category.CreateEntry("window_grid_first_instance", 0,
+            "Window Grid First Instance",
+            "The 'Steam-N' number that takes the top-left grid cell when window_grid_enabled is on; " +
+            "higher numbers fill the following cells. Default: 0 (Steam-0 is top-left). Set it to the " +
+            "lowest instance number on this machine when a PC hosts a range that doesn't start at 0 " +
+            "(e.g. 17 for Steam-17..34) - otherwise the grid starts from an empty row far off-screen.");
 
         _category.SaveToFile();
         Logger.Info($"System Initialized. Configuration: {ConfigPath}");
@@ -174,7 +184,7 @@ public static class BotSettings
 
         if (_windowGridEnabled.Value)
             WindowLayout.ApplyGridPosition(Mathf.Max(1, _windowGridColumns.Value), _windowWidth.Value,
-                _windowHeight.Value);
+                _windowHeight.Value, Mathf.Max(0, _windowGridFirstInstance.Value));
     }
 
     /// <summary>

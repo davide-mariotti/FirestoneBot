@@ -408,6 +408,38 @@ tra queste, `low_resource_mode = true` (default) che il codice applica automatic
 riduce la finestra a 640x480 per ogni istanza, per ridurre il carico CPU/GPU con molte istanze
 insieme - già nel codice (`src/Core/BotSettings.cs`), arriva con il `git pull`.
 
+### 8.1 Griglia delle finestre (monitor 2560x1440)
+
+Con `window_grid_enabled = true` il mod mette la finestra di ogni istanza in una cella fissa di
+una griglia, ricavata dal numero `Steam-N` nel percorso. Il passo della griglia è la finestra
+**visibile** (area di gioco + barra del titolo + bordo, misurata dal vivo), quindi le righe non si
+coprono più la barra grigia a vicenda. Valori verificati il 2026-09-26 con 18 istanze (17-34):
+nessuna sovrapposizione, 4 righe che finiscono esattamente sopra la taskbar, ~30 px liberi a
+destra.
+
+Da impostare in `[firebot_settings]` di **ogni** istanza, a gioco chiuso (il gioco riscrive il
+file quando si chiude) e, per le istanze sandboxate, sia nel file reale sia in quello dentro il
+box:
+
+| Chiave | PC principale (Steam-0..16) | Secondo PC (Steam-17..34) |
+|---|---|---|
+| `low_resource_mode` | `true` | `true` |
+| `window_grid_enabled` | `true` | `true` |
+| `window_grid_columns` | `5` | `5` |
+| `window_width` | `504` | `504` |
+| `window_height` | `316` | `316` |
+| `window_grid_first_instance` | `0` (default) | `17` |
+
+`window_grid_first_instance` è il numero dell'istanza che va in alto a sinistra: senza, sul
+secondo PC Steam-17 finirebbe alla quarta riga, cioè fuori dallo schermo. Con 504x316 ogni
+finestra visibile è 506x348: 5 colonne = 2530 px, 4 righe = 1392 px (altezza utile sopra la
+taskbar), quindi bastano per 20 istanze. Con i vecchi 512x384 le finestre di una riga coprivano la
+barra del titolo di quella sopra e la quarta riga usciva dallo schermo.
+
+Sul secondo PC anche la console di MelonLoader è nascosta, con `hide_console = true` nella sezione
+`[console]` di `UserData\Loader.cfg` di ogni istanza, e il debug del bot è spento
+(`debug_mode = false`).
+
 ---
 
 ## 9. Bug già risolti nel codice (arrivano automaticamente col `git pull`, nessuna azione)
