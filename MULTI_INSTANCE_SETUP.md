@@ -397,10 +397,7 @@ Ogni istanza genera il proprio file al primo avvio:
 (percorso sandbox per le istanze sandboxate, come sempre). Contiene una sezione per ogni task
 del bot, con `enabled = false` di default per **tutti** - vanno abilitati esplicitamente uno per
 uno in base a cosa vuoi far fare a quell'account (non tutti gli account hanno bisogno delle
-stesse cose - dipende dal livello personaggio, dai progressi, ecc.). Non c'è un modo per
-"clonare" la configurazione di un'istanza esistente su una nuova in blocco in modo sensato,
-dato che ogni account Firestone parte da zero - questo passo va rifatto a mano (o con
-attenzione, istanza per istanza) per ognuna delle 17-34.
+stesse cose - dipende dal livello personaggio, dai progressi, ecc.).
 
 Impostazioni globali del bot stesso (non per-task) sono nella sezione `[firebot_settings]` -
 tra queste, `low_resource_mode = true` (default) che il codice applica automaticamente
@@ -408,7 +405,29 @@ tra queste, `low_resource_mode = true` (default) che il codice applica automatic
 riduce la finestra a 640x480 per ogni istanza, per ridurre il carico CPU/GPU con molte istanze
 insieme - già nel codice (`src/Core/BotSettings.cs`), arriva con il `git pull`.
 
-### 8.1 Griglia delle finestre (monitor 2560x1440)
+### 8.1 Template di configurazione base
+
+`tools/ConfigTemplate/FirebotPreferences.template.cfg` (nel repo) è una copia ripulita del
+`FirebotPreferences.cfg` di Steam-0, pensata per essere confrontata/copiata su ogni nuova
+istanza (17-34 compreso) così tutte le istanze di entrambi i PC abilitano gli stessi task con
+gli stessi parametri deliberati. **Non è un file da copiare alla cieca**: contiene solo le
+impostazioni scelte a mano (quali task sono `enabled = true`, soglie tipo
+`min_common_chest_reserve`, `resource_type`, la griglia finestre - vedi 8.2) - ogni riga marcata
+`(auto-managed, don't edit)` è stata azzerata apposta (`next_run_time_internal = ""`, contatori
+a `0`, date a `""`, `guide_start_index = -1`, `known_maxed_nodes = ""`) perché quello è stato
+reale di avanzamento per-account, diverso per ogni istanza e ricalcolato automaticamente al
+primo giro - non ha senso clonarlo da un account all'altro.
+
+Uso consigliato per una nuova istanza: avvia il gioco una volta così MelonPreferences genera il
+`FirebotPreferences.cfg` vuoto (tutto `enabled = false`), chiudi il gioco, poi copia da questo
+template solo le righe `enabled = true` e i parametri non auto-managed che vuoi replicare
+(lasciando stare tutto ciò che è marcato "(auto-managed, don't edit)", che resta gestito dal
+bot). Per un'istanza già avviata, usalo invece come lista di confronto per trovare cosa manca o
+differisce rispetto alle altre. `window_grid_first_instance` è l'unica riga che DEVE cambiare
+in base al PC (vedi 8.2 sotto) - `debug_mode` è `true` in questo template perché così è rimasto
+attivo su Steam-0 durante questa sessione di sviluppo/debug, non è un requisito.
+
+### 8.2 Griglia delle finestre (monitor 2560x1440)
 
 Con `window_grid_enabled = true` il mod mette la finestra di ogni istanza in una cella fissa di
 una griglia, ricavata dal numero `Steam-N` nel percorso. Il passo della griglia è la finestra
