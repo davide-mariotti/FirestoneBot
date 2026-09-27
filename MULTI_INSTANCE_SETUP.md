@@ -384,6 +384,20 @@ schtasks /Create /TN "PCRamTrim" /TR "powershell.exe -NoProfile -WindowStyle Hid
 (20 minuti di intervallo, non 5 - il valore originale di 5 minuti era inutilmente aggressivo con
 molte istanze attive.) Per disabilitarla in qualunque momento: `Disable-ScheduledTask -TaskName "PCRamTrim"`.
 
+### 7.1 Trim manuale di Steam (quando serve)
+
+Al posto dell'attività pianificata, `tools/SteamRamTrim/trim_steam_now.ps1` fa un trim una volta
+sola, da lanciare a mano quando la RAM è sotto pressione (non serve essere Amministratore):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Repos\FirestoneBot\tools\SteamRamTrim\trim_steam_now.ps1"
+```
+
+È volutamente leggero: tocca solo `steamwebhelper.exe` (mai `steam.exe`, `Firestone.exe` o altri
+processi), salta il suo processo GPU e quelli sotto i 150 MB, non chiude niente e fa una breve
+pausa tra un processo e l'altro. Alla fine stampa quanti processi ha trimmato e quanti MB ha
+liberato.
+
 ---
 
 ## 8. Configurazione del bot per-istanza (`FirebotPreferences.cfg`)
