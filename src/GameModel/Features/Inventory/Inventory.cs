@@ -47,8 +47,13 @@ public static class ChestOpening
     ///     at/below target - every click here is gated by IsClickable() first. onOpened, if given, is
     ///     invoked once at the end with the actual number opened (per the user, 2026-09-23, so
     ///     callers can track daily quest progress without re-reading screen state themselves).
+    ///     maxToOpen caps how many are opened regardless of how many are in the slot - added
+    ///     2026-09-28 so a caller can open exactly as many as it still needs (e.g. the 4 gear chests
+    ///     the "Collector" quest asks for) instead of emptying the slot down to targetRemaining. The
+    ///     two limits combine: whichever allows fewer wins.
     /// </summary>
-    public static IEnumerator OpenDownTo(string slotPath, int targetRemaining, Action<int> onOpened = null)
+    public static IEnumerator OpenDownTo(string slotPath, int targetRemaining, Action<int> onOpened = null,
+        int maxToOpen = int.MaxValue)
     {
         var slot = new GameButton(slotPath, Inventory.Content);
         var slotClickable = slot.IsClickable();
@@ -56,7 +61,7 @@ public static class ChestOpening
         var quantityTxt = new GameText(slotPath + "/quantity", Inventory.Content);
         if (!slotClickable) yield break;
 
-        var remainingToOpen = quantityTxt.GetParsedInt() - targetRemaining;
+        var remainingToOpen = Math.Min(quantityTxt.GetParsedInt() - targetRemaining, maxToOpen);
         if (remainingToOpen <= 0) yield break;
 
         var totalToOpen = remainingToOpen;

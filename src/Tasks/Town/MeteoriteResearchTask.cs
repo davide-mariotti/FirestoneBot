@@ -93,12 +93,26 @@ public class MeteoriteResearchTask : BotTask
         yield return TownScreen.Close;
     }
 
-    // Per the user (2026-09-23): same priority-name set as FirestoneResearchTask, verified against
-    // the wiki's Meteorite Research tree node names (also has Firestone Finder/Effect entries).
+    /// <summary>
+    ///     Priority node names, BEST FIRST - same ranked treatment as FirestoneResearchTask (see its
+    ///     own comment for why an unordered set was wrong). All three confirmed present in the
+    ///     Meteorite Research trees via the wiki mirror in docs/wiki.
+    ///     Deliberately does NOT carry FirestoneResearchTask's two extra time-reduction names: there
+    ///     is no duration/cooldown node anywhere in the Meteorite Research trees (checked across
+    ///     every tree page), so listing them here would be dead weight.
+    /// </summary>
     private static readonly string[] PriorityTerms = { "Raining Gold", "Firestone Finder", "Firestone Effect" };
 
-    private static bool IsPriority(string name) =>
-        PriorityTerms.Any(t => name.Contains(t, StringComparison.OrdinalIgnoreCase));
+    /// <summary>Index into PriorityTerms (lower = better), or int.MaxValue when it isn't a priority
+    /// node at all.</summary>
+    private static int PriorityRank(string name)
+    {
+        for (var i = 0; i < PriorityTerms.Length; i++)
+            if (name.Contains(PriorityTerms[i], StringComparison.OrdinalIgnoreCase))
+                return i;
+
+        return int.MaxValue;
+    }
 
     /// <summary>
     ///     A priority-name match (see PriorityTerms) always wins and stops the scan the instant one
@@ -111,12 +125,16 @@ public class MeteoriteResearchTask : BotTask
     {
         var node = new MeteoriteNode();
 
-        int? bestIndex = null;
-        int? bestTreeOffset = null;
-        var foundPriority = false;
+        int? bestPriorityIndex = null;
+        int? bestPriorityTreeOffset = null;
+        var bestPriorityRank = int.MaxValue;
+        int? fallbackIndex = null;
+        int? fallbackTreeOffset = null;
 
         var treeOffset = 0;
-        while (treeOffset < TreeCount && !foundPriority)
+        // bestPriorityRank == 0 means Raining Gold was found - nothing can outrank it, so the whole
+        // scan stops there.
+        while (treeOffset < TreeCount && bestPriorityRank > 0)
         {
             for (var index = 0; index < NodeCount; index++)
             {
@@ -130,21 +148,30 @@ public class MeteoriteResearchTask : BotTask
                     // maxed node) - either way, not a real candidate.
                     if (cost > 0)
                     {
-                        if (IsPriority(MeteoriteResearchPreview.Name))
+                        var rank = PriorityRank(MeteoriteResearchPreview.Name);
+
+                        if (rank < bestPriorityRank)
                         {
-                            bestIndex = index;
-                            bestTreeOffset = treeOffset;
-                            foundPriority = true;
-                            yield return MeteoriteResearchPreview.Close;
-                            break;
+                            bestPriorityRank = rank;
+                            bestPriorityIndex = index;
+                            bestPriorityTreeOffset = treeOffset;
+
+                            // Rank 0 (Raining Gold) is unbeatable - stop here. Any other rank keeps
+                            // scanning: bailing out on the first priority hit is what used to let a
+                            // worse-ranked name win just by sitting at a lower node index.
+                            if (rank == 0)
+                            {
+                                yield return MeteoriteResearchPreview.Close;
+                                break;
+                            }
                         }
 
                         // First non-priority candidate found, kept only as a fallback - scanning
                         // continues in case a priority match still turns up in a later tree.
-                        if (bestIndex == null)
+                        if (fallbackIndex == null && rank == int.MaxValue)
                         {
-                            bestIndex = index;
-                            bestTreeOffset = treeOffset;
+                            fallbackIndex = index;
+                            fallbackTreeOffset = treeOffset;
                         }
                     }
                 }
@@ -152,7 +179,12 @@ public class MeteoriteResearchTask : BotTask
                 yield return MeteoriteResearchPreview.Close;
             }
 
-            if (foundPriority) break;
+            // Same as before: a tree that produced a priority candidate ends the scan. The ranking
+            // added 2026-09-28 applies WITHIN a tree (which is where the real problem was - two
+            // priority names in the same tree, node index deciding the winner), deliberately not
+            // across trees: chasing a possibly better-ranked name into the next tree would cost a
+            // full extra 13-node preview sweep for a marginal gain.
+            if (bestPriorityIndex != null) break;
 
             if (treeOffset < TreeCount - 1)
             {
@@ -173,6 +205,10 @@ public class MeteoriteResearchTask : BotTask
             treeOffset++;
         }
 
+        // Best-ranked priority first, then the first affordable non-priority node found.
+        var bestIndex = bestPriorityIndex ?? fallbackIndex;
+        var bestTreeOffset = bestPriorityIndex != null ? bestPriorityTreeOffset : fallbackTreeOffset;
+
         if (bestIndex == null) yield break;
 
         // The scan above ends on the tree it actually stopped at (a priority hit, a locked tree,
@@ -184,7 +220,8 @@ public class MeteoriteResearchTask : BotTask
             yield return node.PreviousTree;
 
         Debug($"[INFO] Selected meteorite research node #{bestIndex} on tree offset {bestTreeOffset} " +
-              $"(priority={foundPriority}). Attempting - safe no-op if not yet affordable.");
+              $"(priorityRank={(bestPriorityRank == int.MaxValue ? "none" : bestPriorityRank.ToString())}). " +
+              "Attempting - safe no-op if not yet affordable.");
 
         yield return node.Select(bestIndex.Value);
         yield return MeteoriteResearchPreview.Research;

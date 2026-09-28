@@ -15,20 +15,22 @@ namespace Firebot.Tasks.Town;
 /// <summary>
 ///     Progresses the daily quest "Merchant" (sell 10 items at the Exotic Merchant) - level 30 per
 ///     the wiki quest table. Never automated before.
-///     1. Sells fixed quantities from the sell grid's first 4 slots (3+3+3+1 = 10) instead of
-///        scanning for 10 different item types one each - simplified per the user, 2026-09-20: the
-///        "one of each, up to 10 distinct types" approach silently under-delivered whenever fewer
-///        than 10 sellable types were available that run, never actually completing the quest. Per
-///        the user's own screenshot, the first 4 grid slots are always Scroll of Speed/Damage/Health
-///        then Midas' Touch, always present in large enough quantities that selling a few of each
-///        never risks depleting/hiding the slot mid-run (unlike the old approach, which had to dodge
-///        a real grid-compaction bug from fully-depleted stacks disappearing) - "instant gold" items
-///        (Pouch/Bucket/Crate/Pile of Gold) always sort after these 4, per the user, so a defensive
-///        "skip if named gold" check is kept anyway since skipping is always safe. This task never
-///        opens/uses those items itself (per the user, 2026-09-26: they're too valuable to consume
-///        generically - opening them needs a specific, deliberate approach, not an automatic sweep).
-///        Note this now DOES sell Midas' Touch (1x), reversing the prior exclusion - explicit per the
-///        user this time, not the wiki-driven guess from before.
+///     1. Sells up to 10 items from an ALLOWLIST of grid positions, junk first - see
+///        SellOrderByGridIndex for the full reasoning. Short version: Midas' Touch (slot 3) is sold
+///        without limit up to the quest target, Scroll of Health and Scroll of Damage (slots 2 and 1)
+///        only top it up, and Scroll of Speed (slot 0) is never sold at all because the F2P guide
+///        makes it the centrepiece of the push routine. Nothing at index 4 or beyond is touched:
+///        that's where the instant gold and meteorite consumables live (Pouch/Bucket/Crate/Barrel/
+///        Pile), which per the user must never be sold - and which this task never opens or uses
+///        either (2026-09-26: too valuable to consume generically, they need a deliberate approach,
+///        not an automatic sweep).
+///        Rewritten 2026-09-28 from fixed per-slot counts ({3,3,3,1} over slots 0-3), which sold 3
+///        Scroll of Speed, 3 Damage and 3 Health every single day. Because one slot can now be sold
+///        down an arbitrary number of times, the grid-compaction hazard the fixed counts used to dodge
+///        is real again (a depleted stack disappears and slides a different item into that index), so
+///        the slot is re-resolved and its name re-checked before every single click.
+///        If the allowlisted slots can't produce 10, today's quest simply stays open and that's
+///        logged - a deliberate trade: one daily reward is worth far less than the sold scrolls.
 ///     2. Spends the resulting exotic coins on one upgrade - whichever is cheapest/first affordable
 ///        in the currently-displayed tree (not scanning across all ~25 trees for the globally
 ///        cheapest - the user confirmed picking the first available is fine, and Exotic Upgrades
@@ -51,13 +53,33 @@ public class MerchantQuestTask : BotTask
     // Exactly what the "Merchant" quest requires - see class doc comment.
     private const int SellTarget = 10;
 
-    // Grid index -> how many times to sell from that slot, in on-screen left-to-right order
-    // (Scroll of Speed, Scroll of Damage, Scroll of Health, Midas' Touch) - sums to SellTarget.
-    private static readonly int[] SellCountsByGridIndex = { 3, 3, 3, 1 };
+    /// <summary>
+    ///     Which grid slots may be sold, in the order they should be given up - an ALLOWLIST, and
+    ///     nothing outside it is ever clicked. Rewritten 2026-09-28: the previous version sold fixed
+    ///     counts by index ({3,3,3,1} over slots 0-3), i.e. 3 Scroll of Speed, 3 Damage and 3 Health
+    ///     every single day. The F2P guide calls the Scroll of Speed the main gold multiplier of the
+    ///     whole push routine (~x3 gold) and wants Damage/Health kept for the "all three active"
+    ///     triple-damage talent; only the junk (Midas' Touch and friends) is supposed to be sold.
+    ///     On-screen left-to-right order, confirmed by the user: 0 Scroll of Speed, 1 Scroll of
+    ///     Damage, 2 Scroll of Health, 3 Midas' Touch - with the instant gold items (Pouch/Bucket/
+    ///     Crate/Barrel/Pile) and everything else sorting after those four.
+    ///     So: slot 3 first (pure junk per the guide, sold without limit up to the quest target),
+    ///     then 2 and 1 only as top-up. Slot 0 is never sold, and neither is anything at index 4 or
+    ///     beyond - that's where the instant gold and meteorite consumables live, which the user was
+    ///     explicit about never selling. An allowlist is the right direction to be wrong in here: a
+    ///     missing entry costs one daily quest, whereas a blocklist that misses a name sells a Barrel,
+    ///     which doesn't come back.
+    /// </summary>
+    private static readonly int[] SellOrderByGridIndex = { 3, 2, 1 };
 
-    // Defensive only - see class doc comment: "instant gold" items are never sold, and this task
-    // never opens/uses them either.
-    private const string NeverSellTerm = "gold";
+    // Defensive second line only - the index allowlist above is what actually protects the valuable
+    // items. Names are GameObject names (see the grid dump logged at the start of every run): any
+    // slot whose name looks like an instant gold or meteorite consumable is skipped even if it
+    // somehow turned up at an allowlisted index.
+    private static readonly string[] NeverSellTerms = { "gold", "meteor" };
+
+    private static bool IsNeverSell(string name) =>
+        NeverSellTerms.Any(t => name.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0);
 
     private MelonPreferences_Entry<string> _lastDoneDate;
 
@@ -87,20 +109,41 @@ public class MerchantQuestTask : BotTask
         yield return TownScreen.OpenExoticMerchant;
         yield return ExoticMerchant.OpenSellItemsTab;
 
-        var sold = 0;
-        for (var i = 0; i < SellCountsByGridIndex.Length; i++)
-        {
-            var item = ExoticMerchant.SellProductGrid.GetChild(i);
-            if (item == null || item.Name.ToLowerInvariant().Contains(NeverSellTerm)) continue;
+        // One-off dump of the real grid contents. The allowlist above works purely by position, so
+        // this isn't load-bearing - it's here so the actual GameObject names can be read off a live
+        // run and the filter tightened by name later if the on-screen order ever changes.
+        Debug("[INFO] Sell grid: " + string.Join(", ", ExoticMerchant.SellProductGrid.GetChildren()
+            .Select((c, i) => $"{i}={c.Name}")));
 
-            var sellBtn = new GameButton(Paths.ExoticMerchantLoc.SellLoc.SellBtn, item);
-            for (var n = 0; n < SellCountsByGridIndex[i]; n++)
+        var sold = 0;
+        foreach (var gridIndex in SellOrderByGridIndex)
+        {
+            if (sold >= SellTarget) break;
+
+            var expectedName = ExoticMerchant.SellProductGrid.GetChild(gridIndex)?.Name;
+            if (string.IsNullOrEmpty(expectedName) || IsNeverSell(expectedName)) continue;
+
+            while (sold < SellTarget)
             {
+                // Re-resolved every iteration, never cached: a stack that empties out disappears and
+                // the grid compacts, sliding a DIFFERENT item into this index - possibly a Barrel.
+                // The 2026-09-18 fix learned this the hard way on the old gold-item path. Bailing out
+                // the moment the name at this index stops matching is what makes selling an unbounded
+                // number from one slot safe.
+                var item = ExoticMerchant.SellProductGrid.GetChild(gridIndex);
+                if (item == null || item.Name != expectedName) break;
+
+                var sellBtn = new GameButton(Paths.ExoticMerchantLoc.SellLoc.SellBtn, item);
                 if (!sellBtn.IsClickable()) break;
+
                 yield return sellBtn.Click();
                 sold++;
             }
         }
+
+        if (sold < SellTarget)
+            Debug($"[INFO] Only {sold}/{SellTarget} items sold - today's Merchant quest stays open. " +
+                  "Deliberate: the sellable slots ran out and the valuable ones are never touched.");
 
         yield return ExoticMerchant.OpenUpgradesTab;
 

@@ -54,14 +54,39 @@ public class FirestoneResearchTask : BotTask
         yield return TownScreen.Close;
     }
 
-    // Per the user (2026-09-23): a priority-name match always wins and stops the scan immediately
-    // (no more comparing across trees) - matches the wiki's confirmed node names in the Firestone
-    // Research trees ("Battle Cry"/"Librarian" don't appear in these trees at all, only in Personal
-    // Tree/Talent Tree - see TreeOfLife.PriorityUpgrades and TalentsTask instead).
-    private static readonly string[] PriorityTerms = { "Raining Gold", "Firestone Finder", "Firestone Effect" };
+    /// <summary>
+    ///     Priority node names, BEST FIRST - the position in this array is the rank, so "Raining Gold"
+    ///     always beats "Firestone Effect" no matter which one the node scan happens to reach first.
+    ///     Was an unordered set until 2026-09-28, which meant the winner was whichever priority name
+    ///     sat at the lower node index - exactly backwards from the F2P guide, which puts gold ahead
+    ///     of everything. Names verified against the wiki mirror in docs/wiki ("Battle Cry"/"Librarian"
+    ///     don't appear in these trees at all, only in Personal Tree/Talent Tree - see
+    ///     TreeOfLife.PriorityUpgrades and TalentsTask instead).
+    ///     "Trainer Skills" and "Expeditioner" are the only two time-reduction nodes that exist
+    ///     anywhere in the Firestone Research trees (both in tree 1, column 8 - checked across every
+    ///     tree page in docs/wiki). The guide's Steam source ranks time reductions ABOVE gold, but
+    ///     that does not survive the tree's own numbers: Raining Gold is 20% MULTIPLICATIVE over 25
+    ///     levels in column 4, while these two are 1% ADDITIVE (the wiki's asterisk) capped at 25% and
+    ///     20% respectively, four columns deeper. So they rank below the gold/firestone group here,
+    ///     not above it. The guide's intent is honoured where those reductions actually live: the
+    ///     research and alchemy ones are Talent Tree nodes, and TalentBuildConfig already has
+    ///     Librarian at 100 and Alchemy at 95, the top two of the whole build.
+    /// </summary>
+    private static readonly string[] PriorityTerms =
+    {
+        "Raining Gold", "Firestone Finder", "Firestone Effect", "Trainer Skills", "Expeditioner"
+    };
 
-    private static bool IsPriority(string name) =>
-        PriorityTerms.Any(t => name.Contains(t, StringComparison.OrdinalIgnoreCase));
+    /// <summary>Index into PriorityTerms (lower = better), or int.MaxValue when it isn't a priority
+    /// node at all.</summary>
+    private static int PriorityRank(string name)
+    {
+        for (var i = 0; i < PriorityTerms.Length; i++)
+            if (name.Contains(PriorityTerms[i], StringComparison.OrdinalIgnoreCase))
+                return i;
+
+        return int.MaxValue;
+    }
 
     /// <summary>
     ///     Picks the next talent to research. A priority-name match (see PriorityTerms) always wins
@@ -105,15 +130,18 @@ public class FirestoneResearchTask : BotTask
             yield return TownScreen.OpenLibrary;
             yield return Library.OpenFirestoneResearchTab;
 
-            int? bestIndex = null;
-            int? bestTreeOffset = null;
+            int? bestPriorityIndex = null;
+            int? bestPriorityTreeOffset = null;
+            var bestPriorityRank = int.MaxValue;
+            int? freshIndex = null;
+            int? freshTreeOffset = null;
             int? fallbackIndex = null;
             int? fallbackTreeOffset = null;
-            var foundPriority = false;
-            var foundFresh = false;
 
             var treeOffset = 0;
-            while (treeOffset < TreeCount && !foundPriority && !foundFresh)
+            // bestPriorityRank == 0 means Raining Gold was found - nothing can outrank it, so the
+            // whole scan stops there.
+            while (treeOffset < TreeCount && bestPriorityRank > 0)
             {
                 for (var index = 1; index <= NodeCount; index++)
                 {
@@ -121,30 +149,38 @@ public class FirestoneResearchTask : BotTask
 
                     if (Preview.IsUnlocked && !Preview.IsMaxed)
                     {
-                        if (IsPriority(Preview.Name))
+                        var rank = PriorityRank(Preview.Name);
+
+                        if (rank < bestPriorityRank)
                         {
-                            bestIndex = index;
-                            bestTreeOffset = treeOffset;
-                            foundPriority = true;
-                            yield return Preview.Close;
-                            break;
+                            bestPriorityRank = rank;
+                            bestPriorityIndex = index;
+                            bestPriorityTreeOffset = treeOffset;
+
+                            // Rank 0 (Raining Gold) is unbeatable - stop here instead of paying for
+                            // the rest of the tree. Any other rank keeps scanning: breaking out on
+                            // the first priority hit is what used to let a worse-ranked name win
+                            // just by sitting at a lower node index.
+                            if (rank == 0)
+                            {
+                                yield return Preview.Close;
+                                break;
+                            }
                         }
 
-                        if (Preview.CurrentLevel == 0)
+                        // First fresh (untouched) candidate - the cheapest way to satisfy the next
+                        // column's unlock threshold. Recorded rather than taken immediately: a
+                        // better-ranked priority further along this same tree has to be able to
+                        // outrank it.
+                        if (Preview.CurrentLevel == 0 && freshIndex == null)
                         {
-                            // First fresh (untouched) candidate found - stop scanning immediately,
-                            // same reasoning as a priority match: this is exactly what unlocks the
-                            // next column soonest, no need to keep comparing further.
-                            bestIndex = index;
-                            bestTreeOffset = treeOffset;
-                            foundFresh = true;
-                            yield return Preview.Close;
-                            break;
+                            freshIndex = index;
+                            freshTreeOffset = treeOffset;
                         }
 
                         // First already-touched candidate found, kept only as a last-resort
                         // fallback in case no level-0 candidate exists anywhere reachable.
-                        if (fallbackIndex == null)
+                        if (fallbackIndex == null && Preview.CurrentLevel > 0)
                         {
                             fallbackIndex = index;
                             fallbackTreeOffset = treeOffset;
@@ -154,7 +190,9 @@ public class FirestoneResearchTask : BotTask
                     yield return Preview.Close;
                 }
 
-                if (foundPriority || foundFresh) break;
+                // Same as before: once this tree has produced something usable, don't scan further
+                // trees for a marginally better candidate.
+                if (bestPriorityIndex != null || freshIndex != null) break;
 
                 if (treeOffset < TreeCount - 1)
                 {
@@ -178,13 +216,13 @@ public class FirestoneResearchTask : BotTask
                 treeOffset++;
             }
 
-            // No priority and no fresh (level-0) candidate turned up anywhere reachable - fall back
-            // to the first already-touched candidate found, same as the old behavior.
-            if (bestIndex == null)
-            {
-                bestIndex = fallbackIndex;
-                bestTreeOffset = fallbackTreeOffset;
-            }
+            // Resolution order: best-ranked priority, then the first fresh (level-0) candidate, then
+            // the first already-touched one - same three tiers as before, only the priority tier is
+            // now ranked internally instead of "first one seen wins".
+            var bestIndex = bestPriorityIndex ?? freshIndex ?? fallbackIndex;
+            var bestTreeOffset = bestPriorityIndex != null ? bestPriorityTreeOffset
+                : freshIndex != null ? freshTreeOffset
+                : fallbackTreeOffset;
 
             if (bestIndex == null) yield break;
 
@@ -197,7 +235,8 @@ public class FirestoneResearchTask : BotTask
                 yield return node.PreviousTree;
 
             Debug($"[INFO] Selected talent #{bestIndex} on tree offset {bestTreeOffset} " +
-                  $"(priority={foundPriority}, fresh={foundFresh}).");
+                  $"(priorityRank={(bestPriorityRank == int.MaxValue ? "none" : bestPriorityRank.ToString())}" +
+                  $"{(bestPriorityIndex == null && freshIndex != null ? ", fresh" : "")}).");
 
             yield return node.Select(bestIndex.Value);
             if (Preview.IsUnlocked && !Preview.IsMaxed) yield return Preview.Start;
