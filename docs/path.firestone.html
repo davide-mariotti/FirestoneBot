@@ -212,62 +212,61 @@
 <section id="notifiche">
   <h2>🔔 Notifiche (badge attività disponibili)</h2>
   <p class="region-path">Radice: <code>battleRoot/battleMain/battleCanvas/SafeArea/leftSideUINew/notifications/Viewport/grid</code></p>
-  <p class="desc">Corretto: la scansione statica aveva trovato <code>leftSideUI</code> (senza "New") — esistono entrambi negli asset del gioco con contenuto quasi identico, ma solo <code>leftSideUINew</code> è quello davvero usato in gioco (confermato dal codice v1 già testato dal vivo, che lo usa con successo da mesi per 13 di queste notifiche).</p>
+  <p class="desc">La rail esiste in due varianti dell'HUD, con lo stesso contenuto: <code>leftSideUINew</code> (la più comune) e <code>leftSideUI</code>, che alcuni client usano al suo posto. Il bot cerca ogni badge in entrambe (<code>BotTask.RailBadges</code>, <code>Notifications</code>).</p>
   <p class="desc">
-    Ogni voce è un bottone che appare solo quando l'attività ha qualcosa da reclamare/fare (badge). <span class="already">Il bot ne usa già 14 tramite <code>Notifications.cs</code> / <code>Paths.NotificationsLoc</code></span>
-    (Engineer, WarfrontCampaign, FreePickaxes, Expeditions, Quests, GuardianTraining, FirestoneResearch, Experiments, OracleRituals, MapMissions, OraclesGift, MysteryBox, CheckIn). Il prefab ne contiene <b>48 in totale</b> — molte non ancora automatizzate:
+    Ogni voce è un bottone che appare solo quando l'attività ha qualcosa da reclamare/fare (badge). <span class="already">Il bot ne usa 30</span> su <b>48</b>: un badge acceso fa partire subito il task collegato, e cliccarlo apre direttamente la sua schermata, che il task usa come scorciatoia prima della navigazione completa.
   </p>
   <table>
     <thead><tr><th>Path (relativo alla radice)</th><th>Tipo</th><th>Note</th></tr></thead>
     <tbody>
-      <tr><td class="path">BeerExchange</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">TowerOfSouls</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">Prophet</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">BattleLive</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (ha anche un indicatore "live")</td></tr>
-      <tr><td class="path">ArenaTokens</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">HallOfHeroes</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">Engineer</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">WarmachineUnlocked</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">WarfrontCampaign</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">Warmachines</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">WarMachinesRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">GuardianEvolution</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">GuardianRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">GuardianHolyUpgrade</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">GuildApplication</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">FreePickaxes</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">ArcaneCrystal</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">Awakening</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">Expeditions</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">Quests</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">GuardianTraining</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">MeteoriteResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Rimossa dal bot (feature mai raggiunta)</td></tr>
-      <tr><td class="path">FirestoneResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">TemplePrestige</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (probabile alias di Temple of Eternals)</td></tr>
-      <tr><td class="path">Experiments</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">TalentAvailable</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (talento livello disponibile)</td></tr>
-      <tr><td class="path">Mercenaries</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">PiratesPrize</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">OracleRituals</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">OracleBlessings</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">OraclesGift</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">SignIn</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">MapMissions</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata</td></tr>
-      <tr><td class="path">CheckIn</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Già automatizzata (Daily Rewards)</td></tr>
-      <tr><td class="path">MysteryBox</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Path già in Paths.cs ma nessun task la usa</td></tr>
-      <tr><td class="path">ChaosRift</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (vedi conversazione su Chaos Rift/guerre di gilda)</td></tr>
-      <tr><td class="path">ForbiddenKnowledge</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">UnlockLedra</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (sblocco eroe)</td></tr>
-      <tr><td class="path">UnlockYamanoth</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (sblocco eroe)</td></tr>
-      <tr><td class="path">UnlockKramatak</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata (sblocco eroe)</td></tr>
-      <tr><td class="path">ChaosRiftSupplies</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">LockerRewards</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">ScarabGame</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">PharaohsVault</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">ScarabGameMilestones</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">ScarabGameShopFreeToken</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">ScarabGameBeastRelease</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
-      <tr><td class="path">AncientArtifact</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Nuova, non mappata</td></tr>
+      <tr><td class="path">BeerExchange</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>BeerExchangeTask</code></td></tr>
+      <tr><td class="path">TowerOfSouls</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">Prophet</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">BattleLive</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot (ha anche un indicatore "live")</td></tr>
+      <tr><td class="path">ArenaTokens</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>ArenaOfKingsTask</code></td></tr>
+      <tr><td class="path">HallOfHeroes</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>HallOfHeroesTask</code></td></tr>
+      <tr><td class="path">Engineer</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>EngineerTask</code></td></tr>
+      <tr><td class="path">WarmachineUnlocked</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">WarfrontCampaign</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>WarfrontCampaignLootTask</code></td></tr>
+      <tr><td class="path">Warmachines</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>WarMachinesTask</code></td></tr>
+      <tr><td class="path">WarMachinesRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">GuardianEvolution</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">GuardianRarity</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">GuardianHolyUpgrade</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>GuardianHolyUpgradeTask</code></td></tr>
+      <tr><td class="path">GuildApplication</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">FreePickaxes</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: scorciatoia di navigazione per <code>FreePickaxesTask</code></td></tr>
+      <tr><td class="path">ArcaneCrystal</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>MinerQuestTask</code></td></tr>
+      <tr><td class="path">Awakening</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>AwakeningTask</code></td></tr>
+      <tr><td class="path">Expeditions</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>ExpeditionTask</code></td></tr>
+      <tr><td class="path">Quests</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>QuestsTask</code></td></tr>
+      <tr><td class="path">GuardianTraining</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>GuardianTrainingTask</code></td></tr>
+      <tr><td class="path">MeteoriteResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: scorciatoia di navigazione per <code>MeteoriteResearchTask</code></td></tr>
+      <tr><td class="path">FirestoneResearch</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>FirestoneResearchTask</code></td></tr>
+      <tr><td class="path">TemplePrestige</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: scorciatoia di navigazione per <code>EmpowerTask</code></td></tr>
+      <tr><td class="path">Experiments</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>ExperimentsTask</code></td></tr>
+      <tr><td class="path">TalentAvailable</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>TalentsTask</code></td></tr>
+      <tr><td class="path">Mercenaries</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">PiratesPrize</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>PiratesPrizeTask</code></td></tr>
+      <tr><td class="path">OracleRituals</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>OracleRitualsTask</code></td></tr>
+      <tr><td class="path">OracleBlessings</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">OraclesGift</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>OraclesGiftTask</code></td></tr>
+      <tr><td class="path">SignIn</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">MapMissions</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>MapMissionsTask</code></td></tr>
+      <tr><td class="path">CheckIn</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>DailyStoreOffersTask</code></td></tr>
+      <tr><td class="path">MysteryBox</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>DailyStoreOffersTask</code></td></tr>
+      <tr><td class="path">ChaosRift</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>ChaosRiftTask</code></td></tr>
+      <tr><td class="path">ForbiddenKnowledge</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>ForbiddenKnowledgeTask</code></td></tr>
+      <tr><td class="path">UnlockLedra</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot (sblocco eroe)</td></tr>
+      <tr><td class="path">UnlockYamanoth</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot (sblocco eroe)</td></tr>
+      <tr><td class="path">UnlockKramatak</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot (sblocco eroe)</td></tr>
+      <tr><td class="path">ChaosRiftSupplies</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>ChaosRiftTask</code></td></tr>
+      <tr><td class="path">LockerRewards</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">ScarabGame</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>PharaohsVaultTask</code>; scorciatoia di navigazione per <code>ScarabGameFreeTokenTask</code></td></tr>
+      <tr><td class="path">PharaohsVault</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot (non si accende per gli spin gratuiti: PharaohsVaultTask usa ScarabGame)</td></tr>
+      <tr><td class="path">ScarabGameMilestones</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>PharaohsVaultTask</code></td></tr>
+      <tr><td class="path">ScarabGameShopFreeToken</td><td><span class="tag tag-btn">BOTTONE</span></td><td class="already">Usata: fa partire <code>ScarabGameFreeTokenTask</code></td></tr>
+      <tr><td class="path">ScarabGameBeastRelease</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
+      <tr><td class="path">AncientArtifact</td><td><span class="tag tag-btn">BOTTONE</span></td><td>Non usata dal bot</td></tr>
     </tbody>
   </table>
 </section>

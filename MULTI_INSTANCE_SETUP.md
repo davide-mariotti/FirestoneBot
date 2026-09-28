@@ -7,9 +7,9 @@ di progetto (per quello vedi README.md/TESTING.md) - è un **elenco di verifica*
 essere letto dopo un `git pull`, punto per punto, per controllare cosa manca o cosa va rifatto
 sul nuovo PC.
 
-Scritto il 2026-09-26. Se qualcosa qui non corrisponde più a quanto trovi nel repo o sul PC
-principale, fidati di quello che vedi dal vivo, non di questo file (che è una fotografia di un
-momento preciso).
+Scritto il 2026-09-26, aggiornato il 2026-09-28. Se qualcosa qui non corrisponde più a quanto
+trovi nel repo o sul PC principale, fidati di quello che vedi dal vivo, non di questo file (che è
+una fotografia di un momento preciso).
 
 ---
 
@@ -111,14 +111,18 @@ finestre a colpo d'occhio) - qualunque colore esadecimale va bene, basta non rip
 
 **Opzione automatica** (consigliata): usa lo script incluso in questo repo,
 `tools/InstanceProvisioning/add_sandbox_boxes.ps1`. Clona le impostazioni di un box esistente
-(default `SteamB1`) e genera `SteamB17`..`SteamB34` con `BorderColor` unico e
+(default `SteamB1`, cambialo con `-TemplateBox`) e genera i box richiesti con `BorderColor` unico e
 `BoxNameTitle`/`BoxAlias` già impostati. Fa un backup automatico di `Sandboxie.ini` prima di
 scrivere ed è idempotente (salta i box già esistenti).
+
+Sul secondo PC non esiste un `SteamB1` da clonare: crea prima a mano il box `SteamB17` dalla GUI,
+aggiungi nella sua sezione di `Sandboxie.ini` le due righe `BoxNameTitle=y` e `BoxAlias=Steam-17`
+(lo script non tocca il box template), poi genera gli altri a partire da quello:
 
 ```powershell
 # Da PowerShell come Amministratore, con il repo già clonato/aggiornato:
 cd C:\Repos\FirestoneBot
-.\tools\InstanceProvisioning\add_sandbox_boxes.ps1 -Start 17 -End 34
+.\tools\InstanceProvisioning\add_sandbox_boxes.ps1 -TemplateBox SteamB17 -Start 18 -End 34
 ```
 
 Dopo l'esecuzione, apri `SandMan.exe` (l'interfaccia di Sandboxie-Plus) e verifica che i box
@@ -126,9 +130,7 @@ Dopo l'esecuzione, apri `SandMan.exe` (l'interfaccia di Sandboxie-Plus) e verifi
 
 **Opzione manuale**: crea ogni box dalla GUI di Sandboxie-Plus (tasto destro -> "Crea nuovo box"
 o duplicando un box esistente), poi aggiungi a mano `BoxNameTitle=y` e `BoxAlias=Steam-<N>` a
-ciascuna sezione in `Sandboxie.ini` (oppure lancia solo
-`tools/SandboxieWindowTitles/set_box_titles.ps1`, che fa la stessa cosa ma NON crea i box da
-zero - presuppone che esistano già).
+ciascuna sezione in `Sandboxie.ini`.
 
 ---
 
@@ -228,13 +230,11 @@ d'ambiente `COMMON_DIR`:
 <GameRoot Condition="'$(COMMON_DIR)' != ''">$(COMMON_DIR)\Firestone</GameRoot>
 <MelonLoaderNetDir>$(GameRoot)\MelonLoader\net6</MelonLoaderNetDir>
 <Il2CppAssembliesDir>$(GameRoot)\MelonLoader\Il2CppAssemblies</Il2CppAssembliesDir>
-<ModsDir>$(MSBuildThisFileDirectory)..\dist</ModsDir>  <!-- MAI la cartella Mods live del gioco -->
 ```
 
-`ModsDir` punta deliberatamente a `dist/` (dentro il repo, ignorato da git) e MAI alla cartella
-`Mods` reale di un'istanza - per non rischiare di sovrascrivere automaticamente il mod live su
-~20+ istanze ad ogni build, anche a metà di una modifica. Il deploy vero è sempre manuale (vedi
-punto 5).
+La build resta in `src\bin\` e non viene mai copiata da sola nella cartella `Mods` di un'istanza,
+così una modifica a metà non può sovrascrivere il mod che gira sulle istanze. Il deploy è sempre
+manuale (vedi punto 5).
 
 ### 4.3 Comando di build
 
@@ -278,8 +278,7 @@ verifica con `dir C:\Sandbox\` quale cartella utente esiste.)
 
 **IMPORTANTE**: `Firebot.TalentEngine.dll` va copiato **ANCHE LUI**, sempre negli stessi due
 percorsi accanto a `firebot.dll` - dimenticarlo causa un crash immediato del task Talenti con
-`FileNotFoundException` (bug reale già capitato su questo progetto, scoperto e risolto il
-2026-09-24 - vedi TESTING.md).
+`FileNotFoundException` (già capitato il 2026-09-24).
 
 **Per un'istanza nativa** (se ne crei una nel nuovo range), un solo percorso:
 
@@ -327,7 +326,7 @@ C: da 232 GB = ~29 GB → commit limit totale ~61 GB), mentre 17+17 processi ne 
 
 ### 6.2 La soluzione
 
-`tools/SteamRamTrim/4_pagefile.ps1` (già nel repo) imposta un **pagefile fisso da 56 GB**
+`tools/Pagefile/set_pagefile.ps1` (già nel repo) imposta un **pagefile fisso da 56 GB**
 (iniziale = massimo, niente crescita dinamica) → commit limit ~88 GB. Verificato dal vivo il
 2026-09-26: dopo applicarlo e riavviare il PC, tutte e 17 le istanze sono ripartite insieme
 senza blocchi anche con soli ~2 GB di RAM "libera" apparente.
@@ -335,7 +334,7 @@ senza blocchi anche con soli ~2 GB di RAM "libera" apparente.
 ```powershell
 # Da PowerShell come Amministratore:
 cd C:\Repos\FirestoneBot
-.\tools\SteamRamTrim\4_pagefile.ps1
+.\tools\Pagefile\set_pagefile.ps1
 # poi RIAVVIA il PC (obbligatorio, il pagefile non cambia a caldo)
 ```
 
@@ -344,7 +343,7 @@ disco diverso: ogni coppia Steam+Firestone attiva contemporaneamente ha bisogno 
 ~3.8 GB di commit aggiuntivo (stima empirica: Firestone.exe ~2.4 GB + quota-parte di
 steamwebhelper.exe). Per 18 istanze (17-34): ~68 GB di commit extra necessario oltre alla RAM
 fisica del PC - imposta `-SizeMB` di conseguenza (default script: `57344` = 56 GB, passa un
-valore diverso con `.\4_pagefile.ps1 -SizeMB <N>` se serve più margine). Lascia sempre almeno
+valore diverso con `.\set_pagefile.ps1 -SizeMB <N>` se serve più margine). Lascia sempre almeno
 ~10 GB di spazio libero su disco oltre al pagefile.
 
 Verifica dopo il riavvio:
@@ -362,41 +361,19 @@ ognuna. Gli script "tutte insieme" (punto 3) lo fanno già di default.
 
 ---
 
-## 7. PCRamTrim (opzionale, attualmente DISABILITATO sul PC principale)
+## 7. Trim della RAM: rimosso
 
-Un'attività pianificata di Windows (Task Scheduler) chiamata `PCRamTrim` esegue
-`tools/SteamRamTrim/trim_ram.ps1` a intervalli regolari per liberare RAM inutilizzata da
-processi in background (NON Steam/Firestone/VS Code, quelli sono sempre esclusi per nome).
-
-**Sul PC principale è disabilitata** (scelta esplicita dell'utente, 2026-09-25) dopo un
-incidente in cui trimmava anche `steamwebhelper.exe` causandone il crash - causa poi
-identificata come il vero problema del commit limit (punto 6), non lo scope del trim in sé.
-Lo script è stato comunque corretto (`trim_ram.ps1`, `$trimOnlyContains` ora include
-`"steam"` invece di limitarsi a `steamwebhelper` - più ampio, in fase di ri-verifica).
-
-Non è necessaria per far girare le istanze (è un'utility a parte). Se vuoi replicarla sul
-secondo PC:
+Gli script che svuotavano il working set dei processi (`tools/SteamRamTrim`) sono stati tolti dal
+repo: il trim di `steamwebhelper.exe` faceva crashare anche Firestone (l'overlay di Steam vive nel
+processo del gioco), e non tocca il commit, che era la causa vera dei blocchi (punto 6). Su un PC
+dove erano stati usati:
 
 ```powershell
-schtasks /Create /TN "PCRamTrim" /TR "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"C:\Repos\FirestoneBot\tools\SteamRamTrim\trim_ram.ps1`"" /SC MINUTE /MO 20 /F
+# Se esiste ancora l'attività pianificata del trim (ora punta a uno script che non c'è più):
+schtasks /Delete /TN "PCRamTrim" /F
+# Se era stato lanciato 3_disable_sysmain.ps1, per tornare al default di Windows (da Amministratore):
+Set-Service SysMain -StartupType Automatic; Start-Service SysMain
 ```
-
-(20 minuti di intervallo, non 5 - il valore originale di 5 minuti era inutilmente aggressivo con
-molte istanze attive.) Per disabilitarla in qualunque momento: `Disable-ScheduledTask -TaskName "PCRamTrim"`.
-
-### 7.1 Trim manuale di Steam (quando serve)
-
-Al posto dell'attività pianificata, `tools/SteamRamTrim/trim_steam_now.ps1` fa un trim una volta
-sola, da lanciare a mano quando la RAM è sotto pressione (non serve essere Amministratore):
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Repos\FirestoneBot\tools\SteamRamTrim\trim_steam_now.ps1"
-```
-
-È volutamente leggero: tocca solo `steamwebhelper.exe` (mai `steam.exe`, `Firestone.exe` o altri
-processi), salta il suo processo GPU e quelli sotto i 150 MB, non chiude niente e fa una breve
-pausa tra un processo e l'altro. Alla fine stampa quanti processi ha trimmato e quanti MB ha
-liberato.
 
 ---
 
@@ -409,9 +386,10 @@ Ogni istanza genera il proprio file al primo avvio:
 ```
 
 (percorso sandbox per le istanze sandboxate, come sempre). Contiene una sezione per ogni task
-del bot, con `enabled = false` di default per **tutti** - vanno abilitati esplicitamente uno per
-uno in base a cosa vuoi far fare a quell'account (non tutti gli account hanno bisogno delle
-stesse cose - dipende dal livello personaggio, dai progressi, ecc.).
+del bot. In un file nuovo sono tutti `enabled = true` tranne Hall of Heroes e War Machines, e un
+task sotto il suo livello di sblocco resta fermo da solo. Un file già esistente tiene i valori che
+ha: i default cambiati il 2026-09-28 (allineamento alla guida F2P) vanno portati a mano sulle
+istanze esistenti - vedi `TESTING.md`, "Da fare e rimandato".
 
 Impostazioni globali del bot stesso (non per-task) sono nella sezione `[firebot_settings]` -
 tra queste, `low_resource_mode = true` (default) che il codice applica automaticamente
@@ -428,18 +406,18 @@ gli stessi parametri deliberati. **Non è un file da copiare alla cieca**: conti
 impostazioni scelte a mano (quali task sono `enabled = true`, soglie tipo
 `min_common_chest_reserve`, `resource_type`, la griglia finestre - vedi 8.2) - ogni riga marcata
 `(auto-managed, don't edit)` è stata azzerata apposta (`next_run_time_internal = ""`, contatori
-a `0`, date a `""`, `guide_start_index = -1`, `known_maxed_nodes = ""`) perché quello è stato
+a `0`, date a `""`, `known_maxed_nodes = ""`) perché quello è stato
 reale di avanzamento per-account, diverso per ogni istanza e ricalcolato automaticamente al
 primo giro - non ha senso clonarlo da un account all'altro.
 
 Uso consigliato per una nuova istanza: avvia il gioco una volta così MelonPreferences genera il
-`FirebotPreferences.cfg` vuoto (tutto `enabled = false`), chiudi il gioco, poi copia da questo
-template solo le righe `enabled = true` e i parametri non auto-managed che vuoi replicare
-(lasciando stare tutto ciò che è marcato "(auto-managed, don't edit)", che resta gestito dal
-bot). Per un'istanza già avviata, usalo invece come lista di confronto per trovare cosa manca o
-differisce rispetto alle altre. `window_grid_first_instance` è l'unica riga che DEVE cambiare
-in base al PC (vedi 8.2 sotto) - `debug_mode` è `true` in questo template perché così è rimasto
-attivo su Steam-0 durante questa sessione di sviluppo/debug, non è un requisito.
+`FirebotPreferences.cfg` con i default, chiudi il gioco, poi allinea al template gli `enabled` e i
+parametri non auto-managed che vuoi replicare (lasciando stare tutto ciò che è marcato
+"(auto-managed, don't edit)", che resta gestito dal bot). Per un'istanza già avviata, usalo invece
+come lista di confronto per trovare cosa manca o differisce rispetto alle altre.
+`window_grid_first_instance` è l'unica riga che DEVE cambiare in base al PC (vedi 8.2 sotto) -
+`debug_mode` è `true` in questo template perché così è rimasto attivo su Steam-0 durante lo
+sviluppo, non è un requisito.
 
 ### 8.2 Griglia delle finestre (monitor 2560x1440)
 
@@ -488,7 +466,8 @@ ricompilando, elencati qui solo per completezza/consapevolezza:
   usavano la data di calendario (mezzanotte) invece del vero reset di gioco (10:00 locali) per
   tracciare "già fatto oggi" - causava quest bloccate a 0 dopo il reset reale. Risolto con
   `src/Utilities/GameDay.cs`.
-- **RAM trim**: esclusione dei processi Steam dal trim (vedi punto 7).
+- **Allineamento alla guida F2P** (2026-09-28): nuovi default e logiche di spesa più prudenti -
+  l'elenco, con cosa riverificare, è in `TESTING.md`.
 
 ---
 

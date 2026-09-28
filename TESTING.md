@@ -1,214 +1,371 @@
-# Piano di test dal vivo
+# Test dal vivo
 
-> ⚠️ **DOCUMENTO OBSOLETO — da riscrivere da capo** (constatato dall'utente, 2026-09-28).
->
-> Le righe qui sotto risalgono ai primi giri di test (settembre 2026) e diverse sono state
-> superate dai fatti senza essere aggiornate. Esempi noti: la riga 30 dice che Talents è
-> `enabled = false` ovunque per via della vecchia calibrazione `guide_start_index`, ma quel
-> meccanismo è stato sostituito dall'allocator (commit `e6d4772`) e il task è acceso; la riga 7
-> dà Daily Store Offers per semplicemente "funziona", mentre la realtà è più sfumata (il percorso
-> garantito via `storeButton` è rotto, funziona attraverso i badge di notifica — vedi il commento
-> di `DailyStoreOffersTask`); la riga 5 descrive un `MerchantQuestTask` che nel frattempo è stato
-> riscritto due volte.
->
-> **Non usare questo file come fonte di verità sullo stato dei task.** Finché non viene rifatto,
-> valgono il codice, i suoi commenti (che sono tenuti aggiornati) e `PLAN.md`. La riscrittura è
-> un lavoro a sé, tracciato in `PLAN.md` → "Allineamento alla guida F2P".
+Runbook per una sessione di test **autonoma** di Claude Code sul PC della flotta, sull'istanza
+Steam-0: prova tutti i task, trova i bug dai log, li corregge, ricompila, ridistribuisce e riprova
+da solo. In fondo: stato di ogni task, problemi noti, lavoro rimandato e come tornare alla versione
+precedente. Aggiornato al 2026-09-28, dopo il riallineamento alla guida F2P
+(`docs/firestone_guida_F2P.md`) e la pulizia del codice.
 
-Nessun task è mai stato testato dentro il gioco vero - solo verificato staticamente (scansioni
-UnityPy + build pulita). Questo documento guida il primo giro di test reali, un task alla volta.
+## Prompt di avvio
 
-**Aggiornamento dopo il primo giro (vedi `PLAN.md`, sezione "Primo giro di test dal vivo")**: trovati
-e corretti diversi bug reali di navigazione (Free Pickaxes, Oracle's Gift, Character/Quests, rail di
-notifica, Oracle Rituals/Experiments/Firestone Research, animazione Awakening).
+Da incollare in Claude Code (VS Code, cartella `C:\Repos\FirestoneBot`). Per lavorare davvero da
+solo, Claude Code va avviato con i permessi che gli evitano di chiedere conferma a ogni comando.
 
-**Aggiornamento dopo il secondo giro (2026-09-17)**: confermato dal vivo che `TownIrongard` era
-davvero `menus/TownIrongard`, non `popups/TownIrongard` come cambiato nel giro precedente - riportato
-indietro (vedi `PLAN.md`). Da lì passano moltissimi task, quindi questo sblocca la maggior parte
-della lista sotto. Trovati e corretti anche due bug propri di Firestone Research (scansionava tier
-bloccati invece di fermarsi al primo non sbloccato; crashava silenziosamente se restava un secondo
-slot vuoto da riempire dopo aver avviato la prima ricerca) e applicato preventivamente lo stesso fix
-a Meteorite Research, che ha la stessa identica struttura. Testati dal vivo e confermati funzionanti:
-Guardian Training, Daily Store Offers, Firestone Research, Meteorite Research (vedi righe sotto).
-**Punto aperto, non bloccante**: dopo Firestone Research il bot a volte sembra restare sulla
-schermata città invece di tornare alla battaglia come gli altri task - non ancora isolato con
-certezza (potrebbe essere un altro task, es. Daily Store Offers, che riapre Town subito dopo).
-Da riverificare in un giro dedicato, ignorato per ora.
-
-**Aggiornamento (2026-09-17, System Mail)**: scoperta importante confermata dall'utente - il gioco
-sceglie tra **due varianti HUD parallele in base alla risoluzione/aspect ratio del client**, non è
-un'ambiguità di versione. Un path hardcoded su una sola variante funziona in metà delle sessioni e
-fallisce silenziosamente nell'altra metà. Corretto sistematicamente con un helper
-(`UiVariantButton`, prova più path candidati) applicato al bottone mail e a **tutta** la rail di
-notifica (`NotificationsLoc`, usata da quasi ogni task come fast-path opzionale + segnale di
-priorità) - vedi `PLAN.md`. **Non ancora esteso** all'ambiguità Desktop/Mobile/New della barra
-inferiore (Path of Glory/Inventory/Party/Hero Upgrade) - nessun test dal vivo l'ha ancora toccata.
-Testato dal vivo e confermato funzionante: Mailbox (System Mail) - claim riuscito, popup "Rewards"
-di conferma chiuso correttamente dal Watchdog generico (non serve un click esplicito su "OK").
-
-**Aggiornamento (2026-09-18, Collector/apertura chest)**: causa radice trovata e risolta. Gli slot
-chest in Inventario (`Common`/`Uncommon`/`Rare`/`Epic`, celle riciclate della ScrollView) hanno un
-componente `Button` presente/abilitato ma con **zero listener su `onClick`** - il vero click nel
-gioco reagisce direttamente agli eventi puntatore, non a `Button.onClick`. `GameButton.Click()`
-(che chiama `onClick.Invoke()`) per questo non faceva nulla, mentre un click reale dell'utente
-funzionava. Aggiunto `GameButton.ClickSimulated()`, che rigioca la sequenza
-PointerDown/Up/Click tramite `UnityEngine.EventSystems.ExecuteEvents` direttamente sul
-GameObject target - è una chiamata puramente in-process nell'EventSystem di Unity di
-quell'istanza, non tocca il mouse/cursore reale del sistema operativo, quindi resta sicura su ~20
-istanze del gioco in parallelo. Confermato dal vivo: la preview si apre e le chest si aprono
-(Rare/Epic svuotate, Uncommon ridotta). Aggiunto anche un poll (non un timer fisso) che aspetta il
-prossimo bottone (`openx1`/`openx10`) diventi cliccabile prima del click successivo, perché
-l'animazione di apertura ha durata variabile e un delay fisso usciva troppo presto rischiando di
-saltare l'apertura successiva. **Punto ancora aperto**: il presunto "secondo schermo" `ChestOpening`
-(per incatenare più aperture dello stesso tipo senza tornare alla preview) non è mai stato
-osservato esistere nella gerarchia finché non serve più di un click - probabile che con quantità
-piccole tutto avvenga in un solo click sulla preview stessa; il codice lo gestisce comunque come
-no-op sicuro se quello schermo non esiste. Resta da verificare con una chest che richieda più di un
-ciclo (es. scorta comune grande) se quel percorso serve davvero o va rimosso.
-
-Per velocizzare i cicli di test in questa sessione, `auto_start` è stato temporaneamente messo a
-`true` (con `start_bot_delay` al minimo consentito di 10s) invece di `false` come raccomandato
-sotto - il bot parte da solo ad ogni avvio del gioco senza bisogno di premere F7. Ricordarsi di
-rimetterlo a `false` a fine sessione di test se si torna alla procedura "un task alla volta" con
-osservazione manuale.
-
-## Perché un task alla volta
-
-Attivare tutto insieme renderebbe impossibile capire quale azione ha causato quale effetto nel
-gioco. La procedura è: abilita **un solo** task nel file di configurazione, avvia il gioco, osserva
-se fa quello che dovrebbe, poi disabilitalo prima di passare al successivo.
-
-`auto_start` deve restare `false` per tutta la fase di test: si avvia il bot a mano con `F7` solo
-quando si vuole osservare quel task specifico, poi si preme di nuovo `F7` per fermarlo prima di
-richiudere il gioco e modificare il file.
-
-## Prima di iniziare
-
-1. **Chiudi completamente il gioco** (il file `firebot.dll` è bloccato mentre Firestone è aperto).
-2. Il file di configurazione reale è in `Firestone/UserData/FirebotPreferences.cfg` (diverso dal
-   vecchio `config/FirebotPreferences.cfg` che era nel repository - quello era solo un riferimento
-   statico, mai caricato dal gioco, ed è stato rimosso nella pulizia).
-3. **I nomi delle sezioni sono cambiati** rispetto a prima: ora corrispondono al nome della classe
-   C# del task (es. `[alchemist]` è diventato `[experimentstask]`, `[oracle]` è diventato
-   `[oracleritualstask]`). Le vecchie sezioni con `enabled = true` restano nel file ma non
-   corrispondono più a nessun task reale - il bot le ignora, non c'è rischio che qualcosa parta da
-   solo al primo avvio. Ogni sezione elencata sotto va cercata/creata con il nome esatto indicato.
-4. Verifica che `debug_mode = true` sotto `[firebot_settings]`, per avere log dettagliati in
-   console durante i test.
-5. Log da tenere d'occhio: `Firestone/MelonLoader/Latest.log` - ogni task stampa quando parte,
-   cosa trova, e quando pianifica il prossimo controllo.
-
-## Procedura per ogni task
-
-1. Chiudi il gioco (se aperto).
-2. Apri `FirebotPreferences.cfg`, trova la sezione del task (o creala se non esiste ancora - basta
-   avviare il bot una volta con tutto spento perché tutte le sezioni vengano generate), imposta
-   `enabled = true` sotto quella sezione soltanto.
-3. Salva, avvia il gioco, aspetta il caricamento completo, premi `F7`.
-4. Osserva il comportamento atteso (vedi la tabella sotto) e il log per eventuali errori.
-5. Premi di nuovo `F7` per fermare il bot, chiudi il gioco.
-6. Rimetti `enabled = false` per quel task prima di passare al successivo.
-
-Alcuni task richiedono uno stato specifico nel gioco per avere qualcosa da fare (es. missioni già
-completate, valuta accumulata) - se non hanno nulla da fare la prima volta, è normale: riprova dopo
-aver raggiunto quella condizione, o confronta comunque il comportamento "niente da fare" con quanto
-descritto (dovrebbe restare inerte senza errori, non bloccarsi).
+```text
+Leggi TESTING.md e seguilo dall'inizio alla fine in autonomia, con la skill ponytail attiva
+(se non parte da sola: /ponytail). Lavora solo sull'istanza Steam-0. Fai un commit per ogni
+correzione verificata dal vivo; a fine sessione fai push e dammi il riepilogo richiesto in
+"Fase 3".
+```
 
 ---
 
-## Comportamenti sempre attivi (non sono nello scheduler dei task)
+## Per l'agente
 
-Questi due non hanno una sezione "un task alla volta" nello stesso senso - partono e si fermano con
-`F7` insieme al resto, ma girano in continuo invece che a schedulazione.
+### Contesto
 
-| # | Nome | Sezione cfg | Comportamento atteso |
-|---|------|--------------|----------------------|
-| - | **Hero Upgrade** | `[hero_upgrade]` | Durante una battaglia, il leader e ogni slot eroe vengono potenziati automaticamente (bottone upgrade tenuto premuto a intervalli). Verifica che il gold cali e i livelli salgano, senza click visibili su eroi non ancora sbloccati. |
-| - | **AutoRetreat** | `[auto_retreat]` | Se lo stage in battaglia non avanza per `stall_minutes` (default 3 min), il bot dovrebbe cliccare la freccia "torna indietro" nello stage in battaglia `retreat_stages` volte (default 5). Per testarlo in tempi ragionevoli, abbassa temporaneamente `stall_minutes` a 1 e fermati apposta su uno stage duro. |
+Firebot è una mod MelonLoader per Firestone Idle RPG: automatizza il gioco cliccando la sua UI
+Unity da dentro il processo. Codice in `src/` (C#, net6.0), task in `src/Tasks`, path della UI in
+`src/Infrastructure/Paths` (un file per schermata). Il bot gira su 34 istanze in produzione; qui si
+testa solo **Steam-0**, un'istanza nativa (senza Sandboxie):
+
+| Cosa | Dove |
+|---|---|
+| Repo | `C:\Repos\FirestoneBot` |
+| Gioco | `C:\Program Files (x86)\Steam-0\steamapps\common\Firestone` |
+| Mod | `<gioco>\Mods\firebot.dll` e `<gioco>\Mods\Firebot.TalentEngine.dll` |
+| Configurazione | `<gioco>\UserData\FirebotPreferences.cfg` |
+| Log | `<gioco>\MelonLoader\Latest.log` (riscritto a ogni avvio; i precedenti in `MelonLoader\Logs`) |
+
+Controlla con `Test-Path` che questi percorsi esistano prima di iniziare. Se Steam-0 non c'è, fermati
+e chiedi. Non toccare **mai** le altre istanze (Steam-1..34): né i loro processi né i loro file.
+
+### Regole
+
+- **Mai spendere gemme o soldi veri**, mai cliccare offerte a pagamento, mai comprare Eclipse
+  Stones, mai vendere o usare barili, gold istantaneo o meteoriti istantanee (5/10/30 min, 1 h). Se
+  una correzione richiede di toccare un bottone del genere, fermati e chiedi.
+- La configurazione si modifica **solo a gioco chiuso**: il gioco riscrive il file quando esce.
+  Salvala in UTF-8 senza BOM, con gli strumenti di modifica file: `Set-Content -Encoding UTF8` di
+  PowerShell 5.1 aggiunge il BOM.
+- **Parti dai log, non dalle ipotesi.** Prima di cambiare codice, trova la riga `[FAILED]` che
+  nomina il path rotto, o le righe `[DEBUG]` del task che mostrano dove si ferma.
+- **Path reali, non dedotti.** Un path si corregge solo dopo averlo visto nel gioco (dump dal vivo,
+  vedi sotto) o nel dump degli asset. Ordine di fiducia: path già confermati dal vivo in questo
+  codice > dump dal vivo > dump UnityPy degli asset > `docs/screens`. Prima di concludere che un
+  bottone o un ingresso "non esiste", guarda l'elenco **completo** dei figli del contenitore, non
+  solo quelli già mappati.
+- Controlla dove viene usata una costante prima di cambiarla: alcuni path sono suffissi relativi
+  (usati come `new GameButton(path, elementoPadre)`) e non vanno resi assoluti.
+- Navigazione esplicita: ogni task clicca l'intera catena fino alla sua schermata e i tab che gli
+  servono. Il badge di notifica è solo una scorciatoia cliccata prima.
+- Convenzione dei path: sono considerati verificati dal vivo salvo un commento che dica il
+  contrario. Quando confermi un path segnato come ipotizzato, togli quel commento; quando lo
+  correggi, correggi anche i commenti e i documenti che lo descrivevano.
+- Correzioni minime, sulla causa. Niente astrazioni nuove, niente refactoring non richiesti dal bug.
+- Se la stessa correzione fallisce 3 volte, documenta cosa hai visto in "Problemi noti", rimetti il
+  codice com'era e passa al task successivo.
+
+### Comandi
+
+**Fermare Steam-0** (chiude anche il client Steam di quell'istanza):
+
+```powershell
+$root = 'C:\Program Files (x86)\Steam-0'
+Get-Process | Where-Object { $_.Path -like "$root\*" } | Stop-Process -Force
+# Prima di toccare cfg o Mods, controlla che non sia rimasto nessun processo sotto $root.
+```
+
+**Build e deploy** (la build si può fare anche a gioco aperto; la copia no, i DLL sono bloccati):
+
+```powershell
+$env:COMMON_DIR = 'C:\Program Files (x86)\Steam-0\steamapps\common'
+dotnet build C:\Repos\FirestoneBot\src\firebot.csproj -c Release
+$out = 'C:\Repos\FirestoneBot\src\bin\Release\net6.0'
+$mods = 'C:\Program Files (x86)\Steam-0\steamapps\common\Firestone\Mods'
+Copy-Item "$out\firebot.dll", "$out\Firebot.TalentEngine.dll" $mods -Force
+```
+
+La build deve dare 0 errori e 0 warning; `dotnet test tests\Firebot.TalentEngine.Tests` deve
+passare.
+
+**Avviare Steam-0:**
+
+```powershell
+Start-Process 'C:\Program Files (x86)\Steam-0\steam.exe' -ArgumentList '-silent', '-applaunch', '1013320'
+```
+
+Con `auto_start = true` il bot parte da solo: è pronto quando `Latest.log` contiene
+`Started. Enabled tasks: N of M loaded.` (di solito entro qualche minuto). Aspetta controllando il
+log a intervalli, con un'attesa in background, non con pause lunghe in primo piano.
+
+**Leggere il log.** `debug_mode = true` in `[firebot_settings]` è l'unico interruttore che serve:
+accende le righe `[DEBUG]` del logger, che è anche dove finiscono i `[FAILED]` dei path. Le righe
+da cercare:
+
+| Riga | Significato |
+|---|---|
+| `Started. Enabled tasks: N of M loaded.` | Bot avviato |
+| `[Task] <Gruppo - Nome> finished in Xs \| Next: ...` | Un task ha finito e ha pianificato il prossimo giro |
+| `[FAILED] Task <Gruppo - Nome> timed out after Xs.` / `threw: ...` | Il task si è bloccato o è andato in eccezione |
+| `[FAILED] Root '...' missing`, `Root Object not found`, `Path broken: ...` | Un path non risolve: rotto |
+| `[FAILED] Element is hidden or inactive`, `Click ignored: Button disabled` | Il path esiste, ma l'elemento non è visibile o cliccabile in quel momento |
+| `[Bot Status] Task Table` | Tabella di stato, stampata dopo ogni task |
+
+Nel log ogni task si chiama `Gruppo - Nome`, come nella colonna Task della tabella di stato: per
+esempio `Quests - Collector Quest`, `Town - Firestone Research`, `Warfront - Daily Missions`. Un
+task `Waiting` con `Next Run` già passato è sotto il suo livello di sblocco: non è un errore.
+
+```powershell
+$log = 'C:\Program Files (x86)\Steam-0\steamapps\common\Firestone\MelonLoader\Latest.log'
+Select-String -Path $log -Pattern '\[FAILED\]|threw:|timed out' | Select-Object -Last 40
+Select-String -Path $log -Pattern '\[Task\] ' | Select-Object -Last 40
+```
+
+**Vedere lo schermo.** Uno screenshot dello schermo principale, da aprire con il tool di lettura
+file; Steam-0 è la finestra in alto a sinistra della griglia:
+
+```powershell
+Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+$b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+$bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+[System.Drawing.Graphics]::FromImage($bmp).CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+$bmp.Save("$env:TEMP\steam0.png")
+```
+
+**Vedere la gerarchia reale di una schermata:**
+
+- **Dal vivo** (la fonte migliore): aggiungi temporaneamente, nel punto del task in cui la schermata
+  è aperta, `Logger.Info(Watchdog.DumpChildrenRecursive("<path della radice>", 4));` oppure
+  `Logger.Info(Watchdog.DumpActiveScreens());`. Build, deploy, avvio, leggi il log, poi **togli la
+  riga** prima del commit.
+- **Dagli asset**, senza avviare il gioco: `python tools\unity_ui_mapper.py <NomeRadice>`, con
+  `FIRESTONE_DATA` impostata su `<gioco>\Firestone_Data` (serve `python -m pip install UnityPy`). Mostra
+  la struttura del prefab, non lo stato a runtime (rami inattivi, cloni).
+
+### Preparazione
+
+1. `git pull`, poi annota `git log -1 --oneline`.
+2. Ferma Steam-0. Copia `FirebotPreferences.cfg` e i due DLL di `Mods` in
+   `C:\Repos\FirestoneBot-test-backup\` (fuori da `Mods`: MelonLoader carica ogni `.dll` che trova
+   lì).
+3. Nel cfg, in `[firebot_settings]`: `auto_start = true`, `debug_mode = true`,
+   `start_bot_delay = 10.0`. Nelle sezioni dei task: `enabled` come in
+   `tools/ConfigTemplate/FirebotPreferences.template.cfg` (tutto acceso tranne `hallofheroestask` e
+   `warmachinestask`), e `next_run_time_internal = ""` ovunque, così ogni task è subito dovuto.
+4. Build, deploy, avvio.
+
+### Fase 1: giro completo
+
+Lascia girare il bot finché ogni task acceso ha avuto il suo turno: uno alla volta, può volerci
+un'ora. Man mano, per ogni task, annota l'esito: finito senza errori, `[FAILED]`, mai partito
+(livello), oppure comportamento diverso da quello scritto nella colonna "Da verificare" delle
+tabelle sotto. Controlla anche i punti di "Da riverificare dopo la pulizia".
+
+### Fase 2: correzioni
+
+Per ogni problema trovato:
+
+1. Individua dal log il passo esatto che fallisce.
+2. Se è un path, trova quello reale (dump dal vivo o degli asset) e correggilo in
+   `src/Infrastructure/Paths`.
+3. Isola il task: ferma Steam-0, metti `enabled = false` a tutti gli altri task, per questo
+   `enabled = true` e `next_run_time_internal = ""`. Build, deploy, avvio, osserva. Ripeti finché
+   passa.
+4. Riaccendi gli altri task. Aggiorna la riga del task qui sotto (stato ✅ e data) e ogni documento
+   che descriveva il path o il comportamento vecchio.
+5. Commit, con nel messaggio la prova vista dal vivo (quale riga di log o quale schermata).
+
+### Fase 3: chiusura
+
+1. Ferma Steam-0. Nel cfg rimetti i valori del backup in `[firebot_settings]` e negli `enabled`;
+   lascia i valori auto-gestiti che il bot ha scritto.
+2. Deploy dell'ultima build buona, riavvia Steam-0 e controlla che parta (`Started.`) senza
+   `[FAILED]`.
+3. Aggiorna questo file (stati, data, problemi nuovi), commit, e push se il prompt di avvio lo
+   chiede.
+4. Riepilogo per l'utente: cosa è passato, cosa ha fallito e perché, cosa hai corretto (con i
+   commit), cosa resta aperto e cosa richiede una sua decisione.
 
 ---
 
-## Quests (6 task che gestiscono le missioni giornaliere)
+## Stato per task
 
-| # | Nome | Sezione cfg | Livello min. | Comportamento atteso |
-|---|------|--------------|:---:|----------------------|
-| 1 | ✅ Quests (claim giornaliere/settimanali) | `[queststask]` | - | Apre Character → Missioni, clicca claim su ogni missione già completata (giornaliere e settimanali), lascia stare quelle non ancora fatte. **Testato 2026-09-17: funziona, switcha correttamente tra daily e weekly.** |
-| 2 | ⚠️ Collector | `[collectorquesttask]` | - | Apre l'Inventario, apre le chest (gear/jewel/celestial) tenendo da parte `min_common_chest_reserve` (default 10) chest comuni - il numero di chest comuni in inventario non dovrebbe scendere sotto quella soglia. **Testato 2026-09-18: risolto il bug di fondo (click sullo slot chest non arrivava a destinazione, vedi nota sopra) - confermato dal vivo che le chest si aprono davvero (Rare/Epic svuotate, Uncommon ridotta). Funziona ma non è ancora perfetto: i tempi tra un'apertura e l'altra vanno ottimizzati ulteriormente (il poll attuale aiuta ma non è la soluzione definitiva). Percorso "apri più lotti di fila senza richiudere" non ancora esercitato da un caso reale. Da rivedere in un giro dedicato.** |
-| 3 | ✅ Gamer | `[gamerquesttask]` | 15 | In Taverna, gioca fino a 10 partite con i Game Token, lasciandone almeno `min_token_reserve` di scorta. **Testato 2026-09-18: 3 bug reali trovati e corretti.** (1) Il bottone edificio "tavern" nel Town Hub apre in realtà un popup intermedio "TavernSelection" con due carte ("tavern"/"scarabGame") - serve un secondo click sulla carta giusta, non entra direttamente nella schermata (vedi `Town.OpenTavern`/`Town.OpenScarabGame`). (2) Il contatore token letto (`counterInteraction/quantity`) era quello sbagliato, sempre vuoto/inattivo - quello vero è `currencyInteraction (GameToken)/quantity`, il che faceva fallire silenziosamente ogni tentativo di gioco (leggeva 0 token). (3) Cliccare "Play" da solo non basta: apre 6 carte coperte intercambiabili, serve un click su una di esse per far partire l'animazione e completare davvero il turno (altrimenti i token non scendono). Aggiunta anche l'ottimizzazione richiesta: se conviene ed è affrontabile rispettando la riserva, usa il moltiplicatore x10 (un solo turno da 10 invece di 10 turni da 1) - costo lineare confermato (Play 1 = 1 token, Play 10 = 10). **Confermato dall'utente: funziona tutto.** |
-| 4 | ✅ BeerExchange | `[beerexchangetask]` | 15 | Taverna → Mercato: compra ripetutamente il pacchetto da 5 token finché conviene. **Testato 2026-09-18: trovati e corretti 2 bug reali prima di lasciar cliccare nulla.** (1) Root del popup sbagliato (`menus/TavernMarket` invece di `popups/TavernMarket`, stesso errore già visto per BattlePass). (2) La struttura reale NON è "un item con due bottoni birra/gemme" come da wiki: sono **tre item separati** (`gameTokenWithBeer` x5/birra con bottone proprio `purchaseButtonOffer`, `gameTokenBulk` x20/gemme, `gameToken` x5/gemme) - il path assunto in origine (`gameToken/purchaseButton`) avrebbe cliccato l'offerta a **gemme**, mai scattato dal vivo solo per il bug (1) che bloccava tutto prima. Corretto con il path reale, **confermato dall'utente: acquisto completo riuscito, spesa birra corretta, nessun impatto sulle gemme**. Il loop clicca ripetutamente finché conviene (non solo una volta). **Punto minore non bloccante**: il pulsante "tavern" nel Town Hub (`townBg/parent/tavern`) risulta ancora non verificato - la navigazione reale finora è sempre passata dalla notifica rapida, mai dal percorso "garantito" Town→Tavern. |
-| 5 | ⚠️ Merchant | `[merchantquesttask]` | 30 | Exotic Merchant: usa tutti gli oggetti oro in inventario, vende esattamente 10 oggetti diversi (uno per tipo, mai lo stesso due volte), fa un solo upgrade, poi torna a reclamare la quest "Merchant". **Testato 2026-09-18: 3 bug reali trovati e corretti.** (1) Consumare un item oro compattava la griglia, facendo scivolare un item diverso (es. un totem) nella stessa posizione che il codice continuava a cliccare - ora rilegge il nome reale prima di ogni click. (2) Mancava l'attesa di popolamento della lista item dopo il cambio tab (stessa causa delle chest) - aggiunta. (3) La vendita riselezionava sempre lo stesso tipo (slot non ancora vuoto) vendendo 10 copie della stessa cosa invece di 1 per tipo - ora tiene traccia dei nomi già venduti. Esclusi esplicitamente oro e Midas' Touch dalla vendita. **Confermato dall'utente: uso oggetti oro e vendita ora corretti.** Verifica completa (incluso il claim finale della quest) bloccata oggi dall'esaurimento delle risorse test sull'account - da riconfermare dopo il reset di domani mattina. |
-| 6 | ✅ Miner | `[minerquesttask]` | 50 | Gilda → Cristallo Arcano: colpisce il cristallo 5 volte (click singoli). **Testato 2026-09-17: funziona perfettamente.** Aggiunta ottimizzazione richiesta: se il moltiplicatore quantità può essere impostato a x5, un solo click sostituisce i 5 colpi singoli (vedi `ArcaneCrystal.TrySetQuantityTo5`). |
+Legenda: ✅ verificato dal vivo · ⚠️ verificato in parte · ❌ mai girato dal vivo ·
+🔄 logica cambiata il 2026-09-28, da riverificare.
 
-## Town (edifici cittadini)
+"Liv." è il livello personaggio sotto il quale il task non parte mai. "Default" è `enabled` in un
+file di configurazione nuovo.
 
-| # | Nome | Sezione cfg | Livello min. | Comportamento atteso |
-|---|------|--------------|:---:|----------------------|
-| 7 | ✅ Daily Store Offers | `[dailystoreofferstask]` | - | Reclama la ricompensa giornaliera di accesso e la mystery box gratuita giornaliera; non tocca i bundle a pagamento accanto. **Testato 2026-09-17: mystery box confermata, funziona.** |
-| 8 | ✅ Engineer | `[engineertask]` | 50 | Reclama gli strumenti pronti dall'Ingegnere quando disponibili. **Testato 2026-09-17: funziona, letto timer reale (6h) dal quick-access della notifica. ⚠️ 2026-09-18: durante il fix di War Machines scoperto che il percorso di fallback via building click (`Town.OpenEngineer`, usato solo se la notifica non è attiva) era rotto per lo stesso motivo (popup "GarageSelection" mai gestito) - corretto insieme al fix di War Machines, ma non ancora ri-verificato dal vivo passando per quel percorso specifico (il test del 17/09 aveva sempre la notifica attiva).** |
-| 9 | ✅ War Machines | `[warmachinestask]` | 50 | Town → Engineer (popup "GarageSelection", card "garage") → War Machines → tab Workshop: livella ogni war machine posseduta finché il bottone di livellamento resta cliccabile o finché mancano gli Expedition Token (popup "CurrencyMissing" gestito, si ferma subito invece di girare a vuoto). **Testato 2026-09-18: bug di navigazione risolto (il bottone "Engineer/warMachinesButton" non esisteva - il building "Engineer" apre in realtà un popup di scelta con 3 card: engineer/garage/trainingBase, War Machines sta dietro "garage", non dentro la schermata Engineer). Stesso fix applicato a `Town.OpenEngineer` (bug latente mai emerso perché `[engineertask]` era sempre stato testato solo via notifica quick-access). Confermato dall'utente via screenshot: naviga correttamente e si ferma pulito sul popup "Get more Expedition Token". Lasciato `enabled = true` su richiesta dell'utente. Verifica end-to-end completa (con Expedition Token sufficienti per un livellamento reale) ancora da fare.** |
-| 10 | ✅ Guardian Training | `[guardiantrainingtask]` | - | Magic Quarters: avvia l'allenamento sul guardiano configurato (`guardian_index`). **Testato 2026-09-17: funziona, torna correttamente alla schermata di battaglia.** |
-| 11 | Experiments (Alchemist) | `[experimentstask]` | 120 | Avvia/reclama esperimenti in Alchemist; se `resource_type` è vuoto non fa nulla (comportamento voluto, di norma da configurare esplicitamente). |
-| 12 | Oracle Rituals | `[oracleritualstask]` | 200 | Reclama rituali completati e ne avvia uno nuovo. |
-| 13 | Oracle's Gift | `[oraclesgifttask]` | 200 | Reclama il regalo giornaliero dell'Oracolo. |
-| 14 | ✅ Firestone Research | `[firestoneresearchtask]` | - | Library → tab Firestone Research: avvia/reclama ricerca, con "Raining Gold" sempre priorità se disponibile. **Testato 2026-09-17 (3 giri, 2 bug trovati e corretti - vedi nota in alto): ora riempie correttamente più slot vuoti in un solo run, senza scansionare tier bloccati.** |
-| 15 | ✅ Meteorite Research | `[meteoriteresearchtask]` | - | Library → tab Meteorite Research: stesso principio, sui 5 alberi di meteorite. **Testato 2026-09-17 (con lo stesso fix applicato preventivamente): funziona.** |
-| 16 | ✅ Temple of Eternals (Empower) | `[empowertask]` | - | Fa il reset/prestige solo quando il rapporto Firestone trovate/possedute e i minuti di avventura configurati sono soddisfatti - non dovrebbe mai fare empower "a caso". **Testato 2026-09-18: l'avventura era ferma da 12h24m (oltre la soglia massima di 2h) - il task ha correttamente forzato l'empower a prescindere dal rapporto (ratio=0 ma tempo massimo superato). Nessun errore, popup aperto e richiuso correttamente. Confermato dall'utente: funziona.** |
-| 17 | ✅ Free Pickaxes | `[freepickaxestask]` | 50 | Reclama piccozze gratuite solo una volta raggiunta la soglia `pickaxe_claim_threshold`. **Testato 2026-09-18 (soglia temporaneamente a 1 per il test): funziona, notifica quick-access aperta correttamente, timer di rigenerazione letto bene. Confermato dall'utente.** |
-| 18 | ✅ Scarab's Game (omaggio) | `[scarabgamefreetokentask]` | 60 | Taverna → Scarab's Game → shop: reclama l'omaggio giornaliero gratuito nel tab Saldi. **Testato 2026-09-18**: oltre al fix di navigazione (Town → edificio tavern → carta "scarabGame", vedi Gamer Quest), trovato un altro bug dello stesso tipo BattlePass/TavernMarket: `ScarabGameShopLoc.Root` puntava a `menus/ScarabGameShop`, in realtà è `popups/ScarabGameShop`. **Confermato dall'utente: funziona.** Flusso completo confermato: shop (token gratis) → spin → vault. **Punto aperto, non bloccante**: lo shop ha anche una tab "Monthly pass" con un secondo omaggio gratis ("Pharaoh's token x1") non ancora reclamato da questo task - solo la tab "Saldi" è gestita oggi. Da aggiungere in un giro dedicato. |
-| 19 | ✅ Pharaoh's Vault + spin | `[pharaohsvaulttask]` | 60 | Gira la slot con i Noble Token gratuiti, apre il Pharaoh's Vault quando ci sono abbastanza Ancient Coin. **Testato 2026-09-18**: oltre al fix di navigazione, trovati e corretti: (1) `PharaohsVaultLoc.Root` puntava a `popups/PharaohsVault`, in realtà è `menus/PharaohsVault` (stesso pattern di bug, ma invertito). (2) Nessuna attesa "smart" tra uno spin/apertura e l'altro - aggiunta la stessa attesa a poll già usata per le chest (`ScarabGame.WaitUntilClickable`). Lo spin manuale (bottone "Play") ha funzionato bene, non serve la modalità "Auto". **Confermato dall'utente: funziona, vault aperto correttamente.** |
-| 20 | ✅ Mailbox | `[systemmailtask]` | - | Reclama ogni ricompensa in posta (Arcane Crystal, traguardi livello, rank Arena, Battle Pass) - non deve mai toccare il tasto elimina. **Testato 2026-09-17 (fix HUD a doppia variante, vedi nota in alto): funziona.** |
-| 21 | Hall of Heroes | `[hallofheroestask]` | - | Per ogni eroe: sblocca tier gear T2/T3 se possibile, incanta gear T2/T3 (tutti gli eroi) + T1 (solo eroi nella formazione attiva) + tutti i jewel. **Punto critico da osservare**: verifica che il T1 venga incantato sugli eroi giusti (quelli davvero in formazione) - è l'assunzione meno sicura di tutto il codice, vedi `PLAN.md` Task 31. |
-| 22 | ✅ Arena of Kings | `[arenaofkingstask]` | 80 | Town → Battles (popup "WFMenuSelection", card "arena") → Arena of Kings. Sceglie l'avversario più debole tra i 3 mostrati, rerollando ogni 5s (poll sul bottone, non timer fisso); dopo 3 min accetta fino a +5% di potenza, poi +10%, poi +20%, oltre i 9 min combatte comunque il migliore. Può girare a lungo (fino a 5 token/giorno) - non è un bug se impiega minuti. **Testato 2026-09-18: risolti 3 bug distinti - (1) "WFMenuSelection/bg/arena" dava "path broken" solo perché la notifica quick-access aveva già aperto la schermata prima, popup e card sono reali; (2) `MyPower` leggeva sempre 0 per due motivi sovrapposti: il nome reale è "totalPower" non "arenaPower", e il suo testo include l'etichetta ("Arena power: 18.336") invece del solo numero come per gli avversari - aggiunto lo strip dell'etichetta in `GameText.GetParsedDoubleAbbreviated`; (3) `TokensAvailable` leggeva sempre 0 per lo stesso bug "N/Total" già visto nei Talenti ("5/5"). Aggiunto anche un fix generale in `GetParsedDoubleAbbreviated` per numeri tipo "17.242" (letti erroneamente come 17,242 in stile invariant culture). Confermato dall'utente: sceglie correttamente gli avversari più deboli invece di fare sempre refresh, combatte, e si ferma pulito (6s, nessun errore) quando i token finiscono. Verifica completa di un ciclo da 5 token rimandata a domani (token di oggi già esauriti durante i test).** |
-| 23 | ✅ Pirate's Prize | `[piratesprizetask]` | - | Town → Pirate Ship (edificio "ship") → tab Pirate's Prize: reclama solo i premi della traccia gratuita del reward track a livello personaggio (sblocca da livello 10); non tocca mai la traccia a pagamento né le altre tab (Mercenaries, Captain's Deal, Skins). **Feature nuova, mai automatizzata prima - Testato 2026-09-18: trovato e corretto un bug architetturale mai visto finora nel codice.** I ~20 elementi della lista premi (`ppTierInteraction(Clone)`) NON sono pool/virtualizzati come inizialmente ipotizzato (esistono tutti in gerarchia simultaneamente, lo ScrollRect si limita a scorrerli in vista) - il vero problema è che condividono tutti lo STESSO nome senza indice per-istanza (a differenza di ogni altra lista pool nel codice, che usa `[pool N]` o `(N)`), e `GameElement`/`GameButton` risolvono sempre per stringa di percorso ad ogni accesso: `Transform.Find` colpiva quindi sempre lo stesso (primo) fratello a prescindere da quale tier si pensava di controllare, facendo ricontrollare 20 volte lo stesso elemento invece di scorrerli davvero. Risolto bypassando `GameElement`/`GameButton` per la scansione: risolve il contenitore una sola volta via `Transform` grezzo, poi itera `GetChild(i)` direttamente (riferimenti Transform live, univoci) e clicca il bottone claim di ogni tier con un click simulato manuale (`ExecuteEvents`) sulla Transform già nota. **Confermato dall'utente: funziona.** Abilitato su -0. |
+### Quests
 
-## Guild
+| Task | Sezione | Liv. | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|:-:|---|
+| Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. |
+| Beer Exchange | `[beerexchangetask]` | 15 | on | ✅ | Usa solo l'offerta pagata in birra, mai le due in gemme. |
+| Collector | `[collectorquesttask]` | - | on | 🔄 | Apre solo chest Wooden/Iron/Common e al massimo 4 al giorno; Uncommon e superiori non si toccano. Jewel e celestial sempre tutte. Da confermare: che Wooden e Iron valgano davvero meno di Common (se no cambia solo quale chest economica usa). |
+| Gamer | `[gamerquesttask]` | 15 | on | ✅ | 10 giocate in taverna, senza scendere sotto `min_token_reserve`. |
+| Merchant | `[merchantquesttask]` | 30 | on | 🔄 | Vende solo le posizioni 3, 2, 1 della griglia (Midas, Health, Damage), mai Speed né i consumabili di gold e meteoriti. Controlla la riga `Sell grid:` del log: deve elencare quei nomi in quelle posizioni. |
+| Miner | `[minerquesttask]` | 50 | on | ✅ | 5 colpi al Cristallo Arcano. La scorciatoia x5 non è verificata; se manca, fa 5 colpi singoli. |
 
-| # | Nome | Sezione cfg | Livello min. | Comportamento atteso |
-|---|------|--------------|:---:|----------------------|
-| 24 | ✅ Expedition | `[expeditiontask]` | 10 | Reclama la spedizione attiva completata e ne avvia una nuova. **Testato 2026-09-18: funziona, nessun errore, nuova spedizione avviata e prossimo controllo schedulato correttamente.** |
-| 25 | ✅ Tree of Life (Personal) | `[treeoflifetask]` | 10 | Gilda → Albero della Vita → vista Personale: compra upgrade con Expedition Token, priorità a Raining Gold/Firestone Finder/Firestone Effect. **Testato 2026-09-18: 2 bug reali trovati e corretti.** (1) Cliccare un nodo apre un popup di anteprima ("Magic spells / Level 0/5 / Buy upgrade 600") - il codice non lo sapeva e non premeva mai il bottone verde, restando bloccato fino al timeout di 120s del framework (task forzatamente interrotto). Aggiunto il click sul vero bottone (`bg/normal/buyUpgradeButton`) + chiusura popup. (2) Quando i token finiscono, il gioco mostra un popup bloccante "CurrencyMissing" ("You need N more Expedition token") che il codice non riconosceva, continuando a girare a vuoto su tutti i 20 nodi - ora lo rileva e si ferma subito (task da 70s a 9s). **Confermato dall'utente: funziona perfettamente.** |
-| 26 | Awakening | `[awakeningtask]` | 50 | Spende Arcane Crystal per risvegliare eroi, usando sempre il moltiplicatore più alto disponibile. **Testalo dopo Mailbox**, altrimenti probabilmente non ci sono cristalli da spendere. |
+### Town
 
-## Map & Warfront
+| Task | Sezione | Liv. | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|:-:|---|
+| Daily Store Offers | `[dailystoreofferstask]` | - | on | ✅ | Check-in giornaliero e le due mystery box gratuite. Entra solo dai badge CheckIn/MysteryBox: il `storeButton` dell'HUD non apre niente. |
+| Engineer | `[engineertask]` | 50 | on | ✅ | Strumenti ogni 6 ore. Verificato dal badge; la strada dall'edificio (popup GarageSelection) è corretta ma non riverificata. |
+| War Machines | `[warmachinestask]` | 50 | **off** | ⚠️ | Navigazione e stop sul popup CurrencyMissing verificati, un livellamento completo no. Spento: consuma gli stessi gettoni spedizione del Personal Tree, che la guida mette prima. |
+| Guardian Training | `[guardiantrainingtask]` | - | on | ✅ | Allena `guardian_index` se sbloccato, altrimenti Vermilion. |
+| Experiments | `[experimentstask]` | 120 | on | ⚠️ | Claim verificato. Default `resource_type = "0"` (solo Dragon blood). |
+| Oracle Rituals | `[oracleritualstask]` | 200 | on | ❌ | Nessun account a 200. Vedi "Da fare e rimandato". |
+| Oracle's Gift | `[oraclesgifttask]` | 200 | on | ❌ | Nessun account a 200. |
+| Firestone Research | `[firestoneresearchtask]` | - | on | 🔄 | Priorità in ordine: Raining Gold, Firestone Finder, Firestone Effect, Trainer Skills, Expeditioner; poi il primo nodo mai toccato. Controlla nel log `Selected research #N`: con nodi a livello 0 disponibili deve comparire `fresh`. Se non compare mai, il testo del livello non è nel formato atteso (vedi "Problemi noti"). |
+| Meteorite Research | `[meteoriteresearchtask]` | - | on | 🔄 | Priorità: Raining Gold, Firestone Finder, Firestone Effect. Mai sotto `min_meteorite_reserve` (3000). |
+| Empower | `[empowertask]` | - | on | 🔄 | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. Da confermare: che il valore mostrato dal gioco al momento del reset sia davvero +100%. |
+| Arena of Kings | `[arenaofkingstask]` | 80 | on | ✅ | Scelta dell'avversario più debole e lettura dei gettoni verificate; un ciclo completo di 5 gettoni no. Può durare minuti. |
+| Pirate's Prize | `[piratesprizetask]` | 10 | on | ✅ | Solo la traccia gratuita. |
+| System Mail | `[systemmailtask]` | - | on | ✅ | Il percorso del badge della posta è ipotizzato; senza, gira comunque ogni 6 ore. |
 
-| # | Nome | Sezione cfg | Livello min. | Comportamento atteso |
-|---|------|--------------|:---:|----------------------|
-| 27 | ✅ Map Missions | `[mapmissionstask]` | - | Reclama missioni completate, ne avvia di nuove nell'ordine configurato (`mission_time_order`, default `asc`). **Testato 2026-09-18: funziona, più missioni attive scansionate correttamente (tempi parsati bene), nuova missione avviata senza errori.** |
-| 28 | Warfront Campaign Loot | `[warfrontcampaignloottask]` | 50 | Reclama i rotoli di ricompensa disponibili della campagna Warfront. |
-| 29 | ⚠️ Warfront Daily Missions (Liberator) | `[warfrontdailymissionstask]` | 50 | Combatte le missioni di liberazione una a una, aspettando l'esito reale della battaglia prima di passare alla successiva. **Testato 2026-09-18**: trovato e corretto un ritardo di popolamento mancante nella lista missioni (stessa causa delle chest - tutte le missioni risultavano "non cliccabili" al primo check). Battaglie reali confermate funzionanti (round vinti, ricompense assegnate). **Punto ancora aperto**: dopo la battaglia compare un popup "Here are your rewards!" con bottone "OK" che il codice non riconosce (né `WFBattleWonLoc` né `WFBattleDefeatLoc` corrispondono) - il task resta bloccato fino al timeout (ridotto da 5 minuti a 40s su richiesta dell'utente, dato che le battaglie reali durano pochi secondi). Da trovare il path reale del popup e aggiungere il click, come già fatto per l'Albero della Vita. |
+### Guild
 
-## Character
+| Task | Sezione | Liv. | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|:-:|---|
+| Expedition | `[expeditiontask]` | 10 | on | ✅ | Parte sempre la prima spedizione in lista. |
+| Tree of Life | `[treeoflifetask]` | 10 | on | 🔄 | Personal Tree. Priorità: Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner (nuova). |
+| Free Pickaxes | `[freepickaxestask]` | 50 | on | ✅ | Reclama da `pickaxe_claim_threshold` (5) in su. |
+| Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. |
+| Chaos Rift | `[chaosrifttask]` | 100 | on | ✅ | Solo Tomes of Power, mai Eclipse Stones. |
+| Forbidden Knowledge | `[forbiddenknowledgetask]` | 100 | on | ✅ | Schermata verificata; il bottone dell'edificio in Gilda è ipotizzato. |
+| Guardian Holy Upgrade | `[guardianholyupgradetask]` | 100 | on | ✅ | Chaos Rift → Upgrades → Magic Quarters. |
 
-| # | Nome | Sezione cfg | Livello min. | Comportamento atteso |
-|---|------|--------------|:---:|----------------------|
-| 30 | ⚠️ Talents | `[talentstask]` | - | Character → tab Talenti: investe punti seguendo la sequenza guidata, salva dopo ogni nodo. **2026-09-18: 2 bug tecnici trovati e corretti** (path `menus/Character` → `popups/Character`; parsing "1/96" che tornava sempre 0). **Bug di design flaggato lo stesso giorno**: il bot seguiva rigidamente l'ordine della guida dall'inizio, "rattoppando" qualsiasi talento indietro rispetto al target anche se l'account (già avanzato) l'aveva volutamente saltato - task lasciato `enabled = false`. **Risolto 2026-09-20**: aggiunta calibrazione una tantum (`guide_start_index`, override manuale in cfg) - al primo run il bot trova il prefisso più lungo della guida già soddisfatto dai rank reali (senza buchi dall'inizio) e investe solo da lì in avanti, mai indietro. Trovato e corretto anche un secondo bug, indipendente dalla guida: `CharacterScreen.Open` non apriva sempre la schermata Character al primo click quando il task girava presto dopo l'avvio del gioco (click "silenzioso", nessun errore, stesso pattern del bottone Store) - ora ritenta fino a 5 volte con 2s di attesa; se comunque non si apre, il task esce senza toccare la calibrazione invece di calibrare su dati inesistenti (bug osservato e corretto durante il test). **Testato 2026-09-20: la calibrazione gira su dati reali (struttura Character confermata: `bg/submenuButtons/{character,talents,achievements,statistics,quests}`), nessun errore nel loop di investimento, run pulito in ~8s.** L'utente non si fida ancora della calibrazione automatica - task lasciato `enabled = false` su tutte le istanze finché non viene rivalutata. |
-| 31 | ✅ Path of Glory (Battle Pass) | `[pathofglorytask]` | - | Reclama le ricompense disponibili sia sulla traccia gratuita che su quella Golden (se posseduta) - non deve mai comprare il pass premium. **Testato 2026-09-17: path del bottone d'ingresso corretto (Mobile/Desktop, vedi nota in alto), ma nessun reward era disponibile per verificare la logica di claim vera e propria. Testato di nuovo 2026-09-18 con reward reali disponibili: notifica rilevata correttamente, schermata apert; ogni tier scorre `FreeClaimBtn`/`GoldenClaimBtn` e clicca solo quelli cliccabili (i log mostrano "hidden or inactive" solo per i tier già reclamati/non ancora sbloccati, un click riuscito non produce log per design). Confermato dall'utente: funziona perfettamente. Abilitato.** |
+### Map e Warfront
 
----
+| Task | Sezione | Liv. | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|:-:|---|
+| Map Missions | `[mapmissionstask]` | - | on | 🔄 | Ora le più lunghe per prime (`mission_time_order = "desc"`). |
+| Warfront Campaign Loot | `[warfrontcampaignloottask]` | 50 | on | ❌ | Mai verificato esplicitamente. |
+| Warfront Daily Missions | `[warfrontdailymissionstask]` | 50 | on | ✅ | Battaglie reali verificate. Da ricontrollare: il popup "Here are your rewards!" visto il 18/09 dopo una battaglia. |
 
-## Cose da segnalare se succedono (non dovrebbero, ma sono i punti più a rischio)
+### Character
 
-- Qualsiasi spesa di **gemme** non prevista (in particolare durante BeerExchange).
-- Un task che resta bloccato/non chiude mai la schermata che ha aperto (il Watchdog dovrebbe
-  ripulire comunque entro `max_task_runtime`, ma se capita è un bug da segnalare).
-- Hall of Heroes che potenzia il gear T1 su un eroe che *non* è nella formazione attiva.
-- Qualunque click su un bottone di acquisto reale (a pagamento) invece che su un claim gratuito.
+| Task | Sezione | Liv. | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|:-:|---|
+| Talents | `[talentstask]` | - | on | ✅ | Parte solo sul badge TalentAvailable. |
+| Path of Glory | `[pathofglorytask]` | - | on | ✅ | Traccia gratuita e Golden (se posseduta); non compra mai il pass. |
+| Hall of Heroes | `[hallofheroestask]` | - | **off** | ❌ | Non accenderlo in questa sessione: prima serve il riordino degli slot (vedi "Da fare e rimandato"). |
 
-## Bonus volanti: implementati 2026-09-20
+### Scarab Game
 
-`[flying_bonus_hunter]` - il vecchio file di configurazione pre-rewrite aveva questa sezione
-("Taps the flying dragon-with-beer and meteorite-hunter bonuses when they cross the screen") assente
-dal codice fino ad oggi. Localizzati dal vivo tramite una ricerca ricorsiva per nome su tutta la
-scena: sono figli diretti di `battleRoot/battleMain/battleCanvas` (parte del Canvas UI, non oggetti
-3D fuori dal Canvas come sembrava dallo scan statico originale). Trovata anche una quarta variante
-mai documentata, `CoworkerMeteoriteHunter`, oltre alle 3 note (`DragonWithBeer`,
-`FemaleDragonWithBeer`, `MeteoriteHunter`). Ognuno dei 4 container è esso stesso un bottone cliccabile
-reale - click diretto, nessun trucco necessario. Implementato come `BotAction` indipendente (non uno
-scheduled task) con poll ogni 2s di default, dato che questi bonus sono visibili solo per pochi
-secondi. **Testato su Steam-0: avvio pulito, nessun errore sui path una volta caricata la scena
-battaglia** (solo "path broken" nei primissimi secondi, prima che la scena finisse di caricare - atteso).
-Un controllo diagnostico temporaneo ha causato un crash dell'intero bot (~12 minuti offline) durante
-lo sviluppo - rimosso, vedi `PLAN.md` per i dettagli. **Da confermare dall'utente**: che il click
-sui bonus rilevati corrisponda davvero alla ricompensa reclamata in gioco (nessun modo di verificarlo
-dai log, dato che i click riusciti non vengono loggati). Abilitato e testato solo su Steam-0, non
-ancora esteso alla flotta.
+| Task | Sezione | Liv. | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|:-:|---|
+| Pharaoh's Vault | `[pharaohsvaulttask]` | 60 | on | ✅ | Spin con i Noble Token gratuiti, vault, milestone. |
+| Scarab Game Free Token | `[scarabgamefreetokentask]` | 60 | on | ✅ | Omaggio giornaliero del tab Saldi. |
+
+### Events
+
+| Task | Sezione | Liv. | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|:-:|---|
+| Decorated Heroes | `[decoratedheroeseventtask]` | - | on | 🔄 | Acquisti nell'ordine Dragon blood → Meteorite → Beer. |
+| New Player Event | `[newplayereventtask]` | - | on | 🔄 | Stesso ordine: compra Meteorite, poi spende il resto in Beer. Gli account vecchi non hanno l'evento (il task rallenta da solo). |
+| Mass Production | `[massproductioneventtask]` | - | on | ✅ | Solo il tab Challenges. |
+
+Un evento non in corso per l'account scrive `'<evento>' isn't in this account's event list`: non è
+un errore.
+
+### Azioni di background (girano in continuo, non nello scheduler)
+
+| Azione | Sezione | Default | Stato | Da verificare / note |
+|---|---|:-:|:-:|---|
+| Hero Upgrade | `[hero_upgrade]` | on | ✅ | |
+| AutoRetreat | `[auto_retreat]` | on | ✅ | Per provarlo in fretta: `stall_minutes = 1` su uno stage duro. |
+| Flying Bonus Hunter | `[flying_bonus_hunter]` | on | ⚠️ | Bersagli trovati dal vivo su Steam-0. Da confermare: che il click dia davvero la ricompensa, e se compare un popup dopo. |
+
+Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18 istanze su
+2560x1440).
+
+## Da riverificare dopo la pulizia del 2026-09-28
+
+Il codice è stato ripulito senza cambiare comportamento (verificato con un confronto token per
+token e rilettura di ogni logica toccata), ma alcuni pezzi condivisi sono stati riscritti. Il giro
+completo li copre; questi sono i task in cui guardare con più attenzione:
+
+- Attese e retry dei click (`Poll`): Map Missions, Warfront Daily Missions, Collector, Gamer,
+  Pharaoh's Vault, Arena of Kings, Chaos Rift.
+- Selettori di quantità (`QuantityToggle`): Miner (x5), Chaos Rift (colpi multipli), Gamer, uno
+  shop evento.
+- Base comune degli eventi (`EventTask`): uno qualsiasi dei tre. Un evento il cui riquadro c'è ma
+  non si apre ora scrive `[FAILED] '<evento>' didn't open`.
+- Tempi letti dal gioco (`TimeParser`, riscritto): Empower (minuti di avventura) e ogni `Next:` nel
+  log, che deve corrispondere al timer mostrato dal gioco.
+- Pirate's Prize e le milestone del New Player Event (ricerca delle voci per indice).
+- Watchdog: qualunque task che lasci aperto un popup.
+
+## Problemi noti
+
+- I popup di avvio ("offline progress", "what's new") sopravvivono a `Watchdog.ForceClearAll`
+  (24/09) e non sono mappati. La diagnostica temporanea che li elencava all'avvio è stata tolta da
+  `Main.cs`; è recuperabile dal commit `a27ecf0` (`DumpActiveScreensOverTime`).
+- Il `storeButton` dell'HUD non apre niente (zero listener): Daily Store Offers dipende dai suoi badge.
+- Percorsi ipotizzati, mai visti dal vivo: badge della posta, bottone Forbidden Knowledge in Gilda,
+  bottone Party.
+- I badge di Chaos Rift e del Cristallo Arcano restano accesi: gestito (lo scheduler li alterna,
+  MinerQuestTask si ferma a quest fatta).
+- Firestone Research, livello del nodo: `Preview.CurrentLevel` legge tutte le cifre del testo
+  insieme. Se il gioco mostra "0/50", il livello letto è 50 e i nodi mai toccati non vengono
+  riconosciuti: la scelta ripiega sul primo nodo disponibile. Il controllo è quello su `fresh`
+  indicato sopra.
+- `HoldButton` (Hero Upgrade) manda il pointer down ma mai il pointer up: il "rilascio" avviene
+  quando il bottone smette di essere interattivo. Funziona da mesi; da tenere presente se Hero
+  Upgrade si comporta in modo strano.
+- I selettori di quantità si fermano sulla prima opzione x10/x5 che incontrano nel ciclo, non sulla
+  più grande. Il costo è proporzionale: cambia solo il numero di click.
+- Collector: i tempi tra un'apertura di chest e l'altra non sono ottimali (18/09).
+
+## Da fare e rimandato
+
+- **Distribuire la configurazione sul fleet**: i default della Fase 0 (Personal Tree al posto delle
+  War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`, Experiments solo Dragon
+  blood) valgono solo per i file nuovi. Sulle 34 istanze esistenti vanno applicati a mano, a gioco
+  chiuso, e per le sandboxate anche nella copia dentro il box. Il riferimento è
+  `tools/ConfigTemplate/FirebotPreferences.template.cfg`.
+- **Hall of Heroes, prima di accenderlo**: `AlwaysEnchantSlots = { 3, 4, 5, 6, 7 }` spende i Void
+  Crystal su Wrist/Shoulder/Belt prima del Ring, che per la guida è il pezzo più importante. Il
+  riordino sarebbe `{ 6, 3, 7, 4, 5 }`, ma la corrispondenza indice → slot è dedotta: prima va
+  dumpato l'elenco reale degli 8 figli di `GearGrid`. Da verificare anche che Party e Hall of
+  Heroes elenchino gli eroi nello stesso ordine.
+- **Rituali Oracle**: ce ne sono quattro (Obedience: forzieri solar; Harmony: comet; Concentration:
+  oracle's gift ed emblemi; Serenity: lunar), da 40 minuti, uno alla volta, reset ogni 6 ore. Oggi
+  parte il primo in ordine di griglia. A cadenza h24 dovrebbero comunque partire tutti dentro la
+  finestra: quando un account arriva a 200, verificare prima di tutto che il task ne riavvii uno a
+  ogni completamento. Solo se non lo fa serve la scelta per nome, che richiede un dump UnityPy della
+  griglia (oggi nessun testo col nome del rituale è mappato).
+- Rimandati perché a cadenza h24 rendono poco: modalità "Next Milestone" di Hero Upgrade, upgrade
+  globali/speciali (`upgradesButtonUI`, mai mappato), spedizione con più punti, missione del drago
+  prioritaria (`MissionPin` non ha il tipo di missione), Wrist un livello sopra Relic.
+- Non ancora gestiti: claim gratuito del Monthly pass nello shop di Scarab's Game, missioni Dungeon
+  del Warfront, moltiplicatore bulk delle War Machines, Soul stones (Hall of Heroes, livello 200).
+- Scartato: la routine di push (pergamene e pouch allo stage ottimale). Fragile e rischia di
+  sprecare risorse; i consumabili di gold si tengono per l'uso a mano.
+
+## Da segnalare subito se succede
+
+- Qualunque spesa di gemme o click su un acquisto a pagamento.
+- Eclipse Stones comprate (Chaos Rift deve comprare solo Tomes of Power).
+- Venduti o usati barili, gold istantaneo o meteoriti istantanee (5/10/30 min, 1 h).
+- Un task che non chiude la schermata che ha aperto.
+- Hall of Heroes che incanta il tier 1 di un eroe fuori dalla formazione.
+
+## Tornare indietro
+
+Il tag `pre-cleanup-2026-09-28` segna il codice prima della pulizia (commit `a27ecf0`, già con il
+riallineamento alla guida F2P). Il commit precedente al riallineamento è `10eebca`.
+
+```powershell
+cd C:\Repos\FirestoneBot
+git switch --detach pre-cleanup-2026-09-28     # oppure 10eebca
+# build e deploy come sopra, sull'istanza che serve (a gioco chiuso)
+git switch main                                # per tornare all'ultima versione
+```
+
+Per annullare una sola parte della pulizia senza tornare indietro su tutto: `git revert <commit>`,
+dove i commit sono quelli della serie successiva al tag (`git log --oneline pre-cleanup-2026-09-28..main`).
