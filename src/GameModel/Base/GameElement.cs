@@ -7,21 +7,18 @@ using Logger = Firebot.Core.Logger;
 
 namespace Firebot.GameModel.Base;
 
+/// <summary>
+///     A scene object addressed by its path ("rootName/child/..."). The path is resolved again on
+///     every access, never cached, because pooled UI lists reuse and move their children.
+/// </summary>
 public class GameElement
 {
-    // Shared across every instance (fresh GameElements are constructed constantly) so the same
-    // recurring failure is only ever logged once per session instead of on every single check.
+    // Shared by every instance, so a recurring failure is logged once per session, not on every check.
     private static readonly HashSet<string> LoggedFailures = new();
 
-    // Every path in this codebase resolves from one of a small, fixed set of scene-wide singleton
-    // roots (menusRoot, battleRoot) that exist for the whole game session and are never destroyed
-    // or recreated - only their CHILDREN change (popups open/close, pooled list items get reused).
-    // GameObject.Find(name) is an unindexed, scene-wide search and was being repeated for every
-    // single GameElement/GameButton/GameText access; caching just this top-level lookup (never the
-    // relative Transform.Find below it) is safe because it never touches pooled/dynamic content -
-    // every child path is still resolved fresh on every call, exactly as before. Unity's overloaded
-    // null-check on a destroyed UnityEngine.Object self-heals this automatically if a root were ever
-    // torn down (e.g. a scene reload), so a cached entry can never get stuck stale.
+    // Scene roots (menusRoot, battleRoot) live for the whole session, so only they are cached - it
+    // saves a scene-wide GameObject.Find per access. Unity's overloaded null check on a destroyed
+    // object makes a stale entry re-resolve by itself.
     private static readonly Dictionary<string, GameObject> RootObjectCache = new();
 
     private static GameObject FindRootCached(string rootName)
@@ -58,15 +55,19 @@ public class GameElement
 
     protected string Path { get; }
 
-    // Always resolve from Path; do not cache transforms.
-    // ResolvePath already logs the specific reason on failure, so nothing is logged here.
+    // ResolvePath already logs the specific reason on failure.
     protected Transform Root => ResolvePath(Path);
 
     public string Name => Root?.name ?? string.Empty;
 
-    /// <summary>Full resolved path string - for diagnostics/logging only (see BotManager's flying-
-    /// bonus scout), where the caller needs the whole path, not just the leaf Name.</summary>
+    /// <summary>The whole path, for log messages.</summary>
     public string FullPath => Path;
+
+    /// <summary>
+    ///     Resolves a path straight to its Transform, for code that must keep hold of one specific
+    ///     sibling among several with the same name - a GameElement would re-resolve to the first.
+    /// </summary>
+    public static Transform FindTransform(string path) => new GameElement(path).Root;
 
     private static string CleanPath(string path) =>
         string.IsNullOrEmpty(path) ? path : Regex.Replace(path, @"/+", "/").Trim('/');
@@ -107,7 +108,7 @@ public class GameElement
     public virtual bool IsVisible()
     {
         var currentRoot = Root;
-        if (currentRoot == null) return false; // ResolvePath already logged why.
+        if (currentRoot == null) return false;
 
         var success = currentRoot.gameObject.activeInHierarchy;
         if (!success)
@@ -130,60 +131,13 @@ public class GameElement
         return success;
     }
 
-    /// <summary>
-    ///     Every real Component's type name on this GameObject - for diagnostics only (see BotManager's
-    ///     flying-bonus scout). Note: an Il2Cpp interop type that hasn't been "seen" via a specific
-    ///     TryGetComponent&lt;T&gt; call elsewhere resolves generically as "Component" instead of its
-    ///     real class name (confirmed live, 2026-09-20, investigating Store's HUD button) - a custom
-    ///     script's real name may not show up here even though it's genuinely present.
-    /// </summary>
-    public IEnumerable<string> GetComponentTypeNames()
+    public IEnumerable<GameElement> GetChildren()
     {
         var currentRoot = Root;
         if (currentRoot == null) yield break;
 
-        foreach (var component in currentRoot.GetComponents<Component>())
-            yield return component.GetType().Name;
-    }
-
-    public IEnumerable<GameElement> GetChildren()
-    {
-        var currentRoot = Root;
-        if (currentRoot == null) yield break; // ResolvePath already logged why.
-
         for (var i = 0; i < currentRoot.childCount; i++)
             yield return new GameElement(transform: currentRoot.GetChild(i));
-    }
-
-    /// <summary>
-    ///     Recursively searches every descendant (active or not - Transform hierarchy search finds
-    ///     inactive/destroyed-and-respawned-elsewhere objects too, unlike GameObject.Find) whose name
-    ///     matches namePredicate, up to maxDepth levels deep. For finding something whose exact parent
-    ///     path is unknown - e.g. a dynamically spawned object with no fixed, documented location, see
-    ///     the flying-bonus-hunter scout in BotManager.
-    /// </summary>
-    public IEnumerable<GameElement> FindDescendants(Func<string, bool> namePredicate, int maxDepth = 12)
-    {
-        var root = Root;
-        if (root == null) yield break;
-
-        foreach (var found in SearchChildren(root, namePredicate, maxDepth))
-            yield return found;
-    }
-
-    private static IEnumerable<GameElement> SearchChildren(Transform parent, Func<string, bool> namePredicate,
-        int depthLeft)
-    {
-        if (depthLeft <= 0) yield break;
-
-        for (var i = 0; i < parent.childCount; i++)
-        {
-            var child = parent.GetChild(i);
-            if (namePredicate(child.name)) yield return new GameElement(transform: child);
-
-            foreach (var found in SearchChildren(child, namePredicate, depthLeft - 1))
-                yield return found;
-        }
     }
 
     public GameElement GetChild(int i)

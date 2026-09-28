@@ -8,6 +8,10 @@ using static Firebot.Core.BotSettings;
 
 namespace Firebot.GameModel.Primitives;
 
+/// <summary>
+///     A clickable element. Every click is a safe no-op when the button is hidden, disabled or not
+///     interactable, which is how the rest of the code handles "nothing to do here" without checks.
+/// </summary>
 public class GameButton : GameElement
 {
     public GameButton(string path = null, GameElement parent = null, Transform transform = null) :
@@ -45,17 +49,10 @@ public class GameButton : GameElement
     }
 
     /// <summary>
-    ///     Confirmed live, 2026-09-17: some dynamically-instantiated list items (Inventory's chest
-    ///     slots - pooled ScrollView cells, same pattern as Path of Glory's reward track) don't wire
-    ///     their interaction to Button.onClick at all - the Button component exists and is
-    ///     enabled/interactable, but onClick has zero listeners, so Click()'s onClick.Invoke() is a
-    ///     silent no-op even though a real mouse click on the same element works fine. Their actual
-    ///     handler reacts to Unity's pointer events directly (a component EventSystem would normally
-    ///     drive via IPointerDownHandler/IPointerUpHandler/IPointerClickHandler), so this replays that
-    ///     same event sequence straight at the target GameObject via ExecuteEvents. This never touches
-    ///     the OS mouse/cursor or any real input device - it's a purely in-process call into this
-    ///     game instance's own Unity event system, so it's safe to run unattended across many
-    ///     concurrent game instances without one interfering with another or with the real mouse.
+    ///     For UI whose Button.onClick has no listeners (pooled list cells, some HUD buttons): the
+    ///     real handler reacts to pointer events, so Click() is a silent no-op there. This replays
+    ///     pointer down/up/click through this game instance's own EventSystem - it never touches the
+    ///     OS mouse, so it's safe across many concurrent instances.
     /// </summary>
     public virtual IEnumerator ClickSimulated()
     {
@@ -76,16 +73,7 @@ public class GameButton : GameElement
 
         try
         {
-            var gameObject = target.gameObject;
-            var pointerData = new PointerEventData(EventSystem.current)
-            {
-                button = PointerEventData.InputButton.Left,
-                pointerPress = gameObject
-            };
-
-            ExecuteEvents.Execute(gameObject, pointerData, ExecuteEvents.pointerDownHandler);
-            ExecuteEvents.Execute(gameObject, pointerData, ExecuteEvents.pointerUpHandler);
-            ExecuteEvents.Execute(gameObject, pointerData, ExecuteEvents.pointerClickHandler);
+            DispatchPointerClick(target.gameObject);
         }
         catch (Exception e)
         {
@@ -93,5 +81,22 @@ public class GameButton : GameElement
         }
 
         yield return new WaitForSeconds(InteractionDelay);
+    }
+
+    /// <summary>
+    ///     The pointer event sequence behind ClickSimulated, for callers holding a raw GameObject.
+    ///     Needs EventSystem.current, which callers check first.
+    /// </summary>
+    internal static void DispatchPointerClick(GameObject target)
+    {
+        var pointerData = new PointerEventData(EventSystem.current)
+        {
+            button = PointerEventData.InputButton.Left,
+            pointerPress = target
+        };
+
+        ExecuteEvents.Execute(target, pointerData, ExecuteEvents.pointerDownHandler);
+        ExecuteEvents.Execute(target, pointerData, ExecuteEvents.pointerUpHandler);
+        ExecuteEvents.Execute(target, pointerData, ExecuteEvents.pointerClickHandler);
     }
 }

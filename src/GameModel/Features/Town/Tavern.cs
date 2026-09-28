@@ -1,17 +1,14 @@
 using System.Collections;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
-using UnityEngine;
 
 namespace Firebot.GameModel.Features.Town;
 
 public static class Tavern
 {
-    // The card-flip has its own reveal animation (variable length, longer for a bigger batch) -
-    // poll for the next step's button to actually become clickable instead of guessing a fixed
-    // delay (same lesson as ChestOpening.ChestTransitionPollWait).
-    private static readonly WaitForSeconds AnimationPollWait = new(0.3f);
-    private const int MaxAnimationPolls = 25; // ~7.5s ceiling
+    // The card reveal takes longer for a bigger batch.
+    private const int MaxAnimationPolls = 25;
+    private const float AnimationPollSeconds = 0.3f;
 
     public static IEnumerator OpenMarket => new GameButton(Paths.MenusLoc.TavernLoc.OpenMarketBtn).Click();
 
@@ -20,78 +17,35 @@ public static class Tavern
     private static GameButton FirstCardBtn => new(Paths.MenusLoc.TavernLoc.FirstCardBtn);
 
     /// <summary>
-    ///     Clicks Play at whatever quantity is currently set, then picks a card to actually trigger
-    ///     the reveal and complete the round - live-confirmed, 2026-09-18: Play alone doesn't deduct
-    ///     tokens or count towards the quest, it just reveals a set of interchangeable face-down card
-    ///     stacks (see Paths.MenusLoc.TavernLoc.CardsRoot) that need a follow-up click. Any one card
-    ///     works - same bundled reward regardless of which is picked.
+    ///     One round at the current quantity. Play alone only lays out face-down cards - no tokens
+    ///     are spent and the quest doesn't count it until a card is picked. Any card will do.
     /// </summary>
     public static IEnumerator PlayRound()
     {
         yield return PlayBtn.Click();
-
-        var pollsLeft = MaxAnimationPolls;
-        while (pollsLeft > 0 && !FirstCardBtn.IsClickable())
-        {
-            yield return AnimationPollWait;
-            pollsLeft--;
-        }
+        yield return Poll.Until(() => FirstCardBtn.IsClickable(), MaxAnimationPolls, AnimationPollSeconds);
 
         yield return FirstCardBtn.Click();
-
-        pollsLeft = MaxAnimationPolls;
-        while (pollsLeft > 0 && !PlayBtn.IsClickable())
-        {
-            yield return AnimationPollWait;
-            pollsLeft--;
-        }
+        yield return Poll.Until(() => PlayBtn.IsClickable(), MaxAnimationPolls, AnimationPollSeconds);
     }
 
     public static int GameTokenCount => new GameText(Paths.MenusLoc.TavernLoc.GameTokenCountTxt).GetParsedInt();
 
     private static GameText PlayQuantityTxt => new(Paths.MenusLoc.TavernLoc.QuantityTxt);
 
-    private static GameButton ChangePlayQuantityBtn => new(Paths.MenusLoc.TavernLoc.ChangeQuantityBtn);
+    // "x10" -> 10; -1 when unreadable.
+    private static int ParseQuantity(string text) =>
+        int.TryParse(text.TrimStart('x', 'X').Trim(), out var n) ? n : -1;
 
-    private static int ParsedPlayQuantity =>
-        int.TryParse(PlayQuantityTxt.GetParsedText().TrimStart('x', 'X').Trim(), out var n) ? n : -1;
-
-    public static bool IsPlayQuantitySetTo(int quantity) => ParsedPlayQuantity == quantity;
+    public static bool IsPlayQuantitySetTo(int quantity) => ParseQuantity(PlayQuantityTxt.GetParsedText()) == quantity;
 
     /// <summary>
-    ///     User-requested optimization for GamerQuestTask (needs exactly 10 draws/day): tries cycling
-    ///     changeQuantity to find an exact "quantity" multiplier so one Play click does several draws
-    ///     at once instead of one at a time - same pattern as ArcaneCrystal.TrySetQuantityTo5. If
-    ///     "quantity" is never found within one full cycle, restores the original multiplier exactly
-    ///     before returning, so a caller falling back to individual Play clicks isn't left at some
-    ///     other multiplier by mistake. Check IsPlayQuantitySetTo(quantity) afterward to know which
-    ///     case happened.
+    ///     Tries to select exactly this play quantity, so the daily 10 draws take one click. Check
+    ///     IsPlayQuantitySetTo afterwards: the option may not exist.
     /// </summary>
-    public static IEnumerator TrySetPlayQuantityTo(int quantity)
-    {
-        if (IsPlayQuantitySetTo(quantity)) yield break;
-
-        var original = PlayQuantityTxt.GetParsedText();
-        var found = false;
-
-        for (var i = 0; i < 6; i++)
-        {
-            yield return ChangePlayQuantityBtn.Click();
-
-            if (IsPlayQuantitySetTo(quantity))
-            {
-                found = true;
-                break;
-            }
-
-            if (PlayQuantityTxt.GetParsedText() == original) break; // full loop back - not an option
-        }
-
-        if (found) yield break;
-
-        for (var i = 0; i < 6 && PlayQuantityTxt.GetParsedText() != original; i++)
-            yield return ChangePlayQuantityBtn.Click();
-    }
+    public static IEnumerator TrySetPlayQuantityTo(int quantity) => QuantityToggle.CycleUntil(
+        new GameButton(Paths.MenusLoc.TavernLoc.ChangeQuantityBtn), PlayQuantityTxt,
+        text => ParseQuantity(text) == quantity);
 
     public static IEnumerator Close => new GameButton(Paths.MenusLoc.TavernLoc.CloseBtn).Click();
 }

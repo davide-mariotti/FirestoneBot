@@ -5,76 +5,28 @@ using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
-using UnityEngine;
 using Logger = Firebot.Core.Logger;
 
 namespace Firebot.GameModel.Features.Events;
 
-/// <summary>
-///     The Events hub (Battle -&gt; Events). Deliberately generic: this whole class is meant to be
-///     reused unchanged by every future event task, only the per-event shop screen (e.g.
-///     DecoratedHeroesShop) is event-specific. See Paths.EventManagerLoc for the (not yet
-///     live-confirmed) root mount.
-/// </summary>
+/// <summary>The Events hub (Battle -> Events). Generic: only each event's own shop screen is specific.</summary>
 public static class EventManager
 {
     public static bool IsVisible => new GameElement(Paths.EventManagerLoc.Root).IsVisible();
 
-    // See UiVariantButton - same three-location situation as BattlePass.Open's PathOfGloryBtn.
-    // Live-confirmed, 2026-09-23 (4 rounds of live diagnostics after both bottom-bar variants and
-    // several of their sub-containers turned out empty on a real session): the actual real button is
-    // RightSideUILoc.EventsBtn (rightSideUI/menuButtons/eventsButton, alongside Town/Map/Guild/Store)
-    // - missing from docs/path.firestone.html's static dump, likely added after that dump was taken.
-    // Bottom-bar candidates kept as fallbacks in case a session genuinely uses one of them instead,
-    // same defensive reasoning as PathOfGlory.
-    public static IEnumerator Open => OpenRoutine();
+    public static IEnumerator Open => Poll.ClickUntil(VisibleEventsButton, () => IsVisible, "EventManager");
 
-    private static readonly WaitForSeconds OpenPollWait = new(0.5f);
-    private const int MaxOpenPolls = 10;
-    private const int MaxClickAttempts = 3;
-
-    /// <summary>
-    ///     Live-confirmed, 2026-09-23 (round 5 diagnostics): plain Click() (button.onClick.Invoke())
-    ///     on eventsButton never throws and never fails IsClickable, but the hub genuinely never opens
-    ///     even after polling up to 5s - same "real Button component, zero onClick listeners, driven
-    ///     by something else instead" shape already documented on Store.Open's storeButton. Uses
-    ///     ClickSimulated (real IPointerDown/Up/ClickHandler events) instead, same fix.
-    ///
-    ///     Live-confirmed, 2026-09-24: even ClickSimulated is INTERMITTENT, not just slow - a full
-    ///     successful run (108-112s, real challenge claims + a Golden key purchase) proves the
-    ///     mechanism genuinely works, but a later attempt found "events/EventManager" didn't exist at
-    ///     all (a hard ResolvePath failure, not just inactive) for the ENTIRE 5s poll window - the
-    ///     simulated pointer event simply had no effect that time. Retries the click itself (not just
-    ///     the poll) up to MaxClickAttempts times before giving up, since re-sending the same cheap,
-    ///     in-process event costs little and directly addresses "sometimes doesn't land" rather than
-    ///     "takes longer than expected".
-    /// </summary>
-    private static IEnumerator OpenRoutine()
+    // The Events button lives in a different HUD variant depending on the client.
+    private static GameButton VisibleEventsButton()
     {
-        for (var attempt = 1; attempt <= MaxClickAttempts && !IsVisible; attempt++)
+        var candidates = new[]
         {
-            var candidates = new[]
-            {
-                new GameButton(Paths.BattleLoc.RightSideUILoc.EventsBtn),
-                new GameButton(Paths.BattleLoc.BottomSideUIMobileLoc.EventsBtn),
-                new GameButton(Paths.BattleLoc.BottomSideUIDesktopLoc.EventsBtn)
-            };
+            new GameButton(Paths.BattleLoc.RightSideUILoc.EventsBtn),
+            new GameButton(Paths.BattleLoc.BottomSideUIMobileLoc.EventsBtn),
+            new GameButton(Paths.BattleLoc.BottomSideUIDesktopLoc.EventsBtn)
+        };
 
-            var target = candidates.FirstOrDefault(c => c.IsVisible()) ?? candidates[^1];
-            Logger.Debug($"[EventManager] Open attempt {attempt}/{MaxClickAttempts}: clicking eventsButton at '{target.FullPath}'.");
-            yield return target.ClickSimulated();
-
-            // Same reasoning as DecoratedHeroesShop.WaitUntilOpen: a hub transition can outlast the
-            // standard interaction_delay - poll instead of checking immediately.
-            var pollsLeft = MaxOpenPolls;
-            while (pollsLeft > 0 && !IsVisible)
-            {
-                yield return OpenPollWait;
-                pollsLeft--;
-            }
-
-            Logger.Debug($"[EventManager] Open attempt {attempt}/{MaxClickAttempts}: hub visible={IsVisible}.");
-        }
+        return candidates.FirstOrDefault(c => c.IsVisible()) ?? candidates[^1];
     }
 
     public static IEnumerator Close => new GameButton(Paths.EventManagerLoc.CloseBtn).Click();
@@ -84,24 +36,10 @@ public static class EventManager
             .Concat(new GameElement(Paths.EventManagerLoc.UpcomingEventsRoot).GetChildren());
 
     /// <summary>
-    ///     Scans both the active and upcoming event lists for a card whose title text matches
-    ///     eventName (case-insensitive, partial match - same style as the priority-name matching in
-    ///     FirestoneResearchTask), and clicks it if found and not individually locked. Safe no-op
-    ///     otherwise (e.g. the event isn't currently running, or this specific card is locked for the
-    ///     account - see Paths.EventManagerLoc.CardLockIndicator) - the caller's own IsVisible check on
-    ///     the resulting shop screen is what actually confirms success.
-    ///     Uses ClickSimulated (not plain Click) with the same poll+retry shape as this class's own
-    ///     Open(): live-confirmed elsewhere (Open's own eventsButton) that a real Button component can
-    ///     have zero onClick listeners, so ClickSimulated is the safer default for every card click here
-    ///     too - but the lock check runs first so a genuinely locked card (the common case for young
-    ///     accounts) is skipped immediately instead of wasting retries on it every run.
-    ///     onCardFound, if given, is invoked once with whether a matching card exists in the list at
-    ///     all (true even if it's locked or the click ultimately fails to open its shop) - added
-    ///     2026-09-26 so callers can tell "this event genuinely isn't available for this account right
-    ///     now" (false) apart from "found it but the shop transiently failed to open" (true), and back
-    ///     off accordingly instead of retrying an event that isn't even in the list every couple of
-    ///     minutes forever (live-confirmed on Steam-0: New Player Event isn't in this account's list
-    ///     at all anymore, yet the task kept retrying on BotManager's 2-minute idle floor indefinitely).
+    ///     Opens the event whose card title contains eventName (case-insensitive), unless that card
+    ///     is locked for this account. The caller confirms success through the shop's own IsVisible.
+    ///     onCardFound reports whether any matching card exists at all, so a caller can tell "this
+    ///     event isn't running for this account" apart from "its shop failed to open this time".
     /// </summary>
     public static IEnumerator OpenEvent(string eventName, Action<bool> onCardFound = null)
     {
@@ -122,26 +60,13 @@ public static class EventManager
                 yield break;
             }
 
+            // The hub closes once the event's own screen opens.
             var button = new GameButton(parent: card);
-
-            for (var attempt = 1; attempt <= MaxClickAttempts && IsVisible; attempt++)
-            {
-                Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) - click attempt {attempt}/{MaxClickAttempts}.");
-                yield return button.ClickSimulated();
-
-                var pollsLeft = MaxOpenPolls;
-                while (pollsLeft > 0 && IsVisible)
-                {
-                    yield return OpenPollWait;
-                    pollsLeft--;
-                }
-
-                if (!IsVisible) break; // the hub itself closed - the event's own shop screen opened
-            }
+            yield return Poll.ClickUntil(() => button, () => !IsVisible, $"EventManager '{title}'");
 
             if (IsVisible)
-                Logger.Debug($"[EventManager] DIAG: '{title}' never opened after {MaxClickAttempts} ClickSimulated attempts, " +
-                             $"despite not showing as locked - card structure:\n{Firebot.Core.Watchdog.DumpChildrenRecursive(card.FullPath, 4)}");
+                Logger.Debug($"[EventManager] '{title}' never opened despite not showing as locked - card structure:\n" +
+                             Firebot.Core.Watchdog.DumpChildrenRecursive(card.FullPath, 4));
 
             yield break;
         }

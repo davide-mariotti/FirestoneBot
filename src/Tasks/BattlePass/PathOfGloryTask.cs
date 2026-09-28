@@ -9,12 +9,8 @@ using PathOfGlory = Firebot.GameModel.Features.BattlePass.BattlePass;
 namespace Firebot.Tasks.BattlePass;
 
 /// <summary>
-///     Claims Path of Glory (Battle Pass) rewards as they unlock - both the free track (always) and
-///     the Golden/premium track (only actually claims something if the player owns it; the button
-///     is a safe no-op otherwise, same convention as every other claim button in this codebase).
-///     Never touches getGoldenPassButton or instantCompleteNextMilestoneButton - those spend real
-///     currency to buy/skip ahead, not claim what's already earned.
-///     This feature was never automated before.
+///     Claims every Path of Glory (battle pass) reward earned so far: the free track, and the Golden
+///     track when the pass is owned. Never buys the pass or skips ahead.
 /// </summary>
 public class PathOfGloryTask : BotTask
 {
@@ -22,13 +18,8 @@ public class PathOfGloryTask : BotTask
 
     private MelonPreferences_Entry<int> _recheckIntervalMinutes;
 
-    // The badge lives directly on the battle-screen button itself (see Battle.cs), not on the
-    // leftSideUINew rail - reliably means "something claimable" (not threshold-gated the way Free
-    // Pickaxes/Empower/Meteorite Research are), so it's safe to use for priority scheduling. Three
-    // candidates, not one: this button is itself split across HUD variants that switch dynamically
-    // within a session (see RightSideUILoc/BottomSideUIMobileLoc/BottomSideUIDesktopLoc) -
-    // confirmed live, 2026-09-17.
-    protected override string[] NotificationPathCandidates => new[]
+    // The badge sits on the HUD button itself, which moves between HUD variants.
+    protected override string[] NotificationPaths => new[]
     {
         Paths.BattleLoc.RightSideUILoc.PathOfGloryNotification,
         Paths.BattleLoc.BottomSideUIMobileLoc.PathOfGloryNotification,
@@ -51,9 +42,6 @@ public class PathOfGloryTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Guaranteed path - the HUD button is both the entry point and its own notification badge,
-        // so unlike other tasks there's no separate opportunistic "Notifications.X" shortcut to try
-        // first; this click IS the fast path.
         yield return PathOfGlory.Open;
         yield return PathOfGlory.OpenRewardsTab;
 
