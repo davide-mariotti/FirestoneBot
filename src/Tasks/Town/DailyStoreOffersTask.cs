@@ -17,8 +17,15 @@ namespace Firebot.Tasks.Town;
 ///     Always clicks each tab explicitly afterwards rather than assuming whichever one the
 ///     notification (if any) happened to open is the only one that needs doing - Store remembers
 ///     the last tab you had open, and both claims need checking every run regardless of entry point.
-///     KNOWN BROKEN, 2026-09-20 - Store never actually opens. Root-caused via 8 rounds of live
-///     diagnostics (all on Steam-0): storeButton (battleRoot/.../rightSideUI/menuButtons/storeButton)
+///     WORKS IN PRACTICE, but only through the notification badges - confirmed by the user,
+///     2026-09-28, after a stretch of live running. The two fast paths above (Notifications.CheckIn /
+///     MysteryBox) click the badges on the shared rail directly, which opens the Store on their own
+///     without ever going through storeButton - and a badge is up exactly when there's something to
+///     claim, which is the only time this task has anything to do. The Store.Open call below is
+///     therefore a redundant no-op in the normal flow, not the thing the task depends on.
+///     The "guaranteed path" (Store.Open) IS still broken, though, so if the badges ever stop firing
+///     this task goes silently dead. Root-caused via 8 rounds of live
+///     diagnostics (all on Steam-0, 2026-09-20): storeButton (battleRoot/.../rightSideUI/menuButtons/storeButton)
 ///     is real, visible=True, and has a genuine enabled+interactable UnityEngine.UI.Button component -
 ///     but that Button's onClick has 0 listeners (persistent or otherwise), so Click() is a silent
 ///     no-op. ClickSimulated() (real IPointerDown/Up/ClickHandler events via the UI EventSystem) was

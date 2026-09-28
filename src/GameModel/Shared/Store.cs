@@ -7,9 +7,13 @@ namespace Firebot.GameModel.Shared;
 
 public static class Store
 {
-    // KNOWN BROKEN, 2026-09-20 - see DailyStoreOffersTask's own doc comment for the full live
-    // diagnostic writeup: storeButton's Button component has 0 onClick listeners, and neither this
-    // (ClickSimulated) nor plain Click() nor GameNotificationButton ever actually opens the screen.
+    // THIS ENTRY POINT IS BROKEN, but the task that uses it is not - see DailyStoreOffersTask's own
+    // doc comment. Short version: storeButton's Button component has 0 onClick listeners, and neither
+    // this (ClickSimulated) nor plain Click() nor GameNotificationButton ever opens the screen
+    // (2026-09-20, 8 rounds of live diagnostics). DailyStoreOffersTask still works because it reaches
+    // the Store through the CheckIn/MysteryBox notification badges instead, which is exactly when it
+    // has something to claim - confirmed live by the user, 2026-09-28. So this is a dormant fallback,
+    // not an active failure: fixing it matters only if those badges ever stop firing.
     // Left as ClickSimulated (marginally more "correct" than a bare Invoke()) rather than reverted,
     // since neither one works - whoever picks this up next needs a different approach entirely.
     public static IEnumerator Open => new GameButton(Paths.BattleLoc.RightSideUILoc.StoreBtn).ClickSimulated();

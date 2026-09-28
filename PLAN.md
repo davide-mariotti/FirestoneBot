@@ -330,3 +330,357 @@ rapida che compili, poi passo al successivo solo dopo conferma.
 - [x] Task 30: Awakening (potenziamento eroi con Arcane Crystal)
 - [x] Task 31: Hall of Heroes - gear tier unlock + enchant gear (T2/T3 sempre, T1 solo squadra attuale) + enchant jewel (tutti gli slot) - Soulstones restano fuori scope (lvl 200+)
 - [x] Task 32: War Machines - level up (tab workshop, tutte le macchine possedute) - blueprintUpgrades/rarityUpgrades restano fuori scope
+
+## Allineamento alla guida F2P (2026-09-28)
+
+Piano nato dal confronto riga per riga tra il codice in `src/` e `firestone_guida_F2P.md`
+(5 video Ashstronox + guida Steam). L'analisi ha trovato 8 conflitti reali (il bot fa il
+contrario di quello che la guida raccomanda) e 7 lacune (la guida dà una priorità che il bot
+ignora). Qui sotto solo quello che è stato **deciso di fare**, più la coda di quello che è
+stato deliberatamente rimandato e perché — così tra sei mesi non si ricomincia l'analisi da
+capo per riscoprire che era una scelta, non una dimenticanza.
+
+Principio di scope: il bot gira **h24 su 34 account**. Diverse raccomandazioni della guida sono
+pensate per un umano che si collega 2-3 volte al giorno e deve scegliere cosa fare con il tempo
+che ha — un bot sempre acceso le ottiene comunque, prima o poi, senza bisogno di una logica di
+priorità. Tutto ciò che rientra in questa categoria è rimandato, non implementato.
+
+### Fase 0 — Configurazione ✅ FATTA (2026-09-28)
+
+Le voci 0.1-0.4 agiscono su `tools/ConfigTemplate/FirebotPreferences.template.cfg` **e** sul
+`UserData/FirebotPreferences.cfg` di ogni istanza. Vedi "Note operative" in fondo: il template
+non si propaga da solo, e il gioco riscrive il cfg alla chiusura. La 0.5, aggiunta in corsa, porta
+le stesse scelte nei default del codice così che un'istanza nuova nasca già configurata.
+
+**0.1 — Concentrare gli Expedition Token sull'albero personale**
+
+| Chiave | Valore |
+|---|---|
+| `[treeoflifetask] enabled` | `true` (default deciso) |
+| `[warmachinestask] enabled` | `false` |
+
+La guida elenca "distribuire gli expedition token ovunque" tra gli errori da evitare, e oggi
+`TreeOfLifeTask` e `WarMachinesTask` spendono la stessa valuta senza budget condiviso: chi
+arriva prima nel round-robin dello scheduler svuota il conto, in modo non deterministico.
+
+**Entrambi i task restano nel codice e nel template**: è un aut-aut di configurazione, non una
+rimozione. Per invertire la scelta un domani (strada War Machine = più forzieri e più eroi rare
+in fretta, che è quello che fa la maggioranza dei giocatori) basta scambiare i due `enabled`.
+Non abilitarli mai entrambi insieme.
+
+**0.2 — Empower solo a +100%, nessun override a tempo**
+
+| Chiave | Da | A |
+|---|---|---|
+| `[empowertask] min_reset_ratio` | `2.0` | `1.0` |
+| `[empowertask] min_adventure_minutes` | `60` | `0` |
+| `[empowertask] max_adventure_minutes` | `120` | `0` |
+
+La guida ha una sola soglia: mai Empower sotto +100% di moltiplicatore Firestone, e nient'altro
+decide. La configurazione attuale ne aveva tre, e la terza vinceva sulla prima —
+`max_adventure_minutes = 120` empowerava dopo 2 ore *"regardless of the ratio"*
+(`EmpowerTask.cs`), quindi anche ampiamente sotto soglia.
+
+`0` disabilita entrambi i cancelli a tempo: il codice li tratta già così
+(`maxMinutes > 0 ? ... : TimeSpan.MaxValue`), nessuna modifica al codice necessaria.
+
+⚠️ **Assunzione da confermare dal vivo**: `EmpowerTask` calcola `ratio = FirestonesFound /
+FirestonesYouOwn`, quindi `1.0` = il totale raddoppia = +100%. Che sia la stessa percentuale
+mostrata dal popup Empower in gioco è dedotto, non verificato. Conferma aprendo il Temple of
+Eternals a mano su un account e confrontando la percentuale a schermo con il rapporto tra i due
+numeri: se il popup mostra +100% quando found ≈ owned, l'assunzione regge.
+
+**0.3 — Riattivare i task Oracle**
+
+| Chiave | Valore |
+|---|---|
+| `[oracleritualstask] enabled` | `true` |
+| `[oraclesgifttask] enabled` | `true` |
+
+Erano `false` nel template. Entrambi hanno già `MinimumCharacterLevel => 200`, quindi
+`BotTask.IsReady()` li salta da solo finché l'account non ci arriva: tenerli spenti non protegge
+niente e li terrebbe spenti anche il giorno in cui ci arrivano. Oggi l'account più avanti è il
+main a 150, quindi nell'immediato non cambia nulla — è esattamente il motivo per farlo adesso e
+non doverci ripensare.
+
+**0.4 — Missioni mappa: prima le lunghe**
+
+| Chiave | Da | A |
+|---|---|---|
+| `[mapmissionstask] mission_time_order` | `"asc"` | `"desc"` |
+
+La guida: le missioni lunghe danno forzieri migliori e più onore (adventure 1-2 onore, missione
+del drago 16, forzieri alti fino a 32). Con `asc` le squadre si riempiono delle adventure più
+corte e quelle di valore restano fuori.
+
+Approssimazione consapevole: `desc` favorisce le lunghe ma non garantisce che parta la missione
+del drago in particolare — `MissionPin` espone solo tempo/attiva/completata, non tipo né
+ricompensa. Il targeting esatto è rimandato (vedi coda).
+
+**0.5 — Gli stessi default nel codice, così un'istanza nuova nasce pronta**
+
+Aggiunta in corsa (2026-09-28): fino a qui un'istanza appena provisionata partiva con **tutti** i
+task `enabled = false` e andava configurata copiando il template a mano. Ora `BotTask` espone
+`protected virtual bool DefaultEnabled => true`, usato da `InitializeConfig`, e solo due task fanno
+override a `false`:
+
+| Task | Motivo del `false` |
+|---|---|
+| `hallofheroestask` | Mai esercitato dal vivo, gear gestito a mano, e l'ordine degli slot va corretto prima (vedi coda: il Ring viene incantato per ultimo) |
+| `warmachinestask` | Non è rotto: è l'aut-aut degli Expedition Token deciso in 0.1 |
+
+Tutti gli altri 35 task e le 3 azioni di background (`hero_upgrade`, `auto_retreat`,
+`flying_bonus_hunter`) partono da `true`, come nel template. Portati nel codice anche i valori di
+0.2 e 0.4 — `min_reset_ratio 1.0`, `min_adventure_minutes 0`, `max_adventure_minutes 0`,
+`mission_time_order "desc"` — comprese le stringhe di descrizione e i fallback `??`, che altrimenti
+avrebbero continuato a dichiarare i vecchi default. In `MapMissionsTask.IsAscending()` sono girati
+anche i due rami di fallback (valore vuoto e valore invalido), prima `asc`.
+
+Aggiunto inoltre il default `resource_type = "0"` a `ExperimentsTask` (solo Dragon Blood), con un
+avviso esplicito in descrizione a non aggiungere mai `1` (Strange Dust) — la guida lo elenca tra gli
+errori da evitare e la descrizione precedente offriva l'opzione senza alcuna cautela.
+
+**Le istanze esistenti non sono toccate**: MelonPreferences usa un default solo quando la chiave non
+è già nel file. Per le 34 attuali serve comunque la distribuzione del template descritta in "Note
+operative".
+
+Non allineato di proposito: il blocco `[firebot_settings]`. Contiene dimensioni finestra e
+`window_grid_first_instance`, che per definizione cambiano da macchina a macchina. Resta anche
+`auto_start = false` nel codice (il template lo mette `true`): un'istanza appena installata non
+dovrebbe iniziare a cliccare prima che qualcuno l'abbia configurata e posizionata: il `true` arriva
+con il template, che è il percorso di provisioning previsto.
+
+### Fase 1 — Modifiche da una riga ✅ FATTA (2026-09-28)
+
+**1.1 — "Miner" tra le priorità dell'albero personale**
+
+`src/GameModel/Features/Guild/TreeOfLife.cs` → aggiungere `"Miner"` a `PriorityUpgrades`.
+
+Oggi il set è `{ Raining Gold, Firestone Finder, Firestone Effect, Battle Cry }`. L'ordine
+raccomandato dalla guida Steam per il centro dell'albero è Battlecry, **Miner**, Firestone
+Finder, Raining Gold. Il nome esiste già in `PersonalUpgradeNames` (indice 6), quindi è
+letteralmente una parola.
+
+**1.2 — Shop evento: ordine di priorità invece di un singolo target**
+
+`DecoratedHeroesEventTask.cs` e `NewPlayerEventTask.cs` hanno ciascuno un `TargetExchangeItem`
+singolo e hardcoded (oggi `"Beer"` e `"Meteorite"`). La birra è esplicitamente nella lista "da
+evitare" della guida; Dragon Blood e meteoriti sono in quella "da comprare".
+
+Sostituire la costante con un ordine condiviso: **Dragon blood → Meteorite → Beer**.
+
+Fatto: l'ordine vive in `src/GameModel/Features/Events/EventExchangeConfig.cs`, non duplicato nei due
+task — stessa forma di `TalentBuildConfig` (la policy sta accanto alla sua feature). Non è finito in
+`EventManager` di proposito: quella classe dichiara nel suo stesso commento di essere infrastruttura
+generica riusata invariata da ogni task evento, e "cosa conviene comprare" non lo è.
+
+Implementazione: nessuna modifica a `BuyItem`. Basta chiamarlo in sequenza sui tre nomi —
+`BuyItem` matcha per nome parziale, esce in `yield break` al primo item trovato, e compra finché
+non finisce la valuta o non scatta il cap "Claimed X/50", chiudendo da solo il
+`CurrencyMissingPopup`. Quindi:
+
+- un nome assente dalla lista di quello shop è un no-op (loggato) — Dragon blood non c'è
+  nell'exchange New Player, Meteorite non c'è in quello Decorated Heroes: stesso array su
+  entrambi i task, ognuno prende quello che ha;
+- se il primo target si cappa o esaurisce la valuta, gli avanzi finiscono sul successivo invece
+  di restare inutilizzati (la valuta evento scade a fine evento, quindi è la cosa giusta);
+- costo quando la valuta è già finita: 1 click + 1 chiusura popup per ogni target rimasto.
+  Trascurabile a cadenza oraria.
+
+La birra resta ultima come scarico di ultima istanza: peggio della birra c'è solo lasciare
+scadere la valuta.
+
+### Fase 2 — Modifiche contenute ✅ FATTA (2026-09-28)
+
+**2.1 — Smettere di vendere le pergamene e i consumabili buoni**
+
+`src/Tasks/Town/MerchantQuestTask.cs`
+
+Oggi `SellCountsByGridIndex = { 3, 3, 3, 1 }` vende ogni giorno 3 Scroll of Speed, 3 Damage, 3
+Health e 1 Midas' Touch, per indice fisso. La Scroll of Speed è la pergamena che la guida indica
+come moltiplicatore principale del push (≈x3 gold); Damage e Health servono al talento "triplo
+danno con tutte e tre attive".
+
+**Approccio: allowlist, non blocklist.** Questa è una strada in cui un errore è irreversibile
+(un Barrel venduto non torna), quindi si vende **solo** ciò che è esplicitamente riconosciuto
+come spazzatura, e tutto ciò che non è nell'elenco non si tocca. Una blocklist che manca un nome
+vende un Barrel; una allowlist che manca un nome fa saltare una quest giornaliera. La seconda è
+la direzione giusta in cui sbagliare.
+
+Da non vendere mai, per requisito esplicito oltre che per la guida:
+
+- consumabili gold istantanei: Pouch / Bucket / Crate / Barrel / Pile of Gold;
+- gli equivalenti che danno meteoriti (tagli 5min / 10min / 30min / 1h);
+- Scroll of Speed.
+
+Fallback per arrivare a 10 vendite: prima la spazzatura riconosciuta (Midas' Touch e simili),
+poi Scroll of Health, poi Scroll of Damage. Mai Speed. Se il grid finisce prima di 10, la quest
+di oggi non si chiude e si logga: è il risultato accettabile.
+
+Riusare il pattern che il file applica già agli upgrade — snapshot dei nomi
+(`Select(c => c.Name).ToList()`) prima di iterare, così la compattazione del grid quando uno
+stack si esaurisce non sfasa gli indici a metà run.
+
+**Il dump preliminare non è servito.** L'allowlist finale lavora per **posizione**, non per nome:
+l'ordine a schermo dei primi 4 slot (0 Speed, 1 Damage, 2 Health, 3 Midas' Touch, con i consumabili
+istantanei che ordinano dopo) era già confermato nel codice, quindi non c'è stata nessuna stringa da
+indovinare. Ordine di vendita: slot 3 senza limite fino a 10, poi 2, poi 1. Lo slot 0 e tutto ciò che
+sta da indice 4 in poi non vengono mai toccati.
+
+Due conseguenze da sapere:
+
+- Potendo ora svuotare uno slot per un numero arbitrario di volte, torna reale il rischio di
+  compattazione del grid che i conteggi fissi evitavano (uno stack esaurito sparisce e fa scivolare
+  un altro item in quell'indice). Perciò lo slot viene ri-risolto e il suo nome ri-controllato
+  **prima di ogni singolo click**, e al primo mismatch si smette.
+- Se gli slot vendibili non arrivano a 10, la quest di oggi resta aperta e lo si logga. È il
+  compromesso voluto.
+
+Il filtro per nome resta come seconda linea (`gold`, `meteor`), e a ogni run viene loggato il dump
+del grid con i nomi reali — così, se un giorno l'ordine a schermo cambia, i nomi ci sono già.
+
+**2.2 — Aprire solo i forzieri che servono davvero**
+
+`src/Tasks/Inventory/CollectorQuestTask.cs` + `src/GameModel/Features/Inventory/Inventory.cs`
+
+Oggi il task apre ogni slot forziere di ogni rarità, ogni ora, con riserva solo sui Common. La
+guida lo elenca tra gli errori da evitare ("aprire tutti i forzieri appena arrivano") e
+raccomanda di accumulare uncommon in su per lo sblocco dei tier del prossimo eroe.
+
+- In `ChestOpening.OpenDownTo`, aggiungere un parametro opzionale `int maxToOpen = int.MaxValue`
+  e clampare: `remainingToOpen = Math.Min(remainingToOpen, maxToOpen)`. Due righe, tutti i
+  chiamanti esistenti restano validi.
+- Nel task: eliminare lo sweep generico su tutte le rarità gear. Aprire **solo** i Common, con
+  `maxToOpen: GearChestTarget - alreadyDoneToday`, mantenendo `min_common_chest_reserve`.
+- Lasciare invariato lo sweep su `jewelChest` / `celestialChest`: non contano per la quest
+  (`NonGearChestSlots`) e la guida vuole che i forzieri Oracle vengano aperti.
+
+Risultato: i comuni si bruciano sulla quest giornaliera, uncommon e superiori si accumulano —
+esattamente la strategia della guida.
+
+**2.3 — Priorità ordinate invece che insiemi**
+
+`src/Tasks/Town/FirestoneResearchTask.cs`, `src/Tasks/Town/MeteoriteResearchTask.cs`
+
+In entrambi `PriorityTerms` è un array trattato come insieme: vince il **primo nodo incontrato**
+nella scansione che matcha uno qualsiasi dei termini, quindi "Firestone Effect" può battere
+"Raining Gold". La guida mette il gold davanti a tutto, e sul Firestone Effect in Library dice
+che più avanti conta poco.
+
+Trasformarlo in una lista ordinata: tenere traccia del rank migliore visto invece di fermarsi al
+primo match, e interrompere la scansione solo sul rank 0. La scansione resta corta perché
+Raining Gold la chiude comunque subito.
+
+**2.4 — Riduzioni di tempo nella Firestone Research (esito: in coda, non in cima)**
+
+`src/Tasks/Town/FirestoneResearchTask.cs`
+
+La guida Steam mette per **prime** le riduzioni di tempo (missioni mappa, alchimia, Firestone
+research, allenamento Guardian). Verificato sul mirror wiki in `docs/wiki/`, e il piano è cambiato:
+
+- In **tutti** gli alberi Firestone Research esistono solo **due** nodi di riduzione tempo, entrambi
+  nell'albero 1, colonna 8: **Trainer Skills** (cooldown allenamento guardiani) ed **Expeditioner**
+  (durata missioni mappa). Niente alchimia, niente durata research.
+- Sono **additivi** (l'asterisco del wiki), 1% per livello, cap 25% e 20%. **Raining Gold** è 20%
+  **moltiplicativo** su 25 livelli, in colonna 4 — quindi molto più a portata e incomparabilmente
+  più forte.
+
+Metterli sopra Raining Gold, come dice la guida alla lettera, sarebbe stato un peggioramento.
+Aggiunti quindi **in coda** al ranking, sotto il gruppo gold/firestone. L'intento della guida resta
+comunque rispettato dove quelle riduzioni esistono davvero: alchimia e durata research sono nodi del
+Talent Tree, e `TalentBuildConfig` ha già `Librarian` a 100 e `Alchemy` a 95, i due valori più alti
+dell'intera build.
+
+Negli alberi Meteorite Research non esiste alcun nodo di riduzione tempo (controllati tutti), quindi
+lì la lista resta di tre nomi.
+
+**Dipendenza stretta**: fatta insieme a 2.3, come previsto. Aggiungere nomi a un insieme non
+ordinato avrebbe peggiorato la situazione invece di migliorarla.
+
+### Rimandato, con motivo
+
+| Cosa | Perché non ora |
+|---|---|
+| **Ring prima di Wrist/Relic.** `HallOfHeroes.cs` — `AlwaysEnchantSlots = { 3,4,5,6,7 }` svuota i Void Crystal su Wrist/Shoulder/Belt prima di arrivare al Ring, che la guida indica come il pezzo più importante del gioco. Fix: riordinare in `{ 6,3,7,4,5 }`. | `HallOfHeroesTask` è `enabled = false` e non ancora testato; la gestione gear è manuale e si stanno accumulando risorse. Da fare **prima** di accendere il task. ⚠️ La mappatura indice→slot è dedotta dai commenti, non confermata: dumpare i nomi degli 8 figli di `GearGrid` prima di fidarsi del riordino. |
+| **Modalità "Next Milestone".** `HeroUpgrade.IsTopTier` si ferma su x100/MAX e non usa mai Next Milestone; la guida vuole MAX dopo il prestige e poi Next Milestone sui damage dealer (ogni 25 livelli raddoppia il danno). | Rimandato. Richiederebbe la stringa esatta della label, potenzialmente diversa tra client. |
+| **Upgrade globali / special upgrade.** Non automatizzati affatto: `upgradesButtonUI` compare solo in due commenti di `Paths/Battle.cs`, mai mappato. È il parametro #1 della guida (il gold). | Girando h24 il bot arriva comunque al massimo degli upgrade eroe e degli special upgrade: il vantaggio di comprarli *nell'ordine giusto* è transitorio e si annulla nel giro di una run. Costo alto (dump UnityPy + nuova BotAction), beneficio reale ≈ 0 a questa cadenza. |
+| **Spedizione con più punti.** `Paths/Menus.cs` — `expeditionPending0` è hardcoded sulla prima della lista; la guida dice di avviare sempre quella che dà più punti. | Girando h24 le spedizioni vengono fatte tutte a prescindere dall'ordine. |
+| **Missione del drago prioritaria.** `MissionPin` espone solo tempo/attiva/completata: identificare il drago richiede un dump del prefab. | Coperto in parte da 0.4 (`desc`). A cadenza h24 tutte le missioni girano comunque; il targeting esatto non vale il dump. |
+| **Rituali Oracle: Solar + Serenity.** `Rituals.Start()` avvia ogni slot visibile senza scegliere il tipo. La guida vuole almeno Solar e Serenity ogni 6h ed evitare il mono-Harmony/Comet. | Nessun account a livello 200, non testabile. Indagine preliminare **fatta il 2026-09-28** — vedi sotto: la scelta esiste davvero, ma a cadenza h24 conta molto meno del previsto. |
+
+**Rituali Oracle — indagine chiusa (2026-09-28), implementazione ancora rimandata**
+
+L'ipotesi "slot a tipo fisso, quindi nessuna scelta da fare" era **sbagliata**. Dal wiki
+(`docs/wiki/pages/Oracle.html`): i rituali sono quattro, ognuno con ricompense diverse, ognuno dura
+40 minuti, **se ne può avviare solo uno alla volta**, e si resettano tutti ogni 6 ore.
+
+| Rituale | Dà | Sbloccato a |
+|---|---|---|
+| Obedience | forzieri **solar** (+ galaxy 1 su 4) | oracle 6 |
+| Harmony | forzieri **comet** (+ nebula 1/3, stellar 1/4) | oracle 101 |
+| Concentration | oracle's gifts, emblemi, star essence | oracle 149 |
+| Serenity | forzieri **lunar** (+ cosmic 1 su 4) | oracle 153 |
+
+Questo riconcilia la guida con i dati: il "Solar Chest" che raccomanda viene da **Obedience**, non da
+un rituale omonimo, e il "Serenity Chest" sono i lunar. L'ordine di creazione citato nella guida
+(Obedience → Serenity → Harmony → Concentration) corrisponde esattamente.
+
+Cosa fa il bot oggi: `Rituals.Start()` clicca lo `startButton` di **ogni** slot visibile. Dato che
+solo uno può partire, ne parte di fatto il primo in ordine di griglia e gli altri click sono no-op —
+cioè il rituale non è scelto, è quello che capita.
+
+**Perché resta comunque a bassa priorità**, oltre al livello mancante: quattro rituali da 40 minuti
+sono 160 minuti in una finestra di reset da 6 ore, e il task si ri-schedula sul timer del rituale
+attivo (`NextRunTime = rituals.CurrentRunTime()`). Un bot h24 quindi torna a ogni completamento e ne
+avvia un altro, arrivando a farli comunque tutti dentro la finestra a prescindere dall'ordine —
+stessa logica che ha fatto rimandare 3.1 e 3.2. L'ordine conterebbe solo se la finestra non bastasse.
+
+**Cosa verificare per prima cosa quando un account arriva a 200**, prima di scrivere codice: che il
+task ri-avvii davvero un nuovo rituale a ogni completamento invece di restare fermo dopo il primo. Se
+lo fa, questa voce si chiude senza diff. Se non lo fa, allora serve la scelta per nome — e lì manca
+ancora un pezzo: `Paths.MenusLoc.OracleLoc.RitualLoc` non mappa nessun testo col nome del rituale,
+quindi servirebbe un dump UnityPy del grid per poterli distinguere.
+| **Routine di push** (pergamene + Pouch allo stage ottimale, sync con Rally). È la leva di gold più grossa della guida. | Richiede stage ottimale dal tooltip del Pouch, rilevamento di Rally attivo, ordine dal consumabile più piccolo, tutto a timing stretto. Fragile e ad alto rischio di sprecare risorse. Il commit 314aa75 (rimozione del consumo automatico dei gold item) ha già fatto la scelta giusta: accumularli e usarli a mano. |
+| **Wrist un livello sopra Relic.** Micro-ottimizzazione della guida sui Void Crystal. | Il riordino degli slot (prima riga di questa tabella) cattura il grosso; questo costerebbe una lettura di livello per slot per un guadagno marginale. |
+| **Build leader vs team bonus, composizione squadra, scelta gilda, battle pass.** La guida ci dedica sezioni intere. | Decisioni umane, non automatizzabili in modo sensato. |
+
+### Note operative
+
+**Distribuzione della configurazione.** Le voci di Fase 0 non si propagano da sole: il template
+in `tools/ConfigTemplate/` è una lista di confronto, non un file da copiare alla cieca (vedi
+§8.1 di `MULTI_INSTANCE_SETUP.md`). Vanno applicate al `UserData/FirebotPreferences.cfg` di
+ciascuna delle 34 istanze **a gioco chiuso** — il gioco riscrive il file alla chiusura e
+sovrascriverebbe le modifiche fatte a caldo. Per le istanze sandboxate, sia nel file reale sia
+in quello dentro il box.
+
+**Verifica.** Niente di tutto questo è coperto dal progetto di test esistente
+(`tests/Firebot.TalentEngine.Tests`, che tocca solo l'allocatore dei talenti): sono interazioni
+con codice Il2Cpp del gioco. La verifica è dal vivo su Steam-0 con `debug_mode = true`, e il
+segnale sono i log — grep delle righe `[FAILED]` dopo ogni modifica, più la riga `[Task]` di
+completamento del task toccato e la tabella di stato.
+
+**Le tre voci dove si sta deducendo una stringa mai vista dal vivo** — dumpare i nomi reali
+*prima* di scrivere il codice, non dopo: 2.1 (nomi GameObject del grid Exotic Merchant), 2.4
+(nomi dei nodi di riduzione tempo nella Firestone Research), e il Ring in coda (mappatura
+indice→slot del `GearGrid`).
+
+**Ordine consigliato.** Fase 0 tutta insieme (è configurazione: si distribuisce sul fleet e
+basta). Poi 1.1 e 1.2 (nessun rischio). Poi 2.2 (meccanica, dipendenze note), quindi 2.3+2.4
+insieme, e 2.1 per ultima perché è quella che dipende da un dump preliminare e tocca una strada
+irreversibile.
+
+### Checklist
+
+- [x] 0.1 Expedition Token → albero personale (`warmachinestask` off, `treeoflifetask` on)
+- [x] 0.2 Empower solo a +100% (`min_reset_ratio = 1.0`, min/max adventure minutes a `0`)
+- [x] 0.3 Task Oracle abilitati (rituali + gift)
+- [x] 0.4 `mission_time_order = "desc"`
+- [x] 0.5 Stessi default nel codice + `resource_type = "0"` in Experiments
+- [ ] **Distribuzione sulle 34 istanze** (a gioco chiuso; per le sandboxate anche dentro il box)
+- [ ] Riscrittura di `TESTING.md` da zero — obsoleto, vedi il banner in cima al file
+- [x] 1.1 `"Miner"` in `TreeOfLife.PriorityUpgrades`
+- [x] 1.2 Shop evento: Dragon blood → Meteorite → Beer (entrambi i task evento, via `EventExchangeConfig`)
+- [x] 2.1 Exotic Merchant: allowlist di vendita, mai Speed / gold / meteoriti istantanei
+- [x] 2.2 Collector: solo le rarità basse, solo quante ne servono per la quest
+- [x] 2.3 Priorità research ordinate invece che insiemi
+- [x] 2.4 Riduzioni di tempo in coda al ranking (NON sopra Raining Gold — vedi la sezione)

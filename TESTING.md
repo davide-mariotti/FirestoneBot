@@ -1,5 +1,20 @@
 # Piano di test dal vivo
 
+> ⚠️ **DOCUMENTO OBSOLETO — da riscrivere da capo** (constatato dall'utente, 2026-09-28).
+>
+> Le righe qui sotto risalgono ai primi giri di test (settembre 2026) e diverse sono state
+> superate dai fatti senza essere aggiornate. Esempi noti: la riga 30 dice che Talents è
+> `enabled = false` ovunque per via della vecchia calibrazione `guide_start_index`, ma quel
+> meccanismo è stato sostituito dall'allocator (commit `e6d4772`) e il task è acceso; la riga 7
+> dà Daily Store Offers per semplicemente "funziona", mentre la realtà è più sfumata (il percorso
+> garantito via `storeButton` è rotto, funziona attraverso i badge di notifica — vedi il commento
+> di `DailyStoreOffersTask`); la riga 5 descrive un `MerchantQuestTask` che nel frattempo è stato
+> riscritto due volte.
+>
+> **Non usare questo file come fonte di verità sullo stato dei task.** Finché non viene rifatto,
+> valgono il codice, i suoi commenti (che sono tenuti aggiornati) e `PLAN.md`. La riscrittura è
+> un lavoro a sé, tracciato in `PLAN.md` → "Allineamento alla guida F2P".
+
 Nessun task è mai stato testato dentro il gioco vero - solo verificato staticamente (scansioni
 UnityPy + build pulita). Questo documento guida il primo giro di test reali, un task alla volta.
 
