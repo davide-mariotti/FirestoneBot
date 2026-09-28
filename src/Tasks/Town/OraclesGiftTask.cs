@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town.Oracle;

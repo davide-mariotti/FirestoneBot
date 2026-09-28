@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Firebot.GameModel.Base;
 using UnityEngine;
@@ -8,10 +7,8 @@ using UnityEngine.UI;
 namespace Firebot.GameModel.Primitives;
 
 /// <summary>
-///     Like GameButton, but resolves its Transform once and reuses it for the life of the instance
-///     instead of re-walking the hierarchy on every check. Meant to be constructed once and reused
-///     across many polls (e.g. a background loop that revisits the same button every few seconds) -
-///     the caching only pays off if the same instance survives across calls.
+///     A GameButton that resolves its Transform once and keeps it, for a background loop that polls
+///     the same button every few seconds. Only pays off when the same instance is reused.
 /// </summary>
 public class CachedGameButton : GameButton
 {
@@ -20,77 +17,29 @@ public class CachedGameButton : GameButton
     public CachedGameButton(string path = null, GameElement parent = null, Transform transform = null)
         : base(path, parent, transform) { }
 
+    // Unity's overloaded != treats a destroyed Transform as null, so a scene reload re-resolves it.
     private Transform CachedRoot
     {
         get
         {
             if (_cachedRoot != null) return _cachedRoot;
 
-            _cachedRoot = ResolvePath(Path);
-
-            if (_cachedRoot == null && !string.IsNullOrEmpty(Path))
-                Debug($"[FAILED] Critical: Could not resolve Transform. Path: {Path}");
-
+            _cachedRoot = Root;
             return _cachedRoot;
         }
-    }
-
-    private Transform ResolvePath(string path)
-    {
-        if (string.IsNullOrEmpty(path)) return null;
-
-        var slashIndex = path.IndexOf('/');
-        if (slashIndex == -1)
-            return GameObject.Find(path)?.transform;
-
-        var rootName = path[..slashIndex];
-        var rootObj = GameObject.Find(rootName);
-        if (rootObj == null) return null;
-
-        var relativePath = path[(slashIndex + 1)..];
-        return rootObj.transform.Find(relativePath);
-    }
-
-    private bool IsVisibleCached()
-    {
-        var currentRoot = CachedRoot;
-        return currentRoot != null && currentRoot.gameObject.activeInHierarchy;
-    }
-
-    private bool TryGetCachedComponent<T>(out T component) where T : Component
-    {
-        component = null;
-
-        var currentRoot = CachedRoot;
-        return currentRoot != null && currentRoot.TryGetComponent(out component);
     }
 
     private bool IsClickableCached(out Button button)
     {
         button = null;
-        if (!IsVisibleCached()) return false;
+        var currentRoot = CachedRoot;
+        if (currentRoot == null || !currentRoot.gameObject.activeInHierarchy) return false;
 
-        if (!TryGetCachedComponent(out button)) return false;
+        if (!currentRoot.TryGetComponent(out button)) return false;
         return button.enabled && button.interactable;
     }
 
-    public IEnumerator Click(float interactionDelay = 0.5f)
-    {
-        if (IsClickableCached(out var button))
-            try
-            {
-                button.onClick.Invoke();
-            }
-            catch (Exception e)
-            {
-                Debug($"[FAILED] Click threw exception: {e.Message}. Path: {Path}");
-            }
-        else if (button != null)
-            Debug($"[FAILED] Click ignored: Button disabled/non-interactable. Path: {Path}");
-
-        yield return new WaitForSeconds(interactionDelay);
-    }
-
+    /// <summary>Presses the button and holds it until it stops being interactable or maxSeconds pass.</summary>
     public IEnumerator HoldButton(float maxSeconds = 3f)
     {
         if (!IsClickableCached(out var button))

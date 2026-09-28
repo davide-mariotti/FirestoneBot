@@ -12,27 +12,11 @@ using MelonLoader;
 namespace Firebot.Tasks.Character;
 
 /// <summary>
-///     Spends talent points to maximize how deep the account can push into the 46-tier tree - see
-///     TalentEngine.TalentAllocator for the actual decision algorithm and TalentTreeData for the tree's
-///     real shape (both live-verified node-by-node on Steam-0, 2026-09-24). Per the user's explicit
-///     design: the current state is only ever read as a snapshot - points already spent are never
-///     touched or second-guessed, and every run recomputes the best allocation from scratch instead of
-///     resuming a fixed sequence. This replaces the previous guide_start_index/CalibrateGuideStartIndex
-///     approach entirely (a single hand-transcribed priority list covering only the tree's first ~448
-///     of 2037 points, which the user never fully trusted enough to enable - see TESTING.md row 30).
-///     The tree's real per-node "direct predecessor" prerequisite (the wiki: "also spend >=1 point in
-///     the directly preceding talent") is deliberately NOT pre-mapped as static data - reverse-
-///     engineering the exact pairs would need a fresh, zero-invested account to observe reliably, which
-///     isn't available. Instead this task discovers a lock reactively (Paths.TalentPreviewLoc.LockedRoot,
-///     the same signal the old task used) and replans around it: if a step the allocator expected to be
-///     open comes back locked live, that node is excluded and Plan() is called again from the current
-///     (already-applied) state. This converges within at most 89 replans (one new exclusion per replan,
-///     89 nodes total) since the allocator always prefers other open candidates first.
-///     Bootstrapping the account's current ranks only reads nodes whose tier is already open (a node in
-///     a not-yet-reached tier is guaranteed rank 0 - it can never have received points) and skips
-///     anything already recorded in known_maxed_nodes from a previous run, since a maxed node's rank can
-///     never drop. This keeps the live-read cost bounded to the account's actual "frontier" instead of
-///     rescanning the whole tree every run.
+///     Spends talent points to reach as deep into the 46-tier tree as possible (TalentAllocator
+///     decides), re-planning from the live state on every run and never touching points already spent.
+///     The game's per-node prerequisites aren't mapped: a node that turns out locked is excluded and
+///     the plan redone, which converges within 89 re-plans. Only open tiers are read, and nodes
+///     recorded as maxed (known_maxed_nodes) are skipped, so a run only reads the tree's frontier.
 /// </summary>
 public class TalentsTask : BotTask
 {
@@ -68,16 +52,11 @@ public class TalentsTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Notification-gated only, per the user (2026-09-24): this task must never fire off an idle
-        // timer, only when the game's own TalentAvailable badge is actually showing - set unconditionally
-        // up front (regardless of how this run ends) so IsReady's OR(notificationVisible, Now >=
-        // NextRunTime) never takes the time branch for this task after its very first execution.
+        // Runs only on the TalentAvailable badge, never on a timer.
         NextRunTime = DateTime.MaxValue;
 
-        // Fast path - safe no-op if not up.
         yield return Notifications.TalentAvailable;
 
-        // Guaranteed path regardless of the notification - same reasoning as every other task.
         yield return CharacterScreen.Open();
         if (!CharacterScreen.IsOpen)
         {
@@ -129,9 +108,7 @@ public class TalentsTask : BotTask
                 yield return Talents.ClosePreview;
             }
 
-            // Every pass re-plans from the just-corrected ranks/locks, so a bootstrap misread or a
-            // node that turns out already maxed (real cap reached sooner than the read suggested)
-            // is accounted for on the next iteration instead of silently leaving points unspent.
+            // Each pass re-plans from the corrected ranks and locks, so a misread doesn't leave points unspent.
             var progressMade = true;
             while (availablePoints > 0 && progressMade)
             {
@@ -156,14 +133,12 @@ public class TalentsTask : BotTask
 
                     if (Talents.IsPreviewLocked)
                     {
-                        // Wasn't caught during the bootstrap read above - either this node's tier only
-                        // opened via this same plan's own earlier steps, or it's genuinely the tree's
-                        // unmapped per-node prerequisite. Either way, exclude it and let the next pass
-                        // replan around it.
+                        // Either its tier just opened within this plan, or it's one of the tree's
+                        // unmapped per-node prerequisites: exclude it and re-plan.
                         Debug($"  '{node.Name}' unexpectedly locked at investment time - excluding and replanning.");
                         lockedNodes.Add(step.NodeIndex);
                         yield return Talents.ClosePreview;
-                        progressMade = true; // state changed (a new exclusion) - worth another pass
+                        progressMade = true;
                         continue;
                     }
 
@@ -181,16 +156,12 @@ public class TalentsTask : BotTask
                     yield return Talents.ClosePreview;
                     if (invested > 0) yield return Talents.Save;
 
-                    // A real cap hit sooner than the (possibly stale) bootstrap read expected shows up
-                    // as IsClickable() going false before PointsToAdd was reached, with points still
-                    // left to spend - trust the game over the read and snap straight to MaxRank so the
-                    // next pass's candidate pool correctly excludes it instead of retrying forever.
+                    // The button going unclickable early, with points left, means the node is really
+                    // capped - trust the game over the earlier read.
                     var hitRealCap = invested < step.PointsToAdd && availablePoints > 0;
                     ranks[step.NodeIndex] = hitRealCap ? node.MaxRank : ranks[step.NodeIndex] + invested;
                     if (hitRealCap || ranks[step.NodeIndex] >= node.MaxRank) MarkMaxed(step.NodeIndex, knownMaxed);
 
-                    // Either real spend happened, or we just learned this candidate's true (lower) cap -
-                    // both change the candidate pool enough to be worth another Plan() pass.
                     if (invested > 0 || hitRealCap) progressMade = true;
                 }
             }

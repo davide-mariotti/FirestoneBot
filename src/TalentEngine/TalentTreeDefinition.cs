@@ -4,17 +4,14 @@ using System.Collections.Generic;
 namespace Firebot.TalentEngine;
 
 /// <summary>
-///     A whole talent tree's static shape: every node plus the cumulative point threshold that unlocks
-///     each tier. Validates itself at construction - fails loudly rather than letting an allocator
-///     silently compute against broken data, same "fail at load" convention as the codebase's other
-///     hand-transcribed data tables (see Talents.Validate in Firebot.GameModel).
+///     A talent tree's static shape: its nodes, and the total points that open each tier. The data is
+///     hand-transcribed, so it's validated here - failing at load beats planning against a broken table.
 /// </summary>
 public sealed class TalentTreeDefinition
 {
     public IReadOnlyList<TalentNode> Nodes { get; }
 
-    /// <summary>Indexed by tier (0-based) - TierThresholds[t] is the cumulative total points that must
-    ///     be spent anywhere in the tree before a node with Tier == t becomes eligible.</summary>
+    /// <summary>TierThresholds[t]: points spent anywhere in the tree before tier t's nodes open.</summary>
     public IReadOnlyList<int> TierThresholds { get; }
 
     public TalentTreeDefinition(IReadOnlyList<TalentNode> nodes, IReadOnlyList<int> tierThresholds)

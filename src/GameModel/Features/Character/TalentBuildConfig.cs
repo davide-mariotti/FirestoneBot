@@ -5,21 +5,10 @@ using Firebot.Core;
 namespace Firebot.GameModel.Features.Character;
 
 /// <summary>
-///     Default talent priorities for a generic progression build, keyed by the real catalog name (see
-///     TalentTreeData) - a single priority applies to every tier where that name repeats, since the
-///     account can't tell which specific instance it "meant" and doesn't need to (the allocator only
-///     needs relative ordering among whatever is currently open). Overridable per the cfg's
-///     priority_overrides entry (TalentsTask.OnConfigure).
-///     Per the user (2026-09-24): three of their originally-given names don't exist as literal talents
-///     - "Leader - Auto Abilities" (matches the real catalog exactly, kept as-is) and "Party - Auto
-///     Abilities" (aliased below to the real name, "Auto attacks" - the tree's other 1-point "auto"
-///     talent) were a wording mismatch; "Damage"/"Health"/"Armor" were meant as informal categories
-///     ("whatever talent boosts that stat"), not literal names - aliased below to the closest real
-///     talents (the three role-specialization nodes), which the user can retune via priority_overrides
-///     if this guess doesn't match what they actually meant. "Projectiles" and "Attribute Armor" (same
-///     priority tier as Fist Fight/Precision/Magic Spells) have no real talent left unmatched once
-///     those three are already covered by their own literal entries below, so they're dropped rather
-///     than guessed at.
+///     Default investment priority per talent name (higher first). A name repeated across tiers
+///     shares one priority - the allocator only needs the relative order of whatever is open.
+///     Librarian (research speed) and Alchemy lead, matching the F2P guide's "time reductions first".
+///     Overridable per account through the priority_overrides setting.
 /// </summary>
 public static class TalentBuildConfig
 {
@@ -38,9 +27,9 @@ public static class TalentBuildConfig
         ["Meteorite Hunter"] = 60,
         ["Raining Gold"] = 55,
         ["All main attributes"] = 50,
-        ["Auto attacks"] = 45, // alias: the user's "Party - Auto Abilities"
+        ["Auto attacks"] = 45,
         ["Leader - Auto Abilities"] = 45,
-        ["Damage Specialization"] = 40, // alias: the user's "Damage"
+        ["Damage Specialization"] = 40,
         ["Energy Heroes"] = 40,
         ["Mana Heroes"] = 40,
         ["Rage Heroes"] = 40,
@@ -48,12 +37,12 @@ public static class TalentBuildConfig
         ["Precision"] = 35,
         ["Magic Spells"] = 35,
         ["Damage"] = 30,
-        ["Healer Specialization"] = 30, // alias: the user's "Health"
+        ["Healer Specialization"] = 30,
         ["Armor"] = 25,
         ["Leadership"] = 25,
         ["Team Bonus"] = 25,
         ["Guardian Power"] = 25,
-        ["Tank Specialization"] = 25, // alias: the user's "Armor"
+        ["Tank Specialization"] = 25,
         ["Critical damage"] = 20,
         ["Critical chance"] = 20,
         ["Attack speed"] = 20,
@@ -65,10 +54,10 @@ public static class TalentBuildConfig
         ["Ancient Knowledge"] = 0
     };
 
-    /// <summary>Parses "Name:Priority,Name:Priority" (same idiom as ExperimentsTask.resource_type's
-    ///     CSV parsing) and merges it over DefaultPriorities - an override wins outright, everything
-    ///     else keeps its default. Malformed entries and names that don't match a real catalog node are
-    ///     logged once and otherwise ignored, never thrown.</summary>
+    /// <summary>
+    ///     Merges "Name:Priority,Name:Priority" over the defaults. Malformed entries are logged and
+    ///     skipped; a name that matches no talent simply has no effect.
+    /// </summary>
     public static IReadOnlyDictionary<string, int> Resolve(string overridesCsv)
     {
         var priorities = new Dictionary<string, int>(DefaultPriorities);

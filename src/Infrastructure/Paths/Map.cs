@@ -1,7 +1,6 @@
 namespace Firebot.Infrastructure;
 
-/// <summary>World Map screen (menus/WorldMap), its two tabs, related popups, and the mission pins
-/// that live on the always-visible background map layer.</summary>
+/// <summary>The World Map screen, its two tabs and popups, and the mission pins on the map layer.</summary>
 public static partial class Paths
 {
     public static class WorldMapLoc
@@ -32,17 +31,13 @@ public static partial class Paths
 
             public const string ClaimBtn = LootBtn + "/claimButton";
 
-            // this path existed before but was never wired any task to it - see WFDailyMissionsLoc/
-            // WFLiberationMissionsLoc below for the popups it opens.
             public const string DailyMissionsBtn = SubmenuRoot + "/dailyMissionsButton";
 
             public const string DailyMissionsNotification = DailyMissionsBtn + "/notification";
         }
     }
 
-    // Hub popup opened by WarfrontLoc.DailyMissionsBtn - has two categories (liberationMissions,
-    // dungeonMissions), only the first of which had a path defined before. dungeonMissions found
-    // via a fresh UnityPy scan but not yet wired to anything - out of scope for now.
+    // Opened by WarfrontLoc.DailyMissionsBtn. Only the liberation missions are wired, not the dungeons.
     public static class WFDailyMissionsLoc
     {
         private const string Root = MenusLoc.Root + "/popups/WFDailyMissions";
@@ -54,8 +49,7 @@ public static partial class Paths
         public const string NextRunTimeTxt = Root + "/bg/timeLeftMain/timeLeftText";
     }
 
-    // Opened by WFDailyMissionsLoc.OpenLiberationMissionsBtn - a grid of 10 fight-for-reward
-    // missions, no currency/cost involved anywhere in this popup (confirmed via UnityPy scan).
+    // 10 fight-for-reward missions, no currency involved.
     public static class WFLiberationMissionsLoc
     {
         private const string Root = MenusLoc.Root + "/popups/WFLiberationMissions";
@@ -64,13 +58,11 @@ public static partial class Paths
 
         public const string MissionsGridRoot = Root + "/bg/missionsScrollView/Viewport/missionGrid";
 
-        // Relative to a liberationMission (N) child - safe no-op via IsClickable() if locked/already won.
+        // Relative to a liberationMission (N); not clickable once locked or already won.
         public const string FightBtn = "/fightButton";
     }
 
-    // Opened by WFLiberationMissionsLoc.FightBtn - a squad/formation preview with the actual "start"
-    // button (fightBtn). Formation (changeAttackerFormationButton) is set up once manually by the
-    // user per their instructions - only FightBtn is ever wired here.
+    // The formation preview. The formation is set up by hand once; only Fight is ever pressed.
     public static class WFBattleSimLoc
     {
         private const string Root = MenusLoc.Root + "/popups/WFBattleSim";
@@ -78,14 +70,8 @@ public static partial class Paths
         public const string FightBtn = Root + "/bg/mask/fightBtn";
     }
 
-    // Real-time battle screen, resolving into either WFBattleWonLoc or WFBattleDefeatLoc - nothing on
-    // it needs clicking (its own closeButton would forfeit mid-battle), so only a bare root is needed,
-    // purely to detect it's showing. Live-confirmed, 2026-09-24 (Steam-10, via Watchdog's own known-root
-    // dump): lives under "menus/", NOT "popups/" as the WFBattleSim/Won/Defeat siblings do - and a
-    // liberation mission's fightBtn can open THIS directly, skipping WFBattleSim's formation-preview
-    // step entirely, whenever the formation from a previous fight is already accepted/unchanged. Code
-    // that only waited for WFBattleSim to appear would misread that as "mission didn't start" and move
-    // on while the real battle was already running underneath - see WarfrontDailyMissionsTask.
+    // The live battle, under menus/ unlike its siblings. A fightBtn can open it directly, skipping
+    // WFBattleSim. Never click its closeButton - that forfeits the battle.
     public static class WFBattleLoc
     {
         public const string Root = MenusLoc.Root + "/menus/WFBattle";
@@ -105,7 +91,7 @@ public static partial class Paths
         public const string CloseBtn = Root + "/bg/closeButton";
     }
 
-    // Popup shown when a mission pin is clicked - lives under menuCanvas/popups, not menus/WorldMap.
+    // Opened by clicking a mission pin.
     public static class PreviewMissionLoc
     {
         private const string Root = MenusLoc.Root + "/popups/PreviewMission";
@@ -131,14 +117,12 @@ public static partial class Paths
         public const string CloseBtn = Root + "/bg/closeButton";
     }
 
+    // The pins live on the map layer (menusRoot/mapRoot), not on the menu canvas.
     public static class MissionPinLoc
     {
-        // Lives under menusRoot/mapRoot (the always-visible background map layer), NOT under
-        // menuCanvas/menus like every other screen in this file - confirmed against an already
-        // proven, live-tested path. MenusLoc.Root can't be reused here since it already includes the
-        // menuCanvasParent/SafeArea/menuCanvas suffix that this branch doesn't have.
         public const string Root = "menusRoot/mapRoot/mapElements/missions";
 
+        // Relative to a pin.
         public const string ActiveIcon = "/missionActiveIcon";
 
         public const string TimeReq = "/missionBg/missionTimeBg/missionTimeReq";

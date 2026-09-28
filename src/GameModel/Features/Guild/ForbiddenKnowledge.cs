@@ -15,12 +15,7 @@ public static class ForbiddenKnowledge
 
     public static GameButton Node(int index) => new(Paths.ForbiddenKnowledgeLoc.NodeBtn(index));
 
-    /// <summary>
-    ///     Confirms the upgrade in the preview popup opened by clicking a node (live-confirmed by the
-    ///     user, 2026-09-19: "Attribute damage / Level 0/5 / Upgrade [1 tome]"), same pattern as
-    ///     TreeOfLife.ConfirmPurchase - safe no-op via IsClickable() if the node turned out to already
-    ///     be maxed.
-    /// </summary>
+    /// <summary>Buys in the preview a node click opens - a no-op for an already maxed node - then closes it.</summary>
     public static IEnumerator ConfirmUpgrade()
     {
         var upgradeBtn = new GameButton(Paths.ForbiddenKnowledgeLoc.PreviewUpgradeBtn);
@@ -29,8 +24,7 @@ public static class ForbiddenKnowledge
         yield return new GameButton(Paths.ForbiddenKnowledgeLoc.PreviewCloseBtn).Click();
     }
 
-    /// <summary>Safe no-op via IsClickable() unless every node on the current board is already maxed
-    /// AND 50 of that god's tomes are on hand - see the wiki note in Paths.ForbiddenKnowledgeLoc.</summary>
+    /// <summary>Only clickable once the whole board is maxed and 50 of that god's tomes are on hand.</summary>
     public static IEnumerator TryRecruit()
     {
         var recruitBtn = new GameButton(Paths.ForbiddenKnowledgeLoc.RecruitBtn);

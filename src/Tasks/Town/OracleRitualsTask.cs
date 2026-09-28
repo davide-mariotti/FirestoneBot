@@ -7,6 +7,11 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
 
+/// <summary>
+///     Collects finished Oracle rituals and clicks every visible ritual's start button, in grid order.
+///     Per the wiki only one ritual runs at a time, so which one starts isn't chosen. Not run live yet
+///     (it needs character level 200).
+/// </summary>
 public class OracleRitualsTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
@@ -16,11 +21,8 @@ public class OracleRitualsTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Fast path: the notification (when up) opens Oracle directly. Safe no-op otherwise.
         yield return Notifications.OracleRituals;
 
-        // Guaranteed path regardless of the notification - same reasoning as the previous tasks:
-        // don't rely on the screen already being open.
         yield return TownScreen.Open;
         yield return TownScreen.OpenOracle;
 

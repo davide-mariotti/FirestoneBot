@@ -8,10 +8,6 @@ namespace Firebot.GameModel.Features.Character;
 
 public static class Party
 {
-    // See UiVariantButton - this bottom-bar HUD variant switches dynamically within a session
-    // (confirmed live, 2026-09-17, via the sibling InventoryBtn in the same menuButtons row), not
-    // just once per session like the notification rail. Tries every known location instead of
-    // assuming one is "the" active one.
     public static IEnumerator Open => UiVariantButton.Click(
         new GameButton(Paths.BattleLoc.BottomRightSideUINewLoc.PartyBtn),
         new GameButton(Paths.BattleLoc.BottomSideUIMobileLoc.PartyBtn),
@@ -21,9 +17,7 @@ public static class Party
 
     private static GameElement Roster => new(Paths.PartyLoc.HeroRosterRoot);
 
-    /// <summary>Indices of heroes currently in the active 5-slot formation, read from each roster
-    /// card's "activeIcon" badge - see Paths.PartyLoc.HeroRosterRoot for the live-verification flag
-    /// on whether this index lines up 1:1 with Hall of Heroes' own roster order.</summary>
+    /// <summary>Roster indices of the heroes in the active formation (see PartyLoc.HeroRosterRoot).</summary>
     public static HashSet<int> ActivePartyIndices()
     {
         var result = new HashSet<int>();

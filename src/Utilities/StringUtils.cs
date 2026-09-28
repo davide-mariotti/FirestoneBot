@@ -3,30 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace Firebot.Utilities;
 
-public abstract class StringUtils
+public static class StringUtils
 {
-    public static string JoinPath(string parent, params string[] children)
-    {
-        var result = parent?.TrimEnd('/') ?? "";
-
-        return children.Where(child => !string.IsNullOrEmpty(child)).Aggregate(result,
-            (current, child) => $"{current}/{child.TrimStart('/').TrimEnd('/')}");
-    }
-
-    public static string Ellipsize(string value, int head = 20, int tail = 20)
-    {
-        if (string.IsNullOrEmpty(value) || value.Length <= head + tail + 3) return value;
-        return value[..head] + "..." + value[^tail..];
-    }
-
-    /// <summary>
-    ///     Formats a PascalCase string into a human-readable format by inserting spaces
-    ///     and removing a specific suffix.
-    ///     Example: "CloseEventPromotionalAutomation" -> "Close Event Promotional"
-    /// </summary>
-    /// <param name="input">The string to be formatted.</param>
-    /// <param name="suffixToRemove">The suffix to strip from the end of the string.</param>
-    /// <returns>A formatted, human-readable string.</returns>
+    /// <summary>"GuardianTrainingTask" -> "Guardian Training": strips the suffix, spaces out PascalCase.</summary>
     public static string Humanize(string input, string suffixToRemove = "Task")
     {
         if (string.IsNullOrWhiteSpace(input))
@@ -39,11 +18,7 @@ public abstract class StringUtils
         return Regex.Replace(cleaned, @"(?<!^)(?=[A-Z])", " ").Trim();
     }
 
-    /// <summary>
-    ///     Attempts to extract the first integer found in a string.
-    ///     Example: "x5" returns 5, "abc123def" returns 123.
-    ///     Returns true if an integer was found, false otherwise.
-    /// </summary>
+    /// <summary>All digits in the string read as one integer: "x5" -> 5, "Level 12" -> 12.</summary>
     public static bool TryParseIntFromString(string input, out int value)
     {
         value = 0;

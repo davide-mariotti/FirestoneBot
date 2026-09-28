@@ -6,23 +6,19 @@ using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town.Library.FirestoneResearch;
 
+/// <summary>The Firestone Research tree carousel: one tree visible at a time, nodes 1..16 in each.</summary>
 public class Node : GameElement
 {
     public Node() : base(Paths.MenusLoc.LibraryLoc.NodeLoc.Root) { }
 
-    // FirstOrDefault, not First: no tree being visible is a real state (e.g. right after
-    // starting a research, the whole screen briefly - or entirely - closes) rather than a
-    // "should never happen" one, and callers below already treat a null tree as "nothing to do
-    // here yet" instead of crashing on it.
+    // No visible tree is a real state (right after starting a research the screen can close), so
+    // callers get null rather than an exception.
     private GameElement GetTree() => GetChildren().FirstOrDefault(tree => tree.IsVisible());
 
-    // Used to detect a NextTree/PreviousTree click that didn't actually move (e.g. the game
-    // blocked it behind a "complete the previous tree first" popup) - the visible tree's name
-    // stays the same when that happens. Empty (never equal to a real tree name) if no tree is
-    // visible at all.
+    // Unchanged after NextTree/PreviousTree means the move was refused (the next tree is locked).
     public string CurrentTreeName => GetTree()?.Name ?? string.Empty;
 
-    private static GameElement GetGrow(GameElement gameElement) =>
+    private static GameElement GetGlow(GameElement gameElement) =>
         new(Paths.MenusLoc.LibraryLoc.NodeLoc.Glow, gameElement);
 
     private static GameText GetCompletedTxt(GameElement gameElement) =>
@@ -31,12 +27,13 @@ public class Node : GameElement
     private static GameElement GetProgressBar(GameElement gameElement) =>
         new(Paths.MenusLoc.LibraryLoc.NodeLoc.ProgressBar, gameElement);
 
+    // A pickable node: visible, with a progress bar, and neither glowing nor showing its completed text.
     private static bool IsActiveNode(GameElement child)
     {
         if (!child.IsVisible()) return false;
 
-        var grow = GetGrow(child);
-        if (grow.IsVisible()) return false;
+        var glow = GetGlow(child);
+        if (glow.IsVisible()) return false;
 
         var completedTxt = GetCompletedTxt(child);
         if (completedTxt.IsVisible()) return false;

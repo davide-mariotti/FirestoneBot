@@ -6,22 +6,17 @@ using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town;
 
-/// <summary>Hub popup opened by Town.OpenBattles - only its "arena" option is wired.</summary>
+/// <summary>The hub Town.OpenBattles opens; only its arena option is used.</summary>
 public static class WFMenuSelection
 {
     public static IEnumerator OpenArena => new GameButton(Paths.WFMenuSelectionLoc.ArenaBtn).Click();
-
-    public static IEnumerator Close => new GameButton(Paths.WFMenuSelectionLoc.CloseBtn).Click();
 }
 
 public static class ArenaOfKings
 {
-    // Always exactly 3 per the wiki: "choose to fight one of 3 player opponents".
     private const int OpponentCount = 3;
 
-    // Live-confirmed, 2026-09-18: reads "current/max" (e.g. "5/5"), same GetParsedInt() strict-parse
-    // failure already found on Talents' available-points counter - always fell back to 0, making the
-    // task think there were never any tokens to spend. Same GetParsedLeadingInt() fix.
+    // "current/max", e.g. "5/5".
     public static int TokensAvailable => new GameText(Paths.ArenaOfKingsLoc.BattleTokensTxt).GetParsedLeadingInt();
 
     public static double MyPower =>
@@ -33,7 +28,7 @@ public static class ArenaOfKings
 
     private static GameElement OpponentGrid => new(Paths.ArenaOfKingsLoc.OpponentGridRoot);
 
-    /// <summary>Current power of each of the 3 opponent slots, in slot order.</summary>
+    /// <summary>The power of each opponent, in slot order.</summary>
     public static IReadOnlyList<double> OpponentPowers()
     {
         var powers = new List<double>(OpponentCount);
@@ -55,15 +50,12 @@ public static class ArenaOfKings
     public static IEnumerator Close => new GameButton(Paths.ArenaOfKingsLoc.CloseBtn).Click();
 }
 
-/// <summary>Squad/formation preview opened by ArenaOfKings.Fight - the user sets the formation once
-/// manually, so this only ever needs to press the "start" button (same as Warfront's WFBattleSim).</summary>
+/// <summary>The formation preview; only its start button is pressed.</summary>
 public static class AOKBattlePreview
 {
     public static IEnumerator Fight => new GameButton(Paths.AOKBattlePreviewLoc.FightBtn).Click();
 }
 
-/// <summary>The single won/lost popup an arena battle resolves into (unlike Warfront's separate
-/// popups, this is one screen with both sections and one shared close button).</summary>
 public static class AOKBattleResult
 {
     public static bool IsVisible => new GameElement(Paths.AOKBattleResultLoc.CloseBtn).IsVisible();

@@ -12,49 +12,18 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 namespace Firebot.Tasks.Character;
 
 /// <summary>
-///     Hall of Heroes (https://firestone-idle-rpg.fandom.com/wiki/Hall_of_Heroes) gear/jewel
-///     management - the user asked to design this from scratch
-///     ("come proponi di muoverci con una logica?"), grounded in the Gear wiki
-///     (https://firestone-idle-rpg.fandom.com/wiki/Gear) and the Jewels wiki
-///     (https://firestone-idle-rpg.fandom.com/wiki/Jewels), plus the external tips guide already
-///     used for Firestone/Meteorite Research.
-///     Covers, for every hero in the roster:
-///     - Gear tier unlock: T2 (Wrist/Shoulder/Belt) and T3 (Ring/Relic), each gated on both hero
-///       power and Meteorites per the wiki - both enforced by the game itself via the unlock
-///       button's own clickable state, same as every other gated action in this codebase
-///       (PharaohsVault, Awakening, Tree of Life), so no threshold values are hardcoded here.
-///     - Gear enchanting: T2/T3 slots always, since their bonus applies to ALL heroes per the Gear
-///       wiki's Bonuses table; T1 (Weapon/Chest/Boots) only for heroes currently in the active
-///       battle formation (Party screen), since it only benefits the hero wearing it - per the
-///       user's explicit choice ("squadra attuale, dinamico") over a fixed hero list, resolving the
-///       tension between the tips guide's "concentrate on a few core heroes" and this codebase's
-///       usual spread-evenly default. Active-formation membership is read from the separate "Party"
-///       screen (GameModel/Features/Character/Party.cs) by index, since neither Party's roster nor
-///       Hall of Heroes' own roster exposes a readable hero name to cross-check by - both are
-///       ASSUMED to list heroes in the same order (same underlying data, two different screens),
-///       not independently verified live. If T1 enchanting turns out to target the wrong heroes,
-///       start there.
-///     - Jewel enchanting: all 6 slots (Ankh/Rune/Idol T1, Talisman/Necklace/Trinket T2), every
-///       hero unconditionally. The Jewels wiki says a jewel's bonus only applies "when the hero is
-///       in its crew" (a War Machine), which would argue for the same active-only scoping as gear
-///       T1 - but unlike Void Crystals, Ethereal Shards have no other use per the wiki, so there's
-///       no opportunity cost being protected by narrowing the target set, and the War Machine crew
-///       screen hasn't been investigated. Revisit if this turns out to matter in practice.
-///     Same screen, same per-hero navigation, so gear and jewels are handled in one pass per hero
-///     instead of two separate tasks re-walking the whole roster.
-///     No tier-unlock action exists for jewels (checked twice, both view modes) - only a locked-tier
-///     placeholder with no button, unlike gear/soulstones. Soulstones (tier-unlock and enchant, same
-///     shape as gear) confirmed present but explicitly deferred by the user to a future task
-///     (level 200+).
+///     Hall of Heroes, for every hero: unlocks gear tiers 2 and 3 when affordable, enchants gear
+///     tiers 2/3 (they boost every hero) and, for heroes in the active formation only, tier 1 (it
+///     only boosts its wearer), plus every jewel slot. The formation is read from the Party screen
+///     by index, assuming both screens list heroes in the same order - not verified. Soul stones
+///     (level 200) aren't handled.
 /// </summary>
 public class HallOfHeroesTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Character;
 
-    // Off by default: never exercised live (gear is still managed by hand while resources are being
-    // stockpiled), and the enchant slot order still needs fixing before it runs - it currently drains
-    // Void Crystals into Wrist/Shoulder/Belt before ever reaching the Ring, which the F2P guide calls
-    // the single most important piece in the game. See PLAN.md, "Allineamento alla guida F2P".
+    // Off by default: never run live, and the gear enchant order still puts the Ring fourth - see
+    // HallOfHeroes.GearEnchanting.AlwaysEnchantSlots. Fix that before enabling.
     protected override bool DefaultEnabled => false;
 
     internal override float? MaxRuntimeSeconds => 1800f;
@@ -63,8 +32,6 @@ public class HallOfHeroesTask : BotTask
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
 
-    // Safety bound only, matching the pattern used everywhere else in this codebase for a "keep
-    // going until nothing's left to do" loop.
     private const int MaxEnchantIterationsPerSlot = 50;
 
     public override IEnumerator Execute()
@@ -73,13 +40,8 @@ public class HallOfHeroesTask : BotTask
         var activePartyIndices = Party.ActivePartyIndices();
         yield return Party.Close;
 
-        // Fast path: the notification (when up) opens Hall of Heroes directly. Safe no-op otherwise.
         yield return Notifications.HallOfHeroes;
 
-        // Guaranteed path regardless of the notification - Town -> hallOfHeroes building icon
-        // (townBg/parent, 24 icons total). Corrected after the user pointed out live that it's
-        // reached through Town - an earlier UnityPy pass missed it by only grepping the building
-        // icons already mapped in this codebase instead of dumping the live full list.
         yield return TownScreen.Open;
         yield return TownScreen.OpenHallOfHeroes;
 
@@ -101,12 +63,9 @@ public class HallOfHeroesTask : BotTask
             yield return HallOfHeroesModel.OpenEnchantingTab;
             yield return HallOfHeroesModel.GearEnchanting.OpenGearCategory;
 
-            // T2/T3 first for every hero (global bonus, always worth it), T1 only added on top for
-            // heroes currently in the active formation. ponytail: this only guarantees the priority
-            // order WITHIN a single hero's turn, not across the whole roster - an earlier hero could
-            // in theory spend Void Crystals that a later active-party hero's T1 might have wanted.
-            // Not worth a full second pass over every hero (doubles the per-hero navigation cost) for
-            // a gap that's minor and self-corrects on the next 6h recheck.
+            // ponytail: tiers 2/3 come before tier 1 within each hero, not across the roster - an earlier
+            // hero can spend Void Crystals a later hero's tier 1 wanted. Upgrade: a second pass for tier 1
+            // after every hero's tiers 2/3, if formation heroes' tier 1 falls behind the others' tiers 2/3.
             var gearSlots = activePartyIndices.Contains(heroIndex)
                 ? HallOfHeroesModel.GearEnchanting.AlwaysEnchantSlots
                     .Concat(HallOfHeroesModel.GearEnchanting.ActivePartyOnlyGearSlots)

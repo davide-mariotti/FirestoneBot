@@ -10,11 +10,8 @@ using Logger = Firebot.Core.Logger;
 namespace Firebot.BotActions;
 
 /// <summary>
-///     Watches the battle stage counter. When it stops advancing for a while (a difficulty wall the
-///     current team can't clear), steps back a few stages so the bot farms an easier, fast-clearing
-///     stage instead of idling against the wall until the next Empower (Temple of Eternals reset).
-///     Direct port of the original AutoRetreat - no performance changes needed, it already only polls every
-///     30s and does nothing while a scheduled BotTask is executing.
+///     When the stage stops advancing for stall_minutes (a wall the team can't clear), steps back
+///     retreat_stages stages to farm one that clears quickly, and stays there until the next Empower.
 /// </summary>
 public static class AutoRetreat
 {
@@ -33,8 +30,7 @@ public static class AutoRetreat
     private static int _lastSeenStage = -1;
     private static DateTime _lastProgressTime = DateTime.MinValue;
 
-    // Once a retreat happens, stay put until the next Empower instead of re-checking every poll and
-    // retreating further and further down.
+    // After one retreat, stay put until the next Empower instead of retreating further on every poll.
     private static bool _suppressedUntilReset;
 
     private static bool IsEnabled => _isEnabled?.Value ?? false;
@@ -122,8 +118,7 @@ public static class AutoRetreat
 
             var stage = StageProgress.Current;
 
-            // Not on the battle screen right now (e.g. a Town errand is running) - keep whatever
-            // progress timer we already have instead of treating this as a change.
+            // Not on the battle screen (a Town errand is running): not a stage change.
             if (stage < 0)
             {
                 yield return PollWait;

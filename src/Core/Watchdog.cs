@@ -4,100 +4,54 @@ using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
-using UnityEngine;
 
 namespace Firebot.Core;
 
 /// <summary>
-///     Generic safety net, not feature-specific: scans for any leftover popup/event/menu with a
-///     close or collect button visible and closes it. Run by BotManager before and after every
-///     scheduled task, so a stray popup (a level-up celebration, an unclosed event, anything left
-///     over from a manual play session) can't block or misdirect the task's own clicks.
+///     Safety net run before and after every task: closes any leftover popup, event or menu that
+///     has a visible close/collect button - a level-up celebration, a promo, an unclosed screen -
+///     so it can't swallow or misdirect the task's own clicks.
 /// </summary>
 public static class Watchdog
 {
-    private static IEnumerable<string> EnumerateNuisancePaths()
+    private static readonly (string Root, string ButtonSuffix)[] Sweeps =
     {
-        foreach (var path in EnumerateChildPaths(new GameElement(Paths.WatchdogLoc.EventsRoot),
-                     Paths.WatchdogLoc.EventsRoot,
-                     Paths.WatchdogLoc.CloseSuffix,
-                     "bg/closeButton"))
-            yield return path;
-
-        foreach (var path in EnumerateChildPaths(new GameElement(Paths.WatchdogLoc.PopupsRoot),
-                     Paths.WatchdogLoc.PopupsRoot,
-                     Paths.WatchdogLoc.CloseSuffix,
-                     "bg/closeButton"))
-            yield return path;
-
-        foreach (var path in EnumerateChildPaths(new GameElement(Paths.WatchdogLoc.PopupsRoot),
-                     Paths.WatchdogLoc.PopupsRoot,
-                     Paths.WatchdogLoc.CollectSuffix,
-                     "bg/collectButton"))
-            yield return path;
-
-        foreach (var path in EnumerateChildPaths(new GameElement(Paths.WatchdogLoc.MenusRoot),
-                     Paths.WatchdogLoc.MenusRoot,
-                     Paths.WatchdogLoc.MenuCloseSuffix,
-                     "closeButton"))
-            yield return path;
-    }
-
-    private static IEnumerable<string> EnumerateChildPaths(GameElement rootElement, string basePath, string suffix,
-        string probePath)
-    {
-        foreach (var child in rootElement.GetChildren())
-        {
-            var probe = new GameElement(probePath, child);
-            if (probe.IsVisible())
-                yield return $"{basePath}/{child.Name}{suffix}";
-        }
-    }
+        (Paths.WatchdogLoc.EventsRoot, Paths.WatchdogLoc.CloseSuffix),
+        (Paths.WatchdogLoc.PopupsRoot, Paths.WatchdogLoc.CloseSuffix),
+        (Paths.WatchdogLoc.PopupsRoot, Paths.WatchdogLoc.CollectSuffix),
+        (Paths.WatchdogLoc.MenusRoot, Paths.WatchdogLoc.MenuCloseSuffix)
+    };
 
     public static IEnumerator ForceClearAll()
     {
-        for (var i = 0; i < 3; i++)
-            foreach (var path in EnumerateNuisancePaths())
-            {
-                var gameButton = new GameButton(path);
+        for (var pass = 0; pass < 3; pass++)
+            foreach (var (root, buttonSuffix) in Sweeps)
+                foreach (var screen in new GameElement(root).GetChildren())
+                {
+                    var button = new GameButton($"{root}/{screen.Name}{buttonSuffix}");
+                    if (!button.IsVisible()) continue;
 
-                if (!gameButton.IsVisible()) continue;
-
-                Debug.Log($"[Watchdog] Closing popup: {path}");
-                yield return gameButton.Click();
-            }
+                    Logger.Debug($"[Watchdog] Closing popup: {button.FullPath}");
+                    yield return button.Click();
+                }
     }
 
-    /// <summary>
-    ///     Read-only diagnostic (no clicking): lists every currently-active real child under the same
-    ///     three roots ForceClearAll knows about (events/, popups/, menus/) - i.e. "what screen is
-    ///     actually showing right now, by its real name". Written 3 times across live investigations
-    ///     this session (EventManager, WarfrontDailyMissionsTask) before being promoted here - the
-    ///     go-to first step whenever a screen isn't where the code expects and the real name/location
-    ///     needs discovering from scratch (same live-diagnostic approach used throughout this
-    ///     codebase's history, see e.g. ChaosRiftLoc/PirateShipLoc's own doc comments).
-    /// </summary>
+    /// <summary>Read-only: every screen active right now under events/, popups/ and menus/.</summary>
     public static string DumpActiveScreens()
     {
-        var events = new GameElement(Paths.WatchdogLoc.EventsRoot).GetChildren()
-            .Where(e => e.IsVisible()).Select(e => $"events/{e.Name}");
-        var popups = new GameElement(Paths.WatchdogLoc.PopupsRoot).GetChildren()
-            .Where(p => p.IsVisible()).Select(p => $"popups/{p.Name}");
-        var menus = new GameElement(Paths.WatchdogLoc.MenusRoot).GetChildren()
-            .Where(m => m.IsVisible()).Select(m => $"menus/{m.Name}");
-
-        var all = events.Concat(popups).Concat(menus).ToList();
+        var all = new[]
+            {
+                (Label: "events", Root: Paths.WatchdogLoc.EventsRoot),
+                (Label: "popups", Root: Paths.WatchdogLoc.PopupsRoot),
+                (Label: "menus", Root: Paths.WatchdogLoc.MenusRoot)
+            }
+            .SelectMany(r => new GameElement(r.Root).GetChildren()
+                .Where(screen => screen.IsVisible()).Select(screen => $"{r.Label}/{screen.Name}"))
+            .ToList();
         return all.Count == 0 ? "(none active)" : string.Join(", ", all);
     }
 
-    /// <summary>
-    ///     Read-only diagnostic (no clicking): walks every currently-active descendant of rootPath up
-    ///     to maxDepth and returns one "path (active)" line per node - the standard next step once
-    ///     DumpActiveScreens (or any other lead) points at a real but previously-unmapped screen, and
-    ///     its actual internal layout (tabs, claim buttons, item lists) needs discovering from scratch.
-    ///     Written ad hoc for EventManager's own investigation earlier this session before being
-    ///     promoted here for reuse.
-    /// </summary>
+    /// <summary>Read-only: one "path (active=...)" line per descendant, down to maxDepth.</summary>
     public static string DumpChildrenRecursive(string rootPath, int maxDepth = 4)
     {
         var lines = new List<string>();

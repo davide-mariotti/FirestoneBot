@@ -8,10 +8,7 @@ public static class Town
 {
     public static IEnumerator Open => new GameButton(Paths.BattleLoc.RightSideUILoc.TownBtn).Click();
 
-    // Live-confirmed, 2026-09-18: the "Engineer" building opens the "GarageSelection" choice popup
-    // (Engineer/Garage/Training base cards), not the Engineer screen directly - see
-    // OpenViaGarageSelection. War Machines lives behind the sibling "garage" card, not inside the
-    // Engineer screen at all.
+    // The Engineer building opens a choice popup first; War Machines are its "garage" card.
     public static IEnumerator OpenEngineer =>
         OpenViaGarageSelection(Paths.MenusLoc.GarageSelectionLoc.OpenEngineerBtn);
 
@@ -36,9 +33,7 @@ public static class Town
     public static IEnumerator OpenTempleOfEternals =>
         new GameButton(Paths.MenusLoc.TownIrongardLoc.TempleOfEternalsBtn).Click();
 
-    // Live-confirmed, 2026-09-18: the "tavern" building doesn't jump straight into a destination -
-    // it opens the "TavernSelection" choice popup (Tavern/Scarab's game cards), so both entry points
-    // are the building click followed by the right card's click.
+    // The tavern building also opens a choice popup first: the card game or Scarab's Game.
     public static IEnumerator OpenTavern => OpenViaTavernSelection(Paths.MenusLoc.TavernSelectionLoc.OpenTavernBtn);
 
     public static IEnumerator OpenScarabGame =>

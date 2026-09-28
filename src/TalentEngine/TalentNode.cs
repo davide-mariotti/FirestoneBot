@@ -1,16 +1,10 @@
 namespace Firebot.TalentEngine;
 
 /// <summary>
-///     One node in a talent tree - deliberately game-agnostic (no Firestone-specific concepts), so
-///     this whole project stays free of any IL2Cpp/Unity dependency and is directly unit-testable.
-///     <see cref="Tier" /> indexes into the owning <see cref="TalentTreeDefinition" />'s
-///     <c>TierThresholds</c> - a node only becomes eligible for investment once the tree's cumulative
-///     spent points reach that tier's threshold.
-///     <see cref="PrerequisiteIndex" />, when set, additionally requires another node (by index, which
-///     must be earlier in the tree) to already hold at least <see cref="PrerequisiteMinRank" /> - a
-///     second, independent gate on top of the tier threshold. Firestone's real tree doesn't have this
-///     mapped (see TalentTreeData's own doc comment), so production data always leaves this null, but
-///     the allocator supports it as first-class data so it can be exercised directly in tests.
+///     One talent tree node. Nothing game-specific, so this project needs no Unity reference and can
+///     be unit tested. Tier indexes the tree's TierThresholds. PrerequisiteIndex, when set, also
+///     requires an earlier node to hold PrerequisiteMinRank; Firestone's own prerequisites aren't
+///     mapped, so the real tree leaves it null and only the tests use it.
 /// </summary>
 public sealed record TalentNode(
     int Index,

@@ -6,22 +6,19 @@ using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town.Library.MeteoriteResearch;
 
+/// <summary>The Meteorite Research tree carousel: one tree visible at a time, nodes 0..12 in each.</summary>
 public class MeteoriteNode : GameElement
 {
-    // researchPath0..12 (13 decorative connector lines) precede research0..12 (13 real buttons) as
-    // siblings under each tree - confirmed via UnityPy child-order dump, no prior precedent (this
-    // feature was never automated before).
+    // Each tree's children are 13 decorative connectors (researchPath0..12) followed by the 13 real
+    // node buttons (research0..12).
     private const int PathLineCount = 13;
 
     public MeteoriteNode() : base(Paths.MenusLoc.LibraryLoc.MeteoriteResearchLoc.TreesRoot) { }
 
-    // FirstOrDefault, not First: no tree visible is a real state (e.g. a "complete tree N first"
-    // validation toast covering the tree browser), not a "should never happen" one - see
-    // FirestoneResearch.Node, which hit the same crash live and switched to this same pattern.
+    // No visible tree is a real state (a "complete tree N first" toast can cover it).
     private GameElement GetTree() => GetChildren().FirstOrDefault(tree => tree.IsVisible());
 
-    // Used to detect a NextTree click that didn't actually move (tree still locked) - same
-    // reasoning and fix as FirestoneResearch.Node.CurrentTreeName.
+    // Unchanged after NextTree means the move was refused (the next tree is locked).
     public string CurrentTreeName => GetTree()?.Name ?? string.Empty;
 
     public IEnumerator Select(int index)

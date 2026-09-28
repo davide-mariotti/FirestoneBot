@@ -11,6 +11,7 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
 
+/// <summary>Collects finished Alchemist experiments and starts new ones with the configured resources.</summary>
 public class ExperimentsTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
@@ -22,19 +23,15 @@ public class ExperimentsTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Fast path: the notification (when up) opens Alchemist directly. Safe no-op otherwise.
         yield return Notifications.Experiments;
 
-        // Guaranteed path regardless of the notification - same reasoning as the previous tasks:
-        // don't rely on the screen already being open.
         yield return TownScreen.Open;
         yield return TownScreen.OpenAlchemist;
 
         yield return new WaitForSeconds(3);
         var resources = GetResourceTypes();
         var experiments = new Experiments();
-        // Claiming is free and always safe regardless of resource_type opt-in - only Start()
-        // (which spends a real resource) is gated by it. See Experiments.Claim's doc comment.
+        // Collecting is free, so it isn't limited to resource_type - only starting one spends anything.
         yield return experiments.Claim();
         yield return new WaitForSeconds(1);
         yield return experiments.Start(resources);
@@ -63,7 +60,7 @@ public class ExperimentsTask : BotTask
             "\nDO NOT ADD 1 (Strange dust): the guide lists spending it here among the mistakes to " +
             "avoid - it's needed for tier 2 soul stones (1.000 per hero) and Guardian evolutions, and " +
             "an experiment gives a random result of which only about a third of the possible bonuses " +
-            "are useful. See PLAN.md, \"Allineamento alla guida F2P\". " +
+            "are useful. " +
             "\nEXAMPLES: '0' = Dragon blood only (recommended). '0,2' = Dragon blood and Exotic coin."
         );
     }

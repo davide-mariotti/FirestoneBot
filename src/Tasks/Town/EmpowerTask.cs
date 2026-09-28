@@ -13,10 +13,10 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 namespace Firebot.Tasks.Town;
 
 /// <summary>
-///     "Empower" = the Temple of Eternals reset/prestige action: banks the Firestones found in the
-///     current adventure into the permanent total (raising the firestoneEffect multiplier) and
-///     restarts the adventure. Not a temporary buff and not spent with gems/coins - it's a free
-///     reset gated on how much progress (Firestones found vs. already banked) would be sacrificed.
+///     The Temple of Eternals prestige ("Empower"): banks the Firestones found this adventure, which
+///     raises the Firestone multiplier, and restarts from stage 1. Free - it's gated on the Firestones
+///     found compared to those already banked (min_reset_ratio), plus optional adventure-time limits
+///     that are off by default.
 /// </summary>
 public class EmpowerTask : BotTask
 {
@@ -28,10 +28,8 @@ public class EmpowerTask : BotTask
     private MelonPreferences_Entry<int> _minAdventureMinutes;
     private MelonPreferences_Entry<int> _maxAdventureMinutes;
 
-    // No NotificationPath, deliberately - same reasoning as FreePickaxesTask: this is a threshold
-    // gate (ratio + min/max adventure time), so the badge being up (if it even reflects that gate at
-    // all - unverified, see Battle.cs) doesn't guarantee the reset is actually due yet. Still clicked
-    // opportunistically below as a fast path, just not promoted to notification-priority scheduling.
+    // The TemplePrestige badge is only used as a navigation shortcut, not for scheduling: whether it
+    // reflects this task's own threshold is unknown.
     protected override void OnConfigure(MelonPreferences_Category category)
     {
         if (_minResetRatio != null) return;
@@ -42,7 +40,7 @@ public class EmpowerTask : BotTask
             "Minimum Reset Ratio",
             "Empowers (resets) the Temple of Eternals once the Firestones found in the current adventure " +
             "reach this multiple of the Firestones already banked in the Temple. Default: 1.0 (found >= banked, " +
-            "i.e. the +100% the F2P guide gives as the one and only threshold - see PLAN.md)."
+            "i.e. a +100% gain - the F2P guide's threshold)."
         );
 
         _minAdventureMinutes = category.CreateEntry(
@@ -66,13 +64,8 @@ public class EmpowerTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Fast path: the notification (when up) opens Temple of Eternals directly. Safe no-op
-        // otherwise. Unlike every other task's notification, this one has no prior precedent to
-        // cross-check (never used a notification for this feature) - see the path comment.
         yield return Notifications.TemplePrestige;
 
-        // Guaranteed path regardless of the notification - same reasoning as the previous tasks:
-        // don't rely on the screen already being open.
         yield return TownScreen.Open;
         yield return TownScreen.OpenTempleOfEternals;
 
@@ -105,9 +98,7 @@ public class EmpowerTask : BotTask
             yield return TempleOfEternals.Close;
             yield return TownScreen.Close;
 
-            // If the minimum adventure time hasn't elapsed yet, there is no point checking again
-            // before it does - skip straight to the moment it will (plus the ratio not being met
-            // yet still falls back to the regular retry delay).
+            // No point checking again before the minimum adventure time has passed.
             var timeUntilMinDuration = minDuration - timePlayed;
             NextRunTime = DateTime.Now + (timeUntilMinDuration > RetryDelay ? timeUntilMinDuration : RetryDelay);
         }

@@ -1,7 +1,6 @@
 namespace Firebot.Infrastructure;
 
-/// <summary>Exotic Merchant: sell scrolls/inventory items for exotic coins, then spend them on
-/// upgrades. Never automated before.</summary>
+/// <summary>Exotic Merchant: sells items for Exotic Coins, which buy Exotic Upgrades.</summary>
 public static partial class Paths
 {
     public static class ExoticMerchantLoc
@@ -19,8 +18,7 @@ public static partial class Paths
             public const string ProductGridRoot =
                 ExoticMerchantLoc.Root + "/submenus/bg/sellItemsSubmenu/Scroll View/Viewport/Content/productGrid";
 
-            // Relative to a product grid child - single fixed action (no quantity choice), matches
-            // "always sell x1" since that's the only option this button offers.
+            // Relative to a product in ProductGridRoot; sells one item per click.
             public const string SellBtn = "/sellButton";
         }
 
@@ -28,15 +26,10 @@ public static partial class Paths
         {
             private const string SubmenuRoot = ExoticMerchantLoc.Root + "/submenus/bg/upgradesSubmenu";
 
-            public const string NextTreeBtn = SubmenuRoot + "/navigation/goForthTree";
-
-            public const string PreviousTreeBtn = SubmenuRoot + "/navigation/goBackTree";
-
             public const string UpgradesListRoot =
                 SubmenuRoot + "/upgradesScrollView/Viewport/Content/upgradesList";
 
-            // Relative to an exoticMerchantUpgrade (N) child - inline button, no separate preview
-            // popup (unlike Firestone/Meteorite Research), confirmed via UnityPy.
+            // Relative to an exoticMerchantUpgrade (N) child of UpgradesListRoot.
             public const string UpgradeBtn = "/upgradeButton";
         }
     }

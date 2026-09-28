@@ -4,11 +4,13 @@ using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Shared;
 
-/// <summary>Quick-access badges on the battle screen's notification rail. Grown as needed.</summary>
+/// <summary>
+///     Clicks on the notification rail's badges. A badge opens its screen directly, so tasks click
+///     theirs first as a shortcut and then navigate the full path anyway - a hidden badge makes the
+///     click a no-op, and the explicit navigation never depends on the shortcut having worked.
+/// </summary>
 public static class Notifications
 {
-    // See UiVariantButton - this whole rail lives under one of two alternate HUD roots depending
-    // on the client, only one populated per session. Every badge below tries both.
     private static IEnumerator Click(string badgeName) => UiVariantButton.Click(
         new GameNotificationButton(Paths.BattleLoc.NotificationsLoc.Root + "/" + badgeName),
         new GameNotificationButton(Paths.BattleLoc.NotificationsLoc.FallbackRoot + "/" + badgeName));
@@ -39,48 +41,27 @@ public static class Notifications
 
     public static IEnumerator FirestoneResearch => Click(Paths.BattleLoc.NotificationsLoc.FirestoneResearch);
 
-    // Not independently verified (see Battle.cs comment on TemplePrestige) - never used a
-    // notification for this feature at all.
     public static IEnumerator TemplePrestige => Click(Paths.BattleLoc.NotificationsLoc.TemplePrestige);
 
-    // Not independently verified (see Battle.cs comment on MeteoriteResearch) - never implemented
-    // this feature at all.
     public static IEnumerator MeteoriteResearch => Click(Paths.BattleLoc.NotificationsLoc.MeteoriteResearch);
 
-    // No prior precedent (Scarab Game was never automated before), but both confirmed present on the live
-    // rail via UnityPy (see Battle.cs). ScarabGame opens the mini-game screen; ScarabGameShopFreeToken
-    // is presumed to open ScarabGameShop directly (same "notification skips straight to the target"
-    // pattern as OraclesGift bypassing Store) - unverified, flagged in the task itself.
     public static IEnumerator ScarabGame => Click(Paths.BattleLoc.NotificationsLoc.ScarabGame);
 
     public static IEnumerator ScarabGameShopFreeToken =>
         Click(Paths.BattleLoc.NotificationsLoc.ScarabGameShopFreeToken);
 
-    // Sourced only from the static doc scan (see Battle.cs) - no prior precedent, not independently
-    // verified via UnityPy.
     public static IEnumerator ArcaneCrystal => Click(Paths.BattleLoc.NotificationsLoc.ArcaneCrystal);
 
-    // Confirmed present via UnityPy (see Battle.cs). No prior precedent.
     public static IEnumerator BeerExchange => Click(Paths.BattleLoc.NotificationsLoc.BeerExchange);
 
-    // Confirmed present via UnityPy (see Battle.cs). No prior precedent.
     public static IEnumerator TalentAvailable => Click(Paths.BattleLoc.NotificationsLoc.TalentAvailable);
 
-    // Confirmed present via UnityPy (see Battle.cs). No prior precedent. Opportunistic fast path only,
-    // not used as any task's NotificationPath - see ArenaOfKingsTask.
     public static IEnumerator ArenaTokens => Click(Paths.BattleLoc.NotificationsLoc.ArenaTokens);
 
-    // Confirmed present via UnityPy (see Battle.cs). No prior precedent. Opportunistic fast path only -
-    // the real entry point is Town -> hallOfHeroes building icon (see HallOfHeroesGearTask).
     public static IEnumerator HallOfHeroes => Click(Paths.BattleLoc.NotificationsLoc.HallOfHeroes);
 
-    // Not independently verified (see Battle.cs comment on PiratesPrize) - never implemented this
-    // feature at all. Opportunistic fast path only - the real entry point is Town -> pirateShip
-    // building icon (see PiratesPrizeTask).
     public static IEnumerator PiratesPrize => Click(Paths.BattleLoc.NotificationsLoc.PiratesPrize);
 
-    // Live-confirmed real (see Battle.cs). Opportunistic fast path only - the real entry point is
-    // Town -> Guild -> chaosRift/forbiddenKnowledge icon (see ChaosRiftTask/ForbiddenKnowledgeTask).
     public static IEnumerator ChaosRift => Click(Paths.BattleLoc.NotificationsLoc.ChaosRift);
 
     public static IEnumerator ChaosRiftSupplies => Click(Paths.BattleLoc.NotificationsLoc.ChaosRiftSupplies);
@@ -90,8 +71,6 @@ public static class Notifications
     public static IEnumerator Awakening => Click(Paths.BattleLoc.NotificationsLoc.Awakening);
 
     public static IEnumerator Warmachines => Click(Paths.BattleLoc.NotificationsLoc.Warmachines);
-
-    public static IEnumerator PharaohsVault => Click(Paths.BattleLoc.NotificationsLoc.PharaohsVault);
 
     public static IEnumerator ScarabGameMilestones => Click(Paths.BattleLoc.NotificationsLoc.ScarabGameMilestones);
 

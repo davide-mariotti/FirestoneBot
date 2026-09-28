@@ -13,6 +13,10 @@ using MelonLoader;
 
 namespace Firebot.Tasks.Map;
 
+/// <summary>
+///     Collects finished map missions (free speed-up when one is almost done) and starts new ones,
+///     longest first by default, until the squads run out.
+/// </summary>
 public class MapMissionsTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Map;
@@ -23,11 +27,8 @@ public class MapMissionsTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Fast path: the notification (when up) opens the World Map directly. Safe no-op otherwise.
         yield return Notifications.MapMissions;
 
-        // Guaranteed path regardless of the notification - same reasoning as the previous tasks:
-        // don't rely on the screen/tab already being open/selected.
         yield return WorldMap.Open;
         yield return WorldMap.OpenMapMissionsTab;
 
@@ -77,10 +78,9 @@ public class MapMissionsTask : BotTask
             "mission_time_order",
             "desc",
             "Mission Time Order",
-            "Sort missions by time required. Use 'asc' (shorter first) or 'desc' (longer first). " +
-            "Default: 'desc' - longer missions give better chests and far more honor (1-2 for a short " +
-            "adventure, 16 for the dragon mission, up to 32 for high chests), so filling every squad " +
-            "with the shortest ones leaves the valuable missions unstarted. See PLAN.md (0.4)."
+            "Order new missions by time required: 'desc' (longest first, the default) or 'asc'. " +
+            "Longer missions give better chests and far more honor (1-2 for a short adventure, up to " +
+            "32), so filling the squads with short ones leaves the valuable missions unstarted."
         );
     }
 

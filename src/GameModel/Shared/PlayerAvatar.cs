@@ -7,11 +7,8 @@ public static class PlayerAvatar
 {
     private static int? _cachedLevel;
 
-    // Cached for one BotManager scan tick (see RefreshCachedLevel, called once per tick) - reading
-    // this is an uncached Transform.Find + text parse, and every task's IsReady()/
-    // IsNotificationVisible() check touches it, so an uncached read repeated it 2-3x per task per
-    // tick across ~30 tasks. The character level changes at most a few times a day, so per-tick
-    // freshness loses nothing.
+    // Every task's readiness check reads the level, so it's cached for one scheduler tick
+    // (RefreshCachedLevel) instead of being re-parsed from the UI 2-3 times per task per tick.
     public static int CharacterLevel => _cachedLevel ??= ReadCharacterLevel();
 
     public static void RefreshCachedLevel() => _cachedLevel = ReadCharacterLevel();

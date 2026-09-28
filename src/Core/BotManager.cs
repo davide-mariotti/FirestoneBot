@@ -20,8 +20,7 @@ public static class BotManager
 
     private static readonly System.Collections.Generic.List<BotTask> Tasks = new();
 
-    // See PickEligibleTask - round-robin position among currently eligible (ready-by-time OR
-    // notification-visible) tasks.
+    // Where PickEligibleTask's round-robin resumes.
     private static int _lastEligibleTaskIndex = -1;
 
     private static object _botRoutineHandle;
@@ -52,9 +51,8 @@ public static class BotManager
                 Logger.Info($"[Loader] Failed to load {type.Name}: {e.GetType().Name} - {e.Message}");
             }
 
-        // Config categories are written to the .cfg file in creation order, and this same order
-        // drives the terminal status table - sort here (not relying on whatever arbitrary order
-        // reflection returned) so both places group tasks predictably instead of scattering them.
+        // Reflection returns types in no useful order. This one becomes both the .cfg section order
+        // and the status table's.
         foreach (var task in instances.OrderBy(t => t.Group).ThenBy(t => t.SectionTitle))
         {
             task.InitializeConfig(ConfigPath);
@@ -93,7 +91,7 @@ public static class BotManager
 
         while (IsRunning)
         {
-            // Once per tick instead of once per task - see PlayerAvatar.CharacterLevel.
+            // Every task's readiness check reads the level - read it once per tick.
             PlayerAvatar.RefreshCachedLevel();
 
             var notificationVisible = new bool[Tasks.Count];
@@ -171,11 +169,7 @@ public static class BotManager
         }
     }
 
-    /// <summary>
-    ///     Grouped by TaskGroup (Tasks is already in that order - see Initialize()) instead of by
-    ///     NextRunTime, so a task's row stays in the same place every print instead of jumping around
-    ///     the table as timers count down - easier to scan for one specific task.
-    /// </summary>
+    /// <summary>In the fixed task order, so each task's row stays put between prints.</summary>
     private static void PrintTasksStatusTable()
     {
         var now = DateTime.Now;
@@ -195,24 +189,9 @@ public static class BotManager
     }
 
     /// <summary>
-    ///     Picks the next task to run, rotating fairly among every CURRENTLY eligible task (ready by
-    ///     NextRunTime, or notification-visible - see BotTask.IsReady) instead of always the same one
-    ///     or always favoring one tier over the other.
-    ///     History: first found live, 2026-09-20 - a notification-visible task unconditionally
-    ///     pre-empted NextRunTime-based scheduling every tick, with no fairness between multiple
-    ///     simultaneously-visible badges (always the first one in fixed Group+SectionTitle order, see
-    ///     Initialize). Fixed then with a round-robin scoped to notification-visible tasks only
-    ///     (ChaosRiftTask's badge, confirmed live to never reliably clear, was starving
-    ///     ForbiddenKnowledgeTask). That fix turned out to be incomplete: it only rotated FAIRLY among
-    ///     notification tasks, but the caller still let any notification task unconditionally override
-    ///     the separately-computed earliest-NextRunTime ready task - so a single persistently-lit badge
-    ///     (Path Of Glory's, confirmed live, same "never clears" issue as ChaosRift's) still starved
-    ///     EVERY ready-by-time task completely (Daily Store Offers and Map Missions both sat at
-    ///     "Ready" for minutes, never once picked, while Path Of Glory kept re-winning every tick since
-    ///     it was the only notification-visible candidate in its own rotation). Fixed for real by
-    ///     merging both tiers into one rotation: "eligible" now means ready-by-time OR
-    ///     notification-visible, and the SAME fairness logic applies across that whole set, so a
-    ///     never-clearing badge can no longer block genuinely due tasks either.
+    ///     Round-robin over every task that is eligible right now - due by time or showing its badge -
+    ///     as one pool. A badge that never clears (Chaos Rift's, Path of Glory's) then only wins its
+    ///     fair share of ticks instead of starving every other task.
     /// </summary>
     private static BotTask PickEligibleTask(bool[] notificationVisible)
     {

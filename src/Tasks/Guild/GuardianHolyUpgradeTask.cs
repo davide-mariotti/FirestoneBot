@@ -11,20 +11,8 @@ using MagicQuartersScreen = Firebot.GameModel.Features.Town.MagicQuarters.MagicQ
 namespace Firebot.Tasks.Guild;
 
 /// <summary>
-///     Chaos Rift's guardian "Holy damage" upgrade (Guild -&gt; Chaos Rift -&gt; "Upgrades" action button -&gt;
-///     Magic Quarters' "Chaos Rift" tab) - spends Orbs of Light (per the wiki's Chaos Rift page: 25%
-///     of Chaos Rift damage dealt, used to upgrade guardian holy damage, resets every month, so no
-///     reason to ever hold back spending it) - requested by the user, 2026-09-20, after confirming
-///     live that the "GuardianHolyUpgrade" badge (real, present on the shared notification rail per
-///     BotManager's own dump, but never wired to anything before now) opens exactly this screen.
-///     Live-confirmed across several rounds of diagnostics, 2026-09-20: clicking Chaos Rift's own
-///     "Upgrades" action button doesn't open a dedicated Chaos-Rift screen - it opens Magic Quarters
-///     (the same screen GuardianTrainingTask uses), landing directly on its "Chaos Rift" tab (one of
-///     5 guardian tabs total, per the user: training/evolution/Chaos Rift/rarity/skin). Loops all 4
-///     guardians (guardianList/guardian (0)..(3), properly indexed - confirmed via a diagnostic
-///     dump), clicking each one then spending on Holy Damage while affordable, since the upgrade
-///     screen is per-guardian (see the user's screenshot: one guardian's stats/upgrade shown at a
-///     time, switched via the same roster icons used by Guardian Training).
+///     Spends Orbs of Light on every guardian's holy damage: Chaos Rift -> Upgrades, which opens Magic
+///     Quarters on its Chaos Rift tab. The orbs reset every month, so there's nothing to save them for.
 /// </summary>
 public class GuardianHolyUpgradeTask : BotTask
 {
@@ -35,26 +23,21 @@ public class GuardianHolyUpgradeTask : BotTask
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(24);
 
-    // 4 guardians per the wiki/GuardianTrainingTask's own config comment (Vermilion/Grace/Ankaa/Azhar).
+    // Vermilion, Grace, Ankaa, Azhar.
     private const int GuardianCount = 4;
 
-    // Same "keep going until nothing's left to buy" ceiling used by BeerExchange/TreeOfLife.
     private const int MaxUpgradesPerGuardian = 30;
 
     public override IEnumerator Execute()
     {
-        // Fast path - opportunistic only, safe no-op if not up.
         yield return Notifications.GuardianHolyUpgrade;
 
-        // Guaranteed path regardless of the notification - same reasoning as every other task.
         yield return TownGuild.Open;
         yield return TownGuild.OpenChaosRift;
 
         if (ChaosRift.IsVisible) yield return ChaosRift.OpenUpgrades;
 
-        // Live-confirmed, 2026-09-20: reaching Magic Quarters via Chaos Rift's own "Upgrades" button
-        // lands directly on the Chaos Rift tab already active - clicked anyway for robustness in
-        // case some other entry path (e.g. the notification badge alone) lands on a different tab.
+        // Already the active tab when coming from Chaos Rift; clicked for any other way in.
         yield return MagicQuartersScreen.OpenChaosRiftTab;
 
         for (var i = 0; i < GuardianCount; i++)

@@ -13,14 +13,9 @@ using Logger = Firebot.Core.Logger;
 namespace Firebot.BotActions;
 
 /// <summary>
-///     Upgrades the leader and every hero slot during battle. Same behavior as the original AutoUpgrade, with
-///     two changes to keep CPU/RAM down when many bots run at once:
-///     1. The button list is resolved once (via CachedGameButton, which self-heals if the underlying
-///        object is destroyed - see CachedGameButton's null-check) and reused, instead of being
-///        rebuilt from scratch every loop iteration.
-///     2. One quick hold-pass through every button, then a single configurable sweep interval
-///        (default 5s) before the next pass - instead of holding each button for 0.5s with a 0.5s
-///        gap, forever, back to back.
+///     Levels the leader and every hero slot during battle: one short hold on each level-up button
+///     per pass, then sweep_interval_seconds of rest. The buttons are resolved once and reused, which
+///     matters with many instances on one machine.
 /// </summary>
 public static class HeroUpgrade
 {
@@ -109,19 +104,13 @@ public static class HeroUpgrade
         return buttons;
     }
 
-    /// <summary>
-    ///     Builds the button list once battleRoot actually exists (i.e. once we're in a battle scene),
-    ///     then keeps reusing it - CachedGameButton already tolerates the underlying object being
-    ///     deactivated/reactivated (Town round-trips) or destroyed (scene reload).
-    /// </summary>
+    /// <summary>Builds the button list once the battle scene exists, then reuses it.</summary>
     private static List<CachedGameButton> ResolvedButtons()
     {
         if (_buttons != null) return _buttons;
 
         var candidate = AllSlotButtons();
-        // AllSlotButtons() always returns at least the leader slot; only trust it once heroSlots
-        // actually resolved to something (otherwise we'd cache an incomplete list from before the
-        // battle scene finished loading).
+        // The leader slot is always there; only cache once the hero slots resolved too.
         if (candidate.Count > 1) _buttons = candidate;
         return _buttons;
     }
@@ -168,10 +157,7 @@ public static class HeroUpgrade
         levelText.IndexOf("x100", StringComparison.OrdinalIgnoreCase) >= 0 ||
         levelText.IndexOf("MAX", StringComparison.OrdinalIgnoreCase) >= 0;
 
-    /// <summary>
-    ///     Cycles the buy-quantity toggle until it reaches x100 or MAX, so each upgrade click spends
-    ///     as much gold as possible in one go.
-    /// </summary>
+    /// <summary>Cycles the buy-quantity toggle to x100 or MAX, so each click spends as much gold as it can.</summary>
     private static IEnumerator SetUpgradeLevel()
     {
         var levelTxt = new GameText(Paths.BattleLoc.BottomSideUINewLoc.ChangeLevelUpModeLoc.Text);
@@ -189,7 +175,7 @@ public static class HeroUpgrade
             yield break;
         }
 
-        const int maxAttempts = 10; // Prevent infinite loop in case of unexpected issues
+        const int maxAttempts = 10;
         for (var attempts = 0; attempts < maxAttempts; attempts++)
         {
             yield return toggleBtn.Click();
@@ -226,7 +212,7 @@ public static class HeroUpgrade
             var allButtons = ResolvedButtons();
             if (allButtons == null)
             {
-                // Not in battle yet (or hierarchy not found) - nothing to resolve this pass.
+                // Not in battle yet.
                 yield return SweepIntervalWait;
                 continue;
             }

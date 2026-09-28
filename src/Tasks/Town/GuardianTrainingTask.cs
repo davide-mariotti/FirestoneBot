@@ -9,6 +9,11 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
 
+/// <summary>
+///     Keeps a guardian training in Magic Quarters. Trains guardian_index when that guardian is
+///     unlocked, guardian 0 (Vermilion, the dragon) otherwise - the one the F2P guide wants trained
+///     for its gold bonus.
+/// </summary>
 public class GuardianTrainingTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
@@ -20,25 +25,16 @@ public class GuardianTrainingTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Fast path: the notification (when up) opens Magic Quarters directly. Safe no-op otherwise.
         yield return Notifications.GuardianTraining;
 
-        // Guaranteed path regardless of the notification - same reasoning as the previous tasks:
-        // don't rely on the screen already being open.
         yield return TownScreen.Open;
         yield return TownScreen.OpenMagicQuarters;
 
         var preferredIndex = GetGuardianIndex();
-        var useStrangeDust = GetUseStrangeDust();
-        var trainBtn = MagicQuarters.TrainBtn;
-        var guardianIndex = FindAvailableGuardian(preferredIndex);
+        var guardianIndex = IsAvailable(preferredIndex) ? preferredIndex : 0;
 
-        if (guardianIndex >= 0)
-        {
-            var child = MagicQuarters.Guardians.GetChild(guardianIndex);
-            var guardianBtn = new GameButton(parent: child);
-            yield return TryTrainGuardian(guardianBtn, trainBtn, useStrangeDust);
-        }
+        var guardianBtn = new GameButton(parent: MagicQuarters.Guardians.GetChild(guardianIndex));
+        yield return TryTrainGuardian(guardianBtn, MagicQuarters.TrainBtn, _useStrangeDust?.Value ?? false);
 
         NextRunTime = MagicQuarters.NextRunTime;
 
@@ -67,31 +63,10 @@ public class GuardianTrainingTask : BotTask
         );
     }
 
-    private int FindAvailableGuardian(int preferredIndex)
+    private static bool IsAvailable(int index)
     {
-        var result = TryGuardianAtIndex(preferredIndex);
-        if (result >= 0) return result;
-
-        for (var i = 0; i <= 3; i++)
-        {
-            if (i == preferredIndex) continue;
-
-            result = TryGuardianAtIndex(i);
-            if (result >= 0) return result;
-        }
-
-        return 0;
-    }
-
-    private int TryGuardianAtIndex(int index)
-    {
-        var child = MagicQuarters.Guardians.GetChild(index);
-
-        var guardian = new Guardian(parent: child);
-        if (guardian.IsVisible() && guardian.IsUnlocked)
-            return index;
-
-        return 0;
+        var guardian = new Guardian(parent: MagicQuarters.Guardians.GetChild(index));
+        return guardian.IsVisible() && guardian.IsUnlocked;
     }
 
     private IEnumerator TryTrainGuardian(GameButton guardianBtn, GameButton trainBtn, bool useStrangeDust)
@@ -117,16 +92,5 @@ public class GuardianTrainingTask : BotTask
 
         Debug($"[FAILED] Invalid guardian_index '{value}'. Using default '0'.");
         return 0;
-    }
-
-    private bool GetUseStrangeDust()
-    {
-        if (_useStrangeDust == null)
-        {
-            Debug("[FAILED] Missing use_strange_dust entry. Using default 'false'.");
-            return false;
-        }
-
-        return _useStrangeDust.Value;
     }
 }

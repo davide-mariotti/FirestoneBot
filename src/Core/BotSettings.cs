@@ -83,12 +83,10 @@ public static class BotSettings
             "free_speedup_seconds",
             170.0f,
             "Free Speedup Threshold (seconds)",
-            "Some timers in the game can be sped up for free if the remaining time is below this threshold (default: 170 seconds = 2 minutes and 50 seconds). " +
-            "The maximum allowed value is 180 seconds (3 minutes). " +
-            "Set to 0 to disable free speedup. " +
-            "Adjust this value to account for lag or future game changes. " +
-            "Affects firestone researches, missions, experiments, and map reset timers. " +
-            "If the remaining time is less than or equal to this value, the speedup is free (no gems required)."
+            "A timer with this many seconds or fewer left can be sped up for free (no gems), so the bot " +
+            "comes back as soon as one enters this window. Applies to Firestone research, map missions " +
+            "and experiments. The game's free window is 3 minutes; the default of 170 leaves a margin " +
+            "for lag. Clamped between 0 and 180; 0 disables it."
         );
 
         _lowResourceMode = _category.CreateEntry("low_resource_mode", true, "Low Resource Mode",
@@ -107,22 +105,19 @@ public static class BotSettings
             "Clamped between 0 and 5. Default: 0.");
 
         _windowWidth = _category.CreateEntry("window_width", 640, "Window Width",
-            "The game window's client-area width applied when low_resource_mode is enabled. Default: " +
-            "640 (matches the previous fixed size). Only change this together with window_height if " +
-            "you also enable window_grid_enabled below - there's no reason to want a bigger window " +
-            "while low_resource_mode is on otherwise.");
+            "The game window's client-area width when low_resource_mode is enabled. Default: 640. " +
+            "Change it together with window_height, typically for window_grid_enabled.");
 
         _windowHeight = _category.CreateEntry("window_height", 480, "Window Height",
-            "The game window's client-area height applied when low_resource_mode is enabled. Default: " +
-            "480 (matches the previous fixed size). See window_width.");
+            "The game window's client-area height when low_resource_mode is enabled. Default: 480. " +
+            "See window_width.");
 
         _windowGridEnabled = _category.CreateEntry("window_grid_enabled", false, "Window Grid Enabled",
             "When enabled (and low_resource_mode is also on), moves this instance's window to a fixed " +
             "position in a grid on the primary monitor, so multiple simultaneous instances can all be " +
             "visible at once without manual dragging. Which cell this instance uses is derived from " +
             "the 'Steam-N' number in its own install path (Steam-0, Steam-1, ...), filling the grid " +
-            "left-to-right then top-to-bottom. New feature, 2026-09-20 - built and tested on Steam-0 " +
-            "only so far, not yet confirmed safe for the rest of the fleet.");
+            "left-to-right then top-to-bottom.");
 
         _windowGridColumns = _category.CreateEntry("window_grid_columns", 5, "Window Grid Columns",
             "How many instances per row when window_grid_enabled is on. Default: 5 - pair with " +
@@ -147,35 +142,22 @@ public static class BotSettings
     }
 
     /// <summary>
-    ///     Live-confirmed, 2026-09-18 (this session, then corroborated by an actual prior measured
-    ///     attempt at this exact problem): applying this ONLY once at startup measurably raised GPU
-    ///     usage instead of lowering it (~6% -&gt; ~17% observed) - the host game's own scene load (and,
-    ///     per that prior attempt's own measurements, its own logic on further frames/scene loads
-    ///     after that) silently resets vSyncCount and/or targetFrameRate back. The prior attempt's
-    ///     fix, which measured ~125% CPU/instance down to ~18-25%, split this into a one-time setup
-    ///     (this method - quality level, audio, resolution) and a separate CHEAP reassertion of just
-    ///     vSyncCount+targetFrameRate called every single frame indefinitely, forever - see
-    ///     ReassertFrameRateCap and Main.OnUpdate. Idempotent and safe to call more than once.
+    ///     One-time part of low_resource_mode (quality preset, audio, resolution, window position).
+    ///     The game later resets vSync and the frame-rate cap on its own, so those two are reasserted
+    ///     every frame by ReassertFrameRateCap instead - an apply-once version was measured to raise GPU
+    ///     use rather than lower it. Safe to call more than once.
     /// </summary>
     public static void ApplyLowResourceModeOnce()
     {
         if (!_lowResourceMode.Value) return;
 
-        // SetQualityLevel applies an entire preset that silently resets vSyncCount as a side effect
-        // - call it here, once, then let ReassertFrameRateCap keep vSyncCount/targetFrameRate correct
-        // afterward instead of re-running this whole (comparatively expensive) preset switch forever.
+        // A quality preset also resets vSyncCount, so it goes first and the reassert fixes that.
         QualitySettings.SetQualityLevel(Mathf.Clamp(_renderQualityLevel.Value, 0, 5), true);
         ReassertFrameRateCap();
 
-        // The bot reads game state from the Unity scene hierarchy, never from audio - muting removes
-        // real per-instance mixing/DSP cost with zero effect on bot behavior.
+        // The bot never reads audio or rendered pixels, so muting and shrinking the render target
+        // only save work.
         AudioListener.pause = true;
-
-        // The bot reads game state from the Unity scene hierarchy, never from rendered pixels -
-        // shrinking the actual render target cuts real per-instance fill-rate/GPU cost with zero
-        // effect on bot behavior. Configurable (window_width/window_height, both default 640x480,
-        // matching the old hardcoded call) instead of fixed - see WindowLayout for why: tiling many
-        // instances into an on-screen grid needs a smaller, grid-cell-sized window, not a bigger one.
         Screen.SetResolution(Mathf.Max(1, _windowWidth.Value), Mathf.Max(1, _windowHeight.Value), false);
 
         Logger.Info($"Low resource mode applied: targetFrameRate={Application.targetFrameRate}, " +
@@ -187,16 +169,12 @@ public static class BotSettings
                 _windowHeight.Value, Mathf.Max(0, _windowGridFirstInstance.Value));
     }
 
-    /// <summary>
-    ///     Cheap (two property writes, no logging) - meant to be called every frame, forever, from
-    ///     Main.OnUpdate. See ApplyLowResourceModeOnce for why a single one-shot apply isn't durable.
-    /// </summary>
+    /// <summary>Two property writes, no logging - cheap enough for every frame (see Main.OnUpdate).</summary>
     public static void ReassertFrameRateCap()
     {
         if (!_lowResourceMode.Value) return;
 
-        // Must be set (and confirmed 0) before targetFrameRate below - Unity only reads
-        // targetFrameRate at all while vSyncCount == 0.
+        // Unity only honours targetFrameRate while vSyncCount is 0.
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = Mathf.Clamp(_targetFrameRate.Value, 5, 60);
     }

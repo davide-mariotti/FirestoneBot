@@ -5,12 +5,10 @@ using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Guild;
 
-/// <summary>Personal Tree only (Guild Tree is never touched - shared with guildmates, requires
-/// leader/officer rank per the wiki, out of scope per the user).</summary>
+/// <summary>The Personal Tree only - the Guild Tree is shared and needs officer rank.</summary>
 public static class TreeOfLife
 {
-    // Names in tier order, matching treeOfLifePersonalUpgrade (0)-(19) 1:1 - confirmed via UnityPy +
-    // the wiki's Personal Tree table (exactly 20 rows, same count as the live node scan).
+    // Matches treeOfLifePersonalUpgrade (0)..(19) one to one, in the wiki table's order.
     private static readonly string[] PersonalUpgradeNames =
     {
         "Attribute Damage", "Attribute Health", "Attribute Armor",
@@ -21,18 +19,8 @@ public static class TreeOfLife
         "Tank Specialization", "Damage Specialization", "Healer Specialization"
     };
 
-    // Per the user: prioritize this group over the rest - not strictly ranked against each other,
-    // the cheapest (lowest current level) of whichever are affordable wins, same as the other tier.
-    // Mirrors the "Raining Gold always wins" override already used for Firestone/Meteorite Research,
-    // generalized from one name to a small set. "Battle Cry" added 2026-09-23 per the user (matches
-    // an external tips guide's "war cry" priority) - confirmed via the wiki as a real Personal Tree
-    // node (fellowship effect contribution), unlike "Librarian" (research speed), which the wiki
-    // confirms only exists in the Talent Tree/Amulets/Guild Perk, never the Personal Tree.
-    // "Miner" added 2026-09-28: the F2P guide's Steam source gives the centre of the Personal Tree as
-    // Battlecry, Miner, Firestone Finder, Raining Gold - Miner was the only one of the four missing
-    // here. It's index 6 in PersonalUpgradeNames, so no new name had to be invented. Still a flat
-    // group, not a ranking: the guide's ordering is about what to reach first on a fresh tree, while
-    // this task spreads investment across whatever is affordable (see the "cheapest wins" note above).
+    // Bought before any other upgrade, cheapest first among themselves - a group, not a ranking. The
+    // F2P guide's Steam source gives the tree's centre as Battlecry, Miner, Firestone Finder, Raining Gold.
     private static readonly HashSet<string> PriorityUpgrades = new()
     {
         "Raining Gold", "Firestone Finder", "Firestone Effect", "Battle Cry", "Miner"
@@ -46,24 +34,15 @@ public static class TreeOfLife
 
     public static GameButton PersonalNode(int index) => new(NodePath(index));
 
-    /// <summary>Current level, read directly off the grid node - no separate preview popup was found
-    /// for this feature (unlike Talents/Firestone Research/Meteorite Research), so this doubles as
-    /// the cost tie-break: the wiki confirms cost scales purely with an upgrade's own current level
-    /// (uniformly across all 20), so "lowest level" and "cheapest to buy next" are the same thing.</summary>
+    // Cost grows only with an upgrade's own level, so the lowest level is also the cheapest.
     public static int PersonalNodeLevel(int index) =>
         new GameText(NodePath(index) + Paths.TreeOfLifeLoc.NodeLevelTxt).GetParsedInt();
 
     public static IEnumerator Close => new GameButton(Paths.TreeOfLifeLoc.CloseBtn).Click();
 
     /// <summary>
-    ///     Confirms the purchase in the preview popup opened by clicking a node (live-confirmed,
-    ///     2026-09-18 - PersonalNode's click alone only opens this popup, it doesn't buy directly).
-    ///     Safe no-op via IsClickable() if the upgrade turned out to be maxed (no buy button in that
-    ///     state). Always attempts the close after, in case buying doesn't auto-dismiss the popup.
-    ///     Live-confirmed, 2026-09-18: buyUpgradeButton's own IsClickable() doesn't reliably predict
-    ///     real affordability - clicking it while short on Expedition Tokens pops the game's generic
-    ///     "You need N more..." validation message (see HasInsufficientFundsMessage) instead of
-    ///     silently failing. Check that after calling this and stop the caller's loop if it's up.
+    ///     Buys in the preview a node click opens, then closes it. Running out of tokens shows the
+    ///     CurrencyMissing popup rather than disabling the button - callers check for it.
     /// </summary>
     public static IEnumerator ConfirmPurchase()
     {

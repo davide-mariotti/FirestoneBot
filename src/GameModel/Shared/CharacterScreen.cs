@@ -11,12 +11,8 @@ namespace Firebot.GameModel.Shared;
 public static class CharacterScreen
 {
     /// <summary>
-    ///     Live-confirmed, 2026-09-20 (TalentsTask): a single click on the avatar icon doesn't reliably
-    ///     open the Character popup when called very soon after the game/scene finishes loading (e.g.
-    ///     the first task to run right after mod start) - no error ever logged either way, the click
-    ///     just silently has no effect that first time, succeeding a couple of seconds later on a
-    ///     retry once the screen's own UI has caught up. Checks IsVisible before/after each attempt so
-    ///     it's a safe no-op once genuinely open, and never re-clicks (which could instead CLOSE it).
+    ///     The avatar click is sometimes ignored right after the scene loads, so this retries. It
+    ///     checks IsOpen before every click and never clicks an open screen, which would close it.
     /// </summary>
     public static IEnumerator Open()
     {
@@ -27,9 +23,6 @@ public static class CharacterScreen
         }
     }
 
-    /// <summary>Whether the Character popup is genuinely open right now - check this after Open() if
-    /// what follows would misbehave against a screen that never actually opened (e.g. TalentsTask's
-    /// guide calibration, which must never run against unresolved/misread data).</summary>
     public static bool IsOpen => new GameElement(Paths.MenusLoc.CharacterLoc.Root).IsVisible();
 
     public static IEnumerator Close => new GameButton(Paths.MenusLoc.CharacterLoc.CloseBtn).Click();
@@ -44,7 +37,7 @@ public static class CharacterScreen
     public static IEnumerator OpenWeeklyQuestsSubTab =>
         new GameButton(Paths.MenusLoc.CharacterLoc.QuestsLoc.WeeklyTabBtn).Click();
 
-    /// <summary>Shared element - read it right after selecting the tab whose countdown you want.</summary>
+    /// <summary>Countdown of whichever quest tab is selected - read it right after selecting one.</summary>
     public static DateTime QuestsRenewTime => new GameText(Paths.MenusLoc.CharacterLoc.QuestsLoc.RenewTxt).Time;
 
     public static List<GameButton> DailyQuestClaimButtons() =>
@@ -53,11 +46,7 @@ public static class CharacterScreen
     public static List<GameButton> WeeklyQuestClaimButtons() =>
         QuestClaimButtons(Paths.MenusLoc.CharacterLoc.QuestsLoc.WeeklyQuestsGridRoot);
 
-    /// <summary>
-    ///     Every quest slot's claim button in the given grid - clicking one that isn't actually
-    ///     completable yet is a safe no-op (same as every other button in this codebase), so callers
-    ///     can just click all of them without checking completion state first.
-    /// </summary>
+    // Every quest's claim button; clicking one that isn't complete yet is a no-op.
     private static List<GameButton> QuestClaimButtons(string gridRootPath)
     {
         var grid = new GameElement(gridRootPath);

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town;
-using Firebot.Infrastructure;
 using Firebot.Utilities;
 using MelonLoader;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
@@ -10,29 +9,11 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 namespace Firebot.Tasks.Town;
 
 /// <summary>
-///     Progresses the daily quest "Gamer" (play 10 times in the Tavern) - level 15 per the wiki quest
-///     table. Never automated before.
-///     Card draws cost game tokens (NOT beer, despite the name suggesting otherwise - confirmed via
-///     the wiki: "Card draws require Game Tokens"). Plays up to 10 times but always leaves at least
-///     min_token_reserve tokens unspent, so tomorrow's 10 plays aren't blocked either. See
-///     BeerExchangeTask for how tokens get topped up from passively-accumulated beer.
-///     Live-confirmed, 2026-09-18 (user screenshots): "Play 1" costs 1 token, "Play 10" costs 10
-///     (linear) - user-requested optimization: use the x10 multiplier for one round instead of 10
-///     separate x1 rounds whenever there's enough headroom above the reserve for it, same idea as
-///     Miner Quest's ArcaneCrystal quantity shortcut. Each round is Play + picking one of the
-///     resulting card stacks (see Tavern.PlayRound) - Play alone doesn't complete anything.
-///     Per the user (2026-09-20): raised the reserve to 10 (was 5), but the reserve can be bypassed
-///     ONCE PER DAY if it's still blocking today's quest from completing - a slow token-income day
-///     shouldn't cost a whole day's quest. Tracked via reserve_override_used_date (today's date once
-///     spent) so it can't be reused on a later run the same day; only counts as "used" once it
-///     actually plays an extra round, so a day with genuinely 0 tokens left keeps the bypass available
-///     for a later run once some tokens trickle back in.
-///     Per the user (2026-09-23): once all 10 plays for today are done, skip the whole routine (no
-///     Tavern screen open, no token/quantity reads) until the date changes - previously this reopened
-///     Tavern and re-checked everything every 6h even on a day already fully played, wasted clicks
-///     across 16 bot instances. Tracked via plays_done_today/plays_done_date, separate from the
-///     reserve override tracking above (a day can finish its 10 plays without ever needing the
-///     override).
+///     The daily "Gamer" quest: 10 Tavern card draws, paid in game tokens (BeerExchangeTask turns
+///     beer into tokens). Plays all remaining draws in one round when the quantity selector offers
+///     that exact number, and never goes below min_token_reserve - except once per game-day, when the
+///     reserve is the only thing keeping the quest from finishing. Once the 10 draws are done, the
+///     task waits for the next game-day.
 /// </summary>
 public class GamerQuestTask : BotTask
 {
@@ -108,10 +89,7 @@ public class GamerQuestTask : BotTask
         var remaining = PlayCount - alreadyDone;
         var playsDone = 0;
 
-        // Only attempted with enough headroom above the reserve for the full remaining-plays cost
-        // (confirmed linear: 1 token/play) - if that's wrong for some reason, the game's own
-        // affordability gate on the button keeps it non-clickable and this safely falls through to
-        // the per-round loop below.
+        // One bulk round when the reserve leaves room for all of it (a play costs 1 token per draw).
         if (remaining > 1 && Tavern.GameTokenCount - minReserve >= remaining)
         {
             yield return Tavern.TrySetPlayQuantityTo(remaining);
@@ -123,7 +101,7 @@ public class GamerQuestTask : BotTask
             }
             else
             {
-                yield return Tavern.TrySetPlayQuantityTo(1); // revert so the per-round loop below is correct
+                yield return Tavern.TrySetPlayQuantityTo(1); // the loop below plays one draw at a time
             }
         }
 

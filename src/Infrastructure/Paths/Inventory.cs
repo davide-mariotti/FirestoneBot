@@ -1,10 +1,6 @@
 namespace Firebot.Infrastructure;
 
-/// <summary>
-///     The "bag" screen (4 tabs: items, scrolls, chests, currencies) and the chest-opening popup
-///     flow. No prior precedent at all. Entry button confirmed by the user (battle screen "bag" icon) -
-///     same bottomSideUIDesktop HUD region as Path of Glory's button, see that comment in Battle.cs.
-/// </summary>
+/// <summary>The bag screen and the chest-opening popups.</summary>
 public static partial class Paths
 {
     public static class InventoryLoc
@@ -15,37 +11,19 @@ public static partial class Paths
 
         public const string ChestsTabBtn = Root + "/submenuButtons/chests";
 
-        public const string ItemsTabBtn = Root + "/submenuButtons/inventoryItems";
-
-        // Live-confirmed, 2026-09-17: "submenus" has exactly one child, "items" - the 4 tabs (see
-        // class doc above) share this single content pane rather than each having their own
-        // "submenus/<tabName>/..." tree (an earlier attempt to "fix" this to "submenus/chests/..."
-        // was wrong and reverted - that path doesn't exist at all). This path itself was fine all
-        // along; the real bug was a timing race, see CollectorQuestTask.
+        // All four tabs share this one content pane; there is no submenus/<tab>/ tree.
         public const string ContentRoot = Root + "/submenus/items/ScrollView/Viewport/Content";
 
-        // Live-confirmed, 2026-09-17: the real slot name is "Common" (capitalized, no "chestbox"
-        // suffix) - the previously-assumed "commonChestbox" never existed at all. Siblings found
-        // the same way: "Uncommon", "Rare", "Epic" (not individually wired up - the generic scan in
-        // CollectorQuestTask picks up any of these by not being in KnownNonChestSlots). Two more
-        // gear-chest rarities surfaced live 2026-09-26: "Wooden" and "Iron" (plus "Legendary", also
-        // undocumented until then) - same generic-scan handling, no dedicated constant needed.
-        public const string CommonChestSlot = "/Common";
+        // Gear chest slots relative to ContentRoot, by rarity name. Seen live so far: Wooden, Iron,
+        // Common, Uncommon, Rare, Epic, Legendary. Only the cheapest are ever opened.
+        public const string WoodenChestSlot = "/Wooden";
 
-        // Confirmed non-chest slot names sharing this same Content list - excluded when scanning for
-        // "any other openable chest", since these aren't chests at all (mystery box/gift claims,
-        // stat-boost consumables). jewelChest/celestialChest were excluded here too until the user
-        // asked to open those as well (they pile up unopened from Pharaoh's Vault rewards) - simplest
-        // to fold into Collector's existing generic scan rather than a separate task, at the cost of
-        // Collector now opening more than just the "Collector" quest's gear chests.
-        public static readonly string[] KnownNonChestSlots =
-        {
-            "mysteryBox", "oraclesGift", "midasTouch", "StrangeDust", "Speed"
-        };
+        public const string IronChestSlot = "/Iron";
+
+        public const string CommonChestSlot = "/Common";
     }
 
-    // Opened by clicking a chest slot in InventoryLoc.ContentRoot. Found via a fresh UnityPy scan -
-    // not in the docs, and no prior precedent (chest opening was never automated before).
+    // Opened by clicking a chest slot.
     public static class ChestOpenPreviewLoc
     {
         private const string Root = MenusLoc.Root + "/popups/ChestOpenPreview";
@@ -57,8 +35,7 @@ public static partial class Paths
         public const string OpenX10Btn = Root + "/bg/openingOptions/openx10";
     }
 
-    // Results screen shown after a batch open - has its OWN copy of the same openingOptions buttons,
-    // letting you chain more batch-opens of the same chest type without navigating back.
+    // The results screen after an open, with its own copy of the open buttons to chain more.
     public static class ChestOpeningLoc
     {
         private const string Root = MenusLoc.Root + "/popups/ChestOpening";

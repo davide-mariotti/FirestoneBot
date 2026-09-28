@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
@@ -6,6 +5,7 @@ using Firebot.Utilities;
 
 namespace Firebot.GameModel.Features.Town.Library.FirestoneResearch;
 
+/// <summary>The popup a Firestone Research node click opens.</summary>
 public static class Preview
 {
     public static string Name => new GameText(Paths.MenusLoc.FirestoneResearchPreviewLoc.NameTxt).GetParsedText();
@@ -22,9 +22,6 @@ public static class Preview
             return StringUtils.TryParseIntFromString(text, out var level) ? level : 0;
         }
     }
-
-    public static TimeSpan TimeRequired =>
-        TimeParser.ParseFrom(new GameText(Paths.MenusLoc.FirestoneResearchPreviewLoc.RealTimeTxt).GetParsedText());
 
     public static IEnumerator Start => new GameButton(Paths.MenusLoc.FirestoneResearchPreviewLoc.ActivateBtn).Click();
 

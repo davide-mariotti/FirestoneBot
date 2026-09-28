@@ -1,7 +1,6 @@
 namespace Firebot.Infrastructure;
 
-/// <summary>Generic paths used by Core.Watchdog to sweep and close any leftover popup/event/menu -
-/// not feature-specific, reused across whatever happens to be open at the time.</summary>
+/// <summary>The three screen roots Watchdog sweeps, and where their close/collect buttons sit.</summary>
 public static partial class Paths
 {
     public static class WatchdogLoc

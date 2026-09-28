@@ -10,21 +10,10 @@ using Logger = Firebot.Core.Logger;
 namespace Firebot.BotActions;
 
 /// <summary>
-///     Taps the flying bonus objects (2 dragon-with-beer variants, 2 meteorite-hunter variants - see
-///     Paths.FlyingBonusHunterLoc) as soon as they cross the battle screen. New feature, 2026-09-20 -
-///     the old (pre-rewrite) bot config had a [flying_bonus_hunter] section for this exact thing
-///     ("Taps the flying dragon-with-beer and meteorite-hunter bonuses when they cross the screen"),
-///     but it was never ported over to this codebase - left as an explicit Open Point (see
-///     PLAN.md/TESTING.md) until located live this session via a scene-wide recursive name search
-///     (see BotManager's former scout diagnostic, removed once this confirmed the real paths).
-///     Structurally a standalone polling loop (like HeroUpgrade/AutoRetreat), not a scheduled BotTask
-///     competing for the scheduler's one-task-per-tick slot - these are highly transient (visible only
-///     while actually flying across the screen for a few seconds), so this needs to check far more
-///     often than the scheduler's typical task cadence (hours) to have any real chance of catching one
-///     before it's gone.
-///     Single click per target, no follow-up handling - unverified whether that's the whole
-///     interaction or whether a claim popup can appear after; watch the log/screen the first few times
-///     this actually fires live and extend if a popup shows up unclaimed.
+///     Taps the flying bonuses (two dragons carrying beer, two meteorite hunters) as they cross the
+///     battle screen. They're visible for only a few seconds, so this is its own fast polling loop
+///     rather than a scheduled task. It's a single click each - whether a reward popup can follow
+///     hasn't been verified live.
 /// </summary>
 public static class FlyingBonusHunter
 {
@@ -50,9 +39,7 @@ public static class FlyingBonusHunter
         if (_isInitialized) return;
 
         var clazzName = StringUtils.Humanize(nameof(FlyingBonusHunter));
-        // Matches the old (pre-rewrite) config's own section name exactly - see this class's doc
-        // comment - rather than the usual Humanize-derived id, so anyone who remembers that name
-        // finds the same section here.
+        // Fixed id, not Humanize-derived, to match the section name older configs already use.
         const string sectionId = "flying_bonus_hunter";
 
         var section = MelonPreferences.CreateCategory(sectionId, $"{clazzName} Settings");

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town;
-using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
@@ -10,11 +9,8 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 namespace Firebot.Tasks.Town;
 
 /// <summary>
-///     Sub-task requested alongside "Gamer" (see GamerQuestTask): converts passively-accumulated
-///     beer into Tavern game tokens whenever the BeerExchange notification badge is up, so there are
-///     always enough tokens for the day's 10 card draws. No prior precedent. See
-///     Paths.TavernMarketLoc's doc comment for the real (live-confirmed) item structure - only the
-///     confirmed beer-priced item/button is ever clicked here.
+///     Turns accumulated beer into Tavern game tokens, 5 at a time, on the BeerExchange badge and every
+///     2 hours - so GamerQuestTask always has tokens for its draws. Only the beer-priced offer is used.
 /// </summary>
 public class BeerExchangeTask : BotTask
 {
@@ -27,15 +23,13 @@ public class BeerExchangeTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // Fast path - safe no-op if not up.
         yield return Notifications.BeerExchange;
 
-        // Guaranteed path regardless of the notification - same reasoning as every other task.
         yield return TownScreen.Open;
         yield return TownScreen.OpenTavern;
         yield return Tavern.OpenMarket;
 
-        var buyBtn = new GameButton(Paths.TavernMarketLoc.BuyFiveTokensWithBeerBtn);
+        var buyBtn = TavernMarket.BuyFiveTokensWithBeerBtn;
         while (buyBtn.IsClickable()) yield return buyBtn.Click();
 
         yield return TavernMarket.Close;

@@ -9,12 +9,8 @@ using Firebot.Infrastructure;
 namespace Firebot.Tasks.Guild;
 
 /// <summary>
-///     Forbidden Knowledge (Town -&gt; Guild -&gt; Forbidden Knowledge, level 100) - 3 separate upgrade
-///     boards (Kramatak/Ledra/Yamanoth), each spending only that same god's Tomes of Power (earned via
-///     ChaosRiftTask). For each board: upgrades every clickable node (stops early on that board if
-///     tomes run out, via the shared CurrencyMissingPopup - same safety pattern as TreeOfLife/War
-///     Machines), then tries "Recruit [God]" (safe no-op unless every node is already maxed and 50
-///     tomes are on hand, per the wiki).
+///     Forbidden Knowledge: on each of the three boards, upgrades every node its own god's Tomes of
+///     Power can pay for, then tries "Recruit", which only works once the board is maxed.
 /// </summary>
 public class ForbiddenKnowledgeTask : BotTask
 {
@@ -34,8 +30,7 @@ public class ForbiddenKnowledgeTask : BotTask
 
         if (!ForbiddenKnowledge.IsVisible)
         {
-            // A one-off timing hiccup rather than a real problem - don't hardcode NextRunTime here,
-            // let BotManager's own default idle-retry floor apply instead.
+            // Usually a timing hiccup: no NextRunTime, so the scheduler's short idle retry applies.
             yield return TownGuild.Close;
             yield break;
         }
@@ -70,7 +65,7 @@ public class ForbiddenKnowledgeTask : BotTask
 
             if (!CurrencyMissingPopup.IsShowing) continue;
             yield return CurrencyMissingPopup.Close;
-            yield break; // out of this board's Tomes of Power - no point checking the rest
+            yield break; // this board's tomes ran out
         }
     }
 }

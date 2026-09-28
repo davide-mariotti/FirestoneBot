@@ -4,24 +4,14 @@ using Firebot.TalentEngine;
 namespace Firebot.GameModel.Features.Character;
 
 /// <summary>
-///     Firestone's real 89-node, 46-tier talent tree, as a <see cref="TalentTreeDefinition" /> for
-///     <see cref="TalentEngine.TalentAllocator" />. Names and grouping live-verified node-by-node on
-///     Steam-0, 2026-09-24 (opened every talentInteraction (0)-(88) and read the preview's real
-///     "talentName" text) - this replaced an earlier wiki-transcribed catalog that had two nodes
-///     wrong: index 4 is really "Leader - Auto Abilities" (not "Heroes Auto Abilities") and index 8 is
-///     really "Auto attacks" (not "Guardian Auto Attack") - both were guesses inferring which of the
-///     source guide's two "Auto Abilities" entries matched which catalog slot, and guessed wrong on the
-///     second one. Tier cumulative point thresholds (the wiki's per-tier "spend N total points to
-///     unlock this tier") are unchanged from the wiki and were never in question.
-///     No node has a PrerequisiteIndex set - see TalentsTask's own doc comment for why the tree's real
-///     per-node "direct predecessor" prerequisites are deliberately left unmapped and handled reactively
-///     instead (Paths.TalentPreviewLoc.LockedRoot, checked live at investment time).
+///     Firestone's talent tree (89 nodes, 46 tiers) for <see cref="TalentEngine.TalentAllocator" />.
+///     Node names were read live from every talentInteraction preview; tier thresholds come from the
+///     wiki. No node has a prerequisite: the game's per-node "previous talent" locks aren't mapped and
+///     are discovered at investment time instead (see TalentsTask).
 /// </summary>
 public static class TalentTreeData
 {
-    // (Name, MaxRank) per node, grouped by tier in the exact order the wiki's 46-tier table (and the
-    // live grid) lists them - same shape as the old Catalog, only the two names above corrected and
-    // capitalization normalized to match what the game actually displays.
+    // (Name, MaxRank) per node, tier by tier in the live grid's order.
     private static readonly (string Name, int MaxRank)[][] Tiers =
     {
         new[] { ("All main attributes", 25) }, // Tier 1 (0 pts)
@@ -91,6 +81,4 @@ public static class TalentTreeData
 
         return new TalentTreeDefinition(nodes, Thresholds);
     }
-
-    public static string NodeName(int index) => Tree.Nodes[index].Name;
 }

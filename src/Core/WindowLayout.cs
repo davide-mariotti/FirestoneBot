@@ -8,19 +8,11 @@ using UnityEngine;
 namespace Firebot.Core;
 
 /// <summary>
-///     Optional (opt-in via window_grid_enabled) tiling of this instance's OS window into a fixed grid
-///     cell, so N simultaneous instances can all be visible on one monitor without manual dragging.
-///     New feature, requested by the user, 2026-09-20 - built and tested on Steam-0 only per their
-///     standing instruction; NOT yet rolled out to the rest of the fleet.
-///     Two independent pieces: BotSettings.ApplyLowResourceModeOnce sets the CLIENT area size (via
-///     Unity's own Screen.SetResolution, same call low_resource_mode already made unconditionally -
-///     now configurable instead of hardcoded 640x480 when grid mode is on) - this class only moves the
-///     OS window's position afterward (SWP_NOSIZE), it never resizes. Keeping those two concerns split
-///     avoids a fight between Unity's own window-sizing (driven by Screen.SetResolution, re-applied
-///     every scene load) and a second, independent resize call fighting over the same window rect.
-///     The grid pitch is the configured client size plus the window's VISIBLE chrome (title bar and
-///     thin border, measured live via DWM - see MeasureFrame), so cells tile edge to edge without
-///     overlapping regardless of Windows' title bar height or the game's window style.
+///     Optional (window_grid_enabled): moves this instance's window into a fixed grid cell so many
+///     instances fit on one monitor. The window size is set by BotSettings through Screen.SetResolution;
+///     this class only moves the window (SWP_NOSIZE) - two independent resizes would fight over it.
+///     The grid pitch is the client size plus the window's visible frame, measured through DWM, so the
+///     cells tile edge to edge whatever the title bar height.
 /// </summary>
 public static class WindowLayout
 {
@@ -35,13 +27,12 @@ public static class WindowLayout
             return;
         }
 
-        // Cell 0 belongs to window_grid_first_instance, so a PC hosting Steam-17..34 starts at the
-        // top-left instead of 3 empty rows below the bottom of the screen.
+        // Cell 0 belongs to window_grid_first_instance, so a PC hosting Steam-17..34 starts top-left.
         var index = instance.Value - firstInstance;
         if (index < 0)
         {
             Logger.Debug(
-                $"[WindowLayout] Instance -{instance} is below window_grid_first_instance={firstInstance} - skipping.");
+                $"[WindowLayout] Steam-{instance} is below window_grid_first_instance={firstInstance} - skipping.");
             return;
         }
 
@@ -54,9 +45,7 @@ public static class WindowLayout
 
         var frame = MeasureFrame(hwnd);
 
-        // Pitch = the VISIBLE window (client + title bar + thin border), so each row starts right
-        // below the previous row's frame instead of 32px over its title bar. The window is then
-        // shifted by the invisible resize border so the visible edges, not the window rect, line up.
+        // The window is shifted by its invisible resize border so the visible edges line up.
         var pitchX = cellWidth + frame.ChromeWidth;
         var pitchY = cellHeight + frame.ChromeHeight;
         var col = index % columns;
@@ -67,27 +56,16 @@ public static class WindowLayout
         SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, SwpNoSize | SwpNoZOrder | SwpNoActivate);
 
         Logger.Info(
-            $"[WindowLayout] Instance -{instance}: grid cell ({col},{row}) of {columns} columns, pitch {pitchX}x{pitchY} -> moved to ({x},{y}).");
+            $"[WindowLayout] Steam-{instance}: grid cell ({col},{row}) of {columns} columns, pitch {pitchX}x{pitchY} -> moved to ({x},{y}).");
     }
 
-    private readonly struct Frame
-    {
-        public readonly int ChromeWidth, ChromeHeight, InvisibleLeft, InvisibleTop;
-
-        public Frame(int chromeWidth, int chromeHeight, int invisibleLeft, int invisibleTop)
-        {
-            ChromeWidth = chromeWidth;
-            ChromeHeight = chromeHeight;
-            InvisibleLeft = invisibleLeft;
-            InvisibleTop = invisibleTop;
-        }
-    }
+    private readonly record struct Frame(int ChromeWidth, int ChromeHeight, int InvisibleLeft, int InvisibleTop);
 
     /// <summary>
-    ///     Title bar/border sizes don't depend on the window's size, so they're valid even if Unity
-    ///     hasn't applied the new Screen.SetResolution yet. DWM's extended frame bounds are the edges
-    ///     actually drawn; GetWindowRect also counts the invisible ~7px resize border on Windows 10/11.
-    ///     If DWM can't be queried, falls back to the full window rect (no invisible-border offset).
+    ///     Title bar and border sizes don't depend on the window size, so this is valid before Unity
+    ///     applies the new resolution. GetWindowRect also counts the invisible ~7px resize border of
+    ///     Windows 10/11; DWM's extended frame bounds are the edges actually drawn. Without DWM it falls
+    ///     back to the full window rect.
     /// </summary>
     private static Frame MeasureFrame(IntPtr hwnd)
     {
@@ -104,11 +82,7 @@ public static class WindowLayout
             visible.Top - window.Top);
     }
 
-    /// <summary>
-    ///     Application.dataPath is a plain Unity API (no OS process lookup needed) and always looks
-    ///     like ".../Steam-N/steamapps/common/Firestone/Firestone_Data" for this multi-instance setup
-    ///     - see the project's own memory notes on the Steam-0..14 layout.
-    /// </summary>
+    // Every instance is installed as ".../Steam-N/steamapps/common/Firestone/".
     private static int? DetectInstanceIndex()
     {
         var match = InstanceIndexPattern.Match(Application.dataPath);
@@ -116,9 +90,8 @@ public static class WindowLayout
     }
 
     /// <summary>
-    ///     Process.MainWindowHandle is not reliable here: the MelonLoader console is a second top-level
-    ///     window of this same process and can be picked instead, which then gets tiled while the game
-    ///     window stays put. Look up the Unity window by its class name instead.
+    ///     Looks the Unity window up by class name: Process.MainWindowHandle can return the MelonLoader
+    ///     console instead, which is another top-level window of the same process.
     /// </summary>
     private static IntPtr FindGameWindow()
     {
@@ -136,8 +109,7 @@ public static class WindowLayout
             return false;
         }, IntPtr.Zero);
 
-        // Fall back to the old lookup so a setup where the class name doesn't match keeps behaving
-        // exactly as before this change.
+        // A setup where the class name doesn't match still gets the plain lookup.
         return found != IntPtr.Zero ? found : Process.GetCurrentProcess().MainWindowHandle;
     }
 

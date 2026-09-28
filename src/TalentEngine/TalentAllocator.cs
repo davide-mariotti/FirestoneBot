@@ -5,19 +5,13 @@ using System.Linq;
 namespace Firebot.TalentEngine;
 
 /// <summary>
-///     Decides how to spend available talent points to push as deep into the tree as possible, then
-///     spend anything left over by priority. Stateless and pure - the caller (TalentsTask) supplies the
-///     account's current snapshot every time; nothing here remembers a previous run.
-///     Decision order, per call: (1) find the shallowest not-yet-open tier; if the points on hand can't
-///     reach it, stop advancing and go straight to leftover spending; (2) otherwise fill the shortfall
-///     from the highest-priority currently-open, uncapped, unlocked candidates first, spilling to the
-///     next priority only once the previous one is capped - this exactly reproduces "prefer high
-///     priority, give low priority only the strict minimum" without needing to compare specific
-///     combinations, because reaching a tier only depends on the TOTAL spent, never on which specific
-///     nodes hold it; (3) repeat, since crossing one tier may make the next one reachable with the same
-///     points; (4) once no deeper tier is reachable, spend whatever is left the same way (highest
-///     priority first) but without a target to stop at, so this phase maxes candidates out instead of
-///     giving only the minimum.
+///     Plans how to spend talent points: reach the deepest tier possible, then spend what's left. Pure -
+///     the caller passes the live state on every call.
+///     Each step closes the gap to the next tier with the open, uncapped, unlocked nodes, highest
+///     priority first, moving on only once a node is capped. Opening a tier depends only on the total
+///     spent, not on which nodes hold it, so this reaches the same depth as any other split while
+///     giving low-priority nodes only the strict minimum. When no deeper tier is reachable, the
+///     leftover points go the same way, maxing nodes out by priority.
 /// </summary>
 public static class TalentAllocator
 {
@@ -66,11 +60,10 @@ public static class TalentAllocator
             .ToList();
     }
 
-    /// <summary>Spends up to `points` across candidates in the order given (already priority-sorted),
-    ///     filling each one's remaining capacity before moving to the next. Mutates ranks/gains; returns
-    ///     nothing since the caller doesn't need how much was actually placed (the depth phase already
-    ///     checked total capacity is sufficient before calling; the leftover phase is fine spending
-    ///     less than `points` if candidates run out first).</summary>
+    /// <summary>
+    ///     Spends up to points on the candidates in order, filling each before the next. Placing fewer
+    ///     is fine: the depth phase checked the capacity first, and the leftover phase can run out.
+    /// </summary>
     private static void Fill(
         TalentTreeDefinition tree, int[] ranks, Dictionary<int, int> gains, List<int> candidates, int points)
     {
@@ -98,9 +91,10 @@ public static class TalentAllocator
         return null;
     }
 
-    /// <summary>Every node that's currently a legal investment target: its tier is already open, it has
-    ///     spare capacity, it's not reactively known-locked, and its own prerequisite (if any) is met.
-    ///     Sorted by priority descending, then by index for determinism.</summary>
+    /// <summary>
+    ///     The nodes that can take a point now - tier open, not capped, not known locked, prerequisite
+    ///     met - highest priority first, then by index.
+    /// </summary>
     private static List<int> GetCandidates(
         TalentTreeDefinition tree, int[] ranks, IReadOnlySet<int> lockedNodeIndices,
         int totalSpent, IReadOnlyDictionary<string, int> priorities, int defaultPriority)

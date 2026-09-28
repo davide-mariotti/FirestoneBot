@@ -16,7 +16,4 @@ public static class ExoticMerchant
     public static GameElement SellProductGrid => new(Paths.ExoticMerchantLoc.SellLoc.ProductGridRoot);
 
     public static GameElement UpgradesList => new(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradesListRoot);
-
-    public static IEnumerator NextUpgradeTree =>
-        new GameButton(Paths.ExoticMerchantLoc.UpgradesLoc.NextTreeBtn).Click();
 }

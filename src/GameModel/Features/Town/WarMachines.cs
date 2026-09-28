@@ -12,8 +12,6 @@ public static class WarMachines
 
     private static GameElement MachineGrid => new(Paths.WarMachinesLoc.MachineGridRoot);
 
-    /// <summary>Every owned war machine - "nextWarMachineUnlock" and "allWarMachinesButton" (trailing
-    /// siblings, not real machines) filtered out by name, confirmed via UnityPy.</summary>
     public static GameElement[] Machines =>
         MachineGrid.GetChildren().Where(m => m.Name.StartsWith("warMachineSquare (")).ToArray();
 
