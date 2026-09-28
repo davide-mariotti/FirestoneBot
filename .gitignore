@@ -22,6 +22,3 @@ global.json
 
 # Ignore analysis and reports directory
 Reports/
-
-## --- Local build output (never the game's live Mods folder, see src/Directory.Build.props) ---
-dist/

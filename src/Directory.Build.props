@@ -9,15 +9,9 @@
         <MelonLoaderDir>$(GameRoot)\MelonLoader</MelonLoaderDir>
         <MelonLoaderNetDir>$(MelonLoaderDir)\net6</MelonLoaderNetDir>
         <Il2CppAssembliesDir>$(MelonLoaderDir)\Il2CppAssemblies</Il2CppAssembliesDir>
-        <!-- Deliberately NOT $(GameRoot)\Mods: auto-deploying there on every build would silently
-             overwrite the live mod running on the ~20 bot instances with whatever's done so far,
-             even half-finished work. Builds land in dist/ instead; copy to the game's Mods folder
-             by hand once a change is actually ready to run live. -->
-        <ModsDir>$(MSBuildThisFileDirectory)..\dist</ModsDir>
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
         <Platforms>x64</Platforms>
         <PlatformTarget>x64</PlatformTarget>
     </PropertyGroup>

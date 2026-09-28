@@ -5,16 +5,10 @@
         <RootNamespace>Firebot</RootNamespace>
         <AssemblyName>firebot</AssemblyName>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <PlatformTarget>x64</PlatformTarget>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <PlatformTarget>x64</PlatformTarget>
-    </PropertyGroup>
 
     <ItemGroup>
-        <!-- TalentEngine is its own project (dependency-free, unit-tested) - exclude its files from
-             this project's default **/*.cs glob, which would otherwise recompile them here too. -->
+        <!-- TalentEngine is its own project (no game references, unit tested): keep this project's
+             default **/*.cs glob from compiling its files a second time. -->
         <Compile Remove="TalentEngine\**\*.cs" />
         <ProjectReference Include="TalentEngine\Firebot.TalentEngine.csproj" />
     </ItemGroup>
@@ -75,20 +69,4 @@
             <HintPath>$(Il2CppAssembliesDir)\Il2CppCoreASM.dll</HintPath>
         </Reference>
     </ItemGroup>
-
-    <Target Name="PostBuild" AfterTargets="Build">
-        <Message Text="[Deploy] Starting file distribution..." Importance="High"/>
-
-        <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll"
-              DestinationFolder="$(ModsDir)"
-              Condition="Exists('$(ModsDir)')"
-              SkipUnchangedFiles="true"/>
-
-        <Message Text="➡ Mod deployed to: $(ModsDir)" Importance="High"
-                 Condition="Exists('$(ModsDir)')"/>
-
-        <Warning
-                Text="Target directories not found. Check your Directory.Build.props path settings."
-                Condition="!Exists('$(ModsDir)')"/>
-    </Target>
 </Project>
