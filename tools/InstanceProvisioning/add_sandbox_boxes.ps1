@@ -1,7 +1,9 @@
-# Crea le sezioni box di Sandboxie ("[SteamB<N>]") per un intervallo di istanze, clonando le
+﻿# Crea le sezioni box di Sandboxie ("[SteamB<N>]") per un intervallo di istanze, clonando le
 # impostazioni di un box esistente già funzionante come template (di default SteamB1) e
-# assegnando un BorderColor diverso a ciascuna + BoxNameTitle/BoxAlias (titolo finestra con il
-# nome istanza, vedi set_box_titles.ps1). Idempotente: salta i box che esistono già.
+# assegnando a ciascuno un BorderColor diverso più BoxNameTitle=y e BoxAlias=Steam-<N>, che
+# mettono il nome dell'istanza nel titolo della finestra (chiavi di Sandboxie-Plus non
+# documentate, trovate nelle stringhe di SbieDll.dll). Il box template non viene toccato: se
+# non ha già quelle due righe, aggiungile a mano. Idempotente: salta i box che esistono già.
 #
 # DEVE essere eseguito come Amministratore (Sandboxie.ini è scrivibile solo da
 # Administrators/SYSTEM). Fa un backup automatico prima di modificare.

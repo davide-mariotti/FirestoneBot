@@ -8,8 +8,8 @@
 # Chromium/Electron (VS Code, steamwebhelper) muoiono con 0xE0000008 (OOM), evento 2004
 # "memoria virtuale insufficiente" ogni 5 minuti nel log di Sistema.
 #
-# Il trim del working set (trim_ram.ps1) NON aiuta: sposta pagine su pagefile ma il commit
-# resta identico. Serve alzare il limite con un pagefile fisso piu' grande.
+# Svuotare il working set dei processi (il vecchio "trim") NON aiuta: sposta pagine su pagefile
+# ma il commit resta identico. Serve alzare il limite con un pagefile fisso piu' grande.
 
 param(
     [int]$SizeMB = 57344   # 56 GB -> commit limit ~88 GB. Lascia ~24 GB liberi su C:

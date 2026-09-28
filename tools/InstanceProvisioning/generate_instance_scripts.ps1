@@ -1,5 +1,5 @@
 # Genera Avvia_Steam-N.bat / Ferma_Steam-N.bat per un intervallo di istanze, con lo stesso
-# identico formato usato per le istanze 0-16 su questo PC (vedi docs/MULTI_INSTANCE_SETUP.md).
+# identico formato usato per le istanze 0-16 su questo PC (vedi MULTI_INSTANCE_SETUP.md).
 #
 # Uso:
 #   .\generate_instance_scripts.ps1 -Start 17 -End 34 -OutDir "C:\Users\Admin\Desktop\Firestone Bots"

@@ -11,13 +11,16 @@ TMPro.TextMeshProUGUI, or a custom script) by cross-referencing globalgamemanage
 Usage:
     python unity_ui_mapper.py <RootGameObjectName> [<AnotherRoot> ...] > out.json
 
+Reads the default Steam install; for another one set FIRESTONE_DATA to its Firestone_Data folder,
+e.g. C:/Program Files (x86)/Steam-0/steamapps/common/Firestone/Firestone_Data.
+
 Find candidate root names first by grepping resources.assets object names (e.g. via a
-quick UnityPy scan), or by cross-referencing existing paths in src/Infrastructure/Paths.cs.
+quick UnityPy scan), or by cross-referencing existing paths in src/Infrastructure/Paths/.
 """
 
-import UnityPy, json, sys
+import UnityPy, json, os, sys
 
-BASE = "C:/Program Files (x86)/Steam/steamapps/common/Firestone/Firestone_Data"
+BASE = os.environ.get("FIRESTONE_DATA", "C:/Program Files (x86)/Steam/steamapps/common/Firestone/Firestone_Data")
 
 env = UnityPy.load(BASE + "/resources.assets")
 by_pathid = {obj.path_id: obj for obj in env.objects}
