@@ -19,12 +19,13 @@ public class DecoratedHeroesEventTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Events;
 
-    // Per the user (2026-09-26): buy Beer with Stars of Recognition instead of Golden key - Beer
-    // is more valuable to the account. Exchange list order (1 Legendary chest, 2 Golden chest, 3
-    // Beer, 4 Golden key, 5 Contract, 6 Blueprints, 7 Dragon blood) - the buy button's own
-    // IsClickable() enforces the "Claimed: X/50" cap, same as everywhere else in this codebase.
-    private const string TargetExchangeItem = "Beer";
-
+    // What to buy is now the shared EventExchangeConfig.PriorityItems order (Dragon blood ->
+    // Meteorite -> Beer), 2026-09-28: this shop's own list is 1 Legendary chest, 2 Golden chest,
+    // 3 Beer, 4 Golden key, 5 Contract, 6 Blueprints, 7 Dragon blood - so Dragon blood is what gets
+    // bought here, with Beer as the leftover sink and Meteorite a logged no-op (not sold in this
+    // shop). Replaces the previous single "Beer" target, which the F2P guide puts on its "avoid"
+    // list while Dragon blood is on its "buy" list. The buy button's own IsClickable() plus the
+    // CurrencyMissingPopup check enforce the "Claimed: X/50" cap and the real balance.
     // Per the user (2026-09-26): recheck hourly instead of every 4h, so newly-unlocked challenges
     // (they reset periodically per the screenshot's "Challenges will be renewed in: 17:25:05") and
     // exchange purchases happen promptly instead of piling up.
@@ -47,7 +48,8 @@ public class DecoratedHeroesEventTask : BotTask
 
             yield return DecoratedHeroesShop.OpenExchangeTab;
             yield return DecoratedHeroesShop.TrySetBestQuantity();
-            yield return DecoratedHeroesShop.BuyItem(TargetExchangeItem);
+            foreach (var item in EventExchangeConfig.PriorityItems)
+                yield return DecoratedHeroesShop.BuyItem(item);
 
             yield return DecoratedHeroesShop.Close;
 

@@ -19,11 +19,12 @@ public class NewPlayerEventTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Events;
 
-    // Per the user (2026-09-26): buy Meteorite instead of the first chest-type item - more valuable
-    // to the account. Exchange list order: Epic chest, Golden chest, Exotic coin, Pickaxe, Strange
-    // dust, Honor, Beer, Meteorite (last).
-    private const string TargetExchangeItem = "Meteorite";
-
+    // What to buy is now the shared EventExchangeConfig.PriorityItems order (Dragon blood ->
+    // Meteorite -> Beer), 2026-09-28. This shop's own list is Epic chest, Golden chest, Exotic coin,
+    // Pickaxe, Strange dust, Honor, Beer, Meteorite (last) - so Meteorite is what gets bought here,
+    // with Beer as the leftover sink and Dragon blood a logged no-op (not sold in this shop). Same
+    // net behaviour as the previous single "Meteorite" target, now with the leftovers spent instead
+    // of left to expire with the event.
     // Per the user (2026-09-26): recheck hourly instead of every 4h, so the daily check-in and any
     // newly-unlocked activity milestone get claimed promptly instead of piling up.
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(1);
@@ -48,7 +49,8 @@ public class NewPlayerEventTask : BotTask
 
             yield return AnniversaryShop.OpenExchangeTab;
             yield return AnniversaryShop.TrySetBestQuantity();
-            yield return AnniversaryShop.BuyItem(TargetExchangeItem);
+            foreach (var item in EventExchangeConfig.PriorityItems)
+                yield return AnniversaryShop.BuyItem(item);
 
             yield return AnniversaryShop.Close;
 

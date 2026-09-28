@@ -28,9 +28,14 @@ public static class TreeOfLife
     // an external tips guide's "war cry" priority) - confirmed via the wiki as a real Personal Tree
     // node (fellowship effect contribution), unlike "Librarian" (research speed), which the wiki
     // confirms only exists in the Talent Tree/Amulets/Guild Perk, never the Personal Tree.
+    // "Miner" added 2026-09-28: the F2P guide's Steam source gives the centre of the Personal Tree as
+    // Battlecry, Miner, Firestone Finder, Raining Gold - Miner was the only one of the four missing
+    // here. It's index 6 in PersonalUpgradeNames, so no new name had to be invented. Still a flat
+    // group, not a ranking: the guide's ordering is about what to reach first on a fresh tree, while
+    // this task spreads investment across whatever is affordable (see the "cheapest wins" note above).
     private static readonly HashSet<string> PriorityUpgrades = new()
     {
-        "Raining Gold", "Firestone Finder", "Firestone Effect", "Battle Cry"
+        "Raining Gold", "Firestone Finder", "Firestone Effect", "Battle Cry", "Miner"
     };
 
     public static int PersonalUpgradeCount => PersonalUpgradeNames.Length;
