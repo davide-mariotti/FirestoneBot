@@ -42,6 +42,6 @@ public class Rituals : GameElement
     private static DateTime NextRunTime()
     {
         var text = new GameText(Paths.MenusLoc.OracleLoc.RitualLoc.NextRunTimeTxt).GetParsedText();
-        return TimeParser.ParseFromText(text);
+        return TimeParser.ParseExpectedTime(text);
     }
 }

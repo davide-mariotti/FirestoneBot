@@ -13,5 +13,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\TalentEngine\Firebot.TalentEngine.csproj" />
+        <Compile Include="..\..\src\Utilities\TimeParser.cs" Link="TimeParser.cs" />
     </ItemGroup>
 </Project>
