@@ -51,7 +51,7 @@ public static class HeroUpgrade
 
         _isEnabled = section.CreateEntry(
             "enabled",
-            false,
+            true,
             "Enable Hero Upgrade",
             "- - - - - - - - - - - - - - - - - - - - - - - - - -"
         );

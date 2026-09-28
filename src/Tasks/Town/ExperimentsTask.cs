@@ -50,16 +50,21 @@ public class ExperimentsTask : BotTask
 
         _resourceType = category.CreateEntry(
             "resource_type",
-            "",
+            "0",
             "Experiment Resources",
             "ALCHEMIST EXPERIMENT RESOURCE CONFIGURATION. " +
-            "\nThis setting controls which experiment resources are used. " +
+            "\nThis setting controls which experiment resources are SPENT on starting experiments. " +
             "\nValid IDs: 0=Dragon blood, 1=Strange dust, 2=Exotic coin. " +
             "\nEnter comma-separated IDs (e.g. '0,1,2'). " +
-            "\nAny value other than 0, 1, or 2 will be ignored. " +
-            "\nDefault: empty (no resources are claimed/started - these are real limited resources, " +
-            "opt in explicitly to spend them). " +
-            "\nEXAMPLES: '0,1' = Use Dragon blood and Strange dust. '2' = Only use Exotic coin."
+            "\nAny value other than 0, 1, or 2 will be ignored. Set to empty to never start an " +
+            "experiment at all (claiming finished ones is free and happens regardless). " +
+            "\nDefault: '0' (Dragon blood only) - per the F2P guide, Dragon blood is the one currency " +
+            "that belongs in experiments, and it comes back from the map's dragon missions. " +
+            "\nDO NOT ADD 1 (Strange dust): the guide lists spending it here among the mistakes to " +
+            "avoid - it's needed for tier 2 soul stones (1.000 per hero) and Guardian evolutions, and " +
+            "an experiment gives a random result of which only about a third of the possible bonuses " +
+            "are useful. See PLAN.md, \"Allineamento alla guida F2P\". " +
+            "\nEXAMPLES: '0' = Dragon blood only (recommended). '0,2' = Dragon blood and Exotic coin."
         );
     }
 

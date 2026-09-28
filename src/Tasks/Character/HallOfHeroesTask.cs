@@ -51,6 +51,12 @@ public class HallOfHeroesTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Character;
 
+    // Off by default: never exercised live (gear is still managed by hand while resources are being
+    // stockpiled), and the enchant slot order still needs fixing before it runs - it currently drains
+    // Void Crystals into Wrist/Shoulder/Belt before ever reaching the Ring, which the F2P guide calls
+    // the single most important piece in the game. See PLAN.md, "Allineamento alla guida F2P".
+    protected override bool DefaultEnabled => false;
+
     internal override float? MaxRuntimeSeconds => 1800f;
 
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.HallOfHeroes;

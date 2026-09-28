@@ -53,7 +53,7 @@ public static class AutoRetreat
 
         _isEnabled = section.CreateEntry(
             "enabled",
-            false,
+            true,
             "Enable AutoRetreat",
             "- - - - - - - - - - - - - - - - - - - - - - - - - -"
         );

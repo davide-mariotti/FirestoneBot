@@ -38,26 +38,29 @@ public class EmpowerTask : BotTask
 
         _minResetRatio = category.CreateEntry(
             "min_reset_ratio",
-            2.0f,
+            1.0f,
             "Minimum Reset Ratio",
             "Empowers (resets) the Temple of Eternals once the Firestones found in the current adventure " +
-            "reach this multiple of the Firestones already banked in the Temple. Default: 2.0 (found >= 2x banked)."
+            "reach this multiple of the Firestones already banked in the Temple. Default: 1.0 (found >= banked, " +
+            "i.e. the +100% the F2P guide gives as the one and only threshold - see PLAN.md)."
         );
 
         _minAdventureMinutes = category.CreateEntry(
             "min_adventure_minutes",
-            60,
+            0,
             "Minimum Adventure Minutes",
             "Minimum time (in minutes) that must have passed in the current adventure before the bot " +
-            "considers empowering, even if the ratio above is already met. Default: 60."
+            "considers empowering, even if the ratio above is already met. Default: 0 (disabled - only " +
+            "the ratio decides)."
         );
 
         _maxAdventureMinutes = category.CreateEntry(
             "max_adventure_minutes",
-            120,
+            0,
             "Maximum Adventure Minutes",
             "Once the current adventure has run for this many minutes, the bot empowers regardless of " +
-            "the ratio above. Set to 0 to disable (only the ratio decides). Default: 120."
+            "the ratio above. Set to 0 to disable (only the ratio decides). Default: 0 - a time-based " +
+            "override would empower below the ratio, which the F2P guide rules out."
         );
     }
 
@@ -78,9 +81,9 @@ public class EmpowerTask : BotTask
         var owned = TempleOfEternals.FirestonesYouOwn;
 
         var ratio = owned > 0 ? found / owned : 0;
-        var minRatio = _minResetRatio?.Value ?? 2.0f;
-        var minDuration = TimeSpan.FromMinutes(_minAdventureMinutes?.Value ?? 60);
-        var maxMinutes = _maxAdventureMinutes?.Value ?? 120;
+        var minRatio = _minResetRatio?.Value ?? 1.0f;
+        var minDuration = TimeSpan.FromMinutes(_minAdventureMinutes?.Value ?? 0);
+        var maxMinutes = _maxAdventureMinutes?.Value ?? 0;
         var maxDuration = maxMinutes > 0 ? TimeSpan.FromMinutes(maxMinutes) : TimeSpan.MaxValue;
 
         Debug($"[INFO] Adventure time: {timePlayed}, Firestones found: {found}, Temple's Firestones: {owned}, " +

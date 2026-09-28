@@ -60,7 +60,7 @@ public static class FlyingBonusHunter
 
         _isEnabled = section.CreateEntry(
             "enabled",
-            false,
+            true,
             "Enable Flying Bonus Hunter",
             "Taps the flying dragon-with-beer and meteorite-hunter bonuses when they cross the screen."
         );

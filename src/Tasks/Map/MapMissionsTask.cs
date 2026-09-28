@@ -75,9 +75,12 @@ public class MapMissionsTask : BotTask
 
         _timeOrder = category.CreateEntry(
             "mission_time_order",
-            "asc",
+            "desc",
             "Mission Time Order",
-            "Sort missions by time required. Use 'asc' (shorter first) or 'desc' (longer first)."
+            "Sort missions by time required. Use 'asc' (shorter first) or 'desc' (longer first). " +
+            "Default: 'desc' - longer missions give better chests and far more honor (1-2 for a short " +
+            "adventure, 16 for the dragon mission, up to 32 for high chests), so filling every squad " +
+            "with the shortest ones leaves the valuable missions unstarted. See PLAN.md (0.4)."
         );
     }
 
@@ -119,12 +122,12 @@ public class MapMissionsTask : BotTask
     private bool IsAscending()
     {
         var value = _timeOrder?.Value?.Trim();
-        if (string.IsNullOrEmpty(value)) return true;
+        if (string.IsNullOrEmpty(value)) return false;
 
         if (string.Equals(value, "asc", StringComparison.OrdinalIgnoreCase)) return true;
         if (string.Equals(value, "desc", StringComparison.OrdinalIgnoreCase)) return false;
 
-        Debug($"[FAILED] Invalid mission_time_order '{value}'. Using default 'asc'.");
-        return true;
+        Debug($"[FAILED] Invalid mission_time_order '{value}'. Using default 'desc'.");
+        return false;
     }
 }

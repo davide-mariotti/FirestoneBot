@@ -32,6 +32,14 @@ public class WarMachinesTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
 
+    // Off by default, and NOT because it doesn't work (it's live-confirmed): Expedition Tokens are a
+    // single currency shared with TreeOfLifeTask's personal tree, with no budget split between them,
+    // so whichever task the scheduler happens to reach first drains the balance. The F2P guide lists
+    // spreading Expedition Tokens across destinations among the mistakes to avoid and picks the
+    // personal tree, so that's the default here. Flip this and TreeOfLifeTask together to take the
+    // War Machine route instead - never run both. See PLAN.md, "Allineamento alla guida F2P" (0.1).
+    protected override bool DefaultEnabled => false;
+
     // No wiki-confirmed level for War Machines specifically (the mechanics page has no "Unlocks at"
     // infobox) - inferred from the Engineer building's own confirmed level-50 gate, since the wiki
     // says war machines "are unlocked by the Engineer". Flag for live verification if this is wrong.

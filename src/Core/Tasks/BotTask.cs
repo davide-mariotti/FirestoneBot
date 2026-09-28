@@ -113,6 +113,18 @@ public abstract class BotTask
     private bool MeetsLevelRequirement => PlayerAvatar.CharacterLevel >= MinimumCharacterLevel;
 
     /// <summary>
+    ///     What this task's "enabled" setting defaults to on an instance that has never had a
+    ///     FirebotPreferences.cfg before - true for almost every task, per the user (2026-09-28), so a
+    ///     freshly provisioned bot starts out matching the fleet's deliberate configuration instead of
+    ///     needing the whole template copied in by hand first. A task overrides this to false only when
+    ///     it should stay off by default: either it isn't trusted live yet, or it's deliberately parked
+    ///     (see WarMachinesTask - the Expedition Token either/or with TreeOfLifeTask). An existing
+    ///     instance is unaffected either way: MelonPreferences only uses a default when the key isn't
+    ///     already in the file.
+    /// </summary>
+    protected virtual bool DefaultEnabled => true;
+
+    /// <summary>
     ///     Per-task override for how long BotManager lets a single Execute() run before forcibly
     ///     abandoning it (see BotManager.RunSafe) - null (default, almost every task) means "use the
     ///     global BotSettings.MaxTaskRuntime". Exists for the rare task whose OWN legitimate worst
@@ -162,7 +174,7 @@ public abstract class BotTask
         // since MelonPreferences always renders a comment directly above its own entry, with no way
         // to place free text above the "[section]" header itself - this is the closest visual
         // equivalent, and it puts every section's toggle at a glance right under a clear break.
-        _enabledEntry = _category.CreateEntry("enabled", false, "Enable Task",
+        _enabledEntry = _category.CreateEntry("enabled", DefaultEnabled, "Enable Task",
             "- - - - - - - - - - - - - - - - - - - - - - - - - -");
 
         OnConfigure(_category);
