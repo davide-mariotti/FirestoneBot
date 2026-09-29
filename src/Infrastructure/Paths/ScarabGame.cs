@@ -13,8 +13,6 @@ public static partial class Paths
 
         public const string OpenVaultBtn = Root + "/helpCanvas/actionButtons/pharaohVault";
 
-        public const string OpenMilestonesBtn = Root + "/helpCanvas/actionButtons/milestones";
-
         // Spends the free Noble Tokens (10/day) first and turns unclickable once they run out - it
         // never falls back to Pharaoh Tokens, which are bought.
         public const string SpinBtn = Root + "/helpCanvas/playButton";

@@ -258,7 +258,7 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Pharaoh's Vault | `[pharaohsvaulttask]` | 60 | on | ✅ | Spin con i Noble Token gratuiti, vault, milestone. |
+| Pharaoh's Vault | `[pharaohsvaulttask]` | 60 | on | ✅ | Spin con i Noble Token gratuiti, vault, milestone. 29/09: la schermata non ha un ingresso alle milestone (dump dal vivo: `actionButtons` ha solo pharaohVault, beasts, lostInscriptions, shop; la barra del livello apre `ScarabGameLevelBonuses`). Le milestone si reclamano solo quando le apre il badge `ScarabGameMilestones`, come nei log del 26/09; il click sul path inesistente è stato tolto. |
 | Scarab Game Free Token | `[scarabgamefreetokentask]` | 60 | on | ✅ | Omaggio giornaliero del tab Saldi. |
 
 ### Events

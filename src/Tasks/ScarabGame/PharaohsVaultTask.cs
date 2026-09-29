@@ -44,16 +44,11 @@ public class PharaohsVaultTask : BotTask
         yield return PharaohsVaultScreen.OpenUntilExhausted();
         yield return PharaohsVaultScreen.Close;
 
-        yield return ScarabGameScreen.OpenMilestones;
-
+        // Scarab's Game has no entry to its milestone track: only the rail badge clicked above opens it.
         if (ScarabGameMilestonesScreen.IsVisible)
         {
             yield return ScarabGameMilestonesScreen.ClaimUntilExhausted();
             yield return ScarabGameMilestonesScreen.Close;
-        }
-        else
-        {
-            Debug("Scarab Game Milestones not visible after navigating.");
         }
 
         yield return ScarabGameScreen.Close;

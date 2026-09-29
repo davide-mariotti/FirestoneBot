@@ -13,8 +13,6 @@ public static class ScarabGame
 
     public static IEnumerator OpenVault => new GameButton(Paths.ScarabGameLoc.OpenVaultBtn).Click();
 
-    public static IEnumerator OpenMilestones => new GameButton(Paths.ScarabGameLoc.OpenMilestonesBtn).Click();
-
     public static GameButton SpinBtn => new(Paths.ScarabGameLoc.SpinBtn);
 
     public static IEnumerator MaxOutBet() =>
