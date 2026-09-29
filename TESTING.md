@@ -229,7 +229,9 @@ Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate d
 Task spenti (`enabled = false`): `oracleritualstask`, `oraclesgifttask`, `hallofheroestask`. Tutti
 gli altri accesi, compresi `warmachinestask`, `massproductioneventtask`,
 `sigilsofprophecyeventtask` e le azioni di background `hero_upgrade`, `auto_retreat`,
-`flying_bonus_hunter`.
+`flying_bonus_hunter`. Eccezione: dal 29/09 sera Steam-0 ha `hallofheroestask` acceso, per osservarlo
+sul giro normale prima di decidere se accenderlo sul fleet (`apply_template.ps1 -Check` su Steam-0
+mostra quindi quella differenza).
 
 | Sezione | Impostazioni |
 |---|---|
