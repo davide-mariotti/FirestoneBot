@@ -201,7 +201,7 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. |
+| Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. Clicca anche i claim disabilitati: nei log del 26-29/09 ci sono 288 `Click ignored` sui `claimButton`, 1 s ciascuno (vedi "Problemi noti"). |
 | Beer Exchange | `[beerexchangetask]` | 15 | on | ✅ | Usa solo l'offerta pagata in birra, mai le due in gemme. |
 | Collector | `[collectorquesttask]` | - | on | 🔄 | Apre solo chest Wooden/Iron/Common e al massimo 4 al giorno; Uncommon e superiori non si toccano. Jewel e celestial sempre tutte. Da confermare: che Wooden e Iron valgano davvero meno di Common (se no cambia solo quale chest economica usa). |
 | Gamer | `[gamerquesttask]` | 15 | on | ✅ | 10 giocate in taverna, senza scendere sotto `min_token_reserve`. |
@@ -221,7 +221,7 @@ file di configurazione nuovo.
 | Oracle's Gift | `[oraclesgifttask]` | 200 | on | ❌ | Nessun account a 200. |
 | Firestone Research | `[firestoneresearchtask]` | - | on | 🔄 | Priorità in ordine: Raining Gold, Firestone Finder, Firestone Effect, Trainer Skills, Expeditioner; poi il primo nodo mai toccato. Controlla nel log `Selected research #N`: con nodi a livello 0 disponibili deve comparire `fresh`. Se non compare mai, il testo del livello non è nel formato atteso (vedi "Problemi noti"). |
 | Meteorite Research | `[meteoriteresearchtask]` | - | on | 🔄 | Priorità: Raining Gold, Firestone Finder, Firestone Effect. Mai sotto `min_meteorite_reserve` (3000). |
-| Empower | `[empowertask]` | - | on | 🔄 | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. Da confermare: che il valore mostrato dal gioco al momento del reset sia davvero +100%. |
+| Empower | `[empowertask]` | - | on | 🔄 | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. **Bloccante prima del fleet**: nei log del 26-29/09 i Firestone letti sono sempre 0 (416 letture su 416, riga `[INFO] Adventure time: ...`), quindi il rapporto non scatta mai. Il vecchio cfg empowerava solo per il limite a 2 h; con `max_adventure_minutes = 0` Empower non partirebbe più. Dal 29/09 la riga `[INFO]` riporta anche il testo grezzo tra apici, e un Temple a 0 scrive `[FAILED] Temple's Firestones read as 0 from '...'`. Con quel testo va corretta la lettura (`GetParsedDoubleAbbreviated` conosce solo i suffissi K/M/B/T). Finché non è corretta, su un account esistente Empower non parte. Da confermare anche: che il valore mostrato dal gioco al momento del reset sia davvero +100%. |
 | Arena of Kings | `[arenaofkingstask]` | 80 | on | ✅ | Scelta dell'avversario più debole e lettura dei gettoni verificate; un ciclo completo di 5 gettoni no. Può durare minuti. |
 | Pirate's Prize | `[piratesprizetask]` | 10 | on | ✅ | Solo la traccia gratuita. |
 | System Mail | `[systemmailtask]` | - | on | ✅ | Il percorso del badge della posta è ipotizzato; senza, gira comunque ogni 6 ore. |
@@ -232,9 +232,9 @@ file di configurazione nuovo.
 |---|---|:-:|:-:|:-:|---|
 | Expedition | `[expeditiontask]` | 10 | on | ✅ | Parte sempre la prima spedizione in lista. |
 | Tree of Life | `[treeoflifetask]` | 10 | on | 🔄 | Personal Tree. Priorità: Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner (nuova). |
-| Free Pickaxes | `[freepickaxestask]` | 50 | on | ✅ | Reclama da `pickaxe_claim_threshold` (5) in su. |
-| Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. |
-| Chaos Rift | `[chaosrifttask]` | 100 | on | ✅ | Solo Tomes of Power, mai Eclipse Stones. |
+| Free Pickaxes | `[freepickaxestask]` | 50 | on | 🔄 | Reclama da `pickaxe_claim_threshold` (5) in su. **Dal 29/09 gira solo col badge** (`NextRunTime = MaxValue`, come Talents); la strada Gilda → Guild Shop è stata tolta. Motivo: nei log del 26-29/09 quella strada non ha mai raggiunto il timer in 1.015 giri su 1.038, ognuno con un nuovo tentativo dopo 2 minuti (102 minuti in 3 giorni, il 22% del tempo del bot). Col badge invece ha funzionato 9 volte su 9. Da verificare: che quando compare il badge il task reclami, e che non giri quando il badge non c'è. |
+| Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. Il badge resta acceso: nei log del 26-29/09 il task ha girato 325 volte, una ogni ~50 s, per 33 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti (vedi "Problemi noti"). |
+| Chaos Rift | `[chaosrifttask]` | 100 | on | ⚠️ | Solo Tomes of Power, mai Eclipse Stones. Il badge resta acceso: nei log del 26-29/09 il task ha girato 430 volte, una ogni ~40 s, per 73 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti. In 3 sessioni su 9 `menus/ChaosRift` non esisteva e `hitButton` era nascosto: da verificare che colpisca davvero. Se non colpisce, forse è per questo che il badge non si spegne. |
 | Forbidden Knowledge | `[forbiddenknowledgetask]` | 100 | on | ✅ | Schermata verificata; il bottone dell'edificio in Gilda è ipotizzato. |
 | Guardian Holy Upgrade | `[guardianholyupgradetask]` | 100 | on | ✅ | Chaos Rift → Upgrades → Magic Quarters. |
 
@@ -300,6 +300,16 @@ completo li copre; questi sono i task in cui guardare con più attenzione:
 - Pirate's Prize e le milestone del New Player Event (ricerca delle voci per indice).
 - Watchdog: qualunque task che lasci aperto un popup.
 
+Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il comportamento cambia):
+
+- **`BadgeCooldown`**: nel log, Chaos Rift e Awakening non devono più ripartire a distanza di
+  secondi. Tra due giri dello stesso task partiti dal badge devono passare almeno 30 minuti. Un task
+  il cui badge si riaccende per lavoro nuovo (Quests, Map Missions) riparte comunque al suo timer.
+- **Free Pickaxes solo da badge**: nella tabella di stato deve avere `Next` = 12/31/9999. Quando
+  compare il badge deve girare e reclamare.
+- **Empower**: la riga `[INFO] Adventure time: ...` deve riportare i testi grezzi tra apici.
+  Riportali qui: servono per correggere la lettura.
+
 ## Problemi noti
 
 - I popup di avvio ("offline progress", "what's new") sopravvivono a `Watchdog.ForceClearAll`
@@ -308,8 +318,38 @@ completo li copre; questi sono i task in cui guardare con più attenzione:
 - Il `storeButton` dell'HUD non apre niente (zero listener): Daily Store Offers dipende dai suoi badge.
 - Percorsi ipotizzati, mai visti dal vivo: badge della posta, bottone Forbidden Knowledge in Gilda,
   bottone Party.
-- I badge di Chaos Rift e del Cristallo Arcano restano accesi: gestito (lo scheduler li alterna,
-  MinerQuestTask si ferma a quest fatta).
+- **Badge che restano accesi = task in loop (corretto il 29/09, da verificare dal vivo).** Prima un
+  badge acceso rendeva il task sempre pronto, anche se aveva appena girato: Chaos Rift e Awakening
+  hanno girato così per 106 minuti in 3 giorni (log del 26-29/09). Ora in `BotTask.IsReady` il badge
+  conta solo se il task non ha girato negli ultimi 30 minuti (`BadgeCooldown`, calcolato su
+  `LastRunTime`). I timer non cambiano: `NextRunTime` e il nuovo tentativo dopo 2 minuti di un giro
+  fallito funzionano come prima. MinerQuestTask ha in più il suo override, che esclude i giri fino
+  al giorno dopo.
+- **Ogni click a vuoto aspetta comunque `InteractionDelay`.** `GameButton.Click` aspetta anche
+  quando il bottone è nascosto o disabilitato, e non clicca. Succede per esempio con i passi Town →
+  edificio dopo che il badge ha già aperto la schermata, o con i claim disabilitati di Quests.
+  Correzione proposta: aspettare solo dopo un click vero. Serve una prova su Steam-0, perché qualche
+  attesa a vuoto potrebbe dare per caso il tempo a una schermata lenta.
+
+### Analisi dei log del 26-29/09 (Steam-0, bot prima della pulizia del 28/09)
+
+Circa 69 ore di log. Il bot ha lavorato per 466 minuti in tutto: 1.038 giri di Free Pickaxes, 430 di
+Chaos Rift, 416 di Empower, 325 di Awakening. Il metodo è sommare, task per task, le righe `[Task] …
+finished in Ns | Next: …`. Il ritardo programmato si calcola rispetto alla riga `Task Table - <data>`
+che segue ogni task.
+
+| Dove va il tempo | Minuti in 3 giorni | Causa |
+|---|--:|---|
+| Free Pickaxes | 105 | timer mai letto senza badge → nuovo tentativo ogni 2 minuti |
+| Chaos Rift | 74 | badge sempre acceso |
+| Map Missions | 67 | in buona parte legittimo (missioni che finiscono a orari diversi); 19 nuovi tentativi da 2 minuti |
+| Empower | 36 | controllo ogni 5 minuti, con Firestone letti sempre a 0 |
+| Awakening | 33 | badge sempre acceso |
+| Meteorite Research | 6 | nessun problema (6 s a giro) |
+
+I due loop (Free Pickaxes e i badge accesi) valgono il 45% del tempo del bot. Il loop di New Player
+Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09 alle 17:23
+(`314aa75`).
 - Firestone Research, livello del nodo: `Preview.CurrentLevel` legge tutte le cifre del testo
   insieme. Se il gioco mostra "0/50", il livello letto è 50 e i nodi mai toccati non vengono
   riconosciuti: la scelta ripiega sul primo nodo disponibile. Il controllo è quello su `fresh`

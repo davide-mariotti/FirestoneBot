@@ -63,7 +63,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Expeditions**: collects the finished expedition and starts the next one.
 - **Tree of Life** (Personal): spends Expedition Tokens, priority upgrades first, spreading the rest.
-- **Free Pickaxes**: claims them once `pickaxe_claim_threshold` have piled up.
+- **Free Pickaxes**: when its badge shows up, claims them once `pickaxe_claim_threshold` have piled up.
 - **Awakening**: spends Arcane Crystals, at the biggest multiplier available.
 - **Chaos Rift**: attacks the boss with the free Moon Stones, then buys Tomes of Power with the Dark Rune (never Eclipse Stones).
 - **Forbidden Knowledge**: upgrades every node the tomes can pay for, then recruits once a board is maxed.
@@ -213,14 +213,16 @@ instances and the fixed pagefile that many instances need.
 ## How it works
 
 - **Tasks** (`src/Tasks`) are scheduled jobs. `BotManager` runs one at a time: a task is ready once
-  its `NextRunTime` has passed, or as soon as one of its notification badges appears. A task below
+  its `NextRunTime` has passed, or when one of its notification badges appears (at most once every
+  30 minutes, so a badge that stays lit can't rerun its task on every scan). A task below
   its unlock level never runs, and one that runs too long is stopped; `Watchdog` then closes
   whatever screens were left open.
 - **Actions** (`src/BotActions`) are continuous loops for things that happen during battle.
 - **Game model** (`src/GameModel`): screens and buttons, built on a few primitives (`GameElement`,
   `GameButton`, `GameText`) that resolve Unity scene paths. The paths live in
   `src/Infrastructure/Paths`, one file per screen, holding only what the code uses. Navigation always
-  clicks the full path; a notification badge is only a shortcut on top.
+  clicks the full path; a notification badge is only a shortcut on top. The one exception is Free
+  Pickaxes, which runs only from its badge: the path through the Guild never reached the timer.
 - **Talent engine** (`src/TalentEngine`): the talent point allocator, a separate project with no
   game references, covered by `tests/Firebot.TalentEngine.Tests`.
 

@@ -22,3 +22,6 @@ global.json
 
 # Ignore analysis and reports directory
 Reports/
+
+# MelonLoader logs copied in for analysis
+sample-log/
