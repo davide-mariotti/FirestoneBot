@@ -150,7 +150,7 @@ $bmp.Save("$env:TEMP\steam0.png")
    `C:\Repos\FirestoneBot-test-backup\` (fuori da `Mods`: MelonLoader carica ogni `.dll` che trova
    lì).
 3. Nel cfg, in `[firebot_settings]`: `auto_start = true`, `debug_mode = true`,
-   `start_bot_delay = 10.0`. Nelle sezioni dei task: `enabled` come in
+   `start_bot_delay = 30.0`. Nelle sezioni dei task: `enabled` come in
    `tools/ConfigTemplate/FirebotPreferences.template.cfg` (tutto acceso tranne `hallofheroestask` e
    `warmachinestask`), e `next_run_time_internal = ""` ovunque, così ogni task è subito dovuto.
 4. Build, deploy, avvio.
@@ -330,13 +330,15 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
 
 ## Problemi noti
 
-- **Popup di avvio.** Il 29/09 il Watchdog li chiude (`popups/OfflineProgress/bg/collectButton` e
-  `events/DecoratedHeroesPromotion/bg/closeButton`), ma compaiono 30-60 s dopo `Started.`. Con
-  `start_bot_delay = 10` i primi task partono mentre sono aperti e falliscono in silenzio: Quests
+- **Popup di avvio.** Il Watchdog li chiude (`popups/OfflineProgress/bg/collectButton` e
+  `events/DecoratedHeroesPromotion/bg/closeButton`), ma compaiono da 10 a ~50 s dopo `Started.`. Con
+  `start_bot_delay = 10` i primi task partivano mentre erano aperti e fallivano in silenzio: Quests
   (15 s di tentativi sull'avatar), Empower (testi vuoti: col cfg vecchio di Steam-0 il controllo
-  slitta di un'ora), Meteorite Research (saldo 0). Con `start_bot_delay = 60` vengono chiusi prima
-  del primo task (verificato in tutti gli otto avvii di test). Da decidere: 60 per il fleet. Il vecchio
-  "what's new" non si è visto.
+  slittava di un'ora), Meteorite Research (saldo 0). Con 60 sono stati chiusi prima del primo task in
+  tutti gli otto avvii di test. Dal 29/09 il default è 30 (scelta dell'utente), applicato anche al
+  fleet: nel primo avvio a 30 i popup erano già chiusi prima del primo task. In un avvio del 29/09
+  però sono comparsi ~45 s dopo `Started.`: se nei log del fleet i primi task falliscono ancora,
+  portarlo a 60. Il vecchio "what's new" non si è visto.
 - Il `storeButton` dell'HUD non apre niente (zero listener): Daily Store Offers dipende dai suoi badge.
 - Percorsi ipotizzati, mai visti dal vivo: badge della posta, bottone Forbidden Knowledge in Gilda,
   bottone Party.
