@@ -56,46 +56,9 @@ public class GameText : GameElement
             : fallback;
     }
 
-    // A plain '.'-grouped integer ("17.242", "1.234.567"): every group after the first has exactly 3
-    // digits, which a real decimal fraction in this game's UI never does.
-    private static readonly Regex DotGroupedInteger = new(@"^\d{1,3}(\.\d{3})+$", RegexOptions.Compiled);
-
-    /// <summary>
-    ///     Game-formatted numbers: abbreviated ("86,27M"), '.'-grouped ("17.242") or European
-    ///     ("10.916.942.093,4"), optionally behind a label ("Arena power: 18.336").
-    /// </summary>
-    public double GetParsedDoubleAbbreviated(double fallback = 0)
-    {
-        var text = GetParsedText().Trim();
-        if (text.Length == 0) return fallback;
-
-        var colonIndex = text.LastIndexOf(':');
-        if (colonIndex >= 0) text = text[(colonIndex + 1)..].Trim();
-
-        var multiplier = 1d;
-        var suffix = char.ToUpperInvariant(text[^1]);
-        if (suffix is 'K' or 'M' or 'B' or 'T')
-        {
-            multiplier = suffix switch { 'K' => 1e3, 'M' => 1e6, 'B' => 1e9, _ => 1e12 };
-            text = text[..^1].Trim();
-        }
-
-        // Before the invariant parse, which would happily read "17.242" as seventeen point something.
-        if (DotGroupedInteger.IsMatch(text) &&
-            long.TryParse(text.Replace(".", ""), NumberStyles.Integer, CultureInfo.InvariantCulture, out var groupedValue))
-            return groupedValue * multiplier;
-
-        if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var invariantValue))
-            return invariantValue * multiplier;
-
-        if (double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var currentCultureValue))
-            return currentCultureValue * multiplier;
-
-        var europeanStyle = text.Replace(".", "").Replace(",", ".");
-        return double.TryParse(europeanStyle, NumberStyles.Float, CultureInfo.InvariantCulture, out var europeanValue)
-            ? europeanValue * multiplier
-            : fallback;
-    }
+    /// <summary>A game-formatted number; see StringUtils.ParseAbbreviated.</summary>
+    public double GetParsedDoubleAbbreviated(double fallback = 0) =>
+        StringUtils.ParseAbbreviated(GetParsedText(), fallback);
 
     public string GetParsedText()
     {

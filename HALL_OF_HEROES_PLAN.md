@@ -270,9 +270,9 @@ Da verificare:
    - come si presenta uno slot **al massimo** e uno **vuoto**;
    - se `enchantItem` resta cliccabile quando non si può pagare (e quindi apre il popup valuta).
 7. **Contatore in alto**: quale valuta mostra nella scheda gear e quale in quella gioielli, e in che
-   formato. `GetParsedDoubleAbbreviated` conosce solo i suffissi K/M/B/T: se il gioco usa
-   suffissi più grandi o altri formati, va esteso (è anche la probabile causa del bug di Empower in
-   TESTING.md).
+   formato. `GetParsedDoubleAbbreviated` (`StringUtils.ParseAbbreviated`) conosce K/M/B/T e,
+   dal 29/09, la notazione a lettere oltre T (`aa` = 1e15, … `bl`: era il bug di Empower). Per altri
+   formati va esteso.
 8. **Galleria**:
    - formato di `power`;
    - cosa dice il testo `tierNLocked/desc` (contiene la soglia?);

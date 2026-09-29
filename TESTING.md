@@ -221,7 +221,7 @@ file di configurazione nuovo.
 | Oracle's Gift | `[oraclesgifttask]` | 200 | on | ❌ | Nessun account a 200. |
 | Firestone Research | `[firestoneresearchtask]` | - | on | 🔄 | Priorità in ordine: Raining Gold, Firestone Finder, Firestone Effect, Trainer Skills, Expeditioner; poi il primo nodo mai toccato. Controlla nel log `Selected research #N`: con nodi a livello 0 disponibili deve comparire `fresh`. Se non compare mai, il testo del livello non è nel formato atteso (vedi "Problemi noti"). |
 | Meteorite Research | `[meteoriteresearchtask]` | - | on | 🔄 | Priorità: Raining Gold, Firestone Finder, Firestone Effect. Mai sotto `min_meteorite_reserve` (3000). |
-| Empower | `[empowertask]` | - | on | 🔄 | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. **Bloccante prima del fleet**: nei log del 26-29/09 i Firestone letti sono sempre 0 (416 letture su 416, riga `[INFO] Adventure time: ...`), quindi il rapporto non scatta mai. Il vecchio cfg empowerava solo per il limite a 2 h; con `max_adventure_minutes = 0` Empower non partirebbe più. Dal 29/09 la riga `[INFO]` riporta anche il testo grezzo tra apici, e un Temple a 0 scrive `[FAILED] Temple's Firestones read as 0 from '...'`. Con quel testo va corretta la lettura (`GetParsedDoubleAbbreviated` conosce solo i suffissi K/M/B/T). Finché non è corretta, su un account esistente Empower non parte. Da confermare anche: che il valore mostrato dal gioco al momento del reset sia davvero +100%. |
+| Empower | `[empowertask]` | - | on | ⚠️ | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. Lettura dei Firestone corretta il 29/09: oltre T il gioco scrive due lettere minuscole (aa = 1e15, poi ×1000 per lettera). Su Steam-0 i testi erano `'1,79bl'` e `'65,67bl'`, letti come 0 (416 letture su 416 nei log del 26-29/09); ora escono 1.79E+126 e 6.567E+127, rapporto 0,03. Un reset vero non è ancora stato visto: da confermare che il valore mostrato dal gioco al momento del reset sia davvero +100%. Steam-0 ha ancora il cfg vecchio (`min_reset_ratio = 2`, limiti a 60/120 minuti), quindi lì empowera a 2 h. |
 | Arena of Kings | `[arenaofkingstask]` | 80 | on | ✅ | Scelta dell'avversario più debole e lettura dei gettoni verificate; un ciclo completo di 5 gettoni no. Può durare minuti. |
 | Pirate's Prize | `[piratesprizetask]` | 10 | on | ✅ | Solo la traccia gratuita. 29/09: il gioco scarica il menu PirateShip quando non serve e lo ricostruisce in più di 1 s; prima circa metà dei giri scriveva `Tier list root not found`. Ora il task aspetta la lista (verificato al primo giro dopo l'avvio, il caso che falliva). |
 | System Mail | `[systemmailtask]` | - | on | ✅ | Il percorso del badge della posta è ipotizzato; senza, gira comunque ogni 6 ore. |
@@ -307,8 +307,8 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
   il cui badge si riaccende per lavoro nuovo (Quests, Map Missions) riparte comunque al suo timer.
 - **Free Pickaxes solo da badge**: nella tabella di stato deve avere `Next` = 12/31/9999. Quando
   compare il badge deve girare e reclamare.
-- **Empower**: la riga `[INFO] Adventure time: ...` deve riportare i testi grezzi tra apici.
-  Riportali qui: servono per correggere la lettura.
+- **Empower**: la riga `[INFO] Adventure time: ...` riporta i testi grezzi tra apici. Su Steam-0 il
+  29/09 erano `'1,79bl'` e `'65,67bl'`; la lettura è stata corretta lo stesso giorno (vedi la tabella).
 
 ## Problemi noti
 
