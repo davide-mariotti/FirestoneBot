@@ -268,6 +268,7 @@ file di configurazione nuovo.
 | Decorated Heroes | `[decoratedheroeseventtask]` | - | on | 🔄 | Acquisti nell'ordine Dragon blood → Meteorite → Beer. |
 | New Player Event | `[newplayereventtask]` | - | on | 🔄 | Stesso ordine: compra Meteorite, poi spende il resto in Beer. Gli account vecchi non hanno l'evento (il task rallenta da solo). |
 | Mass Production | `[massproductioneventtask]` | - | on | ✅ | Solo il tab Challenges. |
+| Sigils of Prophecy | `[sigilsofprophecyeventtask]` | - | on | ✅ | Aggiunto il 29/09. Stessa schermata di Mass Production (`events/MiniEvents`), cambia solo il riquadro nell'elenco eventi. Verificato dal vivo: il riquadro apre MiniEvents, 1 claim su 3 giorni (gli altri ancora bloccati), schermata chiusa. Da ricontrollare nei giorni successivi: che reclami ogni giorno sbloccato. |
 
 Un evento non in corso per l'account scrive `'<evento>' isn't in this account's event list`: non è
 un errore.

@@ -88,7 +88,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 **Events**
 
 - **Decorated Heroes** and **New Player Event**: claim challenges, check-ins and milestones, then spend the event currency on Dragon blood, then Meteorites, then Beer.
-- **Mass Production**: claims every unlocked day's challenge.
+- **Mass Production** and **Sigils of Prophecy**: claim every unlocked day's challenge (the two events share one screen).
 - Paid tabs are never opened.
 
 [TESTING.md](TESTING.md) (Italian) is the live-test runbook - written so a Claude Code session can

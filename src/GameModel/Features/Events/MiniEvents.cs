@@ -7,7 +7,10 @@ using Logger = Firebot.Core.Logger;
 
 namespace Firebot.GameModel.Features.Events;
 
-/// <summary>Mass Production's screen. Only the challenges tab is used - its default "offers" tab is paid.</summary>
+/// <summary>
+///     Mass Production's and Sigils of Prophecy's screen. Only the challenges tab is used - its default
+///     "offers" tab is paid.
+/// </summary>
 public static class MiniEvents
 {
     public static bool IsVisible => new GameElement(Paths.MiniEventsLoc.Root).IsVisible();

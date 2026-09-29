@@ -2,7 +2,8 @@ namespace Firebot.Infrastructure;
 
 /// <summary>
 ///     The Events hub and each event's shop. They live under "events/", not "menus/". Event shops
-///     reuse old prefab names: New Player Event is "AnniversaryShop", Mass Production is "MiniEvents".
+///     reuse old prefab names: New Player Event is "AnniversaryShop", Mass Production and Sigils of Prophecy
+///     are "MiniEvents".
 ///     Only claims and exchange purchases are wired - never the real-money tabs (Market, Shop, Offers).
 /// </summary>
 public static partial class Paths
@@ -107,7 +108,7 @@ public static partial class Paths
         }
     }
 
-    /// <summary>Mass Production. Its default tab ("offers") is real-money packs.</summary>
+    /// <summary>Mass Production and Sigils of Prophecy. Its default tab ("offers") is real-money packs.</summary>
     public static class MiniEventsLoc
     {
         public const string Root = MenusLoc.Root + "/events/MiniEvents";
