@@ -3,8 +3,8 @@
 Runbook per una sessione di test **autonoma** di Claude Code sul PC della flotta, sull'istanza
 Steam-0: prova tutti i task, trova i bug dai log, li corregge, ricompila, ridistribuisce e riprova
 da solo. In fondo: stato di ogni task, problemi noti, lavoro rimandato e come tornare alla versione
-precedente. Aggiornato al 2026-09-28, dopo il riallineamento alla guida F2P
-(`docs/firestone_guida_F2P.md`) e la pulizia del codice.
+precedente. Aggiornato al 2026-09-29, dopo la prima sessione di test dal vivo su Steam-0 (dopo il
+riallineamento alla guida F2P, `docs/firestone_guida_F2P.md`, e la pulizia del codice del 28/09).
 
 ## Prompt di avvio
 
@@ -201,19 +201,19 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. Clicca anche i claim disabilitati: nei log del 26-29/09 ci sono 288 `Click ignored` sui `claimButton`, 1 s ciascuno (vedi "Problemi noti"). |
+| Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. 29/09: 37 s a giro, di cui ~18 s di claim non pronti (nascosti o disabilitati, 1 s ciascuno: vedi "Problemi noti"). |
 | Beer Exchange | `[beerexchangetask]` | 15 | on | ✅ | Usa solo l'offerta pagata in birra, mai le due in gemme. 29/09: senza badge non apriva mai il mercato (lo `stormyButton` della Taverna non lo apre); ora entra da `actionButtons/shop` ("Market"), verificato dal vivo. |
-| Collector | `[collectorquesttask]` | - | on | 🔄 | Apre solo chest Wooden/Iron/Common e al massimo 4 al giorno; Uncommon e superiori non si toccano. Jewel e celestial sempre tutte. Da confermare: che Wooden e Iron valgano davvero meno di Common (se no cambia solo quale chest economica usa). |
-| Gamer | `[gamerquesttask]` | 15 | on | ✅ | 10 giocate in taverna, senza scendere sotto `min_token_reserve`. |
-| Merchant | `[merchantquesttask]` | 30 | on | 🔄 | Vende solo le posizioni 3, 2, 1 della griglia (Midas, Health, Damage), mai Speed né i consumabili di gold e meteoriti. Controlla la riga `Sell grid:` del log: deve elencare quei nomi in quelle posizioni. |
-| Miner | `[minerquesttask]` | 50 | on | ✅ | 5 colpi al Cristallo Arcano. La scorciatoia x5 non è verificata; se manca, fa 5 colpi singoli. |
+| Collector | `[collectorquesttask]` | - | on | 🔄 | Apre solo chest Wooden/Iron/Common e al massimo 4 al giorno; Uncommon e superiori non si toccano. Jewel e celestial sempre tutte. Da confermare: che Wooden e Iron valgano davvero meno di Common (se no cambia solo quale chest economica usa). Il 29/09 non verificabile: la quota del giorno era già fatta prima del test (16 chest, dalla build vecchia). |
+| Gamer | `[gamerquesttask]` | 15 | on | ✅ | 10 giocate in taverna, senza scendere sotto `min_token_reserve`. Il 29/09 una sola giocata: gettoni sotto la riserva, perché Beer Exchange senza badge non comprava mai gettoni (corretto il 29/09). Da ricontrollare il 30/09. |
+| Merchant | `[merchantquesttask]` | 30 | on | 🔄 | Vende solo le posizioni 3, 2, 1 della griglia (Midas, Health, Damage), mai Speed né i consumabili di gold e meteoriti. Controlla la riga `Sell grid:` del log: deve elencare quei nomi in quelle posizioni. Il 29/09 non verificabile: quest del giorno già fatta prima del test. |
+| Miner | `[minerquesttask]` | 50 | on | ✅ | 5 colpi al Cristallo Arcano. La scorciatoia x5 non è verificata; se manca, fa 5 colpi singoli. Il 29/09 già fatto prima del test. |
 
 ### Town
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
 | Daily Store Offers | `[dailystoreofferstask]` | - | on | ✅ | Check-in giornaliero e le due mystery box gratuite. Entra solo dai badge CheckIn/MysteryBox: il `storeButton` dell'HUD non apre niente. |
-| Engineer | `[engineertask]` | 50 | on | ✅ | Strumenti ogni 6 ore. Verificato dal badge; la strada dall'edificio (popup GarageSelection) è corretta ma non riverificata. |
+| Engineer | `[engineertask]` | 50 | on | ✅ | Strumenti ogni 6 ore. Verificato dal badge (anche il 29/09); la strada dall'edificio (popup GarageSelection) è corretta ma non riverificata: col badge la schermata è già aperta e il `townButton` è nascosto. |
 | War Machines | `[warmachinestask]` | 50 | **off** | ⚠️ | Navigazione e stop sul popup CurrencyMissing verificati, un livellamento completo no. Spento: consuma gli stessi gettoni spedizione del Personal Tree, che la guida mette prima. |
 | Guardian Training | `[guardiantrainingtask]` | - | on | ✅ | Allena `guardian_index` se sbloccato, altrimenti Vermilion. |
 | Experiments | `[experimentstask]` | 120 | on | ⚠️ | Claim verificato. Default `resource_type = "0"` (solo Dragon blood). |
@@ -221,7 +221,7 @@ file di configurazione nuovo.
 | Oracle's Gift | `[oraclesgifttask]` | 200 | on | ❌ | Nessun account a 200. |
 | Firestone Research | `[firestoneresearchtask]` | - | on | ⚠️ | Priorità in ordine: Raining Gold, Firestone Finder, Firestone Effect, Trainer Skills, Expeditioner; poi il primo nodo mai toccato. 29/09: il livello si leggeva concatenando tutte le cifre (`'Level 5/30'` → 530), quindi un nodo mai toccato non risultava mai a 0. Ora legge il numero prima della barra (verificato: `'Level 33/50'` → 33). Resta da vedere `fresh` nella riga `Selected research #N`: il 29/09 nessun nodo a livello 0 era disponibile nel primo albero. |
 | Meteorite Research | `[meteoriteresearchtask]` | - | on | ⚠️ | Priorità: Raining Gold, Firestone Finder, Firestone Effect. Mai sotto `min_meteorite_reserve` (3000). 29/09: il saldo si leggeva da un contatore nascosto nel tab Meteoriti, sempre 0, quindi non ha mai ricercato (69 giri su 69 nei log). Ora la riga `[INFO] Meteorite balance N below ...` mostra il saldo vero (2380 su Steam-0, sotto la riserva). La scelta per priorità resta da vedere quando il saldo supera 3000. |
-| Empower | `[empowertask]` | - | on | ⚠️ | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. Lettura dei Firestone corretta il 29/09: oltre T il gioco scrive due lettere minuscole (aa = 1e15, poi ×1000 per lettera). Su Steam-0 i testi erano `'1,79bl'` e `'65,67bl'`, letti come 0 (416 letture su 416 nei log del 26-29/09); ora escono 1.79E+126 e 6.567E+127, rapporto 0,03. Un reset vero non è ancora stato visto: da confermare che il valore mostrato dal gioco al momento del reset sia davvero +100%. Steam-0 ha ancora il cfg vecchio (`min_reset_ratio = 2`, limiti a 60/120 minuti), quindi lì empowera a 2 h. |
+| Empower | `[empowertask]` | - | on | ⚠️ | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. Lettura dei Firestone corretta il 29/09: oltre T il gioco scrive due lettere minuscole (aa = 1e15, poi ×1000 per lettera). Su Steam-0 i testi erano `'1,79bl'` e `'65,67bl'`, letti come 0 (416 letture su 416 nei log del 26-29/09); ora escono 1.79E+126 e 6.567E+127, rapporto 0,03. Reset vero visto il 29/09 alle 17:53 (per il limite di 2 h del cfg vecchio): i Firestone del Temple sono passati da `65,67bl` a `98,33bl`, cioè esattamente i `32,62bl` trovati (+50%, rapporto letto 0,5). Da confermare che il "+X%" mostrato dal gioco al reset coincida col rapporto letto. Steam-0 ha ancora il cfg vecchio (`min_reset_ratio = 2`, limiti a 60/120 minuti), quindi lì empowera a 2 h. |
 | Arena of Kings | `[arenaofkingstask]` | 80 | on | ✅ | Scelta dell'avversario più debole e lettura dei gettoni verificate; un ciclo completo di 5 gettoni no. Può durare minuti. |
 | Pirate's Prize | `[piratesprizetask]` | 10 | on | ✅ | Solo la traccia gratuita. 29/09: il gioco scarica il menu PirateShip quando non serve e lo ricostruisce in più di 1 s; prima circa metà dei giri scriveva `Tier list root not found`. Ora il task aspetta la lista (verificato al primo giro dopo l'avvio, il caso che falliva). |
 | System Mail | `[systemmailtask]` | - | on | ✅ | Il percorso del badge della posta è ipotizzato; senza, gira comunque ogni 6 ore. |
@@ -231,10 +231,10 @@ file di configurazione nuovo.
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
 | Expedition | `[expeditiontask]` | 10 | on | ✅ | Parte sempre la prima spedizione in lista. |
-| Tree of Life | `[treeoflifetask]` | 10 | on | 🔄 | Personal Tree. Priorità: Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner (nuova). |
-| Free Pickaxes | `[freepickaxestask]` | 50 | on | 🔄 | Reclama da `pickaxe_claim_threshold` (5) in su. **Dal 29/09 gira solo col badge** (`NextRunTime = MaxValue`, come Talents); la strada Gilda → Guild Shop è stata tolta. Motivo: nei log del 26-29/09 quella strada non ha mai raggiunto il timer in 1.015 giri su 1.038, ognuno con un nuovo tentativo dopo 2 minuti (102 minuti in 3 giorni, il 22% del tempo del bot). Col badge invece ha funzionato 9 volte su 9. Da verificare: che quando compare il badge il task reclami, e che non giri quando il badge non c'è. |
-| Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. Il badge resta acceso: nei log del 26-29/09 il task ha girato 325 volte, una ogni ~50 s, per 33 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti (vedi "Problemi noti"). |
-| Chaos Rift | `[chaosrifttask]` | 100 | on | ⚠️ | Solo Tomes of Power, mai Eclipse Stones. Il badge resta acceso: nei log del 26-29/09 il task ha girato 430 volte, una ogni ~40 s, per 73 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti. In 3 sessioni su 9 `menus/ChaosRift` non esisteva e `hitButton` era nascosto: da verificare che colpisca davvero. Se non colpisce, forse è per questo che il badge non si spegne. |
+| Tree of Life | `[treeoflifetask]` | 10 | on | ⚠️ | Personal Tree. Priorità: Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner (nuova). Il 29/09 ha comprato per 49 s senza errori, ma gli acquisti non vengono loggati: la priorità non si può controllare dal log. |
+| Free Pickaxes | `[freepickaxestask]` | 50 | on | ✅ | Reclama da `pickaxe_claim_threshold` (5) in su. Dal 29/09 gira solo col badge (`NextRunTime = MaxValue`, come Talents); la strada Gilda → Guild Shop è stata tolta perché nei log del 26-29/09 non ha mai raggiunto il timer in 1.015 giri su 1.038. Verificato il 29/09: `Next` = 12/31/9999; alle 17:23 il badge ha aperto lo shop, il task ha reclamato e il badge si è spento; senza badge non è più ripartito. Da controllare: il formato del testo della quantità (`Quantity` concatena tutte le cifre, come faceva il livello di Firestone Research; con un testo tipo "3/30" leggerebbe 330). |
+| Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. Il badge resta acceso: nei log del 26-29/09 il task ha girato 325 volte, una ogni ~50 s, per 33 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti: verificato sugli eventi, non su Awakening (il 29/09 il suo badge non si è acceso). |
+| Chaos Rift | `[chaosrifttask]` | 100 | on | ⚠️ | Solo Tomes of Power, mai Eclipse Stones. Il badge restava acceso (430 giri nei log del 26-29/09); dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti. Il 29/09 alle 16:31 `menus/ChaosRift` non si è aperto dopo il click sull'edificio (ancora nascosto 8 s dopo); alle 16:39, primo giro dopo un riavvio, si è aperto in 0,1 s e lo shop ha funzionato. Moon Stone a 0, quindi il colpo non è verificabile: da ricontrollare dopo la ricarica giornaliera, e da capire perché a volte la schermata non si apre. |
 | Forbidden Knowledge | `[forbiddenknowledgetask]` | 100 | on | ✅ | Schermata verificata; il bottone dell'edificio in Gilda è ipotizzato. |
 | Guardian Holy Upgrade | `[guardianholyupgradetask]` | 100 | on | ✅ | Chaos Rift → Upgrades → Magic Quarters. 29/09: lasciava aperti LockedGuardian, Chaos Rift e la Gilda (li chiudeva il Watchdog); ora li chiude il task. |
 
@@ -242,9 +242,9 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Map Missions | `[mapmissionstask]` | - | on | 🔄 | Ora le più lunghe per prime (`mission_time_order = "desc"`). |
-| Warfront Campaign Loot | `[warfrontcampaignloottask]` | 50 | on | ❌ | Mai verificato esplicitamente. |
-| Warfront Daily Missions | `[warfrontdailymissionstask]` | 50 | on | ✅ | Battaglie reali verificate. Da ricontrollare: il popup "Here are your rewards!" visto il 18/09 dopo una battaglia. |
+| Map Missions | `[mapmissionstask]` | - | on | 🔄 | Ora le più lunghe per prime (`mission_time_order = "desc"`). Il 29/09 gira senza errori (30-35 s), ma Steam-0 ha ancora `asc` nel cfg: `desc` non verificato. |
+| Warfront Campaign Loot | `[warfrontcampaignloottask]` | 50 | on | ⚠️ | Il 29/09 gira senza errori (3 s); non si è visto niente da reclamare. |
+| Warfront Daily Missions | `[warfrontdailymissionstask]` | 50 | on | ✅ | Battaglie reali verificate. Da ricontrollare: il popup "Here are your rewards!" visto il 18/09 dopo una battaglia. Il 29/09: 0/10, già fatte. |
 
 ### Character
 
@@ -265,8 +265,8 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Decorated Heroes | `[decoratedheroeseventtask]` | - | on | 🔄 | Acquisti nell'ordine Dragon blood → Meteorite → Beer. |
-| New Player Event | `[newplayereventtask]` | - | on | 🔄 | Stesso ordine: compra Meteorite, poi spende il resto in Beer. Gli account vecchi non hanno l'evento (il task rallenta da solo). |
+| Decorated Heroes | `[decoratedheroeseventtask]` | - | on | ✅ | Acquisti nell'ordine Dragon blood → Meteorite → Beer (29/09: ordine confermato nel log; Meteorite non c'è nello shop di questo account, valuta insufficiente per il resto). 29/09: 3 sfide reclamate al giro partito dal badge. |
+| New Player Event | `[newplayereventtask]` | - | on | 🔄 | Stesso ordine: compra Meteorite, poi spende il resto in Beer. Gli account vecchi non hanno l'evento (il task rallenta da solo): su Steam-0 non c'è, quindi non verificabile. |
 | Mass Production | `[massproductioneventtask]` | - | on | ✅ | Solo il tab Challenges. |
 | Sigils of Prophecy | `[sigilsofprophecyeventtask]` | - | on | ✅ | Aggiunto il 29/09. Stessa schermata di Mass Production (`events/MiniEvents`), cambia solo il riquadro nell'elenco eventi. Verificato dal vivo: il riquadro apre MiniEvents, 1 claim su 3 giorni (gli altri ancora bloccati), schermata chiusa. Da ricontrollare nei giorni successivi: che reclami ogni giorno sbloccato. |
 
@@ -308,25 +308,39 @@ completo li copre; questi sono i task in cui guardare con più attenzione:
 - Pirate's Prize e le milestone del New Player Event (ricerca delle voci per indice).
 - Watchdog: qualunque task che lasci aperto un popup.
 
+Esito del 29/09 (Steam-0): nessun timeout né eccezione in nessun giro. `Poll`: Map Missions,
+Warfront Daily, Pharaoh's Vault, Arena e Chaos Rift girano senza errori; Collector e Gamer non hanno
+lavorato (quota del giorno già fatta, gettoni sotto riserva). `QuantityToggle`: non esercitato (Miner
+già fatto, Chaos Rift senza Moon Stone, Gamer senza gettoni). `EventTask`: Decorated Heroes e Sigils
+of Prophecy si aprono e reclamano; gli eventi assenti scrivono la riga di backoff. `TimeParser`: i
+`Next:` sono plausibili (Expedition, Experiments, Firestone Research, Map Missions), non confrontati a
+schermo. Pirate's Prize: corretto (menu scaricato dal gioco). Watchdog: Guardian Holy Upgrade lasciava
+aperte tre schermate (corretto); gli altri task no.
+
 Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il comportamento cambia):
 
-- **`BadgeCooldown`**: nel log, Chaos Rift e Awakening non devono più ripartire a distanza di
-  secondi. Tra due giri dello stesso task partiti dal badge devono passare almeno 30 minuti. Un task
-  il cui badge si riaccende per lavoro nuovo (Quests, Map Missions) riparte comunque al suo timer.
-- **Free Pickaxes solo da badge**: nella tabella di stato deve avere `Next` = 12/31/9999. Quando
-  compare il badge deve girare e reclamare.
+- **`BadgeCooldown`** ✅: tra due giri dello stesso task partiti dal badge passano almeno 30
+  minuti. Verificato il 29/09 sul badge degli eventi (Decorated Heroes alle 17:19:40 e poi alle
+  17:49:55) e su Quests (badge acceso dopo il giro delle 16:27, nessuna ripartenza anticipata). Chaos
+  Rift e Awakening non hanno avuto il badge acceso durante il test.
+- **Free Pickaxes solo da badge** ✅: `Next` = 12/31/9999; alle 17:23 è partito dal badge e ha
+  reclamato.
 - **Empower**: la riga `[INFO] Adventure time: ...` riporta i testi grezzi tra apici. Su Steam-0 il
   29/09 erano `'1,79bl'` e `'65,67bl'`; la lettura è stata corretta lo stesso giorno (vedi la tabella).
 
 ## Problemi noti
 
-- I popup di avvio ("offline progress", "what's new") sopravvivono a `Watchdog.ForceClearAll`
-  (24/09) e non sono mappati. La diagnostica temporanea che li elencava all'avvio è stata tolta da
-  `Main.cs`; è recuperabile dal commit `a27ecf0` (`DumpActiveScreensOverTime`).
+- **Popup di avvio.** Il 29/09 il Watchdog li chiude (`popups/OfflineProgress/bg/collectButton` e
+  `events/DecoratedHeroesPromotion/bg/closeButton`), ma compaiono 30-60 s dopo `Started.`. Con
+  `start_bot_delay = 10` i primi task partono mentre sono aperti e falliscono in silenzio: Quests
+  (15 s di tentativi sull'avatar), Empower (testi vuoti: col cfg vecchio di Steam-0 il controllo
+  slitta di un'ora), Meteorite Research (saldo 0). Con `start_bot_delay = 60` vengono chiusi prima
+  del primo task (verificato in tutti gli otto avvii di test). Da decidere: 60 per il fleet. Il vecchio
+  "what's new" non si è visto.
 - Il `storeButton` dell'HUD non apre niente (zero listener): Daily Store Offers dipende dai suoi badge.
 - Percorsi ipotizzati, mai visti dal vivo: badge della posta, bottone Forbidden Knowledge in Gilda,
   bottone Party.
-- **Badge che restano accesi = task in loop (corretto il 29/09, da verificare dal vivo).** Prima un
+- **Badge che restano accesi = task in loop (corretto e verificato il 29/09).** Prima un
   badge acceso rendeva il task sempre pronto, anche se aveva appena girato: Chaos Rift e Awakening
   hanno girato così per 106 minuti in 3 giorni (log del 26-29/09). Ora in `BotTask.IsReady` il badge
   conta solo se il task non ha girato negli ultimi 30 minuti (`BadgeCooldown`, calcolato su
@@ -336,8 +350,20 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
 - **Ogni click a vuoto aspetta comunque `InteractionDelay`.** `GameButton.Click` aspetta anche
   quando il bottone è nascosto o disabilitato, e non clicca. Succede per esempio con i passi Town →
   edificio dopo che il badge ha già aperto la schermata, o con i claim disabilitati di Quests.
-  Correzione proposta: aspettare solo dopo un click vero. Serve una prova su Steam-0, perché qualche
-  attesa a vuoto potrebbe dare per caso il tempo a una schermata lenta.
+  Correzione proposta: aspettare solo dopo un click vero. Non applicata il 29/09: il gioco scarica e
+  ricostruisce alcuni menu quando servono (PirateShip, WorldMap) e ci mette più di 1 s, quindi le
+  attese a vuoto oggi coprono davvero schermate lente. Costo misurato: Quests 37 s a giro, di cui ~18
+  s su claim non pronti. Se si vuole, la via meno rischiosa è saltare solo i claim non cliccabili di
+  Quests e Merchant, non cambiare `GameButton.Click`.
+- **Empower controlla ogni 5 minuti** finché il rapporto non basta (`RetryDelay`). Il 29/09 su
+  Steam-0: rapporto da 0,03 a 0,39 in un'ora. Con i default del template (`min_reset_ratio = 1.0`,
+  nessun limite di tempo) sono 5 s ogni 5 minuti per ore; un ritardo più lungo sotto una certa soglia
+  di rapporto dimezzerebbe il costo.
+- **Daily Store Offers riprova ogni 30 minuti senza badge.** Entra solo dai badge CheckIn/MysteryBox;
+  senza badge non raggiunge lo Store, non legge i timer e ripiega su `FallbackRetryDelay` (29/09: 10 s
+  ogni 30 minuti, ~20 s all'ora). Come per Free Pickaxes, potrebbe girare solo sul badge.
+- **Chaos Rift a volte non apre la schermata** dal bottone della Gilda (29/09, 16:31), mentre due
+  minuti dopo Guardian Holy Upgrade l'ha aperta al primo click. Non riprodotto nel giro isolato.
 
 ### Analisi dei log del 26-29/09 (Steam-0, bot prima della pulizia del 28/09)
 
@@ -367,6 +393,9 @@ Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09
 
 ## Da fare e rimandato
 
+- **Distribuire la DLL del 29/09 sul fleet**: le correzioni di questa sessione (Empower, Meteorite
+  Research, Beer Exchange, Pirate's Prize, Flying Bonus Hunter, badge degli eventi, Sigils of
+  Prophecy...) sono solo su Steam-0. La sezione `[sigilsofprophecyeventtask]` si crea da sola.
 - **Distribuire la configurazione sul fleet**: i default della Fase 0 (Personal Tree al posto delle
   War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`, Experiments solo Dragon
   blood) valgono solo per i file nuovi. Sulle 34 istanze esistenti vanno applicati a mano, a gioco
