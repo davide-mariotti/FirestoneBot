@@ -219,7 +219,7 @@ file di configurazione nuovo.
 | Experiments | `[experimentstask]` | 120 | on | ⚠️ | Claim verificato. Default `resource_type = "0"` (solo Dragon blood). |
 | Oracle Rituals | `[oracleritualstask]` | 200 | on | ❌ | Nessun account a 200. Vedi "Da fare e rimandato". |
 | Oracle's Gift | `[oraclesgifttask]` | 200 | on | ❌ | Nessun account a 200. |
-| Firestone Research | `[firestoneresearchtask]` | - | on | 🔄 | Priorità in ordine: Raining Gold, Firestone Finder, Firestone Effect, Trainer Skills, Expeditioner; poi il primo nodo mai toccato. Controlla nel log `Selected research #N`: con nodi a livello 0 disponibili deve comparire `fresh`. Se non compare mai, il testo del livello non è nel formato atteso (vedi "Problemi noti"). |
+| Firestone Research | `[firestoneresearchtask]` | - | on | ⚠️ | Priorità in ordine: Raining Gold, Firestone Finder, Firestone Effect, Trainer Skills, Expeditioner; poi il primo nodo mai toccato. 29/09: il livello si leggeva concatenando tutte le cifre (`'Level 5/30'` → 530), quindi un nodo mai toccato non risultava mai a 0. Ora legge il numero prima della barra (verificato: `'Level 33/50'` → 33). Resta da vedere `fresh` nella riga `Selected research #N`: il 29/09 nessun nodo a livello 0 era disponibile nel primo albero. |
 | Meteorite Research | `[meteoriteresearchtask]` | - | on | ⚠️ | Priorità: Raining Gold, Firestone Finder, Firestone Effect. Mai sotto `min_meteorite_reserve` (3000). 29/09: il saldo si leggeva da un contatore nascosto nel tab Meteoriti, sempre 0, quindi non ha mai ricercato (69 giri su 69 nei log). Ora la riga `[INFO] Meteorite balance N below ...` mostra il saldo vero (2380 su Steam-0, sotto la riserva). La scelta per priorità resta da vedere quando il saldo supera 3000. |
 | Empower | `[empowertask]` | - | on | ⚠️ | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. Lettura dei Firestone corretta il 29/09: oltre T il gioco scrive due lettere minuscole (aa = 1e15, poi ×1000 per lettera). Su Steam-0 i testi erano `'1,79bl'` e `'65,67bl'`, letti come 0 (416 letture su 416 nei log del 26-29/09); ora escono 1.79E+126 e 6.567E+127, rapporto 0,03. Un reset vero non è ancora stato visto: da confermare che il valore mostrato dal gioco al momento del reset sia davvero +100%. Steam-0 ha ancora il cfg vecchio (`min_reset_ratio = 2`, limiti a 60/120 minuti), quindi lì empowera a 2 h. |
 | Arena of Kings | `[arenaofkingstask]` | 80 | on | ✅ | Scelta dell'avversario più debole e lettura dei gettoni verificate; un ciclo completo di 5 gettoni no. Può durare minuti. |
@@ -358,10 +358,6 @@ che segue ogni task.
 I due loop (Free Pickaxes e i badge accesi) valgono il 45% del tempo del bot. Il loop di New Player
 Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09 alle 17:23
 (`314aa75`).
-- Firestone Research, livello del nodo: `Preview.CurrentLevel` legge tutte le cifre del testo
-  insieme. Se il gioco mostra "0/50", il livello letto è 50 e i nodi mai toccati non vengono
-  riconosciuti: la scelta ripiega sul primo nodo disponibile. Il controllo è quello su `fresh`
-  indicato sopra.
 - `HoldButton` (Hero Upgrade) manda il pointer down ma mai il pointer up: il "rilascio" avviene
   quando il bottone smette di essere interattivo. Funziona da mesi; da tenere presente se Hero
   Upgrade si comporta in modo strano.

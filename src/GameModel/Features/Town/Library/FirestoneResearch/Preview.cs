@@ -1,7 +1,6 @@
 using System.Collections;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
-using Firebot.Utilities;
 
 namespace Firebot.GameModel.Features.Town.Library.FirestoneResearch;
 
@@ -14,14 +13,9 @@ public static class Preview
 
     public static bool IsMaxed => new GameText(Paths.MenusLoc.FirestoneResearchPreviewLoc.MaxedTxt).IsVisible();
 
-    public static int CurrentLevel
-    {
-        get
-        {
-            var text = new GameText(Paths.MenusLoc.FirestoneResearchPreviewLoc.LevelTxt).GetParsedText();
-            return StringUtils.TryParseIntFromString(text, out var level) ? level : 0;
-        }
-    }
+    // "Level 5/30" -> 5; -1 when unreadable, so it never passes for an untouched node.
+    public static int CurrentLevel =>
+        new GameText(Paths.MenusLoc.FirestoneResearchPreviewLoc.LevelTxt).GetParsedFirstInt(-1);
 
     public static IEnumerator Start => new GameButton(Paths.MenusLoc.FirestoneResearchPreviewLoc.ActivateBtn).Click();
 
