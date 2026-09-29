@@ -401,10 +401,9 @@ Ogni istanza genera il proprio file al primo avvio:
 ```
 
 (percorso sandbox per le istanze sandboxate, come sempre). Contiene una sezione per ogni task
-del bot. In un file nuovo sono tutti `enabled = true` tranne Hall of Heroes e War Machines, e un
-task sotto il suo livello di sblocco resta fermo da solo. Un file già esistente tiene i valori che
-ha: i default cambiati il 2026-09-28 (allineamento alla guida F2P) vanno portati a mano sulle
-istanze esistenti - vedi `TESTING.md`, "Da fare e rimandato".
+del bot. Un file nuovo nasce con i default del codice, un file già esistente tiene i valori che ha:
+in entrambi i casi va poi allineato a Steam-0 con lo script del punto 8.1. Un task sotto il suo
+livello di sblocco resta fermo da solo.
 
 Impostazioni globali del bot stesso (non per-task) sono nella sezione `[firebot_settings]` -
 tra queste, `low_resource_mode = true` (default) che il codice applica automaticamente
@@ -414,25 +413,32 @@ insieme - già nel codice (`src/Core/BotSettings.cs`), arriva con il `git pull`.
 
 ### 8.1 Template di configurazione base
 
-`tools/ConfigTemplate/FirebotPreferences.template.cfg` (nel repo) è una copia ripulita del
-`FirebotPreferences.cfg` di Steam-0, pensata per essere confrontata/copiata su ogni nuova
-istanza (17-34 compreso) così tutte le istanze di entrambi i PC abilitano gli stessi task con
-gli stessi parametri deliberati. **Non è un file da copiare alla cieca**: contiene solo le
-impostazioni scelte a mano (quali task sono `enabled = true`, soglie tipo
-`min_common_chest_reserve`, `resource_type`, la griglia finestre - vedi 8.2) - ogni riga marcata
-`(auto-managed, don't edit)` è stata azzerata apposta (`next_run_time_internal = ""`, contatori
-a `0`, date a `""`, `known_maxed_nodes = ""`) perché quello è stato
-reale di avanzamento per-account, diverso per ogni istanza e ricalcolato automaticamente al
-primo giro - non ha senso clonarlo da un account all'altro.
+`tools/ConfigTemplate/FirebotPreferences.template.cfg` (nel repo) è la configurazione di Steam-0
+(allineata il 2026-09-29; elenco completo in `TESTING.md`, "Configurazione di riferimento"): quali
+task sono accesi e con quali parametri. Le righe marcate `(auto-managed, don't edit)` sono vuote
+apposta: sono lo stato di avanzamento di ogni account, che il bot scrive da solo.
 
-Uso consigliato per una nuova istanza: avvia il gioco una volta così MelonPreferences genera il
-`FirebotPreferences.cfg` con i default, chiudi il gioco, poi allinea al template gli `enabled` e i
-parametri non auto-managed che vuoi replicare (lasciando stare tutto ciò che è marcato
-"(auto-managed, don't edit)", che resta gestito dal bot). Per un'istanza già avviata, usalo invece
-come lista di confronto per trovare cosa manca o differisce rispetto alle altre.
-`window_grid_first_instance` è l'unica riga che DEVE cambiare in base al PC (vedi 8.2 sotto) -
-`debug_mode` è `true` in questo template perché così è rimasto attivo su Steam-0 durante lo
-sviluppo, non è un requisito.
+Non si copia a mano: `tools/ConfigTemplate/apply_template.ps1` porta al template ogni istanza di
+un intervallo, nel file reale e in quello del sandbox, lasciando lo stato dell'account e il suo
+`talentstask.guide_start_index`, e mettendo `window_grid_first_instance` al primo numero
+dell'intervallo (vedi 8.2). Scrive in UTF-8 senza BOM e si rifiuta di scrivere se un gioco
+dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
+
+1. Avvia ogni istanza una volta e aspetta `Started.` nel log: la DLL nuova aggiunge al cfg le
+   sezioni che mancano.
+2. Chiudi tutte le istanze.
+3. Da PowerShell, nella cartella del repo:
+
+   ```powershell
+   .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check   # solo confronto
+   .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34          # allinea
+   .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check   # deve dire "0 valori da cambiare"
+   ```
+
+   Se segnala "chiavi mancanti", quell'istanza non ha ancora girato con la DLL nuova: torna al
+   passo 1 per lei.
+4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 35 of 38`
+   come su Steam-0.
 
 ### 8.2 Griglia delle finestre (monitor 2560x1440)
 
@@ -463,8 +469,9 @@ taskbar), quindi bastano per 20 istanze. Con i vecchi 512x384 le finestre di una
 barra del titolo di quella sopra e la quarta riga usciva dallo schermo.
 
 Sul secondo PC anche la console di MelonLoader è nascosta, con `hide_console = true` nella sezione
-`[console]` di `UserData\Loader.cfg` di ogni istanza, e il debug del bot è spento
-(`debug_mode = false`).
+`[console]` di `UserData\Loader.cfg` di ogni istanza. Il debug del bot era spento
+(`debug_mode = false`); dal 2026-09-29 il fleet segue Steam-0 e `apply_template.ps1` lo accende
+(`true`): le righe `[DEBUG]` servono per leggere i log di un test su larga scala.
 
 ---
 
@@ -499,7 +506,8 @@ Per OGNI istanza 17-34, in ordine:
       sandbox) di `Mods\`.
 - [ ] Log più recente: nessun `FileNotFoundException`, presente `Started. Enabled tasks:`.
 - [ ] Titolo finestra mostra `[Steam-<N>]` (conferma che Sandboxie applica la config).
-- [ ] Task del bot abilitati secondo le esigenze di quell'account in `FirebotPreferences.cfg`.
+- [ ] `FirebotPreferences.cfg` allineato a Steam-0: `apply_template.ps1 -From 17 -To 34 -Check`
+      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 35 of 38`.
 
 A livello di sistema (una tantum, non per-istanza):
 

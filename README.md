@@ -201,6 +201,8 @@ and valid range - that's the reference. New settings are added to an existing fi
 
 [`tools/ConfigTemplate/FirebotPreferences.template.cfg`](tools/ConfigTemplate/FirebotPreferences.template.cfg)
 is a complete example: the configuration the author's instances run with.
+[`apply_template.ps1`](tools/ConfigTemplate/apply_template.ps1), next to it, aligns a range of
+instances to it (both copies of a sandboxed one), keeping each account's own state.
 
 ## Running many instances
 

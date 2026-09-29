@@ -152,7 +152,7 @@ $bmp.Save("$env:TEMP\steam0.png")
 3. Nel cfg, in `[firebot_settings]`: `auto_start = true`, `debug_mode = true`,
    `start_bot_delay = 30.0`. Nelle sezioni dei task: `enabled` come in
    `tools/ConfigTemplate/FirebotPreferences.template.cfg` (tutto acceso tranne `hallofheroestask` e
-   `warmachinestask`), e `next_run_time_internal = ""` ovunque, così ogni task è subito dovuto.
+   i due task Oracle), e `next_run_time_internal = ""` ovunque, così ogni task è subito dovuto.
 4. Build, deploy, avvio.
 
 ### Fase 1: giro completo
@@ -196,10 +196,18 @@ Tutte le istanze, su entrambi i PC, devono avere questi valori in `FirebotPrefer
 chiave. I valori auto-gestiti (`next_run_time_internal`, `last_done_date`, contatori del giorno,
 `known_maxed_nodes`) non si copiano: il bot li scrive da solo.
 
-Come applicarla: a gioco chiuso (il gioco riscrive il file quando esce), in UTF-8 senza BOM, e per
-le istanze sandboxate sia nel percorso classico sia in quello del sandbox
-(`C:\Sandbox\<utente>\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\...\UserData`). Le sezioni che
-mancano si creano da sole al primo avvio con la DLL nuova.
+Il template `tools/ConfigTemplate/FirebotPreferences.template.cfg` è questa stessa configurazione, e
+`tools/ConfigTemplate/apply_template.ps1` la applica a un intervallo di istanze: a gioco chiuso (il
+gioco riscrive il file quando esce), in UTF-8 senza BOM, e per le istanze sandboxate sia nel percorso
+classico sia in quello del sandbox. Tiene i valori auto-gestiti e le due eccezioni qui sotto, e con
+`-Check` mostra solo le differenze. Una chiave che il file non ha ancora viene solo segnalata: si
+avvia l'istanza una volta con la DLL nuova (crea le sezioni mancanti), si chiude e si rilancia lo
+script.
+
+```powershell
+.\tools\ConfigTemplate\apply_template.ps1 -From 0 -To 16 -Check   # questo PC
+.\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34         # secondo PC (griglia da 17)
+```
 
 Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate da Steam-0:
 
@@ -235,10 +243,10 @@ gli altri accesi, compresi `warmachinestask`, `massproductioneventtask`,
 | `auto_retreat` | `stall_minutes = 3.0`, `retreat_stages = 5` |
 | `flying_bonus_hunter` | `poll_seconds = 2.0` |
 
-Differenze dai default del template (`tools/ConfigTemplate/FirebotPreferences.template.cfg`, i
-default F2P della Fase 0): Empower (template `1.0` / `0` / `0`, cioè solo il +100%), Map Missions
-(template `desc`), War Machines (template spento), task Oracle (template accesi). Il fleet oggi segue
-Steam-0; passare ai default F2P resta la decisione aperta in "Da fare e rimandato".
+Un file nuovo nasce invece con i default del codice, cioè i default F2P della Fase 0, diversi in
+quattro punti: Empower `1.0` / `0` / `0` (solo il +100%), Map Missions `desc`, War Machines spento,
+task Oracle accesi. Per questo su un'istanza nuova lo script va passato dopo il primo avvio. Passare
+il fleet ai default F2P resta la decisione aperta in "Da fare e rimandato".
 
 ---
 
@@ -411,7 +419,7 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
   costava di più: i claim di Quests e Merchant (`CharacterScreen.QuestClaimButtons`) ora elencano
   solo i bottoni cliccabili (Quests da 37 s a 8 s).
 - **Empower controlla ogni 5 minuti** finché il rapporto non basta (`RetryDelay`). Il 29/09 su
-  Steam-0: rapporto da 0,03 a 0,39 in un'ora. Con i default del template (`min_reset_ratio = 1.0`,
+  Steam-0: rapporto da 0,03 a 0,39 in un'ora. Con i default F2P del codice (`min_reset_ratio = 1.0`,
   nessun limite di tempo) sono 5 s ogni 5 minuti per ore; un ritardo più lungo sotto una certa soglia
   di rapporto dimezzerebbe il costo.
 - **Chaos Rift a volte non apre la schermata** dal bottone della Gilda (29/09, 16:31), mentre due
@@ -449,11 +457,12 @@ Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09
   percorso classico e sandbox), e i loro cfg sono stati allineati a Steam-0 (vedi "Configurazione di
   riferimento"). Un secondo PC (istanze 17-34, `MULTI_INSTANCE_SETUP.md`) va aggiornato a parte. Le sezioni nuove
   (`[sigilsofprophecyeventtask]`, `last_done_date` di Daily Store Offers) si creano da sole.
-- **Default F2P sul fleet (da decidere)**: i default della Fase 0 nel template (Personal Tree al posto
+- **Default F2P sul fleet (da decidere)**: i default della Fase 0 nel codice (Personal Tree al posto
   delle War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`) valgono solo per i
-  file nuovi. Il 29/09 il fleet di questo PC è stato allineato a Steam-0 (vedi "Configurazione di
-  riferimento"), che ha ancora i valori vecchi per quei quattro punti. Se si passa ai default F2P,
-  vanno cambiati prima Steam-0 e quella sezione, poi tutte le istanze.
+  file nuovi. Il 29/09 il template e il fleet di questo PC sono stati allineati a Steam-0 (vedi
+  "Configurazione di riferimento"), che ha ancora i valori vecchi per quei quattro punti. Se si
+  passa ai default F2P: si cambiano Steam-0, il template e quella sezione, poi si ripassa
+  `apply_template.ps1` su tutte le istanze.
 - **Hall of Heroes, prima di accenderlo**: `AlwaysEnchantSlots = { 3, 4, 5, 6, 7 }` spende i Void
   Crystal su Wrist/Shoulder/Belt prima del Ring, che per la guida è il pezzo più importante. Il
   riordino sarebbe `{ 6, 3, 7, 4, 5 }`, ma la corrispondenza indice → slot è dedotta: prima va
