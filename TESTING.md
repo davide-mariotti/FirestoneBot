@@ -278,7 +278,7 @@ un errore.
 |---|---|:-:|:-:|---|
 | Hero Upgrade | `[hero_upgrade]` | on | ✅ | |
 | AutoRetreat | `[auto_retreat]` | on | ✅ | Per provarlo in fretta: `stall_minutes = 1` su uno stage duro. |
-| Flying Bonus Hunter | `[flying_bonus_hunter]` | on | ⚠️ | Bersagli trovati dal vivo su Steam-0. Da confermare: che il click dia davvero la ricompensa, e se compare un popup dopo. |
+| Flying Bonus Hunter | `[flying_bonus_hunter]` | on | ⚠️ | Bersagli trovati dal vivo su Steam-0. 29/09: i 4 bottoni sono sempre attivi e cliccabili, e il bot li cliccava tutti a ogni giro (~4 s di click ogni ~6 s), con un'eccezione del gioco sugli hunter fermi. In volo è attivo solo il loro figlio (`hunter`, `dragon`, `femaleDragon`): ora clicca solo allora, e ogni click scrive `[FlyingBonusHunter] Clicking ...`. Dopo il click non compare nessun popup. Da confermare: che il click dia davvero la ricompensa (il bonus resta spesso in volo e viene cliccato 2 volte). |
 
 Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18 istanze su
 2560x1440).

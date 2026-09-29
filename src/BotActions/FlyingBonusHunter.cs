@@ -1,5 +1,6 @@
 using System.Collections;
 using Firebot.Core;
+using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using Firebot.Utilities;
@@ -12,8 +13,8 @@ namespace Firebot.BotActions;
 /// <summary>
 ///     Taps the flying bonuses (two dragons carrying beer, two meteorite hunters) as they cross the
 ///     battle screen. They're visible for only a few seconds, so this is its own fast polling loop
-///     rather than a scheduled task. It's a single click each - whether a reward popup can follow
-///     hasn't been verified live.
+///     rather than a scheduled task. It's a single click each, and only while the bonus is flying:
+///     the Buttons are clickable all the time, and a click on an idle hunter throws inside the game.
 /// </summary>
 public static class FlyingBonusHunter
 {
@@ -26,12 +27,14 @@ public static class FlyingBonusHunter
     private static bool IsEnabled => _isEnabled?.Value ?? false;
     private static WaitForSeconds PollWait => new(Mathf.Clamp(_pollSeconds?.Value ?? 2f, 0.5f, 10f));
 
-    private static readonly GameButton[] Targets =
+    private static readonly (GameElement Flying, GameButton Button)[] Targets =
     {
-        new(Paths.FlyingBonusHunterLoc.MeteoriteHunterBtn),
-        new(Paths.FlyingBonusHunterLoc.CoworkerMeteoriteHunterBtn),
-        new(Paths.FlyingBonusHunterLoc.DragonWithBeerBtn),
-        new(Paths.FlyingBonusHunterLoc.FemaleDragonWithBeerBtn)
+        (new(Paths.FlyingBonusHunterLoc.MeteoriteHunterFlying), new(Paths.FlyingBonusHunterLoc.MeteoriteHunterBtn)),
+        (new(Paths.FlyingBonusHunterLoc.CoworkerMeteoriteHunterFlying),
+            new(Paths.FlyingBonusHunterLoc.CoworkerMeteoriteHunterBtn)),
+        (new(Paths.FlyingBonusHunterLoc.DragonWithBeerFlying), new(Paths.FlyingBonusHunterLoc.DragonWithBeerBtn)),
+        (new(Paths.FlyingBonusHunterLoc.FemaleDragonWithBeerFlying),
+            new(Paths.FlyingBonusHunterLoc.FemaleDragonWithBeerBtn))
     };
 
     public static void Initialize()
@@ -94,9 +97,12 @@ public static class FlyingBonusHunter
                 continue;
             }
 
-            foreach (var target in Targets)
-                if (target.IsClickable())
-                    yield return target.Click();
+            foreach (var (flying, button) in Targets)
+                if (flying.IsVisible() && button.IsClickable())
+                {
+                    Logger.Debug($"[FlyingBonusHunter] Clicking {button.FullPath}.");
+                    yield return button.Click();
+                }
 
             yield return PollWait;
         }
