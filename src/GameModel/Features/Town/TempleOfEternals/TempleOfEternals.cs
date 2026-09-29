@@ -19,4 +19,11 @@ public static class TempleOfEternals
 
     public static double FirestonesYouOwn =>
         new GameText(Paths.MenusLoc.TempleOfEternalsLoc.FirestonesYouOwnTxt).GetParsedDoubleAbbreviated();
+
+    // The raw texts, for the log: both counts read as 0 on every run of the 26-29/09 logs.
+    public static string FirestonesFoundText =>
+        new GameText(Paths.MenusLoc.TempleOfEternalsLoc.FirestonesFoundTxt).GetParsedText();
+
+    public static string FirestonesYouOwnText =>
+        new GameText(Paths.MenusLoc.TempleOfEternalsLoc.FirestonesYouOwnTxt).GetParsedText();
 }

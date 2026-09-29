@@ -79,8 +79,17 @@ public class EmpowerTask : BotTask
         var maxMinutes = _maxAdventureMinutes?.Value ?? 0;
         var maxDuration = maxMinutes > 0 ? TimeSpan.FromMinutes(maxMinutes) : TimeSpan.MaxValue;
 
-        Debug($"[INFO] Adventure time: {timePlayed}, Firestones found: {found}, Temple's Firestones: {owned}, " +
+        var foundText = TempleOfEternals.FirestonesFoundText;
+        var ownedText = TempleOfEternals.FirestonesYouOwnText;
+
+        Debug($"[INFO] Adventure time: {timePlayed}, Firestones found: {found} ('{foundText}'), " +
+              $"Temple's Firestones: {owned} ('{ownedText}'), " +
               $"Ratio: {ratio:0.##} (need {minRatio:0.##} after {minDuration}, or force empower after {maxDuration}).");
+
+        // Only a brand-new account has nothing banked: a 0 here means the text didn't parse, and then
+        // the ratio can never trigger an empower.
+        if (owned <= 0)
+            Debug($"[FAILED] Temple's Firestones read as 0 from '{ownedText}' - no ratio-based empower until fixed.");
 
         if ((timePlayed >= minDuration && ratio >= minRatio) || timePlayed >= maxDuration)
         {
