@@ -55,7 +55,11 @@ public class GuardianHolyUpgradeTask : BotTask
             }
         }
 
+        // A locked guardian's click opens LockedGuardian; Chaos Rift is still open under Magic Quarters,
+        // and TownGuild's close does nothing while it is.
+        yield return MagicQuartersScreen.CloseLockedPopup;
         yield return MagicQuartersScreen.Close;
+        yield return ChaosRift.Close;
         yield return TownGuild.Close;
 
         NextRunTime = DateTime.Now + RecheckDelay;

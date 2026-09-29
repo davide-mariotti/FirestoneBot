@@ -236,7 +236,7 @@ file di configurazione nuovo.
 | Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. Il badge resta acceso: nei log del 26-29/09 il task ha girato 325 volte, una ogni ~50 s, per 33 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti (vedi "Problemi noti"). |
 | Chaos Rift | `[chaosrifttask]` | 100 | on | ⚠️ | Solo Tomes of Power, mai Eclipse Stones. Il badge resta acceso: nei log del 26-29/09 il task ha girato 430 volte, una ogni ~40 s, per 73 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti. In 3 sessioni su 9 `menus/ChaosRift` non esisteva e `hitButton` era nascosto: da verificare che colpisca davvero. Se non colpisce, forse è per questo che il badge non si spegne. |
 | Forbidden Knowledge | `[forbiddenknowledgetask]` | 100 | on | ✅ | Schermata verificata; il bottone dell'edificio in Gilda è ipotizzato. |
-| Guardian Holy Upgrade | `[guardianholyupgradetask]` | 100 | on | ✅ | Chaos Rift → Upgrades → Magic Quarters. |
+| Guardian Holy Upgrade | `[guardianholyupgradetask]` | 100 | on | ✅ | Chaos Rift → Upgrades → Magic Quarters. 29/09: lasciava aperti LockedGuardian, Chaos Rift e la Gilda (li chiudeva il Watchdog); ora li chiude il task. |
 
 ### Map e Warfront
 
