@@ -1,17 +1,24 @@
+using System;
 using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Guild.Shop;
-using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Shared;
+using Firebot.Infrastructure;
 using MelonLoader;
 
 namespace Firebot.Tasks.Guild;
 
-/// <summary>Claims the Guild shop's free pickaxes once enough have piled up; MinerQuestTask spends them.</summary>
+/// <summary>
+///     Claims the Guild shop's free pickaxes once enough have piled up; MinerQuestTask spends them.
+///     Badge only: the badge opens the shop on its Supplies tab, while the Guild -> Guild Shop route
+///     never reached the timer (1,015 of 1,038 runs in the 26-29/09 logs, each retrying 2 min later).
+/// </summary>
 public class FreePickaxesTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Guild;
     protected override int MinimumCharacterLevel => 50;
+
+    protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.FreePickaxes;
 
     private MelonPreferences_Entry<int> _pickaxeClaimThreshold;
 
@@ -31,21 +38,17 @@ public class FreePickaxesTask : BotTask
         );
     }
 
-    // The badge isn't used for scheduling: this claims only once pickaxe_claim_threshold is reached.
     public override IEnumerator Execute()
     {
-        yield return Notifications.FreePickaxes;
+        // Runs only on the badge, never on a timer.
+        NextRunTime = DateTime.MaxValue;
 
-        yield return TownGuild.Open;
-        yield return TownGuild.OpenGuildShop;
+        yield return Notifications.FreePickaxes;
         yield return GuildShop.OpenSuppliesTab;
 
         if (FreePickaxes.Quantity >= PickaxeClaimThreshold)
             yield return FreePickaxes.Claim;
 
-        NextRunTime = FreePickaxes.NextRunTime;
-
         yield return GuildShop.Close;
-        yield return TownGuild.Close;
     }
 }

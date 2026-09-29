@@ -94,8 +94,6 @@ public static partial class Paths
 
             public const string CloseBtn = Root + "/closeButton";
 
-            public const string GuildShopBtn = Root + "/guildShop";
-
             public const string ExpeditionsBtn = Root + "/expeditions";
 
             public const string ArcaneCrystalBtn = Root + "/arcaneCrystal";
@@ -333,8 +331,6 @@ public static partial class Paths
                 public const string ClaimBtn = Root + "/claimBg/purchaseButton";
 
                 public const string QuantityTxt = Root + "/claimBg/itemBg/itemQuantity";
-
-                public const string NextRunTimeTxt = Root + "/nextFreeObj/progressBarBg/timeLeftText";
             }
         }
 

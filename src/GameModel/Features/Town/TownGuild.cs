@@ -8,8 +8,6 @@ public static class TownGuild
 {
     public static IEnumerator Open => new GameButton(Paths.BattleLoc.RightSideUILoc.GuildBtn).Click();
 
-    public static IEnumerator OpenGuildShop => new GameButton(Paths.MenusLoc.TownGuildLoc.GuildShopBtn).Click();
-
     public static IEnumerator OpenExpeditions => new GameButton(Paths.MenusLoc.TownGuildLoc.ExpeditionsBtn).Click();
 
     public static IEnumerator OpenArcaneCrystal =>

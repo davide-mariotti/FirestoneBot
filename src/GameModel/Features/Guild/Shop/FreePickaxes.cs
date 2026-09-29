@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
@@ -8,9 +7,6 @@ namespace Firebot.GameModel.Features.Guild.Shop;
 
 public static class FreePickaxes
 {
-    public static DateTime NextRunTime =>
-        new GameText(Paths.MenusLoc.GuildShopLoc.FreePickaxeLoc.NextRunTimeTxt).Time;
-
     private static string QuantityTxt =>
         new GameText(Paths.MenusLoc.GuildShopLoc.FreePickaxeLoc.QuantityTxt).GetParsedText();
 
