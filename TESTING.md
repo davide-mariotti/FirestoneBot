@@ -205,8 +205,8 @@ avvia l'istanza una volta con la DLL nuova (crea le sezioni mancanti), si chiude
 script.
 
 ```powershell
-.\tools\ConfigTemplate\apply_template.ps1 -From 0 -To 16 -Check   # questo PC
-.\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34         # secondo PC (griglia da 17)
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 0 -To 16 -Check  # questo PC
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34        # secondo PC
 ```
 
 Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate da Steam-0:

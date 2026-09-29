@@ -26,7 +26,8 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    `src\bin\Release\net6.0`) nei **due** `Mods` di ogni istanza, reale e sandbox (punto 5). Nessun
    altro file: MelonLoader e il resto non cambiano.
 5. Allinea i cfg a Steam-0 (punto 8.1):
-   `.\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`. Se segnala chiavi mancanti non è un
+   `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`
+   (da PowerShell, nella cartella del repo). Se segnala chiavi mancanti non è un
    problema: sono sezioni nuove che la DLL crea al primo avvio, col valore di Steam-0.
 6. Riavvia in sequenza (`Avvia_Tutte_Istanze_Firestone.bat`, punto 6.3).
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
@@ -453,10 +454,12 @@ dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
 3. Da PowerShell, nella cartella del repo:
 
    ```powershell
-   .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check   # solo confronto
-   .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34          # allinea
-   .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check   # deve dire "0 valori da cambiare"
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check  # solo confronto
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34         # allinea
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check  # "0 valori da cambiare"
    ```
+
+   `-ExecutionPolicy Bypass` serve perché di norma Windows non esegue script `.ps1` scaricati.
 
    Se segnala "chiavi mancanti", quell'istanza non ha ancora girato con la DLL nuova: torna al
    passo 1 per lei.
