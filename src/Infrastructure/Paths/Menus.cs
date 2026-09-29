@@ -179,8 +179,8 @@ public static partial class Paths
 
             public const string CloseBtn = Root + "/closeButton";
 
-            // Opens TavernMarket ("Stormy, the tavern keeper").
-            public const string OpenMarketBtn = Root + "/helpCanvas/stormyButton";
+            // Opens TavernMarket. Not helpCanvas/stormyButton: neither a click nor a simulated one opens it.
+            public const string OpenMarketBtn = Root + "/helpCanvas/actionButtons/shop";
 
             public const string PlayBtn = Root + "/helpCanvas/bottomUI/playButton";
 

@@ -202,7 +202,7 @@ file di configurazione nuovo.
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
 | Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. Clicca anche i claim disabilitati: nei log del 26-29/09 ci sono 288 `Click ignored` sui `claimButton`, 1 s ciascuno (vedi "Problemi noti"). |
-| Beer Exchange | `[beerexchangetask]` | 15 | on | ✅ | Usa solo l'offerta pagata in birra, mai le due in gemme. |
+| Beer Exchange | `[beerexchangetask]` | 15 | on | ✅ | Usa solo l'offerta pagata in birra, mai le due in gemme. 29/09: senza badge non apriva mai il mercato (lo `stormyButton` della Taverna non lo apre); ora entra da `actionButtons/shop` ("Market"), verificato dal vivo. |
 | Collector | `[collectorquesttask]` | - | on | 🔄 | Apre solo chest Wooden/Iron/Common e al massimo 4 al giorno; Uncommon e superiori non si toccano. Jewel e celestial sempre tutte. Da confermare: che Wooden e Iron valgano davvero meno di Common (se no cambia solo quale chest economica usa). |
 | Gamer | `[gamerquesttask]` | 15 | on | ✅ | 10 giocate in taverna, senza scendere sotto `min_token_reserve`. |
 | Merchant | `[merchantquesttask]` | 30 | on | 🔄 | Vende solo le posizioni 3, 2, 1 della griglia (Midas, Health, Damage), mai Speed né i consumabili di gold e meteoriti. Controlla la riga `Sell grid:` del log: deve elencare quei nomi in quelle posizioni. |

@@ -225,7 +225,7 @@
     <tbody>
       <tr><td class="path">infoButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (InfoButtonAnimation)</td><td>Apre un popup informativo/tutorial generale sulla schermata.</td></tr>
       <tr><td class="path">infoButton/spineInfo</td><td>Spine.Unity.SkeletonGraphic</td><td>Animazione dell'icona info.</td></tr>
-      <tr><td class="path">stormyButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone con animazione Spine dedicata ("stormySpine"). Funzione non chiara dal nome (possibile personaggio/evento/venditore a tema associato alla Taverna): verificare dal vivo.</td></tr>
+      <tr><td class="path">stormyButton <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Bottone con animazione Spine dedicata ("stormySpine"). Non apre il mercato della birra: verificato dal vivo il 29/09, né il click né il click simulato aprono <code>popups/TavernMarket</code>. Funzione reale non nota.</td></tr>
       <tr><td class="path">stormyButton/stormySpine</td><td>Spine.Unity.SkeletonGraphic, MenuVfxEntityComponent</td><td>Animazione del pulsante "stormy".</td></tr>
       <tr><td class="path">chat <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span> (ChatInteraction)</td><td>Apre la chat di gioco.</td></tr>
       <tr><td class="path">chat/collider</td><td>Image</td><td>Area di click, nessun contenuto proprio.</td></tr>
@@ -234,9 +234,9 @@
       <tr><td class="path">rewards <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Funzione non chiara dal solo nome/icona: probabile accesso a un riepilogo ricompense, verificare dal vivo.</td></tr>
       <tr><td class="path">rewards/icon</td><td>Image</td><td>Icona del pulsante.</td></tr>
       <tr><td class="path">actionButtons</td><td>GridLayoutGroup</td><td>Contenitore dei tre pulsanti di scorciatoia sottostanti.</td></tr>
-      <tr><td class="path">actionButtons/artifacts <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso la schermata/lista degli artefatti, verificare dal vivo.</td></tr>
-      <tr><td class="path">actionButtons/cards <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso la collezione carte, verificare dal vivo.</td></tr>
-      <tr><td class="path">actionButtons/shop <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso il negozio, verificare dal vivo.</td></tr>
+      <tr><td class="path">actionButtons/artifacts <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso gli artefatti (testo "Ancient artifacts", visto dal vivo il 29/09).</td></tr>
+      <tr><td class="path">actionButtons/cards <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Scorciatoia verso la collezione carte (testo "Sacred cards", visto dal vivo il 29/09).</td></tr>
+      <tr><td class="path">actionButtons/shop <span class="tag tag-btn">BOTTONE</span></td><td><span class="tag tag-btn">BOTTONE</span></td><td>Apre <code>popups/TavernMarket</code>, il cambio birra → gettoni (testo "Market"). Verificato dal vivo il 29/09: è l'ingresso usato da BeerExchangeTask.</td></tr>
       <tr><td class="path">actionButtons/*/icon, .../text</td><td>Image / <span class="tag tag-txt">testo</span> localizzato</td><td>Icona ed etichetta di ciascuno dei tre pulsanti sopra.</td></tr>
       <tr><td class="path">actionButtons/*/notification <span class="tag tag-off">inattivo</span>, .../bell, .../amountTMP</td><td>Image / Spine / <span class="tag tag-txt">testo</span> <span class="tag tag-off">inattivo</span></td><td>Badge di notifica su ciascuno dei tre pulsanti; compare solo quando c'è qualcosa da segnalare.</td></tr>
     </tbody>
