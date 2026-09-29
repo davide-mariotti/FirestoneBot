@@ -79,7 +79,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Talents**: spends talent points to reach as deep into the tree as possible, by configurable priority (`priority_overrides`).
 - **Path of Glory**: claims the free track and, if owned, the Golden one. Never buys the pass.
-- **Hall of Heroes** (off by default): unlocks and enchants gear and jewels.
+- **Hall of Heroes** (off by default): spends Void Crystals on gear enchants and Ethereal Shards on jewel enchants, planned in advance from a snapshot of every hero (re-read every 24 h): gear tier unlocks first, then the lowest levels, with the Ring ahead and tier 1 only for the formation. Unlocks gear tiers when the gear power allows.
 
 **Scarab's Game**
 
@@ -237,7 +237,7 @@ the game.
 ## Open Points
 
 - **In-game configuration UI**: settings are edited in `FirebotPreferences.cfg` only.
-- **Hall of Heroes** stays off until its gear enchant order puts the Ring first.
+- **Hall of Heroes** stays off by default: verified live on one account, where no hero had a gear tier left to unlock.
 - **Soul stones** (Hall of Heroes, character level 200) aren't handled.
 - **War Machines** level with single clicks; the bulk multiplier isn't wired up.
 - The full list of known issues and deferred work is in [TESTING.md](TESTING.md).

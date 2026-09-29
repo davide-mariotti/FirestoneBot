@@ -316,7 +316,7 @@ file di configurazione nuovo.
 |---|---|:-:|:-:|:-:|---|
 | Talents | `[talentstask]` | - | on | ✅ | Parte solo sul badge TalentAvailable. |
 | Path of Glory | `[pathofglorytask]` | - | on | ✅ | Traccia gratuita e Golden (se posseduta); non compra mai il pass. |
-| Hall of Heroes | `[hallofheroestask]` | - | **off** | ❌ | Non accenderlo in questa sessione: prima serve il riordino degli slot (vedi "Da fare e rimandato"). |
+| Hall of Heroes | `[hallofheroestask]` | - | **off** | ⚠️ | Riscritto il 29/09 (`HALL_OF_HEROES_PLAN.md`): legge la formazione dal Party, ogni 24 h rilegge tutti gli eroi (`hero_snapshot` nel cfg) e con `EnchantPlanner` decide prima cosa comprano Void Crystal ed Ethereal Shards; prima di ogni click rilegge livello e costo dallo schermo. Verificato su Steam-0: lettura completa di 10 eroi in 70 s (tabella nel log uguale al gioco), 8 incantesimi gear (2.640 VC su 3.010, il prossimo ne costava 960) e 25 di gioielli, snapshot vecchio corretto senza click, secondo giro senza niente da comprare in 8 s, tier 1 solo agli eroi in formazione. Non verificabile su Steam-0: lo sblocco dei tier (tutti gli eroi hanno già tier 2 e 3). Le soglie del wiki (1300/6600) sembrano piccole rispetto alla gear power mostrata (da 48.550 a 1.800.000): al primo eroe con un tier bloccato la riga `gear tier N locked ... Panel: '...'` mostra il testo del gioco. Spento sul fleet finché non lo si accende a mano. |
 
 ### Scarab Game
 
@@ -405,8 +405,13 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
   primo task (Collector) non ha aperto la scheda Personaggio e ha riprovato un'ora dopo. Se succede
   spesso, portarlo a 60. Il vecchio "what's new" non si è visto.
 - Il `storeButton` dell'HUD non apre niente (zero listener): Daily Store Offers dipende dai suoi badge.
-- Percorsi ipotizzati, mai visti dal vivo: badge della posta, bottone Forbidden Knowledge in Gilda,
-  bottone Party.
+- Percorsi ipotizzati, mai visti dal vivo: badge della posta, bottone Forbidden Knowledge in Gilda.
+- `[FAILED] Path broken: ... popups/CurrencyMissing/bg/closeButton` compare una volta per sessione al
+  primo controllo del popup valuta: il gioco crea il popup solo la prima volta che lo mostra. Non è
+  un errore.
+- **Party**: gli eroi della formazione si caricano uno alla volta, per 2-4 s dopo l'apertura (anche
+  i tick del deck e il "Deployed: N/5"). Subito dopo l'avvio, con i popup iniziali ancora aperti, il
+  bottone Party può non esserci: Hall of Heroes tiene allora la formazione dello snapshot.
 - **Badge che restano accesi = task in loop (corretto e verificato il 29/09).** Prima un
   badge acceso rendeva il task sempre pronto, anche se aveva appena girato: Chaos Rift e Awakening
   hanno girato così per 106 minuti in 3 giorni (log del 26-29/09). Ora in `BotTask.IsReady` il badge
@@ -467,11 +472,10 @@ Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09
   "Configurazione di riferimento"), che ha ancora i valori vecchi per quei quattro punti. Se si
   passa ai default F2P: si cambiano Steam-0, il template e quella sezione, poi si ripassa
   `apply_template.ps1` su tutte le istanze.
-- **Hall of Heroes, prima di accenderlo**: `AlwaysEnchantSlots = { 3, 4, 5, 6, 7 }` spende i Void
-  Crystal su Wrist/Shoulder/Belt prima del Ring, che per la guida è il pezzo più importante. Il
-  riordino sarebbe `{ 6, 3, 7, 4, 5 }`, ma la corrispondenza indice → slot è dedotta: prima va
-  dumpato l'elenco reale degli 8 figli di `GearGrid`. Da verificare anche che Party e Hall of
-  Heroes elenchino gli eroi nello stesso ordine.
+- **Hall of Heroes sul fleet (da decidere)**: verificato su Steam-0 il 29/09, ma resta spento nel
+  template e nel codice (`DefaultEnabled`). Per accenderlo: `enabled = true` in
+  `[hallofheroestask]` del template e `apply_template.ps1`. Al primo giro ogni account fa la lettura
+  completa (~70 s per 10 eroi) e spende tutti i Void Crystal e gli Ethereal Shards accumulati.
 - **Rituali Oracle**: ce ne sono quattro (Obedience: forzieri solar; Harmony: comet; Concentration:
   oracle's gift ed emblemi; Serenity: lunar), da 40 minuti, uno alla volta, reset ogni 6 ore. Oggi
   parte il primo in ordine di griglia. A cadenza h24 dovrebbero comunque partire tutti dentro la
@@ -480,7 +484,7 @@ Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09
   griglia (oggi nessun testo col nome del rituale è mappato).
 - Rimandati perché a cadenza h24 rendono poco: modalità "Next Milestone" di Hero Upgrade, upgrade
   globali/speciali (`upgradesButtonUI`, mai mappato), spedizione con più punti, missione del drago
-  prioritaria (`MissionPin` non ha il tipo di missione), Wrist un livello sopra Relic.
+  prioritaria (`MissionPin` non ha il tipo di missione).
 - Non ancora gestiti: claim gratuito del Monthly pass nello shop di Scarab's Game, missioni Dungeon
   del Warfront, moltiplicatore bulk delle War Machines, Soul stones (Hall of Heroes, livello 200).
 - Scartato: la routine di push (pergamene e pouch allo stage ottimale). Fragile e rischia di
@@ -492,11 +496,13 @@ Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09
 - Eclipse Stones comprate (Chaos Rift deve comprare solo Tomes of Power).
 - Venduti o usati barili, gold istantaneo o meteoriti istantanee (5/10/30 min, 1 h).
 - Un task che non chiude la schermata che ha aperto.
-- Hall of Heroes che incanta il tier 1 di un eroe fuori dalla formazione.
+- Hall of Heroes che incanta il tier 1 di un eroe fuori dalla formazione, tranne gli eroi in sblocco
+  tier (sotto la gear power del tier bloccato successivo).
 
 ## Tornare indietro
 
-Il tag `pre-cleanup-2026-09-28` segna il codice prima della pulizia (commit `a27ecf0`, già con il
+Il tag `pre-hall-of-heroes-2026-09-29` segna il codice prima della riscrittura di Hall of Heroes
+(commit `6a75e0a`). Il tag `pre-cleanup-2026-09-28` segna il codice prima della pulizia (commit `a27ecf0`, già con il
 riallineamento alla guida F2P). Il commit precedente al riallineamento è `10eebca`.
 
 ```powershell

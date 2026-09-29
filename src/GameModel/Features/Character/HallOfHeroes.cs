@@ -1,64 +1,131 @@
 using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
+using System.Globalization;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace Firebot.GameModel.Features.Character;
 
+/// <summary>
+///     Reads and clicks the live Hall of Heroes. What to enchant is decided by
+///     Tasks.Character.EnchantPlanner; this only knows where things are.
+/// </summary>
 public static class HallOfHeroes
 {
     public static IEnumerator Close => new GameButton(Paths.HallOfHeroesLoc.CloseBtn).Click();
 
-    private static GameElement HeroGrid => new(Paths.HallOfHeroesLoc.HeroGridRoot);
+    public static bool IsOpen => IsShown(Paths.HallOfHeroesLoc.CloseBtn);
 
-    public static GameElement[] Heroes => HeroGrid.GetChildren().Where(h => h.Name.StartsWith("hero (")).ToArray();
+    // Checked without GameElement.IsVisible, which logs a [FAILED] line for what is here a normal state
+    // (an empty slot's row, a level-0 badge, an unlocked tier's lock panel).
+    private static bool IsShown(string path) =>
+        GameElement.FindTransform(path) is { } t && t.gameObject.activeInHierarchy;
 
-    public static IEnumerator SelectHero(GameElement hero) => new GameButton(parent: hero).Click();
-
-    public static IEnumerator OpenGearTab => new GameButton(Paths.HallOfHeroesLoc.GearTabBtn).Click();
-
-    public static IEnumerator OpenEnchantingTab => new GameButton(Paths.HallOfHeroesLoc.EnchantingTabBtn).Click();
-
-    public static class GearTierUnlock
+    // Raw transforms: the clone cells all share one name, so a path would always find the first, inactive, one.
+    private static List<Transform> HeroCells()
     {
-        public static IEnumerator OpenGalleryView =>
-            new GameButton(Paths.HallOfHeroesLoc.GearSubmenuLoc.GalleryViewBtn).Click();
+        var cells = new List<Transform>();
+        var grid = GameElement.FindTransform(Paths.HallOfHeroesLoc.HeroGridRoot);
+        if (grid == null) return cells;
 
-        public static GameButton UnlockTier2Btn => new(Paths.HallOfHeroesLoc.GearSubmenuLoc.UnlockTier2Btn);
+        for (var i = 0; i < grid.childCount; i++)
+        {
+            var cell = grid.GetChild(i);
+            if (cell.gameObject.activeInHierarchy && cell.name != "allHeroesButton") cells.Add(cell);
+        }
 
-        public static GameButton UnlockTier3Btn => new(Paths.HallOfHeroesLoc.GearSubmenuLoc.UnlockTier3Btn);
+        return cells;
     }
 
-    public static class GearEnchanting
+    public static int HeroCount => HeroCells().Count;
+
+    /// <summary>Selects the index-th hero of the grid; false when there's no such cell to click.</summary>
+    public static bool TrySelectHero(int index)
     {
-        public static IEnumerator OpenGearCategory =>
-            new GameButton(Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.GearCategoryTabBtn).Click();
+        var cells = HeroCells();
+        var button = index < cells.Count ? cells[index].GetComponent<Button>() : null;
+        if (button == null || !button.interactable) return false;
 
-        private static GameElement GearGrid => new(Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.GearGridRoot);
-
-        // Tier 2 (Wrist/Shoulder/Belt) and tier 3 (Ring/Relic) boost every hero, so every hero gets
-        // them. Enchanting drains each slot before moving on, so this order decides who gets the
-        // Void Crystals - and the F2P guide wants the Ring first, not fourth. Fix before enabling
-        // HallOfHeroesTask (and confirm the slot indices live first, see GearGridRoot).
-        public static readonly int[] AlwaysEnchantSlots = { 3, 4, 5, 6, 7 };
-
-        // Tier 1 (Weapon/Chest/Boots) only helps the hero wearing it: active formation only.
-        public static readonly int[] ActivePartyOnlyGearSlots = { 0, 1, 2 };
-
-        public static GameButton SlotButton(int index) => new(parent: GearGrid.GetChild(index));
+        button.onClick.Invoke();
+        return true;
     }
 
-    public static class JewelEnchanting
+    public static string HeroName => new GameText(Paths.HallOfHeroesLoc.HeroNameTxt).GetParsedText().Trim();
+
+    public static GameText VoidCrystalsTxt => new(Paths.HallOfHeroesLoc.VoidCrystalsTxt);
+
+    public static GameText EtherealShardsTxt => new(Paths.HallOfHeroesLoc.EtherealShardsTxt);
+
+    public static class Gallery
     {
-        public static IEnumerator OpenJewelsCategory =>
-            new GameButton(Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.JewelsCategoryTabBtn).Click();
+        public static IEnumerator Open()
+        {
+            yield return new GameButton(Paths.HallOfHeroesLoc.GearTabBtn).Click();
+            yield return new GameButton(Paths.HallOfHeroesLoc.GearSubmenuLoc.GalleryViewBtn).Click();
+        }
 
-        private static GameElement JewelGrid => new(Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.JewelGridRoot);
+        public static GameText GearPowerTxt => new(Paths.HallOfHeroesLoc.GearSubmenuLoc.GearPowerTxt);
 
-        // Every slot on every hero: Ethereal Shards have no other use, so there's nothing to save them for.
-        public static readonly int[] AllSlots = { 0, 1, 2, 3, 4, 5 };
+        // Not seen live: every hero on the test account had tiers 2 and 3 unlocked, so both panels
+        // were only ever seen inactive (their paths do exist at runtime).
+        public static bool IsGearTierLocked(int tier) => IsShown(tier == 2
+            ? Paths.HallOfHeroesLoc.GearSubmenuLoc.Tier2LockedRoot
+            : Paths.HallOfHeroesLoc.GearSubmenuLoc.Tier3LockedRoot);
 
-        public static GameButton SlotButton(int index) => new(parent: JewelGrid.GetChild(index));
+        public static GameButton UnlockGearTierBtn(int tier) => new(tier == 2
+            ? Paths.HallOfHeroesLoc.GearSubmenuLoc.UnlockTier2Btn
+            : Paths.HallOfHeroesLoc.GearSubmenuLoc.UnlockTier3Btn);
+
+        public static string GearTierLockedText(int tier) => new GameText((tier == 2
+            ? Paths.HallOfHeroesLoc.GearSubmenuLoc.Tier2LockedRoot
+            : Paths.HallOfHeroesLoc.GearSubmenuLoc.Tier3LockedRoot) + "/desc").GetParsedText();
+
+        public static bool IsJewelTier2Locked => IsShown(Paths.HallOfHeroesLoc.GearSubmenuLoc.JewelTier2LockedRoot);
+    }
+
+    /// <summary>Enchant rows, addressed by slot name: the game reorders them (enchantable ones first).</summary>
+    public static class Enchanting
+    {
+        public static IEnumerator Open(bool jewels)
+        {
+            yield return new GameButton(Paths.HallOfHeroesLoc.EnchantingTabBtn).Click();
+            yield return new GameButton(jewels
+                ? Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.JewelsCategoryTabBtn
+                : Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.GearCategoryTabBtn).Click();
+        }
+
+        private static string Row(bool jewels, string slotName) => (jewels
+            ? Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.JewelRowsRoot
+            : Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.GearRowsRoot) + "/" + slotName;
+
+        /// <summary>An inactive row is an empty slot (or, presumably, a locked tier).</summary>
+        public static bool IsRowShown(bool jewels, string slotName) => IsShown(Row(jewels, slotName));
+
+        /// <summary>"This enchanting requires higher rarity item.": capped until the item is replaced.</summary>
+        public static bool NeedsHigherRarity(bool jewels, string slotName) => IsShown(Row(jewels, slotName) + "/extraInfo");
+
+        /// <summary>The row's enchant level: 0 while its badge is hidden, -1 when the badge isn't a number.</summary>
+        public static int Level(bool jewels, string slotName, out string text)
+        {
+            var badge = Row(jewels, slotName) + "/" + (jewels
+                ? Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.JewelRowLevelBg
+                : Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.GearRowLevelBg);
+
+            text = "";
+            if (!IsShown(badge)) return 0;
+
+            text = new GameText(badge + "/enchantLevel").GetParsedText();
+            return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var level) ? level : -1;
+        }
+
+        public static GameText CostTxt(bool jewels, string slotName) =>
+            new(Row(jewels, slotName) + "/" + Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.RowCostTxt);
+
+        // Not interactable both when the balance is short and when the item needs a higher rarity.
+        public static GameButton EnchantBtn(bool jewels, string slotName) =>
+            new(Row(jewels, slotName) + "/" + Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.RowEnchantBtn);
     }
 }

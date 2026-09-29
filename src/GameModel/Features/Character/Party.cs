@@ -15,20 +15,32 @@ public static class Party
 
     public static IEnumerator Close => new GameButton(Paths.PartyLoc.CloseBtn).Click();
 
-    private static GameElement Roster => new(Paths.PartyLoc.HeroRosterRoot);
-
-    /// <summary>Roster indices of the heroes in the active formation (see PartyLoc.HeroRosterRoot).</summary>
-    public static HashSet<int> ActivePartyIndices()
+    // A formation slot's own children; any other one is the deployed hero's spine (see PartyLoc.HeroSlotsRoot).
+    private static readonly HashSet<string> SlotParts = new()
     {
-        var result = new HashSet<int>();
-        var index = 0;
+        "base", "characterSpinePos", "arrowParent", "isLeader", "battleFormationMover", "slotNumber",
+        "characterShadow", "SkeletonContainer", "attributeGlobal"
+    };
 
-        foreach (var card in Roster.GetChildren())
+    /// <summary>The formation's hero names, as far as the screen has filled them in.</summary>
+    public static HashSet<string> FormationNames()
+    {
+        var names = new HashSet<string>();
+        var slots = GameElement.FindTransform(Paths.PartyLoc.HeroSlotsRoot);
+        if (slots == null) return names;
+
+        for (var i = 0; i < slots.childCount; i++)
         {
-            if (new GameElement(path: "bg/activeIcon", parent: card).IsVisible()) result.Add(index);
-            index++;
+            var slot = slots.GetChild(i);
+            for (var j = 0; j < slot.childCount; j++)
+            {
+                var child = slot.GetChild(j);
+                if (child.gameObject.activeInHierarchy && !SlotParts.Contains(child.name)) names.Add(child.name);
+            }
         }
 
-        return result;
+        return names;
     }
+
+    public const int FormationSize = 5;
 }

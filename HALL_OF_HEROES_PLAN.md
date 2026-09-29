@@ -1,7 +1,8 @@
 # Piano: upgrade automatici di gear e gioielli nella Hall of Heroes
 
-> Piano da eseguire con Claude Code. Stato al 2026-09-29: non c'è ancora niente di implementato. Si
-> parte dalla **Fase 0** (sezione 8, verifiche nel gioco): finché non è chiusa, il resto è bloccato.
+> Stato al 2026-09-29: implementato e verificato su Steam-0, tranne lo sblocco dei tier (nessun eroe
+> dell'account ne ha uno bloccato). Esito della Fase 0 in fondo alla sezione 8; esito del test dal
+> vivo nella riga Hall of Heroes di TESTING.md.
 
 ## 1. Contesto
 
@@ -282,6 +283,28 @@ Da verificare:
 
 Ogni risultato va scritto in TESTING.md o nel commento del path corrispondente, come si è fatto per gli
 altri path già verificati.
+
+**Esito (29/09, Steam-0, dump dal vivo):**
+
+1. Sì: `submenus/bg/gearSubmenu` e `submenus/bg/enchantingSubmenu`, creati la prima volta che si apre il
+   loro tab.
+2. Ordine confermato dalle descrizioni. A runtime le righe si chiamano come lo slot (`Weapon`…`Relic`,
+   `Ankh`…`Trinket`) e il gioco le **riordina** (prima le incantabili): si indirizzano per nome.
+3. La griglia ha tutti gli eroi (10 celle attive, gli stessi di `goForthHero`), in un ordine che non
+   cambia selezionandoli. Le celle clone hanno tutte lo stesso nome (`heroSquare(Clone)`, la prima
+   spenta), quindi si cliccano dal Transform e non dal path.
+4. `base/characterPreview/standardLevelProgress/bg/name`.
+5. Le carte `deckSlotN` non hanno il nome e sono in un altro ordine. La formazione si legge da
+   `bg/parallaxBg/layers/heroSlots/heroSlotN`: lo spine dell'eroe è un figlio che si chiama come lui.
+   Si caricano uno alla volta in 2-4 s (anche i tick del deck e il "Deployed: N/5").
+6. `enchantLevel` nascosto al livello 0; `costText` `240`, `1.920`; slot vuoto = riga spenta; slot al
+   massimo per la rarità = `extraInfo` "This enchanting requires higher rarity item."; `enchantItem`
+   non interattivo quando il saldo non basta (nessun popup).
+7. Due contatori sempre visibili, in tutte le schede: `counters/currencyInteraction (VoidCrystal)/quantity`
+   e `(EtherealShard)/quantity`, formato `3.010`.
+8. Power in `galleryView/gear/unlocked/powerGearTMP` (`74.950`; `powerBg/Image/power` è solo
+   l'etichetta "Power"). Testo dei riquadri, popup di conferma e meteoriti: non visti.
+9. Tabella confermata su una quarantina di `costText` (tier 1, 2 e 3, gear e gioielli).
 
 ## 9. Test dal vivo prima di accenderlo sul fleet
 
