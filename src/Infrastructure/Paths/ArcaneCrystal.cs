@@ -11,8 +11,14 @@ public static partial class Paths
 
         public const string HitBtn = Root + "/crystalParent/hitButton";
 
+        // Pickaxes per click: "1" at x1.
+        public const string HitCostTxt = HitBtn + "/costText";
+
+        // Hidden on some accounts (Steam-15, 29/09), where every hit is a single one.
         public const string ChangeQuantityBtn = Root + "/changeHitQuantity";
 
         public const string QuantityTxt = ChangeQuantityBtn + "/text";
+
+        public const string PickaxeCountTxt = Root + "/counters/currencyInteraction (Pickaxe)/quantity";
     }
 }

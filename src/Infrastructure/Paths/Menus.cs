@@ -81,6 +81,14 @@ public static partial class Paths
 
                 public const string WeeklyQuestsGridRoot = Root + "/bg/submenus/weeklyQuestsScroll/Viewport/grid";
 
+                // Relative to a "quest (N)" card of either grid: its name ("Miner"), its progress
+                // ("3/5") and its claim button.
+                public const string QuestNameTxt = "name";
+
+                public const string QuestProgressTxt = "progressBarBg/progressText";
+
+                public const string QuestClaimBtn = "claimButton";
+
                 // Shared by both tabs: shows the countdown of whichever tab is selected.
                 public const string RenewTxt = Root + "/questsRenewBg/questsRenewText";
             }

@@ -229,8 +229,7 @@ gli altri accesi, compresi `warmachinestask`, `massproductioneventtask`,
 
 | Sezione | Impostazioni |
 |---|---|
-| `collectorquesttask` | `min_common_chest_reserve = 10` |
-| `gamerquesttask` | `min_token_reserve = 10` |
+| `collectorquesttask` | `min_common_chest_reserve = 10` (solo per le 6 chest extra) |
 | `empowertask` | `min_reset_ratio = 2.0`, `min_adventure_minutes = 60`, `max_adventure_minutes = 120` |
 | `experimentstask` | `resource_type = "0"` |
 | `guardiantrainingtask` | `guardian_index = 0`, `use_strange_dust = false` |
@@ -264,10 +263,10 @@ file di configurazione nuovo.
 |---|---|:-:|:-:|:-:|---|
 | Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. Dal 29/09 clicca solo i claim pronti: prima 37 s a giro, di cui ~18 s su claim nascosti o disabilitati (1 s ciascuno); ora 8 s senza niente da reclamare. Da vedere nel fleet: un giro con claim veri. |
 | Beer Exchange | `[beerexchangetask]` | 15 | on | ✅ | Usa solo l'offerta pagata in birra, mai le due in gemme. 29/09: senza badge non apriva mai il mercato (lo `stormyButton` della Taverna non lo apre); ora entra da `actionButtons/shop` ("Market"), verificato dal vivo. |
-| Collector | `[collectorquesttask]` | - | on | 🔄 | Apre solo chest Wooden/Iron/Common e al massimo 4 al giorno; Uncommon e superiori non si toccano. Jewel e celestial sempre tutte. Da confermare: che Wooden e Iron valgano davvero meno di Common (se no cambia solo quale chest economica usa). Il 29/09 non verificabile: la quota del giorno era già fatta prima del test (16 chest, dalla build vecchia). |
-| Gamer | `[gamerquesttask]` | 15 | on | ✅ | 10 giocate in taverna, senza scendere sotto `min_token_reserve`. Il 29/09 una sola giocata: gettoni sotto la riserva, perché Beer Exchange senza badge non comprava mai gettoni (corretto il 29/09). Da ricontrollare il 30/09. |
-| Merchant | `[merchantquesttask]` | 30 | on | 🔄 | Vende solo le posizioni 3, 2, 1 della griglia (Midas, Health, Damage), mai Speed né i consumabili di gold e meteoriti. Controlla la riga `Sell grid:` del log: deve elencare quei nomi in quelle posizioni. Il 29/09 non verificabile: quest del giorno già fatta prima del test. |
-| Miner | `[minerquesttask]` | 50 | on | ✅ | 5 colpi al Cristallo Arcano. La scorciatoia x5 non è verificata; se manca, fa 5 colpi singoli. Il 29/09 già fatto prima del test. |
+| Collector | `[collectorquesttask]` | - | on | 🔄 | Dal 29/09 legge il progresso vero della quest ("Open 4 Chests") e apre le chest mancanti dalla più economica (Wooden, Iron, Common, poi Uncommon fino a Legendary se non c'è altro: la quest ha la priorità). Nello stesso giro apre 6 chest extra, solo Wooden/Iron/Common e mai Common sotto `min_common_chest_reserve`, per dare oggetti da vendere al Merchant: 10 chest al giorno. Jewel e celestial sempre tutte. Verificata la lettura (4/4 su -0 e -15); l'apertura si vede al primo giorno con la quest aperta. |
+| Gamer | `[gamerquesttask]` | 15 | on | 🔄 | Dal 29/09 legge il progresso vero ("Play 10 times") e gioca a x1 una carta per ogni giocata mancante, finché ci sono gettoni. Tolta la riserva di gettoni (li spende solo questa quest) e il contatore interno. Verificata la lettura (10/10 su -0 e -15); le giocate si vedono al primo giorno con la quest aperta. |
+| Merchant | `[merchantquesttask]` | 30 | on | 🔄 | Dal 29/09 legge il progresso vero ("Sell 10 items") e vende quanti oggetti mancano, scelti per nome visibile e in quest'ordine: Midas' Touch, Scroll of Health, Scroll of Damage. Mai Scroll of Speed né altro (oro e meteoriti istantanei, barili). Prima vendeva per posizione nella griglia: dalla quarta casella in poi le celle hanno tutte lo stesso nome (`exoticMerchantSellItem(Clone)`), quindi un path non le distingue, e con la DLL nuova vendeva spesso solo 0-6 oggetti. La riga `[INFO] Sell grid:` elenca ora nomi e quantità veri. Verificata la lettura (10/10 su -0 e -15); la vendita si vede al primo giorno con la quest aperta. |
+| Miner | `[minerquesttask]` | 50 | on | ✅ | Dal 29/09 legge il progresso vero e colpisce una volta per colpo mancante, a 1 piccone per colpo (`hitButton/costText`; su alcuni account il selettore x1/x5 è nascosto). Prima segnava la quest fatta anche se i colpi non andavano a segno. Verificato su Steam-15: la quest era 4/5 col vecchio contatore che la dava per fatta; il nuovo task ha dato 1 colpo ed è passata a 5/5, reclamata. |
 
 ### Town
 

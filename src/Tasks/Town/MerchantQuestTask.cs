@@ -1,106 +1,51 @@
-using System;
 using System.Collections;
 using System.Linq;
-using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Primitives;
-using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
-using Firebot.Utilities;
-using MelonLoader;
+using UnityEngine;
+using static Firebot.Core.BotSettings;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
 
 /// <summary>
-///     The daily "Merchant" quest: sells 10 items at the Exotic Merchant, spends the coins on the
-///     first affordable Exotic Upgrade, then claims the quest straight away. Only junk is ever sold
-///     (see SellOrderByGridIndex); if the junk runs out before 10, the quest stays open for the day,
-///     since one daily reward is worth far less than the scrolls. The instant gold items are never
-///     sold nor used here. Once claimed, the task waits for the next game-day.
+///     The daily "Merchant" quest: sells as many items at the Exotic Merchant as the quest is missing,
+///     then spends the coins on the first affordable Exotic Upgrade. Only junk is ever sold (see
+///     SellOrder); if it runs out, the quest waits for more (CollectorQuestTask opens extra chests
+///     for it). The instant gold items are never sold nor used here.
 /// </summary>
-public class MerchantQuestTask : BotTask
+public class MerchantQuestTask : DailyQuestTask
 {
-    internal override TaskGroup Group => TaskGroup.Quests;
     protected override int MinimumCharacterLevel => 30;
 
-    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
-
-    private const int SellTarget = 10;
+    protected override string QuestName => "Merchant";
 
     /// <summary>
-    ///     The grid's first four slots are 0 Scroll of Speed, 1 Scroll of Damage, 2 Scroll of Health
-    ///     and 3 Midas' Touch; the instant gold and meteorite consumables sort after them. Sold:
-    ///     Midas' Touch first, then Health and Damage only to top up. Never sold: Speed - the F2P
-    ///     guide's main gold multiplier - or anything past slot 3. An allowlist on purpose: a missing
-    ///     entry costs one daily quest, while a blocklist missing a name could sell a Barrel.
+    ///     Sold, by visible name and in this order: Midas' Touch first, then Health and Damage to top up.
+    ///     Never Scroll of Speed - the F2P guide's main gold multiplier - nor anything not listed, like the
+    ///     instant gold and meteorite consumables or a Barrel. An allowlist on purpose: a missing entry
+    ///     costs one daily quest, while a blocklist missing a name could sell a Barrel.
     /// </summary>
-    private static readonly int[] SellOrderByGridIndex = { 3, 2, 1 };
+    private static readonly string[] SellOrder = { "Midas' Touch", "Scroll of Health", "Scroll of Damage" };
 
-    // A second line of defence behind the allowlist, matched against the slots' GameObject names.
-    private static readonly string[] NeverSellTerms = { "gold", "meteor" };
-
-    private static bool IsNeverSell(string name) =>
-        NeverSellTerms.Any(t => name.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0);
-
-    private MelonPreferences_Entry<string> _lastDoneDate;
-
-    protected override void OnConfigure(MelonPreferences_Category category)
+    protected override IEnumerator Work(int missing)
     {
-        if (_lastDoneDate != null) return;
-
-        _lastDoneDate = category.CreateEntry(
-            "last_done_date",
-            "",
-            "Last Done Date",
-            "(auto-managed, don't edit) - the last date today's Merchant quest was already claimed. " +
-            "Skips the whole task until the date changes."
-        );
-    }
-
-    public override IEnumerator Execute()
-    {
-        var today = GameDay.Today();
-        if (_lastDoneDate?.Value == today)
-        {
-            NextRunTime = DateTime.Now + RecheckDelay;
-            yield break;
-        }
-
         yield return TownScreen.Open;
         yield return TownScreen.OpenExoticMerchant;
         yield return ExoticMerchant.OpenSellItemsTab;
 
-        // The real slot names, for when the on-screen order ever needs re-checking.
-        Debug("[INFO] Sell grid: " + string.Join(", ", ExoticMerchant.SellProductGrid.GetChildren()
-            .Select((c, i) => $"{i}={c.Name}")));
+        Debug("[INFO] Sell grid: " + string.Join(", ", ExoticMerchant.SellItems().Select(i => $"{i.Name} x{i.Quantity}")));
 
         var sold = 0;
-        foreach (var gridIndex in SellOrderByGridIndex)
-        {
-            if (sold >= SellTarget) break;
-
-            var expectedName = ExoticMerchant.SellProductGrid.GetChild(gridIndex)?.Name;
-            if (string.IsNullOrEmpty(expectedName) || IsNeverSell(expectedName)) continue;
-
-            while (sold < SellTarget)
+        foreach (var name in SellOrder)
+            while (sold < missing && ExoticMerchant.TrySellOne(name))
             {
-                // A stack that sells out disappears and the grid compacts, sliding another item -
-                // possibly a Barrel - into this index. Re-checking the name before every click is what
-                // makes selling one slot down safe.
-                var item = ExoticMerchant.SellProductGrid.GetChild(gridIndex);
-                if (item == null || item.Name != expectedName) break;
-
-                var sellBtn = new GameButton(Paths.ExoticMerchantLoc.SellLoc.SellBtn, item);
-                if (!sellBtn.IsClickable()) break;
-
-                yield return sellBtn.Click();
                 sold++;
+                yield return new WaitForSeconds(InteractionDelay);
             }
-        }
 
-        if (sold < SellTarget)
-            Debug($"[INFO] Only {sold}/{SellTarget} items sold - the sellable slots ran out, the quest stays open today.");
+        Debug($"[INFO] Merchant: sold {sold}/{missing}.");
 
         yield return ExoticMerchant.OpenUpgradesTab;
 
@@ -120,19 +65,5 @@ public class MerchantQuestTask : BotTask
 
         yield return ExoticMerchant.Close;
         yield return TownScreen.Close;
-
-        if (sold >= SellTarget)
-        {
-            yield return CharacterScreen.Open();
-            yield return CharacterScreen.OpenQuestsTab;
-            yield return CharacterScreen.OpenDailyQuestsSubTab;
-            foreach (var claimButton in CharacterScreen.DailyQuestClaimButtons())
-                yield return claimButton.Click();
-            yield return CharacterScreen.Close;
-
-            if (_lastDoneDate != null) _lastDoneDate.Value = today;
-        }
-
-        NextRunTime = DateTime.Now + RecheckDelay;
     }
 }

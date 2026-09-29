@@ -1,10 +1,7 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Firebot.Core.Tasks;
 using Firebot.Infrastructure;
-using Firebot.Utilities;
 using MelonLoader;
 using UnityEngine;
 using ChestOpening = Firebot.GameModel.Features.Inventory.ChestOpening;
@@ -13,25 +10,29 @@ using InventoryScreen = Firebot.GameModel.Features.Inventory.Inventory;
 namespace Firebot.Tasks.Inventory;
 
 /// <summary>
-///     The daily "Collector" quest (open 4 gear chests), using only the cheapest rarities and never
-///     more than the quest needs. Uncommon and up are left to pile up: the F2P guide saves them for a
-///     newly unlocked hero, and opening chests as they arrive is on its list of mistakes. Jewel and
-///     celestial chests don't count for the quest and are always opened in full. QuestsTask claims
-///     the reward. Once 4 gear chests are done, the whole task waits for the next game-day.
+///     The daily "Collector" quest (open 4 chests) comes first: the missing chests are opened cheapest
+///     rarity first, up to Legendary if nothing cheaper is left. The same run then opens ExtraChests
+///     more, cheap rarities only and never Common below min_common_chest_reserve, so MerchantQuestTask
+///     has items to sell. Jewel and celestial chests don't count for the quest and are always opened.
 /// </summary>
-public class CollectorQuestTask : BotTask
+public class CollectorQuestTask : DailyQuestTask
 {
-    internal override TaskGroup Group => TaskGroup.Quests;
+    protected override string QuestName => "Collector";
 
-    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(1);
-
-    private const int GearChestTarget = 4;
+    // With the quest's 4, 10 chests a day.
+    private const int ExtraChests = 6;
 
     private static readonly HashSet<string> NonGearChestSlots = new() { "jewelChest", "celestialChest" };
 
-    // Cheapest first. Wooden and Iron are assumed to rank below Common; if that's wrong, the only
-    // effect is which cheap chest the quest uses.
-    private static readonly string[] ExpendableGearSlots =
+    // Cheapest first.
+    private static readonly string[] QuestChestSlots =
+    {
+        Paths.InventoryLoc.WoodenChestSlot, Paths.InventoryLoc.IronChestSlot, Paths.InventoryLoc.CommonChestSlot,
+        Paths.InventoryLoc.UncommonChestSlot, Paths.InventoryLoc.RareChestSlot, Paths.InventoryLoc.EpicChestSlot,
+        Paths.InventoryLoc.LegendaryChestSlot
+    };
+
+    private static readonly string[] ExtraChestSlots =
     {
         Paths.InventoryLoc.WoodenChestSlot, Paths.InventoryLoc.IronChestSlot, Paths.InventoryLoc.CommonChestSlot
     };
@@ -40,89 +41,45 @@ public class CollectorQuestTask : BotTask
     private static readonly WaitForSeconds ChestListPopulateDelay = new(1.5f);
 
     private MelonPreferences_Entry<int> _minCommonReserve;
-    private MelonPreferences_Entry<int> _gearChestsOpenedToday;
-    private MelonPreferences_Entry<string> _gearChestsDate;
 
-    protected override void OnConfigure(MelonPreferences_Category category)
+    protected override void OnConfigureQuest(MelonPreferences_Category category)
     {
-        if (_minCommonReserve != null) return;
-
         _minCommonReserve = category.CreateEntry(
             "min_common_chest_reserve",
             10,
             "Minimum Common Chest Reserve",
-            "Common gear chests are never opened below this count, so there's always at least one " +
-            "left to open for tomorrow's Collector quest too. Default: 10."
-        );
-
-        _gearChestsOpenedToday = category.CreateEntry(
-            "gear_chests_opened_today",
-            0,
-            "Gear Chests Opened Today",
-            "(auto-managed, don't edit) - how many gear chests are already opened today. Resets " +
-            "automatically once the date changes."
-        );
-
-        _gearChestsDate = category.CreateEntry(
-            "gear_chests_date",
-            "",
-            "Gear Chests Date",
-            "(auto-managed, don't edit) - the date gear_chests_opened_today is counting for."
+            "The extra chests opened for the Merchant quest never take Common chests below this count. The " +
+            "Collector quest itself opens whatever it needs. Default: 10."
         );
     }
 
-    public override IEnumerator Execute()
+    protected override IEnumerator Work(int missing)
     {
-        var today = GameDay.Today();
-
-        if (_gearChestsDate?.Value != today)
-        {
-            if (_gearChestsOpenedToday != null) _gearChestsOpenedToday.Value = 0;
-            if (_gearChestsDate != null) _gearChestsDate.Value = today;
-        }
-
-        if (_gearChestsOpenedToday?.Value >= GearChestTarget)
-        {
-            NextRunTime = DateTime.Now + RecheckDelay;
-            yield break;
-        }
-
         yield return InventoryScreen.Open;
         yield return InventoryScreen.OpenChestsTab;
         yield return ChestListPopulateDelay;
 
-        var slotNames = InventoryScreen.Content.GetChildren().Select(c => c.Name).ToList();
-        var gearOpenedThisRun = 0;
+        foreach (var name in InventoryScreen.Content.GetChildren().Select(c => c.Name).ToList())
+            if (NonGearChestSlots.Contains(name))
+                yield return ChestOpening.OpenAll("/" + name);
 
-        foreach (var name in slotNames)
+        var questOpened = 0;
+        foreach (var slot in QuestChestSlots)
         {
-            if (string.IsNullOrEmpty(name)) continue;
-            if (!NonGearChestSlots.Contains(name)) continue;
-
-            yield return ChestOpening.OpenAll("/" + name);
+            if (questOpened >= missing) break;
+            yield return ChestOpening.OpenDownTo(slot, 0, n => questOpened += n, missing - questOpened);
         }
 
-        var minReserve = _minCommonReserve?.Value ?? 10;
-        var stillNeeded = GearChestTarget - (_gearChestsOpenedToday?.Value ?? 0);
-
-        foreach (var slot in ExpendableGearSlots)
+        var extraOpened = 0;
+        foreach (var slot in ExtraChestSlots)
         {
-            if (stillNeeded <= 0) break;
-
-            // The reserve setting is about Common chests only.
-            var reserve = slot == Paths.InventoryLoc.CommonChestSlot ? minReserve : 0;
-
-            yield return ChestOpening.OpenDownTo(slot, reserve, opened =>
-            {
-                gearOpenedThisRun += opened;
-                stillNeeded -= opened;
-            }, stillNeeded);
+            if (extraOpened >= ExtraChests) break;
+            var reserve = slot == Paths.InventoryLoc.CommonChestSlot ? _minCommonReserve?.Value ?? 10 : 0;
+            yield return ChestOpening.OpenDownTo(slot, reserve, n => extraOpened += n, ExtraChests - extraOpened);
         }
+
+        Debug($"[INFO] Collector: {questOpened}/{missing} chest(s) for the quest, {extraOpened}/{ExtraChests} extra.");
 
         yield return InventoryScreen.Close;
-
-        if (_gearChestsOpenedToday != null) _gearChestsOpenedToday.Value += gearOpenedThisRun;
-
-        NextRunTime = DateTime.Now + RecheckDelay;
     }
 }

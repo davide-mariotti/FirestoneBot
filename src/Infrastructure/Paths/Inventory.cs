@@ -14,13 +14,21 @@ public static partial class Paths
         // All four tabs share this one content pane; there is no submenus/<tab>/ tree.
         public const string ContentRoot = Root + "/submenus/items/ScrollView/Viewport/Content";
 
-        // Gear chest slots relative to ContentRoot, by rarity name. Seen live so far: Wooden, Iron,
-        // Common, Uncommon, Rare, Epic, Legendary. Only the cheapest are ever opened.
+        // Gear chest slots relative to ContentRoot, by rarity name, all seen live (29/09). The rarer
+        // ones are only opened when the Collector quest has nothing cheaper left.
         public const string WoodenChestSlot = "/Wooden";
 
         public const string IronChestSlot = "/Iron";
 
         public const string CommonChestSlot = "/Common";
+
+        public const string UncommonChestSlot = "/Uncommon";
+
+        public const string RareChestSlot = "/Rare";
+
+        public const string EpicChestSlot = "/Epic";
+
+        public const string LegendaryChestSlot = "/Legendary";
     }
 
     // Opened by clicking a chest slot.

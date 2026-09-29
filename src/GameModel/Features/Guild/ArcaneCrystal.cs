@@ -10,16 +10,16 @@ public static class ArcaneCrystal
 
     public static IEnumerator Close => new GameButton(Paths.ArcaneCrystalLoc.CloseBtn).Click();
 
+    public static int PickaxeCount => new GameText(Paths.ArcaneCrystalLoc.PickaxeCountTxt).GetParsedInt();
+
+    /// <summary>Pickaxes one click spends: 1 means a single hit, one step of the Miner quest.</summary>
+    public static int HitCost => new GameText(Paths.ArcaneCrystalLoc.HitCostTxt).GetParsedInt(-1);
+
     private static GameText QuantityTxt => new(Paths.ArcaneCrystalLoc.QuantityTxt);
 
-    private static bool IsFive(string quantityText) => quantityText.Contains("5");
+    private static bool IsOne(string quantityText) => quantityText.Trim() == "x1";
 
-    public static bool IsQuantitySetTo5 => IsFive(QuantityTxt.GetParsedText());
-
-    /// <summary>
-    ///     Tries to select an x5 hit multiplier so the Miner quest's 5 hits take one click. Whether x5
-    ///     exists isn't known; check IsQuantitySetTo5 afterwards and fall back to single hits.
-    /// </summary>
-    public static IEnumerator TrySetQuantityTo5() =>
-        QuantityToggle.CycleUntil(new GameButton(Paths.ArcaneCrystalLoc.ChangeQuantityBtn), QuantityTxt, IsFive);
+    /// <summary>Selects x1 hits where the multiplier exists; a no-op where it's hidden.</summary>
+    public static IEnumerator TrySetQuantityTo1() =>
+        QuantityToggle.CycleUntil(new GameButton(Paths.ArcaneCrystalLoc.ChangeQuantityBtn), QuantityTxt, IsOne);
 }

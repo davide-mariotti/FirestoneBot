@@ -18,8 +18,14 @@ public static partial class Paths
             public const string ProductGridRoot =
                 ExoticMerchantLoc.Root + "/submenus/bg/sellItemsSubmenu/Scroll View/Viewport/Content/productGrid";
 
-            // Relative to a product in ProductGridRoot; sells one item per click.
-            public const string SellBtn = "/sellButton";
+            // Relative to a product in ProductGridRoot, for Transform.Find: from the fourth product
+            // on the cells are all "exoticMerchantSellItem(Clone)", so they're walked by index.
+            public const string ItemNameTxt = "itemName";
+
+            public const string ItemQuantityTxt = "itemBg/quantity";
+
+            // Sells one item per click.
+            public const string SellBtn = "sellButton";
         }
 
         public static class UpgradesLoc

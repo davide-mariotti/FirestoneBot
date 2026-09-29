@@ -54,10 +54,38 @@ public static class CharacterScreen
         var buttons = new List<GameButton>();
         foreach (var quest in grid.GetChildren())
         {
-            var claimButton = new GameButton("claimButton", quest);
+            var claimButton = new GameButton(Paths.MenusLoc.CharacterLoc.QuestsLoc.QuestClaimBtn, quest);
             if (claimButton.IsClickable()) buttons.Add(claimButton);
         }
 
         return buttons;
+    }
+
+    /// <summary>
+    ///     Opens the Daily quests tab, reads the named quest's "done/target" progress, claims it if it's
+    ///     ready, and closes the screen. Listed is false when the quest isn't there or the screen didn't
+    ///     open; Done and Target are -1 when the progress text doesn't read.
+    /// </summary>
+    public static IEnumerator CheckDailyQuest(string name, Action<(bool Listed, int Done, int Target)> onRead)
+    {
+        yield return Open();
+        yield return OpenQuestsTab;
+        yield return OpenDailyQuestsSubTab;
+
+        var result = (Listed: false, Done: -1, Target: -1);
+        foreach (var quest in new GameElement(Paths.MenusLoc.CharacterLoc.QuestsLoc.DailyQuestsGridRoot).GetChildren())
+        {
+            if (new GameText(Paths.MenusLoc.CharacterLoc.QuestsLoc.QuestNameTxt, quest).GetParsedText() != name) continue;
+
+            var progress = new GameText(Paths.MenusLoc.CharacterLoc.QuestsLoc.QuestProgressTxt, quest);
+            result = (true, progress.GetParsedLeadingInt(-1), progress.GetParsedTrailingInt(-1));
+
+            var claimButton = new GameButton(Paths.MenusLoc.CharacterLoc.QuestsLoc.QuestClaimBtn, quest);
+            if (claimButton.IsClickable()) yield return claimButton.Click();
+            break;
+        }
+
+        yield return Close;
+        onRead(result);
     }
 }

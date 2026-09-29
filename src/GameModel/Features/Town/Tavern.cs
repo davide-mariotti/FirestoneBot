@@ -1,4 +1,5 @@
 using System.Collections;
+using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 
@@ -38,6 +39,10 @@ public static class Tavern
         int.TryParse(text.TrimStart('x', 'X').Trim(), out var n) ? n : -1;
 
     public static bool IsPlayQuantitySetTo(int quantity) => ParseQuantity(PlayQuantityTxt.GetParsedText()) == quantity;
+
+    /// <summary>A round is one draw: the selector is on x1, or hidden (like the Arcane Crystal's on some accounts).</summary>
+    public static bool IsSingleDraw =>
+        !new GameElement(Paths.MenusLoc.TavernLoc.ChangeQuantityBtn).IsVisible() || IsPlayQuantitySetTo(1);
 
     /// <summary>
     ///     Tries to select exactly this play quantity, so the daily 10 draws take one click. Check
