@@ -36,9 +36,9 @@ public class MinerQuestTask : DailyQuestTask
         var hits = Math.Min(missing, ArcaneCrystal.PickaxeCount);
         Debug($"[INFO] Miner: {missing} hit(s) missing, {ArcaneCrystal.PickaxeCount} pickaxe(s), cost per hit {ArcaneCrystal.HitCost}.");
 
-        if (ArcaneCrystal.HitCost == 1)
-            for (var i = 0; i < hits; i++)
-                yield return ArcaneCrystal.Hit;
+        var hit = ArcaneCrystal.HitCost == 1;
+        for (var i = 0; i < hits && hit; i++)
+            yield return ArcaneCrystal.Hit(ok => hit = ok);
 
         yield return ArcaneCrystal.Close;
         yield return TownGuild.Close;

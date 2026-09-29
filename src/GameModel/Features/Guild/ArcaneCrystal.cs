@@ -6,7 +6,19 @@ namespace Firebot.GameModel.Features.Guild;
 
 public static class ArcaneCrystal
 {
-    public static IEnumerator Hit => new GameButton(Paths.ArcaneCrystalLoc.HitBtn).Click();
+    public static GameButton HitBtn => new(Paths.ArcaneCrystalLoc.HitBtn);
+
+    /// <summary>
+    ///     One hit, once the button is back: it's disabled while the previous hit animates, and a click
+    ///     then is ignored (2 of 5 on Steam-16, 29/09). False when it never came back.
+    /// </summary>
+    public static IEnumerator Hit(System.Action<bool> onHit)
+    {
+        yield return Poll.Until(() => HitBtn.IsClickable(), 20, 0.3f);
+        var ready = HitBtn.IsClickable();
+        if (ready) yield return HitBtn.Click();
+        onHit(ready);
+    }
 
     public static IEnumerator Close => new GameButton(Paths.ArcaneCrystalLoc.CloseBtn).Click();
 
