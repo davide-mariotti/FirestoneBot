@@ -22,6 +22,10 @@ correzione verificata dal vivo; a fine sessione fai push e dammi il riepilogo ri
 
 ## Per l'agente
 
+Il giro completo (Fase 1) è stato fatto il 29/09: lo stato di ogni task è in "Stato per task" e non
+va rifatto per lavorare su un task solo. In quel caso bastano la Preparazione, il task isolato come
+nel punto 3 della Fase 2 (acceso solo lui) e la Fase 3; si ricontrollano solo i task toccati.
+
 ### Contesto
 
 Firebot è una mod MelonLoader per Firestone Idle RPG: automatizza il gioco cliccando la sua UI
@@ -252,7 +256,7 @@ il fleet ai default F2P resta la decisione aperta in "Da fare e rimandato".
 ## Stato per task
 
 Legenda: ✅ verificato dal vivo · ⚠️ verificato in parte · ❌ mai girato dal vivo ·
-🔄 logica cambiata il 2026-09-28, da riverificare.
+🔄 logica cambiata di recente (28-29/09), da riverificare.
 
 "Liv." è il livello personaggio sotto il quale il task non parte mai. "Default" è `enabled` in un
 file di configurazione nuovo.
