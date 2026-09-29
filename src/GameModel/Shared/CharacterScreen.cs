@@ -46,13 +46,18 @@ public static class CharacterScreen
     public static List<GameButton> WeeklyQuestClaimButtons() =>
         QuestClaimButtons(Paths.MenusLoc.CharacterLoc.QuestsLoc.WeeklyQuestsGridRoot);
 
-    // Every quest's claim button; clicking one that isn't complete yet is a no-op.
+    // Only the claimable ones: a quest that isn't complete has its button hidden or disabled, and a
+    // click on it would still wait out the interaction delay (~18 s per Quests run on 29/09).
     private static List<GameButton> QuestClaimButtons(string gridRootPath)
     {
         var grid = new GameElement(gridRootPath);
         var buttons = new List<GameButton>();
         foreach (var quest in grid.GetChildren())
-            buttons.Add(new GameButton("claimButton", quest));
+        {
+            var claimButton = new GameButton("claimButton", quest);
+            if (claimButton.IsClickable()) buttons.Add(claimButton);
+        }
+
         return buttons;
     }
 }

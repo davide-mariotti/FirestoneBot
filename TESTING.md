@@ -201,7 +201,7 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. 29/09: 37 s a giro, di cui ~18 s di claim non pronti (nascosti o disabilitati, 1 s ciascuno: vedi "Problemi noti"). |
+| Quests | `[queststask]` | - | on | ✅ | Claim di giornaliere e settimanali. Dal 29/09 clicca solo i claim pronti: prima 37 s a giro, di cui ~18 s su claim nascosti o disabilitati (1 s ciascuno); ora 8 s senza niente da reclamare. Da vedere nel fleet: un giro con claim veri. |
 | Beer Exchange | `[beerexchangetask]` | 15 | on | ✅ | Usa solo l'offerta pagata in birra, mai le due in gemme. 29/09: senza badge non apriva mai il mercato (lo `stormyButton` della Taverna non lo apre); ora entra da `actionButtons/shop` ("Market"), verificato dal vivo. |
 | Collector | `[collectorquesttask]` | - | on | 🔄 | Apre solo chest Wooden/Iron/Common e al massimo 4 al giorno; Uncommon e superiori non si toccano. Jewel e celestial sempre tutte. Da confermare: che Wooden e Iron valgano davvero meno di Common (se no cambia solo quale chest economica usa). Il 29/09 non verificabile: la quota del giorno era già fatta prima del test (16 chest, dalla build vecchia). |
 | Gamer | `[gamerquesttask]` | 15 | on | ✅ | 10 giocate in taverna, senza scendere sotto `min_token_reserve`. Il 29/09 una sola giocata: gettoni sotto la riserva, perché Beer Exchange senza badge non comprava mai gettoni (corretto il 29/09). Da ricontrollare il 30/09. |
@@ -354,9 +354,9 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
   edificio dopo che il badge ha già aperto la schermata, o con i claim disabilitati di Quests.
   Correzione proposta: aspettare solo dopo un click vero. Non applicata il 29/09: il gioco scarica e
   ricostruisce alcuni menu quando servono (PirateShip, WorldMap) e ci mette più di 1 s, quindi le
-  attese a vuoto oggi coprono davvero schermate lente. Costo misurato: Quests 37 s a giro, di cui ~18
-  s su claim non pronti. Se si vuole, la via meno rischiosa è saltare solo i claim non cliccabili di
-  Quests e Merchant, non cambiare `GameButton.Click`.
+  attese a vuoto della navigazione oggi coprono davvero schermate lente. Tolto invece il caso che
+  costava di più: i claim di Quests e Merchant (`CharacterScreen.QuestClaimButtons`) ora elencano
+  solo i bottoni cliccabili (Quests da 37 s a 8 s).
 - **Empower controlla ogni 5 minuti** finché il rapporto non basta (`RetryDelay`). Il 29/09 su
   Steam-0: rapporto da 0,03 a 0,39 in un'ora. Con i default del template (`min_reset_ratio = 1.0`,
   nessun limite di tempo) sono 5 s ogni 5 minuti per ore; un ritardo più lungo sotto una certa soglia
