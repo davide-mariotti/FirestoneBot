@@ -7,9 +7,32 @@ di progetto (per quello vedi README.md/TESTING.md) - è un **elenco di verifica*
 essere letto dopo un `git pull`, punto per punto, per controllare cosa manca o cosa va rifatto
 sul nuovo PC.
 
-Scritto il 2026-09-26, aggiornato il 2026-09-28. Se qualcosa qui non corrisponde più a quanto
+Scritto il 2026-09-26, aggiornato il 2026-09-29. Se qualcosa qui non corrisponde più a quanto
 trovi nel repo o sul PC principale, fidati di quello che vedi dal vivo, non di questo file (che è
 una fotografia di un momento preciso).
+
+## Aggiornare il bot su istanze già in funzione
+
+Se il PC è già configurato e le istanze girano con una versione vecchia del bot, basta questo (il
+resto della guida serve per un setup da zero). Esempio per Steam-17..34; per un altro intervallo
+cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
+
+1. `git pull` nella cartella del repo.
+2. Build (punto 4.3): `$env:COMMON_DIR = "C:\Program Files (x86)\Steam-17\steamapps\common"`, poi
+   `dotnet build "C:\Repos\FirestoneBot\src\firebot.csproj" -c Release`. Deve dare 0 errori.
+3. Ferma tutte le istanze (`Ferma_Tutte_Istanze_Firestone.bat`, o `Start.exe /box:SteamB<N>
+   /terminate` per ognuna) e controlla che non resti nessun `Firestone.exe`.
+4. Copia **entrambe** le DLL (`firebot.dll` e `Firebot.TalentEngine.dll`, da
+   `src\bin\Release\net6.0`) nei **due** `Mods` di ogni istanza, reale e sandbox (punto 5). Nessun
+   altro file: MelonLoader e il resto non cambiano.
+5. Allinea i cfg a Steam-0 (punto 8.1):
+   `.\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`. Se segnala chiavi mancanti non è un
+   problema: sono sezioni nuove che la DLL crea al primo avvio, col valore di Steam-0.
+6. Riavvia in sequenza (`Avvia_Tutte_Istanze_Firestone.bat`, punto 6.3).
+7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
+   cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
+   log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
+   `Started. Enabled tasks: 35 of 38` e nessun `timed out` o `threw:`.
 
 ---
 
