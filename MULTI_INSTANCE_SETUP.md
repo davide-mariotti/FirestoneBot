@@ -361,15 +361,30 @@ ognuna. Gli script "tutte insieme" (punto 3) lo fanno già di default.
 
 ---
 
-## 7. Trim della RAM: rimosso
+## 7. Trim di steamwebhelper (pianificato, solo a RAM piena)
 
-Gli script che svuotavano il working set dei processi (`tools/SteamRamTrim`) sono stati tolti dal
-repo: il trim di `steamwebhelper.exe` faceva crashare anche Firestone (l'overlay di Steam vive nel
-processo del gioco), e non tocca il commit, che era la causa vera dei blocchi (punto 6). Su un PC
-dove erano stati usati:
+`tools/SteamTrim/trim_steam.ps1` svuota il working set dei `steamwebhelper.exe` (uno per istanza
+Steam), ma solo quando la RAM fisica occupata arriva al 90%. Il resto del tempo non fa niente. Non
+tocca mai `steam.exe` o `Firestone.exe`, salta il processo GPU di steamwebhelper e quelli sotto i
+150 MB. Non sostituisce il pagefile del punto 6: libera RAM fisica, il commit limit resta quello.
 
 ```powershell
-# Se esiste ancora l'attività pianificata del trim (ora punta a uno script che non c'è più):
+# Una volta per PC, senza Amministratore: attività pianificata FirebotSteamTrim, ogni 10 minuti
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\SteamTrim\trim_steam.ps1 -Install
+# Soglia diversa: aggiungi -MinRamPercent 85. Rimozione:
+schtasks /Delete /TN FirebotSteamTrim /F
+```
+
+Ogni trim eseguito aggiunge una riga a `%TEMP%\trim_steam.log`. Lanciato a mano (senza
+`-Install`), fa un giro subito, se la RAM è sopra soglia.
+
+Il vecchio trim, più aggressivo (tutti i processi "steam", ogni 20 minuti, attività `PCRamTrim`),
+è stato tolto dal repo: il 25/09 aveva fatto crashare steamwebhelper e Firestone. Se dopo aver
+installato questo i crash tornano, è il primo sospettato. Su un PC dove erano stati usati gli script
+vecchi:
+
+```powershell
+# L'attività pianificata del vecchio trim (ora punta a uno script che non c'è più):
 schtasks /Delete /TN "PCRamTrim" /F
 # Se era stato lanciato 3_disable_sysmain.ps1, per tornare al default di Windows (da Amministratore):
 Set-Service SysMain -StartupType Automatic; Start-Service SysMain
