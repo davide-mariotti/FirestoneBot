@@ -37,6 +37,10 @@ public class PiratesPrizeTask : BotTask
         yield return TownScreen.Open;
         yield return TownScreen.OpenPirateShip;
 
+        // The game unloads the Pirate Ship menu when unused, and rebuilding it outlasts the click delay.
+        yield return Poll.Until(() =>
+            GameElement.FindTransform(Paths.PirateShipLoc.PiratesPrizeLoc.TierListRoot)?.childCount > 0);
+
         var tierListRoot = GameElement.FindTransform(Paths.PirateShipLoc.PiratesPrizeLoc.TierListRoot);
 
         if (tierListRoot == null)
