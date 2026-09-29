@@ -29,8 +29,9 @@ public enum TaskGroup
 
 /// <summary>
 ///     A scheduled job. BotManager runs one ready task at a time: a task is ready once NextRunTime
-///     has passed, or as soon as one of its notification badges is visible. Every task gets a config
-///     section with an "enabled" switch, plus whatever settings it adds in OnConfigure.
+///     has passed, or when one of its notification badges is visible (see BadgeCooldown). Every
+///     task gets a config section with an "enabled" switch, plus whatever settings it adds in
+///     OnConfigure.
 /// </summary>
 public abstract class BotTask
 {
@@ -161,16 +162,23 @@ public abstract class BotTask
 
     public bool IsReady() => IsReady(IsNotificationVisible());
 
+    // A badge that stays lit after the task's own run would otherwise make it ready on every scan:
+    // Chaos Rift and Awakening ran every 40-50 s that way (106 minutes in the 26-29/09 logs). Only the
+    // badge waits - NextRunTime, and with it the short retry after a failed run, is unaffected.
+    private static readonly TimeSpan BadgeCooldown = TimeSpan.FromMinutes(30);
+
     /// <summary>
     ///     Takes the badge state the caller already computed. A visible badge already implies the
     ///     task is enabled and unlocked, so checking IsEnabled first only saves work.
     /// </summary>
     public bool IsReady(bool notificationVisible)
-        => IsEnabled && MeetsLevelRequirement && (notificationVisible || DateTime.Now >= NextRunTime);
+        => IsEnabled && MeetsLevelRequirement &&
+           ((notificationVisible && (LastRunTime == null || DateTime.Now - LastRunTime >= BadgeCooldown)) ||
+            DateTime.Now >= NextRunTime);
 
     /// <summary>
-    ///     Virtual for a task whose badge can stay lit after its own work is done (MinerQuestTask) -
-    ///     without a check on top, that badge would win the scheduler every tick, forever.
+    ///     Virtual for a task whose badge can stay lit after its own work is done (MinerQuestTask):
+    ///     BadgeCooldown only spaces those runs out, an override can rule them out.
     /// </summary>
     public virtual bool IsNotificationVisible()
         => IsEnabled && MeetsLevelRequirement && NotificationElements != null &&
@@ -181,7 +189,7 @@ public abstract class BotTask
     /// <summary>
     ///     Called after every run. When the task scheduled nothing itself (no cooldown to wait for),
     ///     retries after minDelay instead of on the very next scan. A visible badge still makes the
-    ///     task ready at once regardless.
+    ///     task ready regardless, once BadgeCooldown has passed.
     /// </summary>
     public void EnsureMinimumNextRun(TimeSpan minDelay)
     {
