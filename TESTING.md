@@ -212,7 +212,7 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Daily Store Offers | `[dailystoreofferstask]` | - | on | ✅ | Check-in giornaliero e le due mystery box gratuite. Entra solo dai badge CheckIn/MysteryBox: il `storeButton` dell'HUD non apre niente. |
+| Daily Store Offers | `[dailystoreofferstask]` | - | on | ✅ | Check-in giornaliero e le due mystery box gratuite. Entra solo dai badge CheckIn/MysteryBox: il `storeButton` dell'HUD non apre niente. Dal 29/09 una volta reclamato il check-in del giorno (`last_done_date`) aspetta il reset delle 10:00; prima riprovava ogni 30 minuti anche a check-in fatto. Verificato il ramo "già fatto" (prossimo giro alle 10:00 del giorno dopo); il ramo del claim si vede nel fleet dopo le 10:00. |
 | Engineer | `[engineertask]` | 50 | on | ✅ | Strumenti ogni 6 ore. Verificato dal badge (anche il 29/09); la strada dall'edificio (popup GarageSelection) è corretta ma non riverificata: col badge la schermata è già aperta e il `townButton` è nascosto. |
 | War Machines | `[warmachinestask]` | 50 | **off** | ⚠️ | Navigazione e stop sul popup CurrencyMissing verificati, un livellamento completo no. Spento: consuma gli stessi gettoni spedizione del Personal Tree, che la guida mette prima. |
 | Guardian Training | `[guardiantrainingtask]` | - | on | ✅ | Allena `guardian_index` se sbloccato, altrimenti Vermilion. |
@@ -361,9 +361,6 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
   Steam-0: rapporto da 0,03 a 0,39 in un'ora. Con i default del template (`min_reset_ratio = 1.0`,
   nessun limite di tempo) sono 5 s ogni 5 minuti per ore; un ritardo più lungo sotto una certa soglia
   di rapporto dimezzerebbe il costo.
-- **Daily Store Offers riprova ogni 30 minuti senza badge.** Entra solo dai badge CheckIn/MysteryBox;
-  senza badge non raggiunge lo Store, non legge i timer e ripiega su `FallbackRetryDelay` (29/09: 10 s
-  ogni 30 minuti, ~20 s all'ora). Come per Free Pickaxes, potrebbe girare solo sul badge.
 - **Chaos Rift a volte non apre la schermata** dal bottone della Gilda (29/09, 16:31), mentre due
   minuti dopo Guardian Holy Upgrade l'ha aperta al primo click. Non riprodotto nel giro isolato.
 

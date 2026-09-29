@@ -47,8 +47,6 @@ public static partial class Paths
                 // money - never click those.
                 public const string FreeMysteryBoxBtn =
                     Root + "/Scroll View/Viewport/bundles/mysteryBox/Graphics/purchaseButton";
-
-                public const string RenewTxt = Root + "/timeRenewBackground/renewText";
             }
 
             public static class ExtremeValueBundlesLoc

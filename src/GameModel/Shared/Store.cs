@@ -29,9 +29,6 @@ public static class Store
     public static IEnumerator ClaimFreeMysteryBox =>
         new GameButton(Paths.MenusLoc.StoreLoc.ValueBundleDailyLoc.FreeMysteryBoxBtn).Click();
 
-    public static DateTime ValueBundleDailyRenewTime =>
-        new GameText(Paths.MenusLoc.StoreLoc.ValueBundleDailyLoc.RenewTxt).Time;
-
     public static IEnumerator OpenExtremeValueBundleTab =>
         new GameButton(Paths.MenusLoc.StoreLoc.TabsLoc.ValueBundleBtn).Click();
 

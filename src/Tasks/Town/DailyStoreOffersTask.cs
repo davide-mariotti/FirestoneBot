@@ -3,6 +3,8 @@ using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
+using Firebot.Utilities;
+using MelonLoader;
 
 namespace Firebot.Tasks.Town;
 
@@ -10,8 +12,8 @@ namespace Firebot.Tasks.Town;
 ///     Claims the Store's daily check-in and its two free mystery boxes - never the paid bundles next
 ///     to them. Every tab is clicked explicitly, since the Store reopens on whichever was last used.
 ///     Reaching the Store relies on the CheckIn/MysteryBox badges: the HUD's storeButton opens nothing
-///     (see Store.Open). A badge is up exactly when there's something to claim, so this works - but if
-///     the badges ever stopped firing, the task would go silently dead.
+///     (see Store.Open). Once today's check-in is claimed the task waits for the 10:00 reset; until
+///     then it retries every 30 minutes. The badges bring it back for anything that renews in between.
 /// </summary>
 public class DailyStoreOffersTask : BotTask
 {
@@ -20,7 +22,22 @@ public class DailyStoreOffersTask : BotTask
     protected override string[] NotificationPaths =>
         RailBadges(Paths.BattleLoc.NotificationsLoc.CheckIn, Paths.BattleLoc.NotificationsLoc.MysteryBox);
 
-    private static readonly TimeSpan FallbackRetryDelay = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromMinutes(30);
+
+    private MelonPreferences_Entry<string> _lastDoneDate;
+
+    protected override void OnConfigure(MelonPreferences_Category category)
+    {
+        if (_lastDoneDate != null) return;
+
+        _lastDoneDate = category.CreateEntry(
+            "last_done_date",
+            "",
+            "Last Done Date",
+            "(auto-managed, don't edit) - the last game-day the check-in was claimed. Until the next reset " +
+            "at 10:00 only the badges bring the task back."
+        );
+    }
 
     public override IEnumerator Execute()
     {
@@ -31,11 +48,13 @@ public class DailyStoreOffersTask : BotTask
 
         yield return Store.OpenDailyRewardsTab;
         yield return Store.ClaimCheckIn;
-        var checkInNext = Store.CheckInNextRunTime;
+
+        // The countdown to the next check-in only reads when the Store really opened, right after the
+        // claim above - so a valid one means today's check-in is done.
+        var checkInClaimed = Store.CheckInNextRunTime > DateTime.Now;
 
         yield return Store.OpenValueBundleDailyTab;
         yield return Store.ClaimFreeMysteryBox;
-        var mysteryBoxNext = Store.ValueBundleDailyRenewTime;
 
         // A separate tab with its own free box, claimed independently of the one above.
         yield return Store.OpenExtremeValueBundleTab;
@@ -43,19 +62,9 @@ public class DailyStoreOffersTask : BotTask
 
         yield return Store.Close;
 
-        NextRunTime = EarliestValid(checkInNext, mysteryBoxNext) ?? DateTime.Now + FallbackRetryDelay;
-    }
+        var today = GameDay.Today();
+        if (checkInClaimed && _lastDoneDate != null) _lastDoneDate.Value = today;
 
-    /// <summary>The soonest time still in the future; unparsed times (DateTime.MinValue) are ignored.</summary>
-    private static DateTime? EarliestValid(params DateTime[] times)
-    {
-        DateTime? earliest = null;
-        foreach (var t in times)
-        {
-            if (t <= DateTime.Now) continue;
-            if (earliest == null || t < earliest) earliest = t;
-        }
-
-        return earliest;
+        NextRunTime = _lastDoneDate?.Value == today ? GameDay.NextReset() : DateTime.Now + RetryDelay;
     }
 }

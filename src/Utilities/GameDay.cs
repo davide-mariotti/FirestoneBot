@@ -17,4 +17,11 @@ public static class GameDay
         var gameDay = now.Hour < ResetHour ? now.Date.AddDays(-1) : now.Date;
         return gameDay.ToString("yyyy-MM-dd");
     }
+
+    /// <summary>The next 10:00, when a new game-day starts.</summary>
+    public static DateTime NextReset()
+    {
+        var reset = DateTime.Today.AddHours(ResetHour);
+        return DateTime.Now < reset ? reset : reset.AddDays(1);
+    }
 }
