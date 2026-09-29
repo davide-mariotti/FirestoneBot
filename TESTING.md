@@ -220,7 +220,7 @@ file di configurazione nuovo.
 | Oracle Rituals | `[oracleritualstask]` | 200 | on | ❌ | Nessun account a 200. Vedi "Da fare e rimandato". |
 | Oracle's Gift | `[oraclesgifttask]` | 200 | on | ❌ | Nessun account a 200. |
 | Firestone Research | `[firestoneresearchtask]` | - | on | 🔄 | Priorità in ordine: Raining Gold, Firestone Finder, Firestone Effect, Trainer Skills, Expeditioner; poi il primo nodo mai toccato. Controlla nel log `Selected research #N`: con nodi a livello 0 disponibili deve comparire `fresh`. Se non compare mai, il testo del livello non è nel formato atteso (vedi "Problemi noti"). |
-| Meteorite Research | `[meteoriteresearchtask]` | - | on | 🔄 | Priorità: Raining Gold, Firestone Finder, Firestone Effect. Mai sotto `min_meteorite_reserve` (3000). |
+| Meteorite Research | `[meteoriteresearchtask]` | - | on | ⚠️ | Priorità: Raining Gold, Firestone Finder, Firestone Effect. Mai sotto `min_meteorite_reserve` (3000). 29/09: il saldo si leggeva da un contatore nascosto nel tab Meteoriti, sempre 0, quindi non ha mai ricercato (69 giri su 69 nei log). Ora la riga `[INFO] Meteorite balance N below ...` mostra il saldo vero (2380 su Steam-0, sotto la riserva). La scelta per priorità resta da vedere quando il saldo supera 3000. |
 | Empower | `[empowertask]` | - | on | ⚠️ | Solo a rapporto `min_reset_ratio = 1.0`, cioè il "+100%" della guida; i limiti di tempo sono spenti. Lettura dei Firestone corretta il 29/09: oltre T il gioco scrive due lettere minuscole (aa = 1e15, poi ×1000 per lettera). Su Steam-0 i testi erano `'1,79bl'` e `'65,67bl'`, letti come 0 (416 letture su 416 nei log del 26-29/09); ora escono 1.79E+126 e 6.567E+127, rapporto 0,03. Un reset vero non è ancora stato visto: da confermare che il valore mostrato dal gioco al momento del reset sia davvero +100%. Steam-0 ha ancora il cfg vecchio (`min_reset_ratio = 2`, limiti a 60/120 minuti), quindi lì empowera a 2 h. |
 | Arena of Kings | `[arenaofkingstask]` | 80 | on | ✅ | Scelta dell'avversario più debole e lettura dei gettoni verificate; un ciclo completo di 5 gettoni no. Può durare minuti. |
 | Pirate's Prize | `[piratesprizetask]` | 10 | on | ✅ | Solo la traccia gratuita. 29/09: il gioco scarica il menu PirateShip quando non serve e lo ricostruisce in più di 1 s; prima circa metà dei giri scriveva `Tier list root not found`. Ora il task aspetta la lista (verificato al primo giro dopo l'avvio, il caso che falliva). |
@@ -345,7 +345,7 @@ che segue ogni task.
 | Map Missions | 67 | in buona parte legittimo (missioni che finiscono a orari diversi); 19 nuovi tentativi da 2 minuti |
 | Empower | 36 | controllo ogni 5 minuti, con Firestone letti sempre a 0 |
 | Awakening | 33 | badge sempre acceso |
-| Meteorite Research | 6 | nessun problema (6 s a giro) |
+| Meteorite Research | 6 | 6 s a giro, ma non ricercava mai: saldo letto 0 (corretto il 29/09) |
 
 I due loop (Free Pickaxes e i badge accesi) valgono il 45% del tempo del bot. Il loop di New Player
 Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09 alle 17:23

@@ -392,8 +392,9 @@ public static partial class Paths
 
             public const string MeteoriteResearchTabBtn = Root + "/submenuButtons/meteoriteResearch";
 
-            // The Meteorite balance, shared by Meteorite Research and hero gear tier unlocks.
-            public const string MeteoriteBalanceTxt = Root + "/counters/counterInteraction/quantity";
+            // The Meteorite balance, shared by Meteorite Research and hero gear tier unlocks ("2.365").
+            // Its sibling counterInteraction is hidden on the Meteorite tab.
+            public const string MeteoriteBalanceTxt = Root + "/counters/currencyInteraction (Meteorite)/quantity";
 
             public static class ResearchPanelLoc
             {

@@ -60,10 +60,11 @@ public class MeteoriteResearchTask : BotTask
         yield return Library.OpenMeteoriteResearchTab;
 
         var minReserve = _minMeteoriteReserve?.Value ?? 3000;
-        if (minReserve <= 0 || MeteoriteBalance >= minReserve)
+        var balance = MeteoriteBalance;
+        if (minReserve <= 0 || balance >= minReserve)
             yield return RunResearch();
         else
-            Debug($"[INFO] Meteorite balance below the {minReserve} reserve - skipping research this run.");
+            Debug($"[INFO] Meteorite balance {balance} below the {minReserve} reserve - skipping research this run.");
 
         NextRunTime = DateTime.Now + TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60);
 
