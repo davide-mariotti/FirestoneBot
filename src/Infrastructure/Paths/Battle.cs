@@ -126,6 +126,9 @@ public static partial class Paths
             public const string PathOfGloryNotification = PathOfGloryBtn + "/notification";
 
             public const string EventsBtn = Root + "/eventsButton";
+
+            // One badge for every event: lit while any of them has something to claim.
+            public const string EventsNotification = EventsBtn + "/notification";
         }
 
         public static class BottomRightSideUINewLoc
@@ -178,6 +181,8 @@ public static partial class Paths
             public const string PartyBtn = Root + "/menuButtons/partyButtonUI";
 
             public const string EventsBtn = Root + "/offersLayout/eventsButton";
+
+            public const string EventsNotification = EventsBtn + "/notification";
         }
 
         public static class BottomSideUINewLoc

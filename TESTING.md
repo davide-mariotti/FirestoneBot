@@ -273,6 +273,13 @@ file di configurazione nuovo.
 Un evento non in corso per l'account scrive `'<evento>' isn't in this account's event list`: non è
 un errore.
 
+Dal 29/09 gli eventi partono anche sul badge rosso del bottone Events
+(`rightSideUI/menuButtons/eventsButton/notification`, visto dal vivo), oltre al controllo orario. Il
+badge è uno solo per tutti gli eventi, quindi quando si accende girano tutti, al massimo uno ogni 30
+minuti (`BadgeCooldown`). Verificato su Steam-0: Decorated Heroes è partito alle 17:19 invece che
+alle 17:36 e ha reclamato 3 sfide; dopo il giro dei quattro eventi il badge si è spento. Costo: circa
+7 s ciascuno per gli eventi non in corso.
+
 ### Azioni di background (girano in continuo, non nello scheduler)
 
 | Azione | Sezione | Default | Stato | Da verificare / note |
