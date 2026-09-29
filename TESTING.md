@@ -189,6 +189,59 @@ Per ogni problema trovato:
 
 ---
 
+## Configurazione di riferimento (Steam-0, 29/09)
+
+Tutte le istanze, su entrambi i PC, devono avere questi valori in `FirebotPreferences.cfg`. Il
+29/09 sera Steam-1..16 sono state allineate a Steam-0 e verificate con un confronto chiave per
+chiave. I valori auto-gestiti (`next_run_time_internal`, `last_done_date`, contatori del giorno,
+`known_maxed_nodes`) non si copiano: il bot li scrive da solo.
+
+Come applicarla: a gioco chiuso (il gioco riscrive il file quando esce), in UTF-8 senza BOM, e per
+le istanze sandboxate sia nel percorso classico sia in quello del sandbox
+(`C:\Sandbox\<utente>\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\...\UserData`). Le sezioni che
+mancano si creano da sole al primo avvio con la DLL nuova.
+
+Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate da Steam-0:
+
+- `window_grid_first_instance`: il numero più basso delle istanze del PC (0 qui, 17 sul PC con
+  Steam-17..34).
+- `talentstask.guide_start_index`: la calibrazione del singolo account. Lasciare quello che c'è; su
+  un account nuovo `-1`, che si calibra da solo al primo giro.
+
+`[firebot_settings]`: `auto_start = true`, `start_bot_delay = 30.0`, `scan_interval = 5.0`,
+`interaction_delay = 1.0`, `max_task_runtime = 120.0`, `debug_mode = true`, `shortcut_key = "F7"`,
+`free_speedup_seconds = 170.0`, `low_resource_mode = true`, `target_frame_rate = 15`,
+`render_quality_level = 0`, `window_width = 504`, `window_height = 316`,
+`window_grid_enabled = true`, `window_grid_columns = 5`.
+
+Task spenti (`enabled = false`): `oracleritualstask`, `oraclesgifttask`, `hallofheroestask`. Tutti
+gli altri accesi, compresi `warmachinestask`, `massproductioneventtask`,
+`sigilsofprophecyeventtask` e le azioni di background `hero_upgrade`, `auto_retreat`,
+`flying_bonus_hunter`.
+
+| Sezione | Impostazioni |
+|---|---|
+| `collectorquesttask` | `min_common_chest_reserve = 10` |
+| `gamerquesttask` | `min_token_reserve = 10` |
+| `empowertask` | `min_reset_ratio = 2.0`, `min_adventure_minutes = 60`, `max_adventure_minutes = 120` |
+| `experimentstask` | `resource_type = "0"` |
+| `guardiantrainingtask` | `guardian_index = 0`, `use_strange_dust = false` |
+| `meteoriteresearchtask` | `recheck_interval_minutes = 60`, `min_meteorite_reserve = 3000` |
+| `freepickaxestask` | `pickaxe_claim_threshold = 5` |
+| `mapmissionstask` | `mission_time_order = "asc"` |
+| `pathofglorytask` | `recheck_interval_minutes = 60` |
+| `talentstask` | `priority_overrides = ""` (e `guide_start_index`: vedi sopra) |
+| `hero_upgrade` | `sweep_interval_seconds = 5.0`, `upgrade_target_slots = ""` |
+| `auto_retreat` | `stall_minutes = 3.0`, `retreat_stages = 5` |
+| `flying_bonus_hunter` | `poll_seconds = 2.0` |
+
+Differenze dai default del template (`tools/ConfigTemplate/FirebotPreferences.template.cfg`, i
+default F2P della Fase 0): Empower (template `1.0` / `0` / `0`, cioè solo il +100%), Map Missions
+(template `desc`), War Machines (template spento), task Oracle (template accesi). Il fleet oggi segue
+Steam-0; passare ai default F2P resta la decisione aperta in "Da fare e rimandato".
+
+---
+
 ## Stato per task
 
 Legenda: ✅ verificato dal vivo · ⚠️ verificato in parte · ❌ mai girato dal vivo ·
@@ -392,14 +445,15 @@ Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09
 
 ## Da fare e rimandato
 
-- **Distribuire la DLL del 29/09 sul fleet**: le correzioni di questa sessione (Empower, Meteorite
-  Research, Beer Exchange, Pirate's Prize, Flying Bonus Hunter, badge degli eventi, Sigils of
-  Prophecy...) sono solo su Steam-0. La sezione `[sigilsofprophecyeventtask]` si crea da sola.
-- **Distribuire la configurazione sul fleet**: i default della Fase 0 (Personal Tree al posto delle
-  War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`, Experiments solo Dragon
-  blood) valgono solo per i file nuovi. Sulle 34 istanze esistenti vanno applicati a mano, a gioco
-  chiuso, e per le sandboxate anche nella copia dentro il box. Il riferimento è
-  `tools/ConfigTemplate/FirebotPreferences.template.cfg`.
+- **DLL del 29/09 sul fleet**: la sera del 29/09 è stata distribuita su Steam-0..16 (questo PC,
+  percorso classico e sandbox), e i loro cfg sono stati allineati a Steam-0 (vedi "Configurazione di
+  riferimento"). Un secondo PC (istanze 17-34, `MULTI_INSTANCE_SETUP.md`) va aggiornato a parte. Le sezioni nuove
+  (`[sigilsofprophecyeventtask]`, `last_done_date` di Daily Store Offers) si creano da sole.
+- **Default F2P sul fleet (da decidere)**: i default della Fase 0 nel template (Personal Tree al posto
+  delle War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`) valgono solo per i
+  file nuovi. Il 29/09 il fleet di questo PC è stato allineato a Steam-0 (vedi "Configurazione di
+  riferimento"), che ha ancora i valori vecchi per quei quattro punti. Se si passa ai default F2P,
+  vanno cambiati prima Steam-0 e quella sezione, poi tutte le istanze.
 - **Hall of Heroes, prima di accenderlo**: `AlwaysEnchantSlots = { 3, 4, 5, 6, 7 }` spende i Void
   Crystal su Wrist/Shoulder/Belt prima del Ring, che per la guida è il pezzo più importante. Il
   riordino sarebbe `{ 6, 3, 7, 4, 5 }`, ma la corrispondenza indice → slot è dedotta: prima va
