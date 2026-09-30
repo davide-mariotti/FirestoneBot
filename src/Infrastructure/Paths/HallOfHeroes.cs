@@ -49,6 +49,24 @@ public static partial class Paths
             public const string JewelTier2LockedRoot = Root + "/galleryView/jewels/unlocked/itemList/tier2Locked";
         }
 
+        // Opened by unlockTierNButton: the unlock only happens on its confirmButton. Seen live on
+        // 2026-09-30: powerLevelReqText '<color=#0FE607>1300</color>' (6600 for tier 3), cost 480
+        // Meteorites for tier 2 and 720 for tier 3, currencyIcon sprite 'meteorite64'.
+        public static class GearTierUnlockLoc
+        {
+            private const string Root = MenusLoc.Root + "/popups/GearTierUnlock/bg";
+
+            public const string PowerRequirementTxt = Root + "/powerLevelReqText";
+
+            public const string ConfirmBtn = Root + "/confirmButton";
+
+            public const string CostTxt = ConfirmBtn + "/costText";
+
+            public const string CurrencyIcon = ConfirmBtn + "/currencyIcon";
+
+            public const string CloseBtn = Root + "/closeButton";
+        }
+
         public static class EnchantingSubmenuLoc
         {
             private const string Root = HallOfHeroesLoc.Root + "/submenus/bg/enchantingSubmenu";

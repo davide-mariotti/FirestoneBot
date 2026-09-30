@@ -69,8 +69,7 @@ public static class HallOfHeroes
 
         public static GameText GearPowerTxt => new(Paths.HallOfHeroesLoc.GearSubmenuLoc.GearPowerTxt);
 
-        // Not seen live: every hero on the test account had tiers 2 and 3 unlocked, so both panels
-        // were only ever seen inactive (their paths do exist at runtime).
+        // Their desc only says "Tier N locked"; the gear power needed is in TierUnlockPopup.
         public static bool IsGearTierLocked(int tier) => IsShown(tier == 2
             ? Paths.HallOfHeroesLoc.GearSubmenuLoc.Tier2LockedRoot
             : Paths.HallOfHeroesLoc.GearSubmenuLoc.Tier3LockedRoot);
@@ -84,6 +83,32 @@ public static class HallOfHeroes
             : Paths.HallOfHeroesLoc.GearSubmenuLoc.Tier3LockedRoot) + "/desc").GetParsedText();
 
         public static bool IsJewelTier2Locked => IsShown(Paths.HallOfHeroesLoc.GearSubmenuLoc.JewelTier2LockedRoot);
+    }
+
+    /// <summary>The confirmation the tier unlock buttons open.</summary>
+    public static class TierUnlockPopup
+    {
+        public static bool IsOpen => IsShown(Paths.HallOfHeroesLoc.GearTierUnlockLoc.ConfirmBtn);
+
+        public static string PowerRequirement =>
+            new GameText(Paths.HallOfHeroesLoc.GearTierUnlockLoc.PowerRequirementTxt).GetParsedText();
+
+        public static string Cost => new GameText(Paths.HallOfHeroesLoc.GearTierUnlockLoc.CostTxt).GetParsedText();
+
+        /// <summary>The sprite on the confirm button: what the unlock is paid in.</summary>
+        public static string CurrencyIconName
+        {
+            get
+            {
+                var icon = GameElement.FindTransform(Paths.HallOfHeroesLoc.GearTierUnlockLoc.CurrencyIcon);
+                var image = icon == null ? null : icon.GetComponent<Image>();
+                return image == null || image.sprite == null ? "" : image.sprite.name;
+            }
+        }
+
+        public static GameButton ConfirmBtn => new(Paths.HallOfHeroesLoc.GearTierUnlockLoc.ConfirmBtn);
+
+        public static IEnumerator Close => new GameButton(Paths.HallOfHeroesLoc.GearTierUnlockLoc.CloseBtn).Click();
     }
 
     /// <summary>Enchant rows, addressed by slot name: the game reorders them (enchantable ones first).</summary>

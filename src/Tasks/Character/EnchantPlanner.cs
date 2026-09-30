@@ -39,6 +39,7 @@ public sealed record EnchantStep(HeroState Hero, EnchantCategory Category, int S
 /// </summary>
 public static class EnchantPlanner
 {
+    // Gear power a hero needs before its tier can be unlocked (wiki; the unlock popup shows the same).
     public const int Tier2PowerRequired = 1300;
     public const int Tier3PowerRequired = 6600;
 

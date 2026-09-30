@@ -109,7 +109,8 @@ public class HallOfHeroesTask : BotTask
 
         var fresh = DateTime.TryParse(_heroSnapshotTime.Value, out var readAt) && DateTime.Now - readAt < FullScanInterval;
 
-        if (_heroes == null || _heroes.Count != heroCount || !fresh)
+        var fullRead = _heroes == null || _heroes.Count != heroCount || !fresh;
+        if (fullRead)
         {
             Debug($"[INFO] Full read of {heroCount} heroes: " + (_heroes == null ? "no snapshot."
                 : _heroes.Count != heroCount ? $"the snapshot has {_heroes.Count}." : "snapshot older than 24 h."));
@@ -118,7 +119,7 @@ public class HallOfHeroesTask : BotTask
         else
             _heroes = _heroes.Select(h => h with { InFormation = formation.Contains(h.Name) }).ToList();
 
-        if (!_stop) yield return UnlockTiers();
+        if (!_stop) yield return UnlockTiers(!fullRead);
         if (!_stop && !_gearBlocked) yield return Spend(EnchantCategory.Gear);
         if (!_stop) yield return Spend(EnchantCategory.Jewels);
 
@@ -276,12 +277,28 @@ public class HallOfHeroesTask : BotTask
               $"Panel: '{HallOfHeroesModel.Gallery.GearTierLockedText(tier)}'.");
         if (hero.GearPower < threshold) yield break;
 
-        // Paid in Meteorites, which MeteoriteResearchTask never spends below min_meteorite_reserve.
         yield return HallOfHeroesModel.Gallery.UnlockGearTierBtn(tier).Click();
+        yield return Poll.Until(() => HallOfHeroesModel.TierUnlockPopup.IsOpen);
+
+        var popup = HallOfHeroesModel.TierUnlockPopup.IsOpen;
+        var currency = HallOfHeroesModel.TierUnlockPopup.CurrencyIconName;
+        if (popup)
+            Debug($"[INFO] {hero.Name}: unlock popup '{HallOfHeroesModel.TierUnlockPopup.PowerRequirement}', cost " +
+                  $"'{HallOfHeroesModel.TierUnlockPopup.Cost}' ({currency}).");
+
+        // Paid in Meteorites, which MeteoriteResearchTask never spends below min_meteorite_reserve. The
+        // icon check is what keeps this button from ever spending anything else.
+        if (popup && currency.Contains("meteor", StringComparison.OrdinalIgnoreCase))
+            yield return HallOfHeroesModel.TierUnlockPopup.ConfirmBtn.Click();
+        else
+            Debug($"[FAILED] {hero.Name}: no unlock popup paid in Meteorites (icon '{currency}') - not confirmed. " +
+                  $"Open: {Watchdog.DumpActiveScreens()}");
+
         if (CurrencyMissingPopup.IsShowing) yield return CurrencyMissingPopup.Close;
+        if (HallOfHeroesModel.TierUnlockPopup.IsOpen) yield return HallOfHeroesModel.TierUnlockPopup.Close;
 
         Debug(HallOfHeroesModel.Gallery.IsGearTierLocked(tier)
-            ? $"[INFO] {hero.Name}: gear tier {tier} still locked - waiting for meteorites. Open: {Watchdog.DumpActiveScreens()}"
+            ? $"[INFO] {hero.Name}: gear tier {tier} still locked."
             : $"[INFO] {hero.Name}: gear tier {tier} unlocked.");
     }
 
@@ -292,10 +309,22 @@ public class HallOfHeroesTask : BotTask
     /// </summary>
     // ponytail: re-reading the power costs 4 clicks per enchant, but only a few times in a hero's life;
     // estimate the gain from the piece's own power (list view) if it ever gets slow.
-    private IEnumerator UnlockTiers()
+    private IEnumerator UnlockTiers(bool retryUnlocks)
     {
         _gearBlocked = false;
         var nothingToEnchant = new HashSet<string>();
+
+        // Heroes already at their next tier's gear power: the unlock itself is tried again on every run
+        // (a full read has just tried it), since it can have failed for want of Meteorites.
+        var ready = retryUnlocks
+            ? _heroes.Where(h => EnchantPlanner.NextTierThreshold(h) is { } t && h.GearPower >= t).ToList()
+            : new List<HeroState>();
+        foreach (var hero in ready)
+        {
+            yield return SelectHero(hero);
+            if (_stop) yield break;
+            yield return ReadHeroAfterGain(hero, EnchantPlanner.NextTierThreshold(hero));
+        }
 
         while (!_stop)
         {
