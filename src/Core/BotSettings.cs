@@ -57,10 +57,10 @@ public static class BotSettings
         _autoStart = _category.CreateEntry("auto_start", false, "Auto Start",
             "Determines if the bot logic should be initialized and started automatically upon game launch.");
 
-        _startBotDelay = _category.CreateEntry("start_bot_delay", 30.0f, "Start Bot Delay",
+        _startBotDelay = _category.CreateEntry("start_bot_delay", 60.0f, "Start Bot Delay",
             "The initial cooldown (in seconds) before the bot begins execution. The game's startup popups " +
             "(offline progress, event promos) show up well after launch, and tasks started under them " +
-            "fail. Default: 30." +
+            "fail. Default: 60." +
             "\nClamped between 10.0 and 120.0 seconds.");
 
         _scanInterval = _category.CreateEntry("scan_interval", 5.0f, "Scan Interval",

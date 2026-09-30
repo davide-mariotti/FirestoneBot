@@ -155,7 +155,7 @@ $bmp.Save("$env:TEMP\steam0.png")
    `C:\Repos\FirestoneBot-test-backup\` (fuori da `Mods`: MelonLoader carica ogni `.dll` che trova
    lì).
 3. Nel cfg, in `[firebot_settings]`: `auto_start = true`, `debug_mode = true`,
-   `start_bot_delay = 30.0`. Nelle sezioni dei task: `enabled` come in
+   `start_bot_delay = 60.0`. Nelle sezioni dei task: `enabled` come in
    `tools/ConfigTemplate/FirebotPreferences.template.cfg` (tutto acceso tranne i due task Oracle), e `next_run_time_internal = ""` ovunque, così ogni task è subito dovuto.
 4. Build, deploy, avvio.
 
@@ -220,7 +220,7 @@ Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate d
 - `talentstask.guide_start_index`: la calibrazione del singolo account. Lasciare quello che c'è; su
   un account nuovo `-1`, che si calibra da solo al primo giro.
 
-`[firebot_settings]`: `auto_start = true`, `start_bot_delay = 30.0`, `scan_interval = 5.0`,
+`[firebot_settings]`: `auto_start = true`, `start_bot_delay = 60.0`, `scan_interval = 5.0`,
 `interaction_delay = 1.0`, `max_task_runtime = 120.0`, `debug_mode = true`, `shortcut_key = "F7"`,
 `free_speedup_seconds = 170.0`, `low_resource_mode = true`, `target_frame_rate = 15`,
 `render_quality_level = 0`, `window_width = 504`, `window_height = 316`,
@@ -373,7 +373,9 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   primo task (Collector) non ha aperto la scheda Personaggio e ha riprovato un'ora dopo. Il 30/09,
   nei riavvii delle 10:19 e delle 10:32, il primo task (Empower) non ha aperto il Temple su 4-5
   istanze su 17: Empower ora riprova dopo 5 minuti, ma lo stesso può capitare a qualunque primo
-  task. Se dà fastidio, portarlo a 60. Il vecchio "what's new" non si è visto.
+  task. Dal 30/09 il default e il template sono a 60 (scelta dell'utente); il fleet lo prende al
+  prossimo riavvio completo, con `apply_template.ps1` a giochi chiusi (vedi "Da fare e rimandato").
+  Il vecchio "what's new" non si è visto.
 - Il `storeButton` dell'HUD non apre niente (zero listener): Daily Store Offers dipende dai suoi badge.
 - Percorsi ipotizzati, mai visti dal vivo: badge della posta, bottone Forbidden Knowledge in Gilda.
 - `[FAILED] Path broken: ... popups/CurrencyMissing/bg/closeButton` compare una volta per sessione al
@@ -415,6 +417,10 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 
 ## Da fare e rimandato
 
+- **`start_bot_delay = 60` sul fleet**: già nel template e nel codice (30/09), non ancora nei cfg di
+  Steam-0..16, che girano a 30. Al prossimo riavvio completo: fermare tutto, lanciare
+  `apply_template.ps1 -From 0 -To 16` (mostra `firebot_settings.start_bot_delay: 30.0 -> 60.0`), poi
+  riavviare. Sul secondo PC arriva con la solita procedura di aggiornamento.
 - **DLL del 30/09 sul fleet**: la mattina del 30/09 (Hall of Heroes) è stata distribuita su
   Steam-0..16 (questo PC, percorso classico e sandbox), e i loro cfg sono stati allineati al template
   (vedi "Configurazione di riferimento"; `apply_template.ps1 -Check`: 33 file, 0 differenze). Un
