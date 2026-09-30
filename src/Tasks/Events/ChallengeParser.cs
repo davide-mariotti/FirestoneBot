@@ -14,7 +14,10 @@ public enum ChallengeKind
     OpenChests,
     SellItems,
     TreeOfLifeUpgrades,
-    MeteoriteResearches
+    MeteoriteResearches,
+    EnlightenGuardians,
+    ExoticUpgrades,
+    GuildDonation
 }
 
 /// <summary>A challenge card read as (kind, done/target). Missing is 0 once the target is met, or unreadable.</summary>
@@ -31,8 +34,10 @@ public readonly record struct Challenge(ChallengeKind Kind, int Done, int Target
 public static class ChallengeParser
 {
     // Live texts (Steam-0, 30/09): "Hit the arcane crystal 10 times.", "Play 12 times with the cards
-    // at the tavern." (Decorated Heroes), "Complete 1 meteorite researches." (mini-event). The rest
-    // are the wiki's mini-event texts, not seen live yet.
+    // at the tavern.", "Enlighten guardians 1 times." (Decorated Heroes), "Complete 1 meteorite
+    // researches.", "Enlighten guardians 2 times." (mini-event). The rest are the wiki's mini-event
+    // texts, not seen live yet. The last three spend Strange Dust, exotic coins and guild coins:
+    // approved by the user on 30/09. "Get 50 special upgrades" needs nothing: Hero Upgrade buys them.
     private static readonly (Regex Text, ChallengeKind Kind)[] Rules =
     {
         (Rule(@"^Hit the arcane crystal \d+ times"), ChallengeKind.CrystalHits),
@@ -40,7 +45,10 @@ public static class ChallengeParser
         (Rule(@"^Open \d+ chests"), ChallengeKind.OpenChests),
         (Rule(@"^Sell \d+ items at the exotic merchant"), ChallengeKind.SellItems),
         (Rule(@"^Complete \d+ upgrades at your personal tree of life"), ChallengeKind.TreeOfLifeUpgrades),
-        (Rule(@"^Complete \d+ meteorite researches"), ChallengeKind.MeteoriteResearches)
+        (Rule(@"^Complete \d+ meteorite researches"), ChallengeKind.MeteoriteResearches),
+        (Rule(@"^Enlighten guardians \d+ times"), ChallengeKind.EnlightenGuardians),
+        (Rule(@"^Complete \d+ exotic upgrades"), ChallengeKind.ExoticUpgrades),
+        (Rule(@"^Donate \d+ guild coins"), ChallengeKind.GuildDonation)
     };
 
     private static Regex Rule(string pattern) => new(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);

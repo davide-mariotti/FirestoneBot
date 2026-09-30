@@ -13,7 +13,7 @@ namespace Firebot.Tasks.Town;
 
 /// <summary>
 ///     The daily "Merchant" quest: sells as many items at the Exotic Merchant as the quest is missing,
-///     then spends the coins on the first affordable Exotic Upgrade. Only junk is ever sold (see
+///     then spends the coins on the first affordable Exotic Upgrade (only if priced in Exotic Coins). Only junk is ever sold (see
 ///     SellOrder); if it runs out, the quest waits for more (CollectorQuestTask opens extra chests
 ///     for it). The instant gold items are never sold nor used here.
 /// </summary>
@@ -40,23 +40,59 @@ public class MerchantQuestTask : DailyQuestTask
         yield return SellJunk(missing, _ => { });
 
         yield return ExoticMerchant.OpenUpgradesTab;
+        yield return BuyUpgrades(1, _ => { }); // one upgrade per run
 
-        var upgradeSlotNames = ExoticMerchant.UpgradesList.GetChildren().Select(c => c.Name).ToList();
-        foreach (var name in upgradeSlotNames)
+        yield return ExoticMerchant.Close;
+        yield return TownScreen.Close;
+    }
+
+    /// <summary>An event challenge's exotic upgrades (EventChallengeActions): up to `count`.</summary>
+    public static IEnumerator Upgrade(int count, Action<int> onBought)
+    {
+        yield return TownScreen.Open;
+        yield return TownScreen.OpenExoticMerchant;
+        yield return ExoticMerchant.OpenUpgradesTab;
+
+        yield return BuyUpgrades(count, onBought);
+
+        yield return ExoticMerchant.Close;
+        yield return TownScreen.Close;
+    }
+
+    /// <summary>
+    ///     The first affordable upgrades in list order, each only when priced in Exotic Coins and
+    ///     counted once the coin counter drops.
+    /// </summary>
+    private static IEnumerator BuyUpgrades(int count, Action<int> onBought)
+    {
+        var bought = 0;
+        foreach (var name in ExoticMerchant.UpgradesList.GetChildren().Select(c => c.Name).ToList())
         {
+            if (bought >= count) break;
             if (string.IsNullOrEmpty(name)) continue;
 
             var upgradeBtn = new GameButton(
                 "/" + name + Paths.ExoticMerchantLoc.UpgradesLoc.UpgradeBtn, ExoticMerchant.UpgradesList);
-            if (upgradeBtn.IsClickable())
+            if (!upgradeBtn.IsClickable()) continue;
+
+            var icon = IconSprite.NameAt(
+                $"{ExoticMerchant.UpgradesList.FullPath}/{name}{Paths.ExoticMerchantLoc.UpgradesLoc.UpgradeCostIcon}");
+            if (icon != "exoticCoin64")
             {
-                yield return upgradeBtn.Click();
-                break; // one upgrade per run
+                Logger.Debug($"[INFO] Exotic upgrade '{name}' is priced in '{icon}', not Exotic Coins - skipped.");
+                continue;
             }
+
+            var before = ExoticMerchant.CoinCount;
+            yield return upgradeBtn.Click();
+            yield return Poll.Until(() => ExoticMerchant.CoinCount < before);
+
+            var after = ExoticMerchant.CoinCount;
+            Logger.Debug($"[INFO] Exotic upgrade '{name}': coins {before} -> {after}.");
+            if (after < before) bought++;
         }
 
-        yield return ExoticMerchant.Close;
-        yield return TownScreen.Close;
+        onBought(bought);
     }
 
     /// <summary>An event challenge's sales (EventChallengeActions): up to `count` of SellOrder only.</summary>

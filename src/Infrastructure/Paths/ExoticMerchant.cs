@@ -13,6 +13,9 @@ public static partial class Paths
 
         public const string UpgradesTabBtn = Root + "/submenus/submenuButtons/upgrades";
 
+        // '.'-grouped past 999 like the other counters ("336" on Steam-0, 30/09).
+        public const string CoinCountTxt = Root + "/counters/currencyInteraction (ExoticCoin)/quantity";
+
         public static class SellLoc
         {
             public const string ProductGridRoot =
@@ -37,6 +40,9 @@ public static partial class Paths
 
             // Relative to an exoticMerchantUpgrade (N) child of UpgradesListRoot.
             public const string UpgradeBtn = "/upgradeButton";
+
+            // Seen live (30/09): sprite exoticCoin64 on all 12 upgrades, next to costText (960-2208).
+            public const string UpgradeCostIcon = UpgradeBtn + "/currencyIcon";
         }
     }
 }

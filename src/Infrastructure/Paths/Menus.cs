@@ -110,8 +110,33 @@ public static partial class Paths
 
             public const string ChaosRiftBtn = Root + "/chaosRift";
 
+            // Opens popups/GuildBank on its bank tab (30/09).
+            public const string BankBtn = Root + "/bank";
+
             // Not verified live: guessed from the sibling icons' naming.
             public const string ForbiddenKnowledgeBtn = Root + "/forbiddenKnowledge";
+        }
+
+        /// <summary>The Guild's bank. Only the donation is used, for an event challenge.</summary>
+        public static class GuildBankLoc
+        {
+            public const string Root = MenusLoc.Root + "/popups/GuildBank";
+
+            public const string CloseBtn = Root + "/bg/closeButton";
+
+            // The bank tab, open by default. Seen live (30/09): "You have" '850', icon guildCoin64;
+            // buttons '1.000', '10.000', '100.000' (not interactable below their amount) and 'Max'.
+            private const string DonateRoot = Root + "/bg/submenus/bankSubmenu/donate";
+
+            private const string YourCoins = DonateRoot + "/yoursGuildCoinCounterBg/currencyInteraction (GuildCoin)";
+
+            public const string YourCoinsTxt = YourCoins + "/quantity";
+
+            public const string YourCoinsIcon = YourCoins + "/icon";
+
+            public const string Donate1kBtn = DonateRoot + "/donationOptions/donate1k";
+
+            public const string DonateAllBtn = DonateRoot + "/donationOptions/donateAll";
         }
 
         public static class ExpeditionsLoc
@@ -279,7 +304,14 @@ public static partial class Paths
 
             private const string UnlockedGuardianRoot = Root + "/submenus/bg/infoSubmenu/activities/unlocked";
 
+            // Seen live on Steam-0 (30/09): desc "Enlightenment 1", costText "20", icon strangeDust64.
             public const string EnlightenmentBtn = UnlockedGuardianRoot + "/enlightenment/enlightenmentButton";
+
+            public const string EnlightenmentDescTxt = EnlightenmentBtn + "/desc";
+
+            public const string EnlightenmentCostIcon = EnlightenmentBtn + "/strangeDustIcon";
+
+            public const string EnlightenmentCostTxt = EnlightenmentBtn + "/costText";
 
             public const string TrainBtn = UnlockedGuardianRoot + "/train/trainButton";
 

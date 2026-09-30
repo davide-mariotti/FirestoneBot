@@ -19,6 +19,8 @@ public static class TownGuild
 
     public static IEnumerator OpenChaosRift => new GameButton(Paths.MenusLoc.TownGuildLoc.ChaosRiftBtn).Click();
 
+    public static IEnumerator OpenBank => new GameButton(Paths.MenusLoc.TownGuildLoc.BankBtn).Click();
+
     public static IEnumerator OpenForbiddenKnowledge =>
         new GameButton(Paths.MenusLoc.TownGuildLoc.ForbiddenKnowledgeBtn).Click();
 

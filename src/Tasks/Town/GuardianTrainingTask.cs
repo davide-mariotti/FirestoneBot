@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town.MagicQuarters;
@@ -5,6 +6,7 @@ using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using MelonLoader;
+using Logger = Firebot.Core.Logger;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
@@ -83,6 +85,52 @@ public class GuardianTrainingTask : BotTask
         var enlightenmentBtn = Guardian.EnlightenmentBtn;
         while (enlightenmentBtn.IsClickable()) yield return enlightenmentBtn.Click();
     }
+
+    /// <summary>
+    ///     An event challenge's enlightenments (EventChallengeActions): up to `times` on Vermilion, only
+    ///     while the price is Strange Dust. Every click counts, confirmed or not, so a missed one can
+    ///     never turn into an extra: the challenge's next read tells.
+    /// </summary>
+    public static IEnumerator Enlighten(int times, Action<int> onDone)
+    {
+        yield return TownScreen.Open;
+        yield return TownScreen.OpenMagicQuarters;
+        yield return new GameButton(parent: MagicQuarters.Guardians.GetChild(0)).Click();
+
+        var done = 0;
+        var button = Guardian.EnlightenmentBtn;
+        while (done < times && button.IsClickable())
+        {
+            var icon = IconSprite.NameAt(Paths.MenusLoc.MagicQuartersLoc.EnlightenmentCostIcon);
+            var before = EnlightenmentState;
+            if (icon != "strangeDust64")
+            {
+                Logger.Debug($"[INFO] Enlightenment costs {before} in '{icon}', not Strange Dust - skipped.");
+                break;
+            }
+
+            yield return button.Click();
+            if (CurrencyMissingPopup.IsShowing)
+            {
+                yield return CurrencyMissingPopup.Close;
+                break;
+            }
+
+            done++;
+            yield return Poll.Until(() => EnlightenmentState != before);
+            Logger.Debug($"[INFO] Enlightenment {done}/{times}: {before} -> {EnlightenmentState}.");
+        }
+
+        onDone(done);
+
+        yield return MagicQuarters.Close;
+        yield return TownScreen.Close;
+    }
+
+    // 'Enlightenment 1' for '20', to see what a click changes.
+    private static string EnlightenmentState =>
+        $"'{new GameText(Paths.MenusLoc.MagicQuartersLoc.EnlightenmentDescTxt).GetParsedText()}' for " +
+        $"'{new GameText(Paths.MenusLoc.MagicQuartersLoc.EnlightenmentCostTxt).GetParsedText()}'";
 
     private int GetGuardianIndex()
     {

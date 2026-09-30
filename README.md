@@ -93,6 +93,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Decorated Heroes** and **New Player Event**: claim challenges, check-ins and milestones, then spend the event currency on Dragon blood, then Meteorites, then Beer.
 - **Mini Event**: every mini-event (Mass Production, Sigils of Prophecy, Stardust... - one runs every 5 days, all on one screen): claims every unlocked day's challenge.
+- **Event challenges**: Decorated Heroes and the mini-events also do what an actionable challenge is missing - exactly that, tier by tier - then claim it: Arcane Crystal hits and Tavern draws (after that day's Miner and Gamer quests), chests, item sales, Tree of Life and Meteorite research levels, guardian enlightenment (Strange Dust), one Exotic Upgrade, a guild donation. Missions, researches, expeditions and time online are left to the tasks that already do them.
 - Paid tabs are never opened.
 
 [TESTING.md](TESTING.md) (Italian) is the live-test runbook - written so a Claude Code session can

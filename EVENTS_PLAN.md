@@ -3,8 +3,11 @@
 > Piano da eseguire con Claude Code, scritto il 2026-09-30. **Stato al 30/09 sera**: Fase 0 chiusa
 > (risultati in sezione 7), Fasi 1 e 2 fatte e verificate su Steam-0. Fase 3 fatta: cristallo e
 > taverna verificati su Decorated Heroes; forzieri, vendite, Tree of Life e meteoriti scritti ma mai
-> visti dal vivo (compaiono solo nei mini-eventi, il prossimo è Stardust il 04/10). Fase 4 in attesa
-> del sì dell'utente.
+> visti dal vivo (compaiono solo nei mini-eventi, il prossimo è Stardust il 04/10). Fase 4 fatta
+> (approvate illuminazione, donazione e upgrade dell'Exotic Merchant; gli upgrade speciali non
+> servono, li compra Hero Upgrade): illuminazione verificata su Decorated Heroes, donazione e upgrade
+> esotico mai visti dal vivo. La donazione non può essere di 500 esatti: il minimo del gioco è 1.000,
+> o tutto il saldo se è sotto 1.000.
 >
 > **Regola dell'utente (30/09)**: per ogni sfida si fa quello che chiede, né più né meno: solo il
 > valore che sblocca il claim del livello in corso.
@@ -218,7 +221,11 @@ Con sonde temporanee (come per Hall of Heroes), su istanze dove l'evento è in c
 4. **Illuminazione**: `Paths.MenusLoc.MagicQuartersLoc.EnlightenmentBtn` (già usato da Guardian
    Training con `use_strange_dust`, spento nel fleet), "Enlightenment 1", `costText` '20',
    `strangeDustIcon` = `strangeDust64`, XP +120.
-5. Donazione, upgrade speciali e upgrade dell'Exotic Merchant: in attesa del sì dell'utente.
+5. Seconda sonda (15:46): Gilda → `bank` apre `popups/GuildBank` sul tab bank; "You have" 850 guild
+   coin (icona `guildCoin64`), bottoni '1.000', '10.000', '100.000' (non cliccabili sotto il loro
+   importo) e 'Max'. Exotic Merchant, tab upgrade: 12 upgrade, `upgradeButton/currencyIcon` =
+   `exoticCoin64`, `costText` 960-2208; contatore `counters/currencyInteraction (ExoticCoin)/quantity`
+   '336'. Upgrade speciali: nessuna azione (decisione dell'utente).
 6. **Conteggio condiviso: sì.** Dopo le quest del mattino DH segnava 5/10 colpi e 10/12 giocate,
    cioè i 5 colpi di Miner e le 10 giocate di Gamer di Steam-0.
 

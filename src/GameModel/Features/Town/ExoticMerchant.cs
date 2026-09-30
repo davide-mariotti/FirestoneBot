@@ -20,6 +20,8 @@ public static class ExoticMerchant
 
     public static GameElement UpgradesList => new(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradesListRoot);
 
+    public static int CoinCount => (int)new GameText(Paths.ExoticMerchantLoc.CoinCountTxt).GetParsedDoubleAbbreviated();
+
     /// <summary>The Sell tab's items in grid order, by their visible name ("Scroll of Health").</summary>
     public static List<(string Name, int Quantity)> SellItems()
     {
