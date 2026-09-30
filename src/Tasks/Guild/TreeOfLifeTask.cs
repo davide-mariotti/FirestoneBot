@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Guild;
 using Firebot.GameModel.Features.Town;
@@ -32,11 +31,14 @@ public class TreeOfLifeTask : BotTask
         yield return TownGuild.OpenTreeOfLife;
         yield return TreeOfLife.OpenPersonalTab;
 
-        var unaffordableThisRun = new HashSet<int>();
+        // Cost only depends on the level, so once a node at level L is too expensive, every node at L
+        // or above is too: only lower ones are still worth a try. Trying them one by one cost 4 s
+        // each, 40-50 s a run with nothing left to buy (30/09).
+        var affordableBelow = MaxUpgradeLevel;
 
         for (var i = 0; i < MaxIterations; i++)
         {
-            var best = FindBestUpgrade(unaffordableThisRun);
+            var best = FindBestUpgrade(affordableBelow);
             if (best == null) break;
 
             var name = TreeOfLife.PersonalUpgradeName(best.Value);
@@ -52,9 +54,8 @@ public class TreeOfLifeTask : BotTask
 
             Debug($"[INFO] Tree of Life: {name} at {before} costs more tokens than are left.");
 
-            // Too expensive now: skip just this node, so cheaper ones still get their turn.
             yield return CurrencyMissingPopup.Close;
-            unaffordableThisRun.Add(best.Value);
+            affordableBelow = before;
         }
 
         yield return TreeOfLife.Close;
@@ -63,7 +64,7 @@ public class TreeOfLifeTask : BotTask
         NextRunTime = DateTime.Now + RecheckDelay;
     }
 
-    private static int? FindBestUpgrade(ICollection<int> unaffordableThisRun)
+    private static int? FindBestUpgrade(int affordableBelow)
     {
         int? bestPriority = null;
         var bestPriorityLevel = int.MaxValue;
@@ -72,11 +73,10 @@ public class TreeOfLifeTask : BotTask
 
         for (var i = 0; i < TreeOfLife.PersonalUpgradeCount; i++)
         {
-            if (unaffordableThisRun.Contains(i)) continue;
             if (!TreeOfLife.PersonalNode(i).IsClickable()) continue;
 
             var level = TreeOfLife.PersonalNodeLevel(i);
-            if (level >= MaxUpgradeLevel) continue;
+            if (level >= affordableBelow) continue;
 
             if (TreeOfLife.IsPriority(i))
             {
