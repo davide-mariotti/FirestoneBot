@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Shared;
 using Firebot.Utilities;
@@ -32,10 +33,21 @@ public abstract class DailyQuestTask : BotTask
 
     protected bool IsDoneToday => _lastDoneDate?.Value == GameDay.Today();
 
+    // Each loaded quest task, for IsQuestDoneToday.
+    private static readonly Dictionary<Type, DailyQuestTask> Loaded = new();
+
+    /// <summary>
+    ///     Whether T's quest showed complete today. An event challenge that spends the same resource
+    ///     waits for it, so the daily quest - it unlocks the weeklies - always comes first.
+    /// </summary>
+    public static bool IsQuestDoneToday<T>() where T : DailyQuestTask =>
+        Loaded.TryGetValue(typeof(T), out var task) && task.IsDoneToday;
+
     protected sealed override void OnConfigure(MelonPreferences_Category category)
     {
         if (_lastDoneDate != null) return;
 
+        Loaded[GetType()] = this;
         OnConfigureQuest(category);
 
         _lastDoneDate = category.CreateEntry(

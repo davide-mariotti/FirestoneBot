@@ -1,7 +1,8 @@
 # Piano: completare le sfide degli eventi, non solo reclamarle
 
 > Piano da eseguire con Claude Code, scritto il 2026-09-30. **Stato al 30/09 sera**: Fase 0 chiusa
-> (risultati in sezione 7), Fasi 1 e 2 fatte e verificate su Steam-0; Fase 3 in corso.
+> (risultati in sezione 7), Fasi 1 e 2 fatte e verificate su Steam-0; Fase 3: cristallo e taverna
+> verificati su Decorated Heroes, le altre quattro azioni in corso.
 >
 > **Regola dell'utente (30/09)**: per ogni sfida si fa quello che chiede, né più né meno: solo il
 > valore che sblocca il claim del livello in corso.

@@ -4,6 +4,7 @@ using Firebot.GameModel.Features.Guild;
 using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
+using Logger = Firebot.Core.Logger;
 
 namespace Firebot.Tasks.Guild;
 
@@ -24,7 +25,13 @@ public class MinerQuestTask : DailyQuestTask
     // that screen - so it only counts while the quest is still open.
     public override bool IsNotificationVisible() => base.IsNotificationVisible() && !IsDoneToday;
 
-    protected override IEnumerator Work(int missing)
+    protected override IEnumerator Work(int missing) => HitCrystal(missing);
+
+    /// <summary>
+    ///     Up to `hits` hits, one pickaxe each, stopping at the first that doesn't land. Also an event
+    ///     challenge's (EventChallengeActions). onLanded gets how many landed.
+    /// </summary>
+    public static IEnumerator HitCrystal(int hits, Action<int> onLanded = null)
     {
         yield return Notifications.ArcaneCrystal;
 
@@ -33,12 +40,18 @@ public class MinerQuestTask : DailyQuestTask
 
         yield return ArcaneCrystal.TrySetQuantityTo1();
 
-        var hits = Math.Min(missing, ArcaneCrystal.PickaxeCount);
-        Debug($"[INFO] Miner: {missing} hit(s) missing, {ArcaneCrystal.PickaxeCount} pickaxe(s), cost per hit {ArcaneCrystal.HitCost}.");
+        var pickaxes = ArcaneCrystal.PickaxeCount;
+        Logger.Debug($"[INFO] Arcane Crystal: {hits} hit(s) to do, {pickaxes} pickaxe(s), cost per hit {ArcaneCrystal.HitCost}.");
 
+        var landed = 0;
         var hit = ArcaneCrystal.HitCost == 1;
-        for (var i = 0; i < hits && hit; i++)
+        for (var i = 0; i < Math.Min(hits, pickaxes) && hit; i++)
+        {
             yield return ArcaneCrystal.Hit(ok => hit = ok);
+            if (hit) landed++;
+        }
+
+        onLanded?.Invoke(landed);
 
         yield return ArcaneCrystal.Close;
         yield return TownGuild.Close;

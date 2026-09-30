@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using Firebot.GameModel.Features.Town;
+using Logger = Firebot.Core.Logger;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
@@ -15,17 +17,26 @@ public class GamerQuestTask : DailyQuestTask
 
     protected override string QuestName => "Gamer";
 
-    protected override IEnumerator Work(int missing)
+    protected override IEnumerator Work(int missing) => Play(missing);
+
+    /// <summary>
+    ///     Up to `draws` single draws, while there are tokens. Also an event challenge's
+    ///     (EventChallengeActions). onPlayed gets how many were played.
+    /// </summary>
+    public static IEnumerator Play(int draws, Action<int> onPlayed = null)
     {
         yield return TownScreen.Open;
         yield return TownScreen.OpenTavern;
 
         yield return Tavern.TrySetPlayQuantityTo(1);
-        Debug($"[INFO] Gamer: {missing} draw(s) missing, {Tavern.GameTokenCount} token(s), single draw={Tavern.IsSingleDraw}.");
+        Logger.Debug($"[INFO] Tavern: {draws} draw(s) to play, {Tavern.GameTokenCount} token(s), single draw={Tavern.IsSingleDraw}.");
 
+        var played = 0;
         if (Tavern.IsSingleDraw)
-            for (var i = 0; i < missing && Tavern.GameTokenCount > 0 && Tavern.PlayBtn.IsClickable(); i++)
+            for (; played < draws && Tavern.GameTokenCount > 0 && Tavern.PlayBtn.IsClickable(); played++)
                 yield return Tavern.PlayRound();
+
+        onPlayed?.Invoke(played);
 
         yield return Tavern.Close;
         yield return TownScreen.Close;
