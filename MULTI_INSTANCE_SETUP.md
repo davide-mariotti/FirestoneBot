@@ -7,7 +7,7 @@ di progetto (per quello vedi README.md/TESTING.md) - è un **elenco di verifica*
 essere letto dopo un `git pull`, punto per punto, per controllare cosa manca o cosa va rifatto
 sul nuovo PC.
 
-Scritto il 2026-09-26, aggiornato il 2026-09-30. Se qualcosa qui non corrisponde più a quanto
+Scritto il 2026-09-26, aggiornato il 2026-09-30 sera (sfide degli eventi, Map Missions `desc`). Se qualcosa qui non corrisponde più a quanto
 trovi nel repo o sul PC principale, fidati di quello che vedi dal vivo, non di questo file (che è
 una fotografia di un momento preciso).
 
@@ -33,8 +33,17 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    - `hallofheroestask.enabled: false -> true`: l'accensione di Hall of Heroes;
    - `firebot_settings.start_bot_delay: 30.0 -> 60.0`: il bot aspetta 60 s dall'avvio, così i
      popup d'avvio sono già chiusi;
+   - `mapmissionstask.mission_time_order: "asc" -> "desc"`: missioni più lunghe per prime
+     (decisione del 30/09, già su Steam-0..16);
    - chiavi mancanti `beaststask.enabled`, `guardianevolutiontask.enabled`,
-     `warmachineraritytask.enabled`: i tre task nuovi, accesi di default.
+     `warmachineraritytask.enabled`: i tre task nuovi, accesi di default;
+   - chiave mancante `minieventtask.enabled`: il task unico dei mini-eventi, che sostituisce
+     Mass Production e Sigils of Prophecy. Le loro sezioni (`[massproductioneventtask]`,
+     `[sigilsofprophecyeventtask]`) restano nel cfg senza un task che le legga: non fanno niente.
+
+   Su istanze già aggiornate con la procedura del 30/09 pomeriggio compaiono solo
+   `mission_time_order` e la chiave mancante `minieventtask.enabled`. Prima di scrivere conviene
+   copiare i cfg da parte, come sul PC principale (`C:\Repos\FirestoneBot-test-backup\2026-09-30-fleet`).
 
    Non passare l'uscita dello script a `Select-Object -First`: in PowerShell 5.1 lo ferma dopo
    quelle righe e i cfg restanti non vengono scritti.
@@ -44,7 +53,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 39 of 41` e nessun `timed out` o `threw:`.
+   `Started. Enabled tasks: 38 of 40` e nessun `timed out` o `threw:`.
 8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a
    4,5 minuti per istanza (legge tutti gli eroi, spende Void Crystal ed Ethereal Shards, sblocca i
    tier pagando in meteoriti). A giri finiti, da PowerShell:
@@ -85,6 +94,35 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    un numero (non -1) e `FAILED=0`. Evoluzioni e rarità compaiono solo dove c'è abbastanza dust o
    Tools: su Steam-0..16 il 30/09, 2 evoluzioni (300 Strange Dust) e 2 rarità (10.000 Tools). Sotto
    il livello 60 (Beasts) o 50 (War Machine Rarity) la riga manca perché il task non parte.
+10. Sfide degli eventi (dal 30/09 sera, dettagli in `EVENTS_PLAN.md`): Decorated Heroes e i
+    mini-eventi leggono le carte delle sfide, fanno quello che manca al livello in corso di quelle
+    azionabili (né più né meno), riaprono e reclamano. Colpi al cristallo, giocate, forzieri e
+    vendite partono solo dopo la quest giornaliera che usa la stessa risorsa. A giri finiti, da
+    PowerShell:
+
+    ```powershell
+    foreach ($n in 17..34) {
+      $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $t = Get-Content $log
+      "{0}: DH={1} Mini={2} azioni={3} claim={4} attese-quest={5} FAILED={6} threw/timeout={7}" -f $n,
+        @($t -match 'Decorated Heroes Event finished').Count, @($t -match 'Events - Mini Event finished').Count,
+        @($t -match '-> \w+, [1-9]\d* missing').Count,
+        ((@($t -match 'ClaimAllChallenges: claimed [1-9]') -replace '.*claimed (\d+).*', '$1') | Measure-Object -Sum).Sum,
+        @($t -match 'waits for today').Count,
+        @($t -match '(EventTask|MiniEventTask|DecoratedHeroesEventTask).*\[FAILED\]').Count,
+        @($t -match 'threw|timed out').Count
+    }
+    ```
+
+    Ogni istanza deve avere `DH` e `Mini` almeno a 1 (il giro c'è anche se l'evento non è aperto
+    all'account: scrive `Not open to this account`), `FAILED=0` e `threw/timeout=0`. Su Steam-0..16
+    il 30/09 alle 16:15, con Decorated Heroes in corso (finisce il 02/10 verso le 10:00), quasi
+    ogni account ha fatto 6 azioni in 3 giri: 3 illuminazioni (60 Strange Dust), 10 colpi al
+    cristallo e 2 giocate, con 5-8 claim. Su Steam-15 la terza illuminazione ha trovato il bottone
+    non cliccabile ed è riuscita al giro dopo (ora il log lo dice: `the button isn't clickable`).
+    `attese-quest` sopra 0 vuol dire che la quest Gamer o
+    Miner di oggi non è ancora finita (su Steam-11 mancavano i gettoni): l'evento riprova al giro
+    dopo. Il dettaglio di un'istanza: `Select-String -Path $log -Pattern "Event '"`.
 
 ---
 
@@ -331,7 +369,7 @@ Se vuoi anche eseguire i test unitari dell'allocatore talenti (nessuna dipendenz
 dotnet test "C:\Repos\FirestoneBot\tests\Firebot.TalentEngine.Tests\Firebot.TalentEngine.Tests.csproj"
 ```
 
-Atteso: `Superato! - Non superati: 0. Superati: 9.`
+Atteso: `Superato! - Non superati: 0. Superati: 53.`
 
 ---
 
@@ -514,7 +552,7 @@ dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
 
    Se segnala "chiavi mancanti", quell'istanza non ha ancora girato con la DLL nuova: torna al
    passo 1 per lei.
-4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 39 of 41`
+4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 38 of 40`
    come su Steam-0.
 
 ### 8.2 Griglia delle finestre (monitor 2560x1440)
@@ -567,6 +605,9 @@ ricompilando, elencati qui solo per completezza/consapevolezza:
   `src/Utilities/GameDay.cs`.
 - **Allineamento alla guida F2P** (2026-09-28): nuovi default e logiche di spesa più prudenti -
   l'elenco, con cosa riverificare, è in `TESTING.md`.
+- **Sfide degli eventi** (2026-09-30): Decorated Heroes e un task unico per tutti i mini-eventi
+  completano le sfide azionabili prima di reclamarle - vedi `EVENTS_PLAN.md` e il punto 10 della
+  procedura di aggiornamento.
 
 ---
 
@@ -584,7 +625,7 @@ Per OGNI istanza 17-34, in ordine:
 - [ ] Log più recente: nessun `FileNotFoundException`, presente `Started. Enabled tasks:`.
 - [ ] Titolo finestra mostra `[Steam-<N>]` (conferma che Sandboxie applica la config).
 - [ ] `FirebotPreferences.cfg` allineato a Steam-0: `apply_template.ps1 -From 17 -To 34 -Check`
-      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 39 of 41`.
+      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 38 of 40`.
 
 A livello di sistema (una tantum, non per-istanza):
 

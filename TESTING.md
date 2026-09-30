@@ -4,8 +4,9 @@ Runbook per una sessione di test **autonoma** di Claude Code sul PC della flotta
 Steam-0: prova tutti i task, trova i bug dai log, li corregge, ricompila, ridistribuisce e riprova
 da solo. In fondo: stato di ogni task, problemi noti, lavoro rimandato e come tornare alla versione
 precedente. Aggiornato al 2026-09-30, dopo la prima sessione di test dal vivo su Steam-0 (dopo il
-riallineamento alla guida F2P, `docs/firestone_guida_F2P.md`, e la pulizia del codice del 28/09) e
-il rollout di Hall of Heroes su Steam-0..16.
+riallineamento alla guida F2P, `docs/firestone_guida_F2P.md`, e la pulizia del codice del 28/09),
+il rollout di Hall of Heroes su Steam-0..16 e, il 30/09 sera, quello delle sfide degli eventi
+(`EVENTS_PLAN.md`) su Steam-0..16.
 
 ## Prompt di avvio
 
@@ -193,11 +194,12 @@ Per ogni problema trovato:
 
 ---
 
-## Configurazione di riferimento (Steam-0, 29/09)
+## Configurazione di riferimento (Steam-0, 30/09)
 
 Tutte le istanze, su entrambi i PC, devono avere questi valori in `FirebotPreferences.cfg`. Il
 29/09 sera Steam-1..16 sono state allineate a Steam-0 e verificate con un confronto chiave per
-chiave. I valori auto-gestiti (`next_run_time_internal`, `last_done_date`, contatori del giorno,
+chiave; il 30/09 alle 16:10, al riavvio completo, di nuovo tutte e 17 (`start_bot_delay = 60`
+ovunque, Map Missions `desc`). I valori auto-gestiti (`next_run_time_internal`, `last_done_date`, contatori del giorno,
 `known_maxed_nodes`) non si copiano: il bot li scrive da solo.
 
 Il template `tools/ConfigTemplate/FirebotPreferences.template.cfg` è questa stessa configurazione, e
@@ -239,7 +241,7 @@ posto di `massproductioneventtask` e `sigilsofprophecyeventtask`) e le azioni di
 | `guardiantrainingtask` | `guardian_index = 0`, `use_strange_dust = false` |
 | `meteoriteresearchtask` | `recheck_interval_minutes = 60`, `min_meteorite_reserve = 3000` |
 | `freepickaxestask` | `pickaxe_claim_threshold = 5` |
-| `mapmissionstask` | `mission_time_order = "asc"` |
+| `mapmissionstask` | `mission_time_order = "desc"` (dal 30/09; prima `asc`) |
 | `pathofglorytask` | `recheck_interval_minutes = 60` |
 | `talentstask` | `priority_overrides = ""` (e `guide_start_index`: vedi sopra) |
 | `hero_upgrade` | `sweep_interval_seconds = 5.0`, `upgrade_target_slots = ""` |
@@ -247,8 +249,8 @@ posto di `massproductioneventtask` e `sigilsofprophecyeventtask`) e le azioni di
 | `flying_bonus_hunter` | `poll_seconds = 2.0` |
 
 Un file nuovo nasce invece con i default del codice, cioè i default F2P della Fase 0, diversi in
-quattro punti: Empower `1.0` / `0` / `0` (solo il +100%), Map Missions `desc`, War Machines spento,
-task Oracle accesi. Per questo su un'istanza nuova lo script va passato dopo il primo avvio. Passare
+tre punti: Empower `1.0` / `0` / `0` (solo il +100%), War Machines spento, task Oracle accesi (Map
+Missions `desc` è ormai anche nel template). Per questo su un'istanza nuova lo script va passato dopo il primo avvio. Passare
 il fleet ai default F2P resta la decisione aperta in "Da fare e rimandato".
 
 ---
@@ -297,7 +299,7 @@ file di configurazione nuovo.
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
 | Expedition | `[expeditiontask]` | 10 | on | ✅ | Parte sempre la prima spedizione in lista. |
-| Tree of Life | `[treeoflifetask]` | 10 | on | ✅ | Personal Tree. Priorità: Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner (nuova); poi il nodo al livello più basso. Dal 30/09 logga ogni acquisto (`Tree of Life: Mana Heroes 4 -> 5.`) e il nodo che non si può pagare (`... at 3 costs more tokens than are left.`): alle 14:14-14:20 acquisti su Steam-3, 4, 7, gli altri senza gettoni. Il costo dipende solo dal livello, quindi al primo nodo troppo caro prova solo quelli a livello più basso: prima li provava uno per uno, 4 s l'uno, 40-50 s a giro senza niente da comprare; su Steam-5 ora 9 s. Dal 30/09 gli acquisti sono in `TreeOfLifeTask.Buy`, usato anche dalle sfide dei mini-eventi (un acquisto per quanto chiede la sfida); il giro normale è riverificato su Steam-0 (15:28, due nodi troppo cari, 13 s). |
+| Tree of Life | `[treeoflifetask]` | 10 | on | ✅ | Personal Tree. Priorità: Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner (nuova); poi il nodo al livello più basso. Dal 30/09 logga ogni acquisto (`Tree of Life: Mana Heroes 4 -> 5.`) e il nodo che non si può pagare (`... at 3 costs more tokens than are left.`): alle 14:14-14:20 acquisti su Steam-3, 4, 7, gli altri senza gettoni. Il costo dipende solo dal livello, quindi al primo nodo troppo caro prova solo quelli a livello più basso: prima li provava uno per uno, 4 s l'uno, 40-50 s a giro senza niente da comprare; su Steam-5 ora 9 s. Dal 30/09 gli acquisti sono in `TreeOfLifeTask.Buy`, usato anche dalle sfide dei mini-eventi (un acquisto per quanto chiede la sfida); il giro normale è riverificato su Steam-0 (15:28, due nodi troppo cari, 13 s) e sulla flotta dopo il rollout (Steam-1: 7 acquisti, `Rage Heroes 3 -> 4` e altri, poi stop al primo nodo troppo caro). |
 | Free Pickaxes | `[freepickaxestask]` | 50 | on | 🔄 | Reclama da `pickaxe_claim_threshold` (5) in su. Dal 29/09 gira solo col badge (`NextRunTime = MaxValue`, come Talents); la strada Gilda → Guild Shop è stata tolta perché nei log del 26-29/09 non ha mai raggiunto il timer in 1.015 giri su 1.038. Verificato il 29/09: `Next` = 12/31/9999; alle 17:23 il badge ha aperto lo shop, il task ha reclamato e il badge si è spento; senza badge non è più ripartito. **Da verificare:** dal 30/09 il giro scrive `[INFO] Free pickaxes: N ('testo'), threshold 5.`, mai vista dal vivo (il task parte solo col badge). Alla prima riga controllare il formato del testo: `Quantity` concatena tutte le cifre, quindi con un testo tipo "3/30" leggerebbe 330 e reclamerebbe sotto soglia. |
 | Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. Il badge resta acceso: nei log del 26-29/09 il task ha girato 325 volte, una ogni ~50 s, per 33 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti: verificato sugli eventi, non su Awakening (il 29/09 il suo badge non si è acceso). |
 | Chaos Rift | `[chaosrifttask]` | 100 | on | ⚠️ | Solo Tomes of Power, mai Eclipse Stones. Gira solo su Steam-0 (l'unico account a livello 100). 30/09 al reset ha colpito con le 10 Moon Stone ricaricate (poi a 0), a x5, ma il click su Market subito dopo i colpi è stato ignorato e non ha comprato niente; ora il click si ripete finché il negozio non si apre (verificato su un secondo giro, senza colpi: aperto al primo tentativo). Tolto anche il click sull'auto-hit (bottone senza stato leggibile, spento su Steam-0). Da vedere al reset dell'1/10: il negozio aperto subito dopo i colpi. |
@@ -308,7 +310,7 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Map Missions | `[mapmissionstask]` | - | on | 🔄 | Ora le più lunghe per prime (`mission_time_order = "desc"`). Il 29/09 gira senza errori (30-35 s), ma Steam-0 ha ancora `asc` nel cfg: `desc` non verificato. |
+| Map Missions | `[mapmissionstask]` | - | on | ⚠️ | Le più lunghe per prime (`mission_time_order = "desc"`), dal 30/09 16:10 su tutta la flotta (prima `asc`); nessuna preferenza per tipo di missione (decisione dell'utente: il pin non dice il tipo e servirebbe una mappatura nuova). 30/09 dopo il rollout: giri da 17 a 26 s, nessun `[FAILED]`. Da verificare: che partano davvero le più lunghe. |
 | Warfront Campaign Loot | `[warfrontcampaignloottask]` | 50 | on | ⚠️ | Il 29/09 gira senza errori (3 s); non si è visto niente da reclamare. |
 | Warfront Daily Missions | `[warfrontdailymissionstask]` | 50 | on | ✅ | Battaglie reali. 30/09 al reset: 2 missioni su 10 su 16 account e 4 su Steam-0, in 26-49 s: le altre non hanno il bottone di combattimento (non disponibili per l'account), quindi il limite è del gioco. Nessun popup "Here are your rewards!" rimasto aperto in 34 battaglie. |
 
@@ -332,9 +334,9 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Decorated Heroes | `[decoratedheroeseventtask]` | - | on | ✅ | Acquisti nell'ordine Dragon blood → Meteorite → Beer (29/09: ordine confermato nel log; Meteorite non c'è nello shop di questo account, valuta insufficiente per il resto). 29/09: 3 sfide reclamate al giro partito dal badge. Dal 30/09 dopo i claim legge le 8 carte e scrive una riga per carta (`Event 'Decorated heroes': 'Hit the arcane crystal 10 times.' 5/10 -> CrystalHits, 5 missing.`, oppure `challenge not handled: ...` per quelle che completano gli altri task); verificato su Steam-0. Poi fa quello che manca al livello in corso delle sfide azionabili, né più né meno, riapre, reclama e ripete (al massimo 4 giri, uno per livello); colpi al cristallo e giocate in taverna solo dopo che la quest Miner o Gamer di oggi è fatta, e contano per entrambe. 30/09 su Steam-0: colpi 5/10 → 5 colpi, claim, "15 times" 10/15 → 5 colpi, claim, 15/15; giocate 10/12 → 2, claim, 12/12; 3 claim in 66 s. Una lettura rimasta indietro rispetto ai passi appena fatti non viene rifatta (`shows N, M expected - left for the next run`). Illuminazione dei guardian (Vermilion, 20 Strange Dust l'una, solo con l'icona `strangeDust64`; approvata dall'utente il 30/09): 30/09 su Steam-0 "Enlighten guardians 1 times." 0/1 → 1, claim, 1/2 → 1, claim, 2/3 → 1, claim, 3/3 (60 dust, 79 s); il bottone non cambia testo né costo dopo il click, la conferma è la carta riletta. Le stesse azioni valgono per i mini-eventi, con in più forzieri (`CollectorQuestTask.OpenChests`, dal più economico, dopo la quest Collector), vendite (`MerchantQuestTask.Sell`, solo i tre oggetti ammessi, dopo la quest Merchant), Tree of Life (`TreeOfLifeTask.Buy`) e ricerche di meteoriti (`MeteoriteResearchTask.Research`, senza riserva), un upgrade dell'Exotic Merchant (`MerchantQuestTask.Upgrade`, solo con icona `exoticCoin64`, confermato dal contatore) e la donazione in Gilda (Gilda → `bank` → `popups/GuildBank`: il minimo che il gioco permette è 1.000 guild coin, oppure tutto il saldo con "Max" se è sotto 1.000; per una sfida da 500 si dona uno dei due): **mai viste dal vivo**, compaiono solo nei mini-eventi (Stardust dal 04/10). "Get 50 special upgrades" non ha azione: li compra Hero Upgrade. Vedi EVENTS_PLAN.md. |
+| Decorated Heroes | `[decoratedheroeseventtask]` | - | on | ✅ | Acquisti nell'ordine Dragon blood → Meteorite → Beer (29/09: ordine confermato nel log; Meteorite non c'è nello shop di questo account, valuta insufficiente per il resto). 29/09: 3 sfide reclamate al giro partito dal badge. Dal 30/09 dopo i claim legge le 8 carte e scrive una riga per carta (`Event 'Decorated heroes': 'Hit the arcane crystal 10 times.' 5/10 -> CrystalHits, 5 missing.`, oppure `challenge not handled: ...` per quelle che completano gli altri task); verificato su Steam-0. Poi fa quello che manca al livello in corso delle sfide azionabili, né più né meno, riapre, reclama e ripete (al massimo 4 giri, uno per livello); colpi al cristallo e giocate in taverna solo dopo che la quest Miner o Gamer di oggi è fatta, e contano per entrambe. 30/09 su Steam-0: colpi 5/10 → 5 colpi, claim, "15 times" 10/15 → 5 colpi, claim, 15/15; giocate 10/12 → 2, claim, 12/12; 3 claim in 66 s. Una lettura rimasta indietro rispetto ai passi appena fatti non viene rifatta (`shows N, M expected - left for the next run`). Illuminazione dei guardian (Vermilion, 20 Strange Dust l'una, solo con l'icona `strangeDust64`; approvata dall'utente il 30/09): 30/09 su Steam-0 "Enlighten guardians 1 times." 0/1 → 1, claim, 1/2 → 1, claim, 2/3 → 1, claim, 3/3 (60 dust, 79 s); il bottone non cambia testo né costo dopo il click, la conferma è la carta riletta. **Flotta, 30/09 16:13-16:20**: su Steam-1..16 lo stesso giro (3 illuminazioni, 10 colpi, 2 giocate, 5-8 claim, 94-108 s), nessun `[FAILED]` né timeout; Steam-11 ha fatto colpi e illuminazioni ma le giocate aspettano la sua quest Gamer (`waits for today's GamerQuestTask`); su Steam-15 la terza illuminazione ha trovato il bottone non cliccabile ed è riuscita al giro dopo (ora il log scrive `the button isn't clickable`). Sotto il livello 120 la carta dell'alchimia ha il titolo nascosto: saltata con un controllo silenzioso (prima 2 `[FAILED]` a sessione su 16 istanze), si leggono 7 carte. Le stesse azioni valgono per i mini-eventi, con in più forzieri (`CollectorQuestTask.OpenChests`, dal più economico, dopo la quest Collector), vendite (`MerchantQuestTask.Sell`, solo i tre oggetti ammessi, dopo la quest Merchant), Tree of Life (`TreeOfLifeTask.Buy`) e ricerche di meteoriti (`MeteoriteResearchTask.Research`, senza riserva; **vista dal vivo** su Steam-1 il 30/09: "Complete 1 meteorite researches." 0/1 → 'All main attributes' per 600, saldo 2.734 → 2.134, claim), un upgrade dell'Exotic Merchant (`MerchantQuestTask.Upgrade`: il più economico con icona `exoticCoin64`, ignorando la priorità, e se le monete non bastano vende prima gli oggetti ammessi fino a coprirlo, al massimo 200; dopo la quest Merchant) e la donazione in Gilda (Gilda → `bank` → `popups/GuildBank`, solo quando una sfida la chiede: 1.000 guild coin, il minimo del gioco, anche per una sfida da 500, scelta dell'utente; sotto 1.000 monete "Max" solo se copre quello che manca): forzieri, vendite, Tree of Life, upgrade esotico e donazione **mai visti dal vivo**, compaiono solo nei mini-eventi (Stardust dal 04/10). "Get 50 special upgrades" non ha azione: li compra Hero Upgrade. Vedi EVENTS_PLAN.md. |
 | New Player Event | `[newplayereventtask]` | - | on | ✅ | Stesso ordine: compra Meteorite, poi spende il resto in Beer; check-in giornaliero e milestone. Gli account vecchi non hanno l'evento (il task rallenta da solo), come Steam-0. 30/09 dopo il reset, su Steam-8..16: check-in reclamato, 1 milestone su 14, 1 Meteorite comprato. |
-| Mini Event | `[minieventtask]` | - | on | ⚠️ | Dal 30/09 un solo task per gli 11 mini-eventi (sostituisce Mass Production e Sigils of Prophecy): apre la prima carta non bloccata con uno degli 11 nomi del wiki (tutti aprono `events/MiniEvents`), reclama ogni giorno sbloccato nel tab Challenges e scrive una riga per ogni sfida sbloccata non ancora reclamata. Solo il tab Challenges. Verificato su Steam-0 con Sigils of Prophecy (claim, lettura, chiusura, 5 s). **Da verificare:** il primo mini-evento diverso da Sigils, Stardust dal 04/10 alle 10:00 (la carta c'è già tra gli "Upcoming events", col lucchetto). Storia di Sigils: 29/09 1 claim su 3 giorni; 30/09 claim del secondo giorno su 9 istanze; su Steam-15 e -16 la carta è bloccata per livello e ora aspetta un'ora come un evento assente. |
+| Mini Event | `[minieventtask]` | - | on | ⚠️ | 30/09 sulla flotta: aperto Sigils su 15 istanze (bloccato per livello su Steam-5 e -16, `Not open to this account`), sfide lette: su Steam-1 "Complete 1 meteorite researches." fatta e reclamata, su Steam-11 "Kill 100 enemies with the hero: Leo." (nessuna azione, per scelta). Dal 30/09 un solo task per gli 11 mini-eventi (sostituisce Mass Production e Sigils of Prophecy): apre la prima carta non bloccata con uno degli 11 nomi del wiki (tutti aprono `events/MiniEvents`), reclama ogni giorno sbloccato nel tab Challenges e scrive una riga per ogni sfida sbloccata non ancora reclamata. Solo il tab Challenges. Verificato su Steam-0 con Sigils of Prophecy (claim, lettura, chiusura, 5 s). **Da verificare:** il primo mini-evento diverso da Sigils, Stardust dal 04/10 alle 10:00 (la carta c'è già tra gli "Upcoming events", col lucchetto). Storia di Sigils: 29/09 1 claim su 3 giorni; 30/09 claim del secondo giorno su 9 istanze; su Steam-15 e -16 la carta è bloccata per livello e ora aspetta un'ora come un evento assente. |
 
 Accelerazioni (Experiments, Firestone Research, Map Missions): il bot preme `speedUpButton` solo nella
 finestra gratuita degli ultimi minuti (`free_speedup_seconds`). Visto dal vivo il 30/09 su 7 click: `finishDesc`
@@ -419,21 +421,22 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 
 ## Da fare e rimandato
 
-- **Prossimo riavvio completo di Steam-0..16**: dal rollout del 30/09 alle 13:22 le 17 istanze
-  girano con Beasts, Guardian Evolution e War Machine Rarity (172ad6f). Le correzioni venute dopo
-  (Beasts che ricerca le bestie a ogni giro, attesa del Tempio in Empower, stop di Tree of Life)
-  sono solo su Steam-3, 5, 9 e 10, e `start_bot_delay = 60` solo su Steam-0 e 1 (gli altri 30).
-  Al prossimo riavvio completo: fermare tutto, build e DLL nuove su tutte, poi
-  `apply_template.ps1 -From 0 -To 16` (mostra `firebot_settings.start_bot_delay: 30.0 -> 60.0`),
-  poi riavviare. Non passare l'uscita di `apply_template.ps1` a `Select-Object -First`: in
+- **Riavvio completo di Steam-0..16: fatto il 30/09 alle 16:10.** Tutte e 17 girano con la
+  stessa build (d19bb02: sfide degli eventi, Mini Event, e le correzioni del 30/09 che prima erano
+  solo su alcune istanze) e lo stesso cfg (`apply_template.ps1 -From 0 -To 16`: 63 valori, cioè
+  `start_bot_delay` 30 → 60 su Steam-2..16 e `mission_time_order` asc → desc su tutte). I cfg di
+  prima sono in `C:\Repos\FirestoneBot-test-backup\2026-09-30-fleet`. Le sezioni
+  `[massproductioneventtask]` e `[sigilsofprophecyeventtask]` restano nei cfg di Steam-1..16 senza
+  un task: non fanno niente. Non passare l'uscita di `apply_template.ps1` a `Select-Object -First`: in
   PowerShell 5.1 ferma lo script dopo quelle righe e i cfg restanti non vengono scritti (30/09).
 - **Secondo PC (istanze 17-34)**: se è ancora alla versione di prima del 30/09, basta la procedura
   "Aggiornare il bot su istanze già in funzione" di `MULTI_INSTANCE_SETUP.md`, che porta tutto
   quello del 30/09 (Hall of Heroes, i tre task nuovi, avvio a 60 s) e ha i controlli da fare dopo.
 - **Default F2P sul fleet (da decidere)**: i default della Fase 0 nel codice (Personal Tree al posto
-  delle War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`) valgono solo per i
-  file nuovi. Il 29/09 il template e il fleet di questo PC sono stati allineati a Steam-0 (vedi
-  "Configurazione di riferimento"), che ha ancora i valori vecchi per quei quattro punti. Se si
+  delle War Machines, Empower solo a +100%, task Oracle accesi) valgono solo per i file nuovi. Il
+  template e il fleet di questo PC sono allineati a Steam-0 (vedi "Configurazione di
+  riferimento"), che ha ancora i valori vecchi per quei tre punti; le missioni `desc` sono passate
+  al fleet il 30/09. Se si
   passa ai default F2P: si cambiano Steam-0, il template e quella sezione, poi si ripassa
   `apply_template.ps1` su tutte le istanze.
 - **Rituali Oracle**: ce ne sono quattro (Obedience: forzieri solar; Harmony: comet; Concentration:

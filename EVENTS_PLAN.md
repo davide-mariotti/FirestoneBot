@@ -6,8 +6,14 @@
 > visti dal vivo (compaiono solo nei mini-eventi, il prossimo è Stardust il 04/10). Fase 4 fatta
 > (approvate illuminazione, donazione e upgrade dell'Exotic Merchant; gli upgrade speciali non
 > servono, li compra Hero Upgrade): illuminazione verificata su Decorated Heroes, donazione e upgrade
-> esotico mai visti dal vivo. La donazione non può essere di 500 esatti: il minimo del gioco è 1.000,
-> o tutto il saldo se è sotto 1.000.
+> esotico mai visti dal vivo. Decisioni dell'utente dopo la Fase 4: la donazione è di 1.000 (il
+> minimo del gioco) anche per una sfida da 500, solo quando una sfida la chiede; per l'upgrade
+> esotico si prende il più economico, ignorando la priorità, vendendo prima gli oggetti ammessi
+> se le monete non bastano; Fase 5 scartata (Map Missions solo `desc`, senza tipo di missione).
+>
+> **Rollout 30/09 16:10** su Steam-0..16: DH completato su tutte (3 illuminazioni, 10 colpi, 2
+> giocate), ricerca di meteoriti vista dal vivo su Steam-1 (Sigils). Restano da vedere forzieri,
+> vendite, Tree of Life, upgrade esotico e donazione (mini-eventi, dal 04/10).
 >
 > **Regola dell'utente (30/09)**: per ogni sfida si fa quello che chiede, né più né meno: solo il
 > valore che sblocca il claim del livello in corso.
