@@ -26,16 +26,19 @@ public class QuestsTask : BotTask
         yield return CharacterScreen.OpenQuestsTab;
 
         yield return CharacterScreen.OpenDailyQuestsSubTab;
-        foreach (var claimButton in CharacterScreen.DailyQuestClaimButtons())
+        var daily = CharacterScreen.DailyQuestClaimButtons();
+        foreach (var claimButton in daily)
             yield return claimButton.Click();
         var dailyRenewTime = CharacterScreen.QuestsRenewTime;
 
         yield return CharacterScreen.OpenWeeklyQuestsSubTab;
-        foreach (var claimButton in CharacterScreen.WeeklyQuestClaimButtons())
+        var weekly = CharacterScreen.WeeklyQuestClaimButtons();
+        foreach (var claimButton in weekly)
             yield return claimButton.Click();
         var weeklyRenewTime = CharacterScreen.QuestsRenewTime;
 
         yield return CharacterScreen.Close;
+        Debug($"[INFO] Quests: claimed {daily.Count} daily, {weekly.Count} weekly.");
 
         var earliestRenew = dailyRenewTime < weeklyRenewTime ? dailyRenewTime : weeklyRenewTime;
         var computedNext = earliestRenew > DateTime.Now ? earliestRenew : DateTime.Now + FallbackRetryDelay;
