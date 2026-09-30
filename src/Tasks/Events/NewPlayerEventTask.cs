@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Firebot.GameModel.Features.Events;
 
 namespace Firebot.Tasks.Events;
@@ -10,11 +11,12 @@ namespace Firebot.Tasks.Events;
 /// </summary>
 public class NewPlayerEventTask : EventTask
 {
-    protected override string EventName => "New Player Event";
+    protected override string[] EventNames => new[] { "New Player Event" };
 
     protected override bool IsScreenVisible => AnniversaryShop.IsVisible;
 
-    protected override IEnumerator RunEvent()
+    // No challenges: check-in and time-online milestones only.
+    protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)
     {
         yield return AnniversaryShop.OpenDailiesTab;
         yield return AnniversaryShop.ClaimDailyCheckIn();

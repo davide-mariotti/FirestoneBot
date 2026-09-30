@@ -16,5 +16,6 @@
         <Compile Include="..\..\src\Utilities\TimeParser.cs" Link="TimeParser.cs" />
         <Compile Include="..\..\src\Utilities\StringUtils.cs" Link="StringUtils.cs" />
         <Compile Include="..\..\src\Tasks\Character\EnchantPlanner.cs" Link="EnchantPlanner.cs" />
+        <Compile Include="..\..\src\Tasks\Events\ChallengeParser.cs" Link="ChallengeParser.cs" />
     </ItemGroup>
 </Project>

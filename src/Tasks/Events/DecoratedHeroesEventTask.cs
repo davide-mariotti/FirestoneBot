@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Firebot.GameModel.Features.Events;
 
 namespace Firebot.Tasks.Events;
@@ -9,14 +10,15 @@ namespace Firebot.Tasks.Events;
 /// </summary>
 public class DecoratedHeroesEventTask : EventTask
 {
-    protected override string EventName => "Decorated heroes";
+    protected override string[] EventNames => new[] { "Decorated heroes" };
 
     protected override bool IsScreenVisible => DecoratedHeroesShop.IsVisible;
 
-    protected override IEnumerator RunEvent()
+    protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)
     {
         yield return DecoratedHeroesShop.OpenChallengesTab;
         yield return DecoratedHeroesShop.ClaimAllChallenges();
+        challenges.AddRange(DecoratedHeroesShop.Challenges());
 
         yield return DecoratedHeroesShop.OpenExchangeTab;
         yield return DecoratedHeroesShop.Exchange.BuyPriorityItems();

@@ -227,8 +227,8 @@ Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate d
 `window_grid_enabled = true`, `window_grid_columns = 5`.
 
 Task spenti (`enabled = false`): `oracleritualstask`, `oraclesgifttask`. Tutti gli altri accesi,
-compresi `warmachinestask`, `hallofheroestask` (dal 30/09), `massproductioneventtask`,
-`sigilsofprophecyeventtask` e le azioni di background `hero_upgrade`, `auto_retreat`,
+compresi `warmachinestask`, `hallofheroestask` (dal 30/09), `minieventtask` (dal 30/09, al
+posto di `massproductioneventtask` e `sigilsofprophecyeventtask`) e le azioni di background `hero_upgrade`, `auto_retreat`,
 `flying_bonus_hunter`.
 
 | Sezione | Impostazioni |
@@ -332,18 +332,17 @@ file di configurazione nuovo.
 
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
-| Decorated Heroes | `[decoratedheroeseventtask]` | - | on | ✅ | Acquisti nell'ordine Dragon blood → Meteorite → Beer (29/09: ordine confermato nel log; Meteorite non c'è nello shop di questo account, valuta insufficiente per il resto). 29/09: 3 sfide reclamate al giro partito dal badge. |
+| Decorated Heroes | `[decoratedheroeseventtask]` | - | on | ✅ | Acquisti nell'ordine Dragon blood → Meteorite → Beer (29/09: ordine confermato nel log; Meteorite non c'è nello shop di questo account, valuta insufficiente per il resto). 29/09: 3 sfide reclamate al giro partito dal badge. Dal 30/09 dopo i claim legge le 8 carte e scrive una riga per carta (`Event 'Decorated heroes': 'Hit the arcane crystal 10 times.' 5/10 -> CrystalHits, 5 missing.`, oppure `challenge not handled: ...` per quelle che completano gli altri task); verificato su Steam-0. Vedi EVENTS_PLAN.md. |
 | New Player Event | `[newplayereventtask]` | - | on | ✅ | Stesso ordine: compra Meteorite, poi spende il resto in Beer; check-in giornaliero e milestone. Gli account vecchi non hanno l'evento (il task rallenta da solo), come Steam-0. 30/09 dopo il reset, su Steam-8..16: check-in reclamato, 1 milestone su 14, 1 Meteorite comprato. |
-| Mass Production | `[massproductioneventtask]` | - | on | ✅ | Solo il tab Challenges. |
-| Sigils of Prophecy | `[sigilsofprophecyeventtask]` | - | on | ✅ | Aggiunto il 29/09. Stessa schermata di Mass Production (`events/MiniEvents`), cambia solo il riquadro nell'elenco eventi. Verificato dal vivo: il riquadro apre MiniEvents, 1 claim su 3 giorni (gli altri ancora bloccati), schermata chiusa. 30/09 (secondo giorno): ha reclamato la sfida del giorno su 9 istanze; sulle altre nessuna sfida era ancora completa, e reclama solo quelle. 30/09: su Steam-15 e -16 la carta c'è ma è bloccata per l'account, e il task la ritentava ogni 2 minuti (65 giri in una mattina); ora una carta bloccata aspetta un'ora come un evento assente. Verificato su entrambe. |
+| Mini Event | `[minieventtask]` | - | on | ⚠️ | Dal 30/09 un solo task per gli 11 mini-eventi (sostituisce Mass Production e Sigils of Prophecy): apre la prima carta non bloccata con uno degli 11 nomi del wiki (tutti aprono `events/MiniEvents`), reclama ogni giorno sbloccato nel tab Challenges e scrive una riga per ogni sfida sbloccata non ancora reclamata. Solo il tab Challenges. Verificato su Steam-0 con Sigils of Prophecy (claim, lettura, chiusura, 5 s). **Da verificare:** il primo mini-evento diverso da Sigils, Stardust dal 04/10 alle 10:00 (la carta c'è già tra gli "Upcoming events", col lucchetto). Storia di Sigils: 29/09 1 claim su 3 giorni; 30/09 claim del secondo giorno su 9 istanze; su Steam-15 e -16 la carta è bloccata per livello e ora aspetta un'ora come un evento assente. |
 
 Accelerazioni (Experiments, Firestone Research, Map Missions): il bot preme `speedUpButton` solo nella
 finestra gratuita degli ultimi minuti (`free_speedup_seconds`). Visto dal vivo il 30/09 su 7 click: `finishDesc`
 nascosto, `costText 'Free'`, icona delle gemme (`gem64`) nascosta, e ogni click scrive una riga `speed-up shows ...`.
 Dal 30/09 il click richiede anche l'icona delle gemme nascosta (`SpeedUpButton.IsFree`), che non dipende dalla lingua.
 
-Un evento non in corso per l'account, o bloccato per lui, scrive `'<evento>' isn't open to this account (not listed or locked)`: non è
-un errore.
+Un evento non in corso per l'account, bloccato per lui o ancora in arrivo scrive `Not open to this account (not listed,
+locked or upcoming)`: non è un errore.
 
 Dal 29/09 gli eventi partono anche sul badge rosso del bottone Events
 (`rightSideUI/menuButtons/eventsButton/notification`, visto dal vivo), oltre al controllo orario. Il

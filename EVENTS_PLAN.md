@@ -1,7 +1,10 @@
 # Piano: completare le sfide degli eventi, non solo reclamarle
 
-> Piano da eseguire con Claude Code, scritto il 2026-09-30. Non c'è ancora niente di implementato. Si
-> parte dalla **Fase 0** (sezione 7, verifiche nel gioco): finché non è chiusa, la logica è bloccata.
+> Piano da eseguire con Claude Code, scritto il 2026-09-30. **Stato al 30/09 sera**: Fase 0 chiusa
+> (risultati in sezione 7), Fasi 1 e 2 fatte e verificate su Steam-0; Fase 3 in corso.
+>
+> **Regola dell'utente (30/09)**: per ogni sfida si fa quello che chiede, né più né meno: solo il
+> valore che sblocca il claim del livello in corso.
 
 ## 0. Come partire
 
@@ -188,6 +191,33 @@ Con sonde temporanee (come per Hall of Heroes), su istanze dove l'evento è in c
 6. **Conteggio condiviso**: confermare che le giocate e i colpi delle quest giornaliere contano anche
    per la sfida dell'evento (lo screenshot del 30/09 mostra DH a 5/10 colpi e 10/12 giocate dopo le
    quest del mattino, quindi sembra di sì).
+
+### Risultati (Steam-0, 30/09, sonda `ProbeTask` poi tolta)
+
+1. **Decorated Heroes**: finisce il 02/10 verso le 10:00 ("Time left: 1d 19:00" alle 15). Carta
+   `challengesLayout/challenge (N)`: testo in `challengeTitleText`, progresso in
+   `progressBar/challengeProgressText`. Testi: "Complete all scout missions.", "Enlighten guardians 1
+   times.", "Complete 6 firestone researches.", "Conduct 3 alchemy experiments.", "Hit the arcane
+   crystal 10 times.", "Play 12 times with the cards at the tavern.", "Complete 10 guild
+   expeditions.", "Stay online for 60 minutes.". Il numero nel testo e il denominatore sono
+   l'obiettivo del **livello in corso** (10 colpi = livello 2, a 5/10 col livello 1 già fatto);
+   il conteggio è dal reset delle 10:00 e prosegue tra i livelli. A sfida finita il progresso dice
+   "Completed" e `claimButton` è nascosto. Livelli fatti: `progressMilestones/progress (i)/tickIcon`
+   attivo. In fondo, "Challenges will be renewed in: 19:00:53" (le 10:00).
+2. **Mini-eventi** (Sigils): `challengesLayout/miniEventChallengeInteraction (N)`, testo in
+   `unlocked/challenge/questDescription`, progresso in `unlocked/challenge/challengeProgressBg/progressText`,
+   claim in `unlocked/reward/claimButton`, `unlocked/reward/claimedText` attivo se reclamata. Giorno
+   bloccato: `unlocked` spento e `locked` acceso (il testo c'è già: il giorno 3 di Sigils su Steam-0
+   è "Get 50 special upgrades ."). Visti solo i testi di Steam-0 (le altre istanze non si toccano).
+3. **Elenco eventi**: Stardust (dal 04/10) e Primordial elements (dal 09/10) sono già in
+   `upcommingEvents`, con `mainElements/lock` acceso e "Starts in: ...". Che aprano MiniEvents si
+   vede il 04/10.
+4. **Illuminazione**: `Paths.MenusLoc.MagicQuartersLoc.EnlightenmentBtn` (già usato da Guardian
+   Training con `use_strange_dust`, spento nel fleet), "Enlightenment 1", `costText` '20',
+   `strangeDustIcon` = `strangeDust64`, XP +120.
+5. Donazione, upgrade speciali e upgrade dell'Exotic Merchant: in attesa del sì dell'utente.
+6. **Conteggio condiviso: sì.** Dopo le quest del mattino DH segnava 5/10 colpi e 10/12 giocate,
+   cioè i 5 colpi di Miner e le 10 giocate di Gamer di Steam-0.
 
 ## 8. Fuori da questo piano
 

@@ -2,8 +2,8 @@ namespace Firebot.Infrastructure;
 
 /// <summary>
 ///     The Events hub and each event's shop. They live under "events/", not "menus/". Event shops
-///     reuse old prefab names: New Player Event is "AnniversaryShop", Mass Production and Sigils of Prophecy
-///     are "MiniEvents".
+///     reuse old prefab names: New Player Event is "AnniversaryShop", every mini-event (Mass Production,
+///     Sigils of Prophecy, ...) is "MiniEvents".
 ///     Only claims and exchange purchases are wired - never the real-money tabs (Market, Shop, Offers).
 /// </summary>
 public static partial class Paths
@@ -43,6 +43,12 @@ public static partial class Paths
 
         // Relative to a "challenge (N)" card.
         public const string ChallengeClaimBtn = "/claimButton";
+
+        // "Hit the arcane crystal 10 times.": the number is the current tier's target (3 tiers).
+        public const string ChallengeTitleTxt = "/challengeTitleText";
+
+        // "5/10", counted since the 10:00 reset across tiers; "Completed" after the last tier.
+        public const string ChallengeProgressTxt = "/progressBar/challengeProgressText";
 
         public const string ExchangeItemsRoot =
             Root + "/bg/submenus/decoratedHeroesExchange/scrollView/viewport/content";
@@ -108,7 +114,7 @@ public static partial class Paths
         }
     }
 
-    /// <summary>Mass Production and Sigils of Prophecy. Its default tab ("offers") is real-money packs.</summary>
+    /// <summary>Every mini-event. Its default tab ("offers") is real-money packs.</summary>
     public static class MiniEventsLoc
     {
         public const string Root = MenusLoc.Root + "/events/MiniEvents";
@@ -123,5 +129,16 @@ public static partial class Paths
 
         // Relative to a day card; exists only once that day is unlocked.
         public const string ChallengeClaimBtn = "/unlocked/reward/claimButton";
+
+        // Relative to a day card, for Transform.Find (no leading slash). "unlocked" is inactive on
+        // a day still locked, "claimedText" active once its reward is claimed.
+        public const string ChallengeUnlocked = "unlocked";
+
+        public const string ChallengeClaimedTxt = "unlocked/reward/claimedText";
+
+        // "Complete 1 meteorite researches.", "1/1".
+        public const string ChallengeTitleTxt = "unlocked/challenge/questDescription";
+
+        public const string ChallengeProgressTxt = "unlocked/challenge/challengeProgressBg/progressText";
     }
 }

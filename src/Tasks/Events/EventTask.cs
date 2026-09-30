@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Events;
 using Firebot.GameModel.Primitives;
@@ -27,34 +28,46 @@ public abstract class EventTask : BotTask
         Paths.BattleLoc.BottomSideUIMobileLoc.EventsNotification
     };
 
-    /// <summary>The event card's title in the Events list.</summary>
-    protected abstract string EventName { get; }
+    /// <summary>The event card's titles in the Events list; the first unlocked match is opened.</summary>
+    protected abstract string[] EventNames { get; }
 
     protected abstract bool IsScreenVisible { get; }
 
-    /// <summary>The event's own work, ending with its screen closed.</summary>
-    protected abstract IEnumerator RunEvent();
+    /// <summary>
+    ///     The event's own work, ending with its screen closed. Adds each challenge card's text and
+    ///     progress, read after the claims, to challenges.
+    /// </summary>
+    protected abstract IEnumerator RunEvent(List<(string Text, string Progress)> challenges);
 
     public override IEnumerator Execute()
     {
         yield return EventManager.Open;
 
-        var cardFound = false;
-        yield return EventManager.OpenEvent(EventName, found => cardFound = found);
+        string title = null;
+        yield return EventManager.OpenEvent(EventNames, t => title = t);
         yield return Poll.Until(() => IsScreenVisible);
 
         if (IsScreenVisible)
         {
-            yield return RunEvent();
+            var challenges = new List<(string Text, string Progress)>();
+            yield return RunEvent(challenges);
             NextRunTime = DateTime.Now + RecheckDelay;
+
+            foreach (var (text, progress) in challenges)
+            {
+                var challenge = ChallengeParser.Parse(text, progress);
+                Debug(challenge.Kind == ChallengeKind.NotHandled
+                    ? $"[INFO] Event '{title}': challenge not handled: '{text}' {progress}."
+                    : $"[INFO] Event '{title}': '{text}' {progress} -> {challenge.Kind}, {challenge.Missing} missing.");
+            }
         }
-        else if (!cardFound)
+        else if (title == null)
         {
-            Debug($"[INFO] '{EventName}' isn't open to this account (not listed or locked) - backing off.");
+            Debug("[INFO] Not open to this account (not listed, locked or upcoming) - backing off.");
             NextRunTime = DateTime.Now + RecheckDelay;
         }
         else
-            Debug($"[FAILED] '{EventName}' didn't open - see the EventManager lines above.");
+            Debug($"[FAILED] '{title}' didn't open - see the EventManager lines above.");
 
         yield return EventManager.Close;
     }

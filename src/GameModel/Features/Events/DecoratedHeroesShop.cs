@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
@@ -24,6 +25,13 @@ public static class DecoratedHeroesShop
         Paths.DecoratedHeroesShopLoc.ExchangeQuantityBtn, Paths.DecoratedHeroesShopLoc.ExchangeQuantityTxt,
         Paths.DecoratedHeroesShopLoc.ExchangeItemsRoot, Paths.DecoratedHeroesShopLoc.ExchangeItemNameTxt,
         Paths.DecoratedHeroesShopLoc.ExchangeItemBuyBtn);
+
+    /// <summary>Every card's text and progress ("5/10", "Completed").</summary>
+    public static List<(string Text, string Progress)> Challenges() =>
+        new GameElement(Paths.DecoratedHeroesShopLoc.ChallengeGridRoot).GetChildren()
+            .Select(card => (new GameText(Paths.DecoratedHeroesShopLoc.ChallengeTitleTxt, card).GetParsedText(),
+                new GameText(Paths.DecoratedHeroesShopLoc.ChallengeProgressTxt, card).GetParsedText()))
+            .ToList();
 
     // Each challenge card pays out up to 3 reward tiers.
     private const int MaxClaimsPerChallenge = 3;

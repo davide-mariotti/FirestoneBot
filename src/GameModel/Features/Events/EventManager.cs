@@ -36,33 +36,31 @@ public static class EventManager
             .Concat(new GameElement(Paths.EventManagerLoc.UpcomingEventsRoot).GetChildren());
 
     /// <summary>
-    ///     Opens the event whose card title contains eventName (case-insensitive), unless that card
-    ///     is locked for this account. The caller confirms success through the shop's own IsVisible.
-    ///     onCardFound reports whether an unlocked matching card exists, so a caller can tell "this
-    ///     event isn't open to this account" (missing or locked) apart from "its shop failed to open
-    ///     this time".
+    ///     Opens the first unlocked event whose card title contains one of eventNames (case-insensitive).
+    ///     The caller confirms success through the shop's own IsVisible. onCardFound gets the opened
+    ///     card's title, or null when no unlocked card matches, so a caller can tell "this event isn't
+    ///     open to this account" (missing or locked) apart from "its shop failed to open this time".
     /// </summary>
-    public static IEnumerator OpenEvent(string eventName, Action<bool> onCardFound = null)
+    public static IEnumerator OpenEvent(string[] eventNames, Action<string> onCardFound = null)
     {
         var cards = AllCards.ToList();
-        Logger.Debug($"[EventManager] OpenEvent('{eventName}'): scanning {cards.Count} card(s): " +
+        Logger.Debug($"[EventManager] OpenEvent('{string.Join("', '", eventNames)}'): scanning {cards.Count} card(s): " +
                      string.Join(", ", cards.Select(c => $"{c.Name}='{new GameText(Paths.EventManagerLoc.CardTitleTxt, c).GetParsedText()}'")));
 
         foreach (var card in cards)
         {
             var title = new GameText(Paths.EventManagerLoc.CardTitleTxt, card).GetParsedText();
-            if (!title.Contains(eventName, StringComparison.OrdinalIgnoreCase)) continue;
+            if (!eventNames.Any(name => title.Contains(name, StringComparison.OrdinalIgnoreCase))) continue;
 
             // Locked counts as missing: retrying it every couple of minutes ran Sigils of Prophecy 65
-            // times in a morning on Steam-15 and Steam-16 (30/09).
+            // times in a morning on Steam-15 and Steam-16 (30/09). Upcoming events are locked too.
             if (new GameElement(Paths.EventManagerLoc.CardLockIndicator, card).IsVisible())
             {
                 Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) is locked for this account - skipping.");
-                onCardFound?.Invoke(false);
-                yield break;
+                continue;
             }
 
-            onCardFound?.Invoke(true);
+            onCardFound?.Invoke(title);
 
             // The hub closes once the event's own screen opens.
             var button = new GameButton(parent: card);
@@ -75,7 +73,7 @@ public static class EventManager
             yield break;
         }
 
-        Logger.Debug($"[EventManager] No card matching '{eventName}' found.");
-        onCardFound?.Invoke(false);
+        Logger.Debug("[EventManager] No unlocked card matches.");
+        onCardFound?.Invoke(null);
     }
 }
