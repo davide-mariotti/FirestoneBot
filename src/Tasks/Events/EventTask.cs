@@ -10,8 +10,9 @@ namespace Firebot.Tasks.Events;
 /// <summary>
 ///     An event opened from Battle -> Events, on the Events button's badge and hourly otherwise, so
 ///     new challenges and check-ins don't pile up. The badge is shared by every event, so all of them
-///     answer it. An event missing from the account's list backs off the same way; a card that
-///     didn't open its screen leaves NextRunTime alone, so the scheduler's short idle retry applies.
+///     answer it. An event missing from the account's list, or locked for it, backs off the same way;
+///     a card that didn't open its screen leaves NextRunTime alone, so the scheduler's short idle
+///     retry applies.
 /// </summary>
 public abstract class EventTask : BotTask
 {
@@ -49,7 +50,7 @@ public abstract class EventTask : BotTask
         }
         else if (!cardFound)
         {
-            Debug($"[INFO] '{EventName}' isn't in this account's event list - backing off.");
+            Debug($"[INFO] '{EventName}' isn't open to this account (not listed or locked) - backing off.");
             NextRunTime = DateTime.Now + RecheckDelay;
         }
         else

@@ -38,8 +38,9 @@ public static class EventManager
     /// <summary>
     ///     Opens the event whose card title contains eventName (case-insensitive), unless that card
     ///     is locked for this account. The caller confirms success through the shop's own IsVisible.
-    ///     onCardFound reports whether any matching card exists at all, so a caller can tell "this
-    ///     event isn't running for this account" apart from "its shop failed to open this time".
+    ///     onCardFound reports whether an unlocked matching card exists, so a caller can tell "this
+    ///     event isn't open to this account" (missing or locked) apart from "its shop failed to open
+    ///     this time".
     /// </summary>
     public static IEnumerator OpenEvent(string eventName, Action<bool> onCardFound = null)
     {
@@ -52,13 +53,16 @@ public static class EventManager
             var title = new GameText(Paths.EventManagerLoc.CardTitleTxt, card).GetParsedText();
             if (!title.Contains(eventName, StringComparison.OrdinalIgnoreCase)) continue;
 
-            onCardFound?.Invoke(true);
-
+            // Locked counts as missing: retrying it every couple of minutes ran Sigils of Prophecy 65
+            // times in a morning on Steam-15 and Steam-16 (30/09).
             if (new GameElement(Paths.EventManagerLoc.CardLockIndicator, card).IsVisible())
             {
                 Logger.Debug($"[EventManager] Match '{title}' ({card.Name}) is locked for this account - skipping.");
+                onCardFound?.Invoke(false);
                 yield break;
             }
+
+            onCardFound?.Invoke(true);
 
             // The hub closes once the event's own screen opens.
             var button = new GameButton(parent: card);
