@@ -4,12 +4,23 @@
 > su Steam-0..16 (sezione 1). Questo piano ora prepara gli **eventi che il bot non gestisce ancora**
 > (sezioni 2-6): per ognuno c'è cosa fa l'evento secondo il wiki, cosa dovrà fare il bot e quando se ne
 > vedrà la schermata. Niente codice prima di allora: i path si scrivono solo dopo averli visti dal vivo
-> (TESTING.md, "Regole").
+> (TESTING.md, "Regole"). La sezione 9 serve alle sessioni che controllano i mini-eventi sulla flotta.
 
 ## 0. Come partire
 
-Quando un evento della sezione 2 è in corso su Steam-0, da incollare in una sessione nuova di Claude
-Code (cartella `C:\Repos\FirestoneBot`):
+Da incollare in una sessione nuova di Claude Code (cartella `C:\Repos\FirestoneBot`), avviata con i
+permessi che le evitano di chiedere conferma a ogni comando.
+
+**Controllo di un mini-evento** (Stardust dal 04/10, Primordial elements dal 09/10):
+
+```text
+Leggi EVENTS_PLAN.md e fai la sezione 9 sul mini-evento in corso, con la skill ponytail attiva:
+controlla sulla flotta Steam-0..16 che il mini-evento venga aperto e che le sfide azionabili siano
+fatte e reclamate. Se trovi un problema, correggi e verifica su Steam-0, poi ridistribuisci a tutte
+le istanze. Aggiorna TESTING.md ed EVENTS_PLAN.md, fai commit e push.
+```
+
+**Evento nuovo** (Halloween dal 23/10, poi quelli della sezione 2):
 
 ```text
 Aggiungiamo l'evento <nome> seguendo EVENTS_PLAN.md, con le regole di TESTING.md (test solo su
@@ -179,3 +190,82 @@ schermata aperta dopo un click: `Watchdog.DumpActiveScreens()`. La carta dell'ev
 | 03/12, 10:00 | Frostfire Festival (sezione 4) |
 | ~19/12 | Winter Festival: conferma del task di calendario (sezione 3) |
 | aprile 2027 | Anniversario (sezione 5) |
+
+## 9. Controllare un mini-evento sulla flotta
+
+Un mini-evento dura 3 giorni e sblocca una sfida al giorno alle 10:00, diversa per ogni account: più
+giorni passano, più sfide ci sono da guardare. Il bot gira su Steam-0..16 dal 30/09 alle 16:23, tutte
+con la stessa build e lo stesso cfg (TESTING.md, "Da fare e rimandato").
+
+**Dove sono i log.** Steam-0 è nativa, le altre sono nel sandbox di Sandboxie (il percorso reale ha
+un log vecchio: leggere sempre quello nel sandbox):
+
+- Steam-0: `C:\Program Files (x86)\Steam-0\steamapps\common\Firestone\MelonLoader\Latest.log`
+- Steam-N (1..16): `C:\Sandbox\Admin\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\Latest.log`
+
+`Latest.log` copre dall'ultimo avvio; i log precedenti sono in `MelonLoader\Logs`.
+
+**Riepilogo per istanza**, da PowerShell:
+
+```powershell
+foreach ($n in 0..16) {
+  $log = if ($n -eq 0) { "C:\Program Files (x86)\Steam-0\steamapps\common\Firestone\MelonLoader\Latest.log" }
+         else { "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log" }
+  $t = Get-Content $log
+  "===== Steam-${n}: aperto " + ((@($t -match "\[EventManager '[^']+'\] attempt") -replace ".*EventManager '([^']+)'.*", '$1' | Sort-Object -Unique) -join '/') +
+    " | FAILED=" + @($t -match '(EventTask|MiniEventTask|EventChallenge).*\[FAILED\]').Count + " threw/timeout=" + @($t -match 'threw:|timed out').Count
+  $t -match "MiniEventTask.*(Event '|Not open)|Chests: opened|Merchant: sold|Sell grid|Tree of Life: |Meteorite research '|Exotic upgrade|Guild donation|Enlightenment|waits for today|MiniEvents\] ClaimAllChallenges: claimed" |
+    ForEach-Object { '  ' + ($_ -replace '^\[([0-9:]+)\.\d+\].*\[(INFO|DEBUG)\] ', '$1 ') } | Select-Object -Unique
+}
+```
+
+**Cosa deve comparire**:
+
+1. **Apertura**: `[EventManager '<nome>'] attempt 1/3 ... done=True` su ogni account a cui l'evento
+   è aperto; `Not open to this account` dove la carta è bloccata per livello (su Sigils: Steam-5 e
+   -16). `[FAILED] '<nome>' didn't open` vuol dire che la carta non apre `events/MiniEvents`: sonda
+   (sezione 7) sulla carta e sulla schermata che apre.
+2. **Sfide**: per ogni giorno sbloccato e non reclamato, `Event '<nome>': '<testo>' x/y -> <tipo>, N
+   missing` oppure `challenge not handled: '<testo>'`. Un testo azionabile che finisce in "not
+   handled" è un testo nuovo del gioco: si aggiunge a `ChallengeParser` (con un test in
+   `ChallengeParserTests`).
+3. **Azioni**, ognuna con al massimo i passi mancanti, poi `N step(s) done in round R - reopening to
+   claim` e `[MiniEvents] ClaimAllChallenges: claimed k/3` con k > 0:
+
+   | Sfida | Riga attesa | Da controllare |
+   |---|---|---|
+   | Open N chests | `Chests: opened n/N` e `[ChestOpening] '/Wooden': done, opened a/b` | dal forziere più economico |
+   | Sell N items | `Sell grid: ...`, `Merchant: sold n/N` | solo Midas' Touch, Scroll of Health, Scroll of Damage |
+   | Tree of Life | `Tree of Life: <nodo> a -> b` | un acquisto per ogni passo mancante |
+   | Meteorite research | `Meteorite research '<nodo>' for C: balance X -> Y` | vista dal vivo il 30/09 (Steam-1) |
+   | Enlighten guardians | `Enlightenment 1/1: ...` o `the button isn't clickable` | 20 Strange Dust l'una |
+   | Exotic upgrade | `Exotic upgrade: cheapest '<nome>' costs C, coins X -> Y after sales.` poi `Exotic upgrade '<nome>': coins X -> Y.` | il più economico; vendite solo degli oggetti ammessi |
+   | Donate guild coins | `Guild donation for N missing: guild coins X -> Y.` | 1.000 (o "Max" sotto 1.000 se basta) |
+
+   Le righe di forzieri, vendite, Tree of Life e meteoriti escono anche dai task normali (Collector,
+   Merchant, Tree of Life, Meteorite Research): per la sfida contano solo quelle subito dopo una riga
+   `Event '<nome>': ... -> <tipo>` con lo stesso orario. Per non fermare il riepilogo a metà, non
+   passarne l'uscita a `Select-Object -First`.
+
+   `waits for today's <Task> to finish first` non è un errore: la quest giornaliera con la stessa
+   risorsa non è ancora fatta, e il mini-evento riprova al giro dopo (ogni ora).
+4. **Criteri**: nessuna spesa oltre i passi mancanti, niente venduto fuori dai tre oggetti ammessi,
+   mai gemme, `FAILED=0` e `threw/timeout=0` per gli eventi. Il dettaglio di un'istanza:
+   `Select-String -Path $log -Pattern "Event '" -Context 0,12`.
+
+**Se serve una correzione**: si segue TESTING.md, sezione "Per l'agente" (comandi per fermare,
+compilare, installare e avviare Steam-0; regole). Si corregge e si verifica **solo su Steam-0**, poi
+si ridistribuisce a tutta la flotta, sempre da PowerShell (Git Bash rovina gli argomenti `/box:`):
+
+1. Fermare tutto: Steam-0 con `Get-Process | Where-Object { $_.Path -like 'C:\Program Files (x86)\Steam-0\*' } | Stop-Process -Force`,
+   le altre con `& 'C:\Program Files\Sandboxie-Plus\Start.exe' /box:SteamB<N> /terminate`; controllare
+   che non resti nessun `Firestone` né `steam`.
+2. Copiare `firebot.dll` e `Firebot.TalentEngine.dll` (da `src\bin\Release\net6.0`) nei `Mods` di
+   Steam-0 e nei **due** `Mods` di ogni Steam-1..16, quello reale e quello nel sandbox: 33 cartelle.
+3. Riavviare in sequenza, 20 s l'una: Steam-0 con `steam.exe -silent -applaunch 1013320`, le altre con
+   `Start.exe /box:SteamB<N> "C:\Program Files (x86)\Steam-<N>\steam.exe" -silent -applaunch 1013320`.
+4. Aspettare `Started. Enabled tasks: 38 of 40 loaded.` in ogni log e ripetere il riepilogo qui sopra.
+
+**Alla fine**: aggiornare in TESTING.md la riga Mini Event e quella di Decorated Heroes (sfide viste
+dal vivo, date, istanze), in questo file "Ancora da vedere" (sezione 1) e il calendario (sezione 8);
+poi commit e push.
