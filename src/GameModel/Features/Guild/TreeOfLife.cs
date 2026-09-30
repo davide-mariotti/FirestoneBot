@@ -30,6 +30,8 @@ public static class TreeOfLife
 
     public static bool IsPriority(int index) => PriorityUpgrades.Contains(PersonalUpgradeNames[index]);
 
+    public static string PersonalUpgradeName(int index) => PersonalUpgradeNames[index];
+
     public static IEnumerator OpenPersonalTab => new GameButton(Paths.TreeOfLifeLoc.PersonalTabBtn).Click();
 
     public static GameButton PersonalNode(int index) => new(NodePath(index));

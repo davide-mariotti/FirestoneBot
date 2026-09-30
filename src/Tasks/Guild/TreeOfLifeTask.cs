@@ -39,10 +39,18 @@ public class TreeOfLifeTask : BotTask
             var best = FindBestUpgrade(unaffordableThisRun);
             if (best == null) break;
 
+            var name = TreeOfLife.PersonalUpgradeName(best.Value);
+            var before = TreeOfLife.PersonalNodeLevel(best.Value);
             yield return TreeOfLife.PersonalNode(best.Value).Click();
             yield return TreeOfLife.ConfirmPurchase();
 
-            if (!CurrencyMissingPopup.IsShowing) continue;
+            if (!CurrencyMissingPopup.IsShowing)
+            {
+                Debug($"[INFO] Tree of Life: {name} {before} -> {TreeOfLife.PersonalNodeLevel(best.Value)}.");
+                continue;
+            }
+
+            Debug($"[INFO] Tree of Life: {name} at {before} costs more tokens than are left.");
 
             // Too expensive now: skip just this node, so cheaper ones still get their turn.
             yield return CurrencyMissingPopup.Close;
