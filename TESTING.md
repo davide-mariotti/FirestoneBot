@@ -330,7 +330,7 @@ file di configurazione nuovo.
 | Task | Sezione | Liv. | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|:-:|---|
 | Decorated Heroes | `[decoratedheroeseventtask]` | - | on | ✅ | Acquisti nell'ordine Dragon blood → Meteorite → Beer (29/09: ordine confermato nel log; Meteorite non c'è nello shop di questo account, valuta insufficiente per il resto). 29/09: 3 sfide reclamate al giro partito dal badge. |
-| New Player Event | `[newplayereventtask]` | - | on | 🔄 | Stesso ordine: compra Meteorite, poi spende il resto in Beer. Gli account vecchi non hanno l'evento (il task rallenta da solo): su Steam-0 non c'è, quindi non verificabile. |
+| New Player Event | `[newplayereventtask]` | - | on | ✅ | Stesso ordine: compra Meteorite, poi spende il resto in Beer; check-in giornaliero e milestone. Gli account vecchi non hanno l'evento (il task rallenta da solo), come Steam-0. 30/09 dopo il reset, su Steam-8..16: check-in reclamato, 1 milestone su 14, 1 Meteorite comprato. |
 | Mass Production | `[massproductioneventtask]` | - | on | ✅ | Solo il tab Challenges. |
 | Sigils of Prophecy | `[sigilsofprophecyeventtask]` | - | on | ✅ | Aggiunto il 29/09. Stessa schermata di Mass Production (`events/MiniEvents`), cambia solo il riquadro nell'elenco eventi. Verificato dal vivo: il riquadro apre MiniEvents, 1 claim su 3 giorni (gli altri ancora bloccati), schermata chiusa. 30/09 (secondo giorno): ha reclamato la sfida del giorno su 9 istanze; sulle altre nessuna sfida era ancora completa, e reclama solo quelle. 30/09: su Steam-15 e -16 la carta c'è ma è bloccata per l'account, e il task la ritentava ogni 2 minuti (65 giri in una mattina); ora una carta bloccata aspetta un'ora come un evento assente. Verificato su entrambe. |
 
