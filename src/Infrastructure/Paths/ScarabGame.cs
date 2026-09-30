@@ -90,6 +90,9 @@ public static partial class Paths
         // Opens BeastModifyLoc as "Beast Upgrade" (Soul Embers). Its sibling openIncreaseRarityPopupButton
         // opens it as "Beast Rarity" (Cobra Keys), which the bot leaves alone.
         public const string OpenUpgradePopupBtn = Root + "/openUpgradePopupButton";
+
+        // "1/30": owned of all.
+        public const string BeastCountTxt = Root + "/counters/beastCounter/beastNum";
     }
 
     public static class BeastModifyLoc

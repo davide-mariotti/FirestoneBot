@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.ScarabGame;
 using Firebot.GameModel.Primitives;
@@ -48,25 +47,22 @@ public class BeastsTask : BotTask
 
         yield return ScarabGameScreen.OpenBeasts;
 
-        // The list holds every beast; 30 selections per level made a round last ~70 s (30/09).
-        var owned = new List<int>();
-        for (var i = 0; i < Beasts.Count; i++)
-        {
-            if (!Beasts.TrySelect(i)) continue;
-
-            yield return SelectDelay;
-            if (Beasts.IsSelectedOwned) owned.Add(i);
-        }
-
+        // The list holds all 30 beasts and seems to re-sort after a level-up (30/09: a fresh beast's
+        // saved index pointed elsewhere on the next round), so every round looks for the owned ones again.
+        var owned = 0;
         var levels = 0;
-        for (var round = 0; round < MaxRounds && owned.Count > 0; round++)
+        for (var round = 0; round < MaxRounds; round++)
         {
             var bought = false;
-            foreach (var i in owned)
+            owned = 0;
+            for (var i = 0; i < Beasts.Count; i++)
             {
                 if (!Beasts.TrySelect(i)) continue;
 
                 yield return SelectDelay;
+                if (!Beasts.IsSelectedOwned) continue;
+
+                owned++;
                 yield return Beasts.OpenUpgradePopup;
 
                 var btn = BeastModify.ModifyBtn;
@@ -100,7 +96,7 @@ public class BeastsTask : BotTask
             if (!bought) break;
         }
 
-        Debug($"[INFO] Beasts: {owned.Count} owned, {levels} level(s) bought.");
+        Debug($"[INFO] Beasts: {owned} owned ('{Beasts.CountText}'), {levels} level(s) bought.");
 
         yield return Beasts.Close;
         yield return ScarabGameScreen.Close;

@@ -112,6 +112,8 @@ public static class Beasts
     }
 
     public static IEnumerator OpenUpgradePopup => new GameButton(Paths.BeastsLoc.OpenUpgradePopupBtn).Click();
+
+    public static string CountText => new GameText(Paths.BeastsLoc.BeastCountTxt).GetParsedText();
 }
 
 /// <summary>The popup Beasts opens for a level-up (and, from its other button, for rarity).</summary>
