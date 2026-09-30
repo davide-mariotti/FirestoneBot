@@ -3,6 +3,7 @@ using System.Collections;
 using Firebot.Core;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town.Library.FirestoneResearch;
@@ -24,9 +25,10 @@ public class ResearchPanel : GameElement
                 var canClaim = !new GameElement(
                     Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.SpeedupFinishDesc, child).IsVisible();
 
-                if (speedBtn.IsVisible() && canClaim)
+                if (speedBtn.IsVisible() && canClaim && SpeedUpButton.IsFree(speedBtn.FullPath))
                 {
-                    Debug("[INFO] Claiming completed research.");
+                    Debug("[INFO] Claiming completed research - speed-up shows " +
+                          SpeedUpButton.Describe(speedBtn.FullPath) + ".");
                     yield return speedBtn.Click();
                     yield break;
                 }

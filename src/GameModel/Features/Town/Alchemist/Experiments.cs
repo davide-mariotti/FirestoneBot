@@ -3,6 +3,7 @@ using System.Collections;
 using Firebot.Core;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town.Alchemist;
@@ -31,7 +32,11 @@ public class Experiments : GameElement
             {
                 var speedBtnPath = $"/{Slot}{resource}/{Paths.MenusLoc.AlchemistLoc.ExperimentsLoc.SpeedupBtn}";
                 var button = new GameButton(speedBtnPath, this);
-                if (button.IsClickable()) yield return button.Click();
+                if (button.IsClickable() && SpeedUpButton.IsFree(button.FullPath))
+                {
+                    Firebot.Core.Logger.Debug($"[Experiments] Slot {resource} speed-up shows {SpeedUpButton.Describe(button.FullPath)}.");
+                    yield return button.Click();
+                }
             }
 
             var claimBtnPath = $"/{Slot}{resource}/{Paths.MenusLoc.AlchemistLoc.ExperimentsLoc.ClaimBtn}";

@@ -334,6 +334,11 @@ file di configurazione nuovo.
 | Mass Production | `[massproductioneventtask]` | - | on | ✅ | Solo il tab Challenges. |
 | Sigils of Prophecy | `[sigilsofprophecyeventtask]` | - | on | ✅ | Aggiunto il 29/09. Stessa schermata di Mass Production (`events/MiniEvents`), cambia solo il riquadro nell'elenco eventi. Verificato dal vivo: il riquadro apre MiniEvents, 1 claim su 3 giorni (gli altri ancora bloccati), schermata chiusa. 30/09 (secondo giorno): ha reclamato la sfida del giorno su 9 istanze; sulle altre nessuna sfida era ancora completa, e reclama solo quelle. 30/09: su Steam-15 e -16 la carta c'è ma è bloccata per l'account, e il task la ritentava ogni 2 minuti (65 giri in una mattina); ora una carta bloccata aspetta un'ora come un evento assente. Verificato su entrambe. |
 
+Accelerazioni (Experiments, Firestone Research, Map Missions): il bot preme `speedUpButton` solo nella
+finestra gratuita degli ultimi minuti (`free_speedup_seconds`). Visto dal vivo il 30/09 su 7 click: `finishDesc`
+nascosto, `costText 'Free'`, icona delle gemme (`gem64`) nascosta, e ogni click scrive una riga `speed-up shows ...`.
+Dal 30/09 il click richiede anche l'icona delle gemme nascosta (`SpeedUpButton.IsFree`), che non dipende dalla lingua.
+
 Un evento non in corso per l'account, o bloccato per lui, scrive `'<evento>' isn't open to this account (not listed or locked)`: non è
 un errore.
 

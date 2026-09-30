@@ -41,8 +41,11 @@ public class MapMissionsTask : BotTask
                 yield return mission.Select();
                 var speedupBtn = MissionPreview.SpeedupBtn;
 
-                if (speedupBtn.IsVisible() && MissionPreview.CanSpeedup)
+                if (speedupBtn.IsVisible() && MissionPreview.CanSpeedup && SpeedUpButton.IsFree(speedupBtn.FullPath))
+                {
+                    Debug($"[INFO] Mission speed-up shows {SpeedUpButton.Describe(speedupBtn.FullPath)}.");
                     yield return speedupBtn.Click();
+                }
 
                 yield return MissionRewardsPopup.Close;
             }
