@@ -1,8 +1,9 @@
 # Piano: upgrade automatici di gear e gioielli nella Hall of Heroes
 
-> Stato al 2026-09-29: implementato e verificato su Steam-0, tranne lo sblocco dei tier (nessun eroe
-> dell'account ne ha uno bloccato). Esito della Fase 0 in fondo alla sezione 8; esito del test dal
-> vivo nella riga Hall of Heroes di TESTING.md.
+> Stato al 2026-09-30: implementato, verificato su Steam-0 il 29/09 e acceso su Steam-0..16 il 30/09
+> (67 tier sbloccati al secondo giro). Lo sblocco passa da un popup di conferma che il piano non
+> prevedeva: vedi il punto 8 dell'esito della Fase 0. Esito del test dal vivo nella riga Hall of
+> Heroes di TESTING.md.
 
 ## 1. Contesto
 
@@ -303,7 +304,10 @@ altri path già verificati.
 7. Due contatori sempre visibili, in tutte le schede: `counters/currencyInteraction (VoidCrystal)/quantity`
    e `(EtherealShard)/quantity`, formato `3.010`.
 8. Power in `galleryView/gear/unlocked/powerGearTMP` (`74.950`; `powerBg/Image/power` è solo
-   l'etichetta "Power"). Testo dei riquadri, popup di conferma e meteoriti: non visti.
+   l'etichetta "Power"). Il riquadro dice solo "Tier 2 locked". Il pulsante di sblocco apre il popup
+   `popups/GearTierUnlock` (visto il 30/09 su Steam-1..16): `powerLevelReqText` mostra la soglia
+   (1300 e 6600, come il wiki) e `confirmButton` costa 480 meteoriti per il tier 2, 720 per il 3
+   (icona `meteorite64`). Senza la conferma il tier resta bloccato.
 9. Tabella confermata su una quarantina di `costText` (tier 1, 2 e 3, gear e gioielli).
 
 ## 9. Test dal vivo prima di accenderlo sul fleet

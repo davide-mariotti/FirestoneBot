@@ -7,7 +7,7 @@ di progetto (per quello vedi README.md/TESTING.md) - è un **elenco di verifica*
 essere letto dopo un `git pull`, punto per punto, per controllare cosa manca o cosa va rifatto
 sul nuovo PC.
 
-Scritto il 2026-09-26, aggiornato il 2026-09-29. Se qualcosa qui non corrisponde più a quanto
+Scritto il 2026-09-26, aggiornato il 2026-09-30. Se qualcosa qui non corrisponde più a quanto
 trovi nel repo o sul PC principale, fidati di quello che vedi dal vivo, non di questo file (che è
 una fotografia di un momento preciso).
 
@@ -28,12 +28,36 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 5. Allinea i cfg a Steam-0 (punto 8.1):
    `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`
    (da PowerShell, nella cartella del repo). Se segnala chiavi mancanti non è un
-   problema: sono sezioni nuove che la DLL crea al primo avvio, col valore di Steam-0.
-6. Riavvia in sequenza (`Avvia_Tutte_Istanze_Firestone.bat`, punto 6.3).
+   problema: sono sezioni nuove che la DLL crea al primo avvio, col valore di Steam-0. Con la DLL
+   del 30/09 ogni file mostra `hallofheroestask.enabled: false -> true`: è l'accensione di Hall of
+   Heroes.
+6. Riavvia in sequenza (`Avvia_Tutte_Istanze_Firestone.bat`, punto 6.3). Se un'istanza resta con
+   la cella vuota (il client Steam gira ma `Firestone.exe` no, visto su Steam-14 il 30/09),
+   rilanciare il gioco non basta: `Start.exe /box:SteamB<N> /terminate`, poi `Avvia_Steam-<N>.bat`.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 35 of 38` e nessun `timed out` o `threw:`.
+   `Started. Enabled tasks: 36 of 38` e nessun `timed out` o `threw:`.
+8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a
+   4,5 minuti per istanza (legge tutti gli eroi, spende Void Crystal ed Ethereal Shards, sblocca i
+   tier pagando in meteoriti). A giri finiti, da PowerShell:
+
+   ```powershell
+   foreach ($n in 17..34) {
+     $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+     $t = Get-Content $log
+     "{0}: giri={1} sbloccati={2} FAILED={3} threw/timeout={4}" -f $n,
+       @($t -match 'Hall Of Heroes finished').Count, @($t -match 'tier [23] unlocked').Count,
+       @($t -match 'HallOfHeroesTask.*\[FAILED\]').Count, @($t -match 'threw|timed out').Count
+   }
+   ```
+
+   (per un'istanza nativa il log è in `C:\Program Files (x86)\Steam-<N>\...`). Ogni istanza deve
+   avere `giri=1` e `threw/timeout=0`. L'unico `[FAILED]` atteso è `The formation didn't read`, se
+   il giro è partito mentre c'erano ancora i popup d'avvio: il bot usa la formazione dello snapshot
+   e al giro dopo la rilegge. Qualunque altro `[FAILED]` di `HallOfHeroesTask`, e soprattutto
+   `no unlock popup paid in Meteorites`, va guardato prima di andare avanti. Su Steam-0..16 (30/09):
+   giri da 86 a 266 s e 67 tier sbloccati, nessun altro `[FAILED]`.
 
 ---
 
@@ -463,7 +487,7 @@ dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
 
    Se segnala "chiavi mancanti", quell'istanza non ha ancora girato con la DLL nuova: torna al
    passo 1 per lei.
-4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 35 of 38`
+4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 36 of 38`
    come su Steam-0.
 
 ### 8.2 Griglia delle finestre (monitor 2560x1440)
@@ -533,7 +557,7 @@ Per OGNI istanza 17-34, in ordine:
 - [ ] Log più recente: nessun `FileNotFoundException`, presente `Started. Enabled tasks:`.
 - [ ] Titolo finestra mostra `[Steam-<N>]` (conferma che Sandboxie applica la config).
 - [ ] `FirebotPreferences.cfg` allineato a Steam-0: `apply_template.ps1 -From 17 -To 34 -Check`
-      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 35 of 38`.
+      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 36 of 38`.
 
 A livello di sistema (una tantum, non per-istanza):
 

@@ -28,9 +28,6 @@ public class HallOfHeroesTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Character;
 
-    // Off until the live test of the plan's section 9 has passed.
-    protected override bool DefaultEnabled => false;
-
     internal override float? MaxRuntimeSeconds => 1800f;
 
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.HallOfHeroes;

@@ -3,8 +3,9 @@
 Runbook per una sessione di test **autonoma** di Claude Code sul PC della flotta, sull'istanza
 Steam-0: prova tutti i task, trova i bug dai log, li corregge, ricompila, ridistribuisce e riprova
 da solo. In fondo: stato di ogni task, problemi noti, lavoro rimandato e come tornare alla versione
-precedente. Aggiornato al 2026-09-29, dopo la prima sessione di test dal vivo su Steam-0 (dopo il
-riallineamento alla guida F2P, `docs/firestone_guida_F2P.md`, e la pulizia del codice del 28/09).
+precedente. Aggiornato al 2026-09-30, dopo la prima sessione di test dal vivo su Steam-0 (dopo il
+riallineamento alla guida F2P, `docs/firestone_guida_F2P.md`, e la pulizia del codice del 28/09) e
+il rollout di Hall of Heroes su Steam-0..16.
 
 ## Prompt di avvio
 
@@ -155,8 +156,7 @@ $bmp.Save("$env:TEMP\steam0.png")
    lì).
 3. Nel cfg, in `[firebot_settings]`: `auto_start = true`, `debug_mode = true`,
    `start_bot_delay = 30.0`. Nelle sezioni dei task: `enabled` come in
-   `tools/ConfigTemplate/FirebotPreferences.template.cfg` (tutto acceso tranne `hallofheroestask` e
-   i due task Oracle), e `next_run_time_internal = ""` ovunque, così ogni task è subito dovuto.
+   `tools/ConfigTemplate/FirebotPreferences.template.cfg` (tutto acceso tranne i due task Oracle), e `next_run_time_internal = ""` ovunque, così ogni task è subito dovuto.
 4. Build, deploy, avvio.
 
 ### Fase 1: giro completo
@@ -226,12 +226,10 @@ Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate d
 `render_quality_level = 0`, `window_width = 504`, `window_height = 316`,
 `window_grid_enabled = true`, `window_grid_columns = 5`.
 
-Task spenti (`enabled = false`): `oracleritualstask`, `oraclesgifttask`, `hallofheroestask`. Tutti
-gli altri accesi, compresi `warmachinestask`, `massproductioneventtask`,
+Task spenti (`enabled = false`): `oracleritualstask`, `oraclesgifttask`. Tutti gli altri accesi,
+compresi `warmachinestask`, `hallofheroestask` (dal 30/09), `massproductioneventtask`,
 `sigilsofprophecyeventtask` e le azioni di background `hero_upgrade`, `auto_retreat`,
-`flying_bonus_hunter`. Eccezione: dal 29/09 sera Steam-0 ha `hallofheroestask` acceso, per osservarlo
-sul giro normale prima di decidere se accenderlo sul fleet (`apply_template.ps1 -Check` su Steam-0
-mostra quindi quella differenza).
+`flying_bonus_hunter`.
 
 | Sezione | Impostazioni |
 |---|---|
@@ -318,7 +316,7 @@ file di configurazione nuovo.
 |---|---|:-:|:-:|:-:|---|
 | Talents | `[talentstask]` | - | on | ✅ | Parte solo sul badge TalentAvailable. |
 | Path of Glory | `[pathofglorytask]` | - | on | ✅ | Traccia gratuita e Golden (se posseduta); non compra mai il pass. |
-| Hall of Heroes | `[hallofheroestask]` | - | **off** | ⚠️ | Riscritto il 29/09 (`HALL_OF_HEROES_PLAN.md`): legge la formazione dal Party, ogni 24 h rilegge tutti gli eroi (`hero_snapshot` nel cfg) e con `EnchantPlanner` decide prima cosa comprano Void Crystal ed Ethereal Shards; prima di ogni click rilegge livello e costo dallo schermo. Verificato su Steam-0: lettura completa di 10 eroi in 70 s (tabella nel log uguale al gioco), 8 incantesimi gear (2.640 VC su 3.010, il prossimo ne costava 960) e 25 di gioielli, snapshot vecchio corretto senza click, secondo giro senza niente da comprare in 8 s, tier 1 solo agli eroi in formazione. Non verificabile su Steam-0: lo sblocco dei tier (tutti gli eroi hanno già tier 2 e 3). Le soglie del wiki (1300/6600) sembrano piccole rispetto alla gear power mostrata (da 48.550 a 1.800.000): al primo eroe con un tier bloccato la riga `gear tier N locked ... Panel: '...'` mostra il testo del gioco. Spento sul fleet finché non lo si accende a mano. |
+| Hall of Heroes | `[hallofheroestask]` | - | on | ✅ | Riscritto il 29/09 (`HALL_OF_HEROES_PLAN.md`): legge la formazione dal Party, ogni 24 h rilegge tutti gli eroi (`hero_snapshot` nel cfg) e con `EnchantPlanner` decide prima cosa comprano Void Crystal ed Ethereal Shards; prima di ogni click rilegge livello e costo dallo schermo. Gli eroi sotto la gear power del tier bloccato successivo (1300 per il tier 2, 6600 per il 3) ricevono i Void Crystal per primi, tier 1 compreso anche fuori formazione; alla soglia il bot sblocca il tier confermando il popup `GearTierUnlock` (480 meteoriti per il tier 2, 720 per il 3), solo se l'icona del costo è quella dei meteoriti. Verificato su Steam-0 il 29/09 (lettura completa, incantesimi, snapshot vecchio corretto senza click, secondo giro in 8 s) e su Steam-0..16 il 30/09: primo giro su 16 account da 6-8 eroi in 86-266 s, da 4 a 120 incantesimi per account, classe 0 vista al lavoro (es. Steam-4, Cirilo da 500 a 1.800 di power); dopo la correzione del popup, 67 tier sbloccati su 13 account, nessuno rimasto bloccato, nessun timeout né eccezione. Un tier appena sbloccato ha gli slot vuoti (`M`) finché non arrivano i pezzi dai forzieri: la lettura completa del giorno dopo li vede. |
 
 ### Scarab Game
 
@@ -464,20 +462,24 @@ Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09
 
 ## Da fare e rimandato
 
-- **DLL del 29/09 sul fleet**: la sera del 29/09 è stata distribuita su Steam-0..16 (questo PC,
-  percorso classico e sandbox), e i loro cfg sono stati allineati a Steam-0 (vedi "Configurazione di
-  riferimento"). Un secondo PC (istanze 17-34, `MULTI_INSTANCE_SETUP.md`) va aggiornato a parte. Le sezioni nuove
-  (`[sigilsofprophecyeventtask]`, `last_done_date` di Daily Store Offers) si creano da sole.
+- **DLL del 30/09 sul fleet**: la mattina del 30/09 (Hall of Heroes) è stata distribuita su
+  Steam-0..16 (questo PC, percorso classico e sandbox), e i loro cfg sono stati allineati al template
+  (vedi "Configurazione di riferimento"; `apply_template.ps1 -Check`: 33 file, 0 differenze). Un
+  secondo PC (istanze 17-34, `MULTI_INSTANCE_SETUP.md`) va aggiornato a parte. Le sezioni e le chiavi
+  nuove (`[sigilsofprophecyeventtask]`, `last_done_date` di Daily Store Offers, `hero_snapshot`) si
+  creano da sole.
 - **Default F2P sul fleet (da decidere)**: i default della Fase 0 nel codice (Personal Tree al posto
   delle War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`) valgono solo per i
   file nuovi. Il 29/09 il template e il fleet di questo PC sono stati allineati a Steam-0 (vedi
   "Configurazione di riferimento"), che ha ancora i valori vecchi per quei quattro punti. Se si
   passa ai default F2P: si cambiano Steam-0, il template e quella sezione, poi si ripassa
   `apply_template.ps1` su tutte le istanze.
-- **Hall of Heroes sul fleet (da decidere)**: verificato su Steam-0 il 29/09, ma resta spento nel
-  template e nel codice (`DefaultEnabled`). Per accenderlo: `enabled = true` in
-  `[hallofheroestask]` del template e `apply_template.ps1`. Al primo giro ogni account fa la lettura
-  completa (~70 s per 10 eroi) e spende tutti i Void Crystal e gli Ethereal Shards accumulati.
+- **Hall of Heroes sul secondo PC (istanze 17-34)**: acceso su Steam-0..16 la mattina del 30/09
+  (template, `apply_template.ps1` e DLL nuova). Per replicarlo basta la procedura "Aggiornare il bot
+  su istanze già in funzione" di `MULTI_INSTANCE_SETUP.md`: `apply_template.ps1` mostrerà
+  `hallofheroestask.enabled: false -> true`. Al primo giro ogni account legge tutti gli eroi e spende
+  i Void Crystal, gli Ethereal Shards e i meteoriti accumulati (da 1,5 a 4,5 minuti per istanza), e
+  i controlli sono nella stessa procedura.
 - **Rituali Oracle**: ce ne sono quattro (Obedience: forzieri solar; Harmony: comet; Concentration:
   oracle's gift ed emblemi; Serenity: lunar), da 40 minuti, uno alla volta, reset ogni 6 ore. Oggi
   parte il primo in ordine di griglia. A cadenza h24 dovrebbero comunque partire tutti dentro la
