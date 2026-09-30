@@ -9,6 +9,14 @@ public static partial class Paths
 
         public const string CloseBtn = Root + "/closeButton";
 
+        // Lit once the six sigils are found; inactive otherwise (Steam-0, 30/09).
+        public const string ReleaseBeastBtn = Root + "/secondaryObjects/tablet/releaseBeast/releaseButton";
+
+        // The card the release shows. From the asset dump, not seen live yet.
+        public const string ReleasedBeastCloseBtn = Root + "/releaseTheBeastPopup/closeButton";
+
+        public const string OpenBeastsBtn = Root + "/helpCanvas/actionButtons/beasts";
+
         public const string OpenShopBtn = Root + "/helpCanvas/actionButtons/shop";
 
         public const string OpenVaultBtn = Root + "/helpCanvas/actionButtons/pharaohVault";
@@ -67,5 +75,34 @@ public static partial class Paths
 
         // Per tier, exactly one of claimedOverlay / locked / claimButton is active.
         public static string ClaimBtn(string tierName) => $"{MilestonesRoot}/{tierName}/rewardRoot/claimButton";
+    }
+
+    // The beast collection, from the Scarab's Game's "beasts" button. Seen live on Steam-0 (30/09).
+    public static class BeastsLoc
+    {
+        private const string Root = MenusLoc.Root + "/menus/Beasts";
+
+        public const string CloseBtn = Root + "/closeButton";
+
+        // "BeastAvatar (N)", one per beast owned.
+        public const string AvatarsRoot = Root + "/beastList/beastScrollView/Viewport/Content";
+
+        // Opens BeastModifyLoc as "Beast Upgrade" (Soul Embers). Its sibling openIncreaseRarityPopupButton
+        // opens it as "Beast Rarity" (Cobra Keys), which the bot leaves alone.
+        public const string OpenUpgradePopupBtn = Root + "/openUpgradePopupButton";
+    }
+
+    public static class BeastModifyLoc
+    {
+        private const string Root = MenusLoc.Root + "/popups/BeastModify/bg";
+
+        public const string CloseBtn = Root + "/closeButton";
+
+        // "Upgrade", 10 Soul Embers (icon soulEmber64) for level 1 -> 2 on Steam-0 (30/09).
+        public const string ModifyBtn = Root + "/btnModify";
+
+        public const string ModifyCostIcon = ModifyBtn + "/currencyIcon";
+
+        public const string SoulEmbersTxt = Root + "/counters/currencyInteraction (SoulEmber)/quantity";
     }
 }

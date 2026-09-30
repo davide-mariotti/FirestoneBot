@@ -51,6 +51,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Daily Store Offers**: the daily check-in and the two free mystery boxes.
 - **Engineer**: collects the tools every 6 hours.
 - **Guardian Training**: keeps a guardian training (`guardian_index`).
+- **Guardian Evolution**: evolves every guardian whose evolution is available, paid in Strange Dust.
 - **Experiments**: collects finished experiments and starts new ones - Dragon blood only by default (`resource_type`).
 - **Firestone Research** keeps every slot busy and buys new slots when affordable; **Meteorite Research** researches whenever the balance stays above `min_meteorite_reserve`. Both prefer Raining Gold, Firestone Finder and Firestone Effect.
 - **Empower** (Temple of Eternals): resets once this adventure's Firestones match the ones already banked, a +100% gain (`min_reset_ratio`).
@@ -59,6 +60,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Oracle Rituals** and **Oracle's Gift** (character level 200).
 - **System Mail**: claims every mailbox reward; never deletes mail.
 - **War Machines** (off by default): levels every owned war machine. It spends the same Expedition Tokens as the Personal Tree, which the guide puts first.
+- **War Machine Rarity**: raises war machine rarity with Tools, in grid order, whenever one is affordable.
 
 **Guild**
 
@@ -85,6 +87,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Pharaoh's Vault**: spins with the free Noble Tokens, opens the vault and claims the milestones.
 - **Scarab Game Free Token**: the shop's free daily item.
+- **Beasts**: releases the beast once the tablet has its six sigils, then spends Soul Embers on the owned beasts' levels, one level each in turn. Never touches rarity (Cobra Keys).
 
 **Events**
 

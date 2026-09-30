@@ -21,4 +21,12 @@ public static class MagicQuarters
     public static IEnumerator OpenChaosRiftTab => new GameButton(Paths.MenusLoc.MagicQuartersLoc.ChaosRiftTabBtn).Click();
 
     public static GameButton ChaosRiftUpgradeBtn => new(Paths.MenusLoc.MagicQuartersLoc.ChaosRiftUpgradeBtn);
+
+    public static IEnumerator OpenEvolutionTab => new GameButton(Paths.MenusLoc.MagicQuartersLoc.EvolutionTabBtn).Click();
+
+    public static GameButton EvolveBtn => new(Paths.MenusLoc.MagicQuartersLoc.EvolveBtn);
+
+    public static string EvolveCost => new GameText(Paths.MenusLoc.MagicQuartersLoc.EvolveCostTxt).GetParsedText();
+
+    public static string EvolveCostIcon => IconSprite.NameAt(Paths.MenusLoc.MagicQuartersLoc.EvolveCostIcon);
 }

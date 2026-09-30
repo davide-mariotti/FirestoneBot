@@ -294,6 +294,16 @@ public static partial class Paths
 
             // Spends Orbs of Light on holy damage; they reset monthly, so there's no reason to save them.
             public const string ChaosRiftUpgradeBtn = ChaosRiftSubmenuRoot + "/holyDamageUpgrade/bg/upgradeButton";
+
+            public const string EvolutionTabBtn = SubmenusRoot + "/submenuButtons/evolution";
+
+            // Seen live on Steam-0 (30/09): "Evolve", 600 Strange Dust (icon strangeDust64), not
+            // interactable below guardian level 10 (desc "You need to reach level 10 ...").
+            public const string EvolveBtn = SubmenusRoot + "/bg/evolutionSubmenu/evolutionInfo/evolveButton";
+
+            public const string EvolveCostIcon = EvolveBtn + "/strangeDustIcon";
+
+            public const string EvolveCostTxt = EvolveBtn + "/costText";
         }
 
         // Shown when a still-locked guardian is clicked.

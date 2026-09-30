@@ -96,15 +96,7 @@ public static class HallOfHeroes
         public static string Cost => new GameText(Paths.HallOfHeroesLoc.GearTierUnlockLoc.CostTxt).GetParsedText();
 
         /// <summary>The sprite on the confirm button: what the unlock is paid in.</summary>
-        public static string CurrencyIconName
-        {
-            get
-            {
-                var icon = GameElement.FindTransform(Paths.HallOfHeroesLoc.GearTierUnlockLoc.CurrencyIcon);
-                var image = icon == null ? null : icon.GetComponent<Image>();
-                return image == null || image.sprite == null ? "" : image.sprite.name;
-            }
-        }
+        public static string CurrencyIconName => IconSprite.NameAt(Paths.HallOfHeroesLoc.GearTierUnlockLoc.CurrencyIcon);
 
         public static GameButton ConfirmBtn => new(Paths.HallOfHeroesLoc.GearTierUnlockLoc.ConfirmBtn);
 

@@ -75,4 +75,10 @@ public static class Notifications
     public static IEnumerator ScarabGameMilestones => Click(Paths.BattleLoc.NotificationsLoc.ScarabGameMilestones);
 
     public static IEnumerator GuardianHolyUpgrade => Click(Paths.BattleLoc.NotificationsLoc.GuardianHolyUpgrade);
+
+    public static IEnumerator GuardianEvolution => Click(Paths.BattleLoc.NotificationsLoc.GuardianEvolution);
+
+    public static IEnumerator WarMachinesRarity => Click(Paths.BattleLoc.NotificationsLoc.WarMachinesRarity);
+
+    public static IEnumerator ScarabGameBeastRelease => Click(Paths.BattleLoc.NotificationsLoc.ScarabGameBeastRelease);
 }

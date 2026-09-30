@@ -4,6 +4,7 @@ using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
+using UnityEngine.UI;
 
 namespace Firebot.GameModel.Features.ScarabGame;
 
@@ -29,6 +30,12 @@ public static class ScarabGame
     }
 
     public static IEnumerator Close => new GameButton(Paths.ScarabGameLoc.CloseBtn).Click();
+
+    public static GameButton ReleaseBeastBtn => new(Paths.ScarabGameLoc.ReleaseBeastBtn);
+
+    public static IEnumerator CloseReleasedBeast => new GameButton(Paths.ScarabGameLoc.ReleasedBeastCloseBtn).Click();
+
+    public static IEnumerator OpenBeasts => new GameButton(Paths.ScarabGameLoc.OpenBeastsBtn).Click();
 
     /// <summary>
     ///     Best effort: clicks a bet/quantity toggle until its label shows "10", at most 4 times, and
@@ -79,6 +86,44 @@ public static class PharaohsVault
     }
 
     public static IEnumerator Close => new GameButton(Paths.PharaohsVaultLoc.CloseBtn).Click();
+}
+
+/// <summary>The beasts the Scarab's Game releases, and their level-ups (Soul Embers).</summary>
+public static class Beasts
+{
+    public static IEnumerator Close => new GameButton(Paths.BeastsLoc.CloseBtn).Click();
+
+    // All 30 beasts, owned or not.
+    public static int Count => GameElement.FindTransform(Paths.BeastsLoc.AvatarsRoot) is { } list ? list.childCount : 0;
+
+    /// <summary>The selected beast is owned: an unowned one hides the Upgrade button (Steam-0, 30/09).</summary>
+    public static bool IsSelectedOwned =>
+        GameElement.FindTransform(Paths.BeastsLoc.OpenUpgradePopupBtn) is { } t && t.gameObject.activeInHierarchy;
+
+    /// <summary>Selects the index-th beast of the list; false when there's no such avatar to click.</summary>
+    public static bool TrySelect(int index)
+    {
+        var list = GameElement.FindTransform(Paths.BeastsLoc.AvatarsRoot);
+        var button = list != null && index < list.childCount ? list.GetChild(index).GetComponent<Button>() : null;
+        if (button == null || !button.interactable) return false;
+
+        button.onClick.Invoke();
+        return true;
+    }
+
+    public static IEnumerator OpenUpgradePopup => new GameButton(Paths.BeastsLoc.OpenUpgradePopupBtn).Click();
+}
+
+/// <summary>The popup Beasts opens for a level-up (and, from its other button, for rarity).</summary>
+public static class BeastModify
+{
+    public static IEnumerator Close => new GameButton(Paths.BeastModifyLoc.CloseBtn).Click();
+
+    public static GameButton ModifyBtn => new(Paths.BeastModifyLoc.ModifyBtn);
+
+    public static string CostIcon => IconSprite.NameAt(Paths.BeastModifyLoc.ModifyCostIcon);
+
+    public static double SoulEmbers => new GameText(Paths.BeastModifyLoc.SoulEmbersTxt).GetParsedDoubleAbbreviated(-1);
 }
 
 /// <summary>The Scarab level reward track.</summary>

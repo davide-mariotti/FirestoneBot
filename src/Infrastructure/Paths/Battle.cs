@@ -107,6 +107,13 @@ public static partial class Paths
 
             // Opens Magic Quarters on its Chaos Rift (holy damage) tab.
             public const string GuardianHolyUpgrade = "GuardianHolyUpgrade";
+
+            // The next three were only seen in the rail dump, never lit yet.
+            public const string GuardianEvolution = "GuardianEvolution";
+
+            public const string WarMachinesRarity = "WarMachinesRarity";
+
+            public const string ScarabGameBeastRelease = "ScarabGameBeastRelease";
         }
 
         public static class RightSideUILoc
