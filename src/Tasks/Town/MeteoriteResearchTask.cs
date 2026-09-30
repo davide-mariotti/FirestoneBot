@@ -6,6 +6,7 @@ using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using MelonLoader;
+using Logger = Firebot.Core.Logger;
 using Library = Firebot.GameModel.Features.Town.Library.Library;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
@@ -72,7 +73,7 @@ public class MeteoriteResearchTask : BotTask
         // tree waits for the next run; rescan from tree 1 if that ever leaves meteorites idle.
         for (var round = 0; round < MaxNodesPerRun && (minReserve <= 0 || balance >= minReserve); round++)
         {
-            yield return RunResearch(minReserve);
+            yield return RunResearch(minReserve, MaxLevelsPerRun);
 
             var after = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
             if (after >= balance) break;
@@ -80,6 +81,22 @@ public class MeteoriteResearchTask : BotTask
         }
 
         NextRunTime = DateTime.Now + TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60);
+
+        yield return Library.Close;
+        yield return TownScreen.Close;
+    }
+
+    /// <summary>
+    ///     An event challenge's researches (EventChallengeActions): up to `levels` levels of the node a
+    ///     normal run would pick, with no reserve kept. onResearched gets how many were bought.
+    /// </summary>
+    public static IEnumerator Research(int levels, Action<int> onResearched)
+    {
+        yield return TownScreen.Open;
+        yield return TownScreen.OpenLibrary;
+        yield return Library.OpenMeteoriteResearchTab;
+
+        yield return RunResearch(0, levels, onResearched);
 
         yield return Library.Close;
         yield return TownScreen.Close;
@@ -108,7 +125,7 @@ public class MeteoriteResearchTask : BotTask
     private const int MaxLevelsPerRun = 30;
     private const int MaxNodesPerRun = 10;
 
-    private IEnumerator RunResearch(int minReserve)
+    private static IEnumerator RunResearch(int minReserve, int maxLevels, Action<int> onResearched = null)
     {
         var node = new MeteoriteNode();
 
@@ -187,7 +204,7 @@ public class MeteoriteResearchTask : BotTask
         for (var back = lastReachedTree; back > bestTreeOffset; back--)
             yield return node.PreviousTree;
 
-        Debug($"[INFO] Selected meteorite research node #{bestIndex} on tree offset {bestTreeOffset} " +
+        Logger.Debug($"[INFO] Selected meteorite research node #{bestIndex} on tree offset {bestTreeOffset} " +
               $"(priorityRank={(bestPriorityRank == int.MaxValue ? "none" : bestPriorityRank.ToString())}). " +
               "Attempting - safe no-op if not yet affordable.");
 
@@ -195,7 +212,8 @@ public class MeteoriteResearchTask : BotTask
         // one level an hour left 9,000-14,000 Meteorites idle on several accounts (30/09). Each level
         // counts only once the balance has dropped. The node is clicked again for every level, so the
         // preview shows its next cost whether or not a purchase closes it; a maxed node shows none.
-        for (var level = 0; level < MaxLevelsPerRun; level++)
+        var researched = 0;
+        for (; researched < maxLevels; researched++)
         {
             yield return node.Select(bestIndex.Value);
 
@@ -207,9 +225,11 @@ public class MeteoriteResearchTask : BotTask
             yield return Poll.Until(() => MeteoriteBalanceTxt.GetParsedDoubleAbbreviated() < before);
 
             var after = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
-            Debug($"[INFO] Meteorite research '{MeteoriteResearchPreview.Name}' for {cost}: balance {before} -> {after}.");
+            Logger.Debug($"[INFO] Meteorite research '{MeteoriteResearchPreview.Name}' for {cost}: balance {before} -> {after}.");
             if (after >= before) break;
         }
+
+        onResearched?.Invoke(researched);
 
         yield return MeteoriteResearchPreview.Close;
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using Firebot.GameModel.Features.Town;
@@ -5,6 +6,7 @@ using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using UnityEngine;
 using static Firebot.Core.BotSettings;
+using Logger = Firebot.Core.Logger;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
@@ -35,17 +37,7 @@ public class MerchantQuestTask : DailyQuestTask
         yield return TownScreen.OpenExoticMerchant;
         yield return ExoticMerchant.OpenSellItemsTab;
 
-        Debug("[INFO] Sell grid: " + string.Join(", ", ExoticMerchant.SellItems().Select(i => $"{i.Name} x{i.Quantity}")));
-
-        var sold = 0;
-        foreach (var name in SellOrder)
-            while (sold < missing && ExoticMerchant.TrySellOne(name))
-            {
-                sold++;
-                yield return new WaitForSeconds(InteractionDelay);
-            }
-
-        Debug($"[INFO] Merchant: sold {sold}/{missing}.");
+        yield return SellJunk(missing, _ => { });
 
         yield return ExoticMerchant.OpenUpgradesTab;
 
@@ -65,5 +57,34 @@ public class MerchantQuestTask : DailyQuestTask
 
         yield return ExoticMerchant.Close;
         yield return TownScreen.Close;
+    }
+
+    /// <summary>An event challenge's sales (EventChallengeActions): up to `count` of SellOrder only.</summary>
+    public static IEnumerator Sell(int count, Action<int> onSold)
+    {
+        yield return TownScreen.Open;
+        yield return TownScreen.OpenExoticMerchant;
+        yield return ExoticMerchant.OpenSellItemsTab;
+
+        yield return SellJunk(count, onSold);
+
+        yield return ExoticMerchant.Close;
+        yield return TownScreen.Close;
+    }
+
+    private static IEnumerator SellJunk(int count, Action<int> onSold)
+    {
+        Logger.Debug("[INFO] Sell grid: " + string.Join(", ", ExoticMerchant.SellItems().Select(i => $"{i.Name} x{i.Quantity}")));
+
+        var sold = 0;
+        foreach (var name in SellOrder)
+            while (sold < count && ExoticMerchant.TrySellOne(name))
+            {
+                sold++;
+                yield return new WaitForSeconds(InteractionDelay);
+            }
+
+        Logger.Debug($"[INFO] Merchant: sold {sold}/{count}.");
+        onSold(sold);
     }
 }

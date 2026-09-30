@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Firebot.Infrastructure;
 using MelonLoader;
 using UnityEngine;
+using Logger = Firebot.Core.Logger;
 using ChestOpening = Firebot.GameModel.Features.Inventory.ChestOpening;
 using InventoryScreen = Firebot.GameModel.Features.Inventory.Inventory;
 
@@ -55,20 +57,14 @@ public class CollectorQuestTask : DailyQuestTask
 
     protected override IEnumerator Work(int missing)
     {
-        yield return InventoryScreen.Open;
-        yield return InventoryScreen.OpenChestsTab;
-        yield return ChestListPopulateDelay;
+        yield return OpenChestsTab();
 
         foreach (var name in InventoryScreen.Content.GetChildren().Select(c => c.Name).ToList())
             if (NonGearChestSlots.Contains(name))
                 yield return ChestOpening.OpenAll("/" + name);
 
         var questOpened = 0;
-        foreach (var slot in QuestChestSlots)
-        {
-            if (questOpened >= missing) break;
-            yield return ChestOpening.OpenDownTo(slot, 0, n => questOpened += n, missing - questOpened);
-        }
+        yield return OpenCheapestFirst(missing, n => questOpened = n);
 
         var extraOpened = 0;
         foreach (var slot in ExtraChestSlots)
@@ -81,5 +77,38 @@ public class CollectorQuestTask : DailyQuestTask
         Debug($"[INFO] Collector: {questOpened}/{missing} chest(s) for the quest, {extraOpened}/{ExtraChests} extra.");
 
         yield return InventoryScreen.Close;
+    }
+
+    /// <summary>An event challenge's chests (EventChallengeActions): up to `count`, cheapest first.</summary>
+    public static IEnumerator OpenChests(int count, Action<int> onOpened)
+    {
+        yield return OpenChestsTab();
+
+        var opened = 0;
+        yield return OpenCheapestFirst(count, n => opened = n);
+        Logger.Debug($"[INFO] Chests: opened {opened}/{count}.");
+        onOpened(opened);
+
+        yield return InventoryScreen.Close;
+    }
+
+    private static IEnumerator OpenChestsTab()
+    {
+        yield return InventoryScreen.Open;
+        yield return InventoryScreen.OpenChestsTab;
+        yield return ChestListPopulateDelay;
+    }
+
+    // Up to Legendary if nothing cheaper is left: what asks for them comes first.
+    private static IEnumerator OpenCheapestFirst(int count, Action<int> onOpened)
+    {
+        var opened = 0;
+        foreach (var slot in QuestChestSlots)
+        {
+            if (opened >= count) break;
+            yield return ChestOpening.OpenDownTo(slot, 0, n => opened += n, count - opened);
+        }
+
+        onOpened(opened);
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Firebot.Tasks.Guild;
+using Firebot.Tasks.Inventory;
 using Firebot.Tasks.Town;
 using Logger = Firebot.Core.Logger;
 
@@ -18,6 +19,10 @@ public static class EventChallengeActions
     {
         ChallengeKind.CrystalHits => AfterQuest<MinerQuestTask>(() => MinerQuestTask.HitCrystal(challenge.Missing, onDone)),
         ChallengeKind.TavernPlays => AfterQuest<GamerQuestTask>(() => GamerQuestTask.Play(challenge.Missing, onDone)),
+        ChallengeKind.OpenChests => AfterQuest<CollectorQuestTask>(() => CollectorQuestTask.OpenChests(challenge.Missing, onDone)),
+        ChallengeKind.SellItems => AfterQuest<MerchantQuestTask>(() => MerchantQuestTask.Sell(challenge.Missing, onDone)),
+        ChallengeKind.TreeOfLifeUpgrades => TreeOfLifeTask.Buy(challenge.Missing, onDone),
+        ChallengeKind.MeteoriteResearches => MeteoriteResearchTask.Research(challenge.Missing, onDone),
         _ => null
     };
 

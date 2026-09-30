@@ -4,6 +4,7 @@ using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Guild;
 using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Shared;
+using Logger = Firebot.Core.Logger;
 
 namespace Firebot.Tasks.Guild;
 
@@ -27,6 +28,17 @@ public class TreeOfLifeTask : BotTask
 
     public override IEnumerator Execute()
     {
+        yield return Buy(MaxIterations);
+
+        NextRunTime = DateTime.Now + RecheckDelay;
+    }
+
+    /// <summary>
+    ///     Up to `purchases` upgrades, best first, while the tokens last. Also an event challenge's
+    ///     (EventChallengeActions). onBought gets how many were bought.
+    /// </summary>
+    public static IEnumerator Buy(int purchases, Action<int> onBought = null)
+    {
         yield return TownGuild.Open;
         yield return TownGuild.OpenTreeOfLife;
         yield return TreeOfLife.OpenPersonalTab;
@@ -35,8 +47,9 @@ public class TreeOfLifeTask : BotTask
         // or above is too: only lower ones are still worth a try. Trying them one by one cost 4 s
         // each, 40-50 s a run with nothing left to buy (30/09).
         var affordableBelow = MaxUpgradeLevel;
+        var bought = 0;
 
-        for (var i = 0; i < MaxIterations; i++)
+        for (var i = 0; i < MaxIterations && bought < purchases; i++)
         {
             var best = FindBestUpgrade(affordableBelow);
             if (best == null) break;
@@ -48,20 +61,21 @@ public class TreeOfLifeTask : BotTask
 
             if (!CurrencyMissingPopup.IsShowing)
             {
-                Debug($"[INFO] Tree of Life: {name} {before} -> {TreeOfLife.PersonalNodeLevel(best.Value)}.");
+                Logger.Debug($"[INFO] Tree of Life: {name} {before} -> {TreeOfLife.PersonalNodeLevel(best.Value)}.");
+                bought++;
                 continue;
             }
 
-            Debug($"[INFO] Tree of Life: {name} at {before} costs more tokens than are left.");
+            Logger.Debug($"[INFO] Tree of Life: {name} at {before} costs more tokens than are left.");
 
             yield return CurrencyMissingPopup.Close;
             affordableBelow = before;
         }
 
+        onBought?.Invoke(bought);
+
         yield return TreeOfLife.Close;
         yield return TownGuild.Close;
-
-        NextRunTime = DateTime.Now + RecheckDelay;
     }
 
     private static int? FindBestUpgrade(int affordableBelow)
