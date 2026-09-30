@@ -28,16 +28,23 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 5. Allinea i cfg a Steam-0 (punto 8.1):
    `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`
    (da PowerShell, nella cartella del repo). Se segnala chiavi mancanti non è un
-   problema: sono sezioni nuove che la DLL crea al primo avvio, col valore di Steam-0. Con la DLL
-   del 30/09 ogni file mostra `hallofheroestask.enabled: false -> true`: è l'accensione di Hall of
-   Heroes.
+   problema: sono sezioni nuove che la DLL crea al primo avvio, col valore di Steam-0. Col repo del
+   30/09 sera, su istanze ferme a prima del 30/09, ogni file mostra:
+   - `hallofheroestask.enabled: false -> true`: l'accensione di Hall of Heroes;
+   - `firebot_settings.start_bot_delay: 30.0 -> 60.0`: il bot aspetta 60 s dall'avvio, così i
+     popup d'avvio sono già chiusi;
+   - chiavi mancanti `beaststask.enabled`, `guardianevolutiontask.enabled`,
+     `warmachineraritytask.enabled`: i tre task nuovi, accesi di default.
+
+   Non passare l'uscita dello script a `Select-Object -First`: in PowerShell 5.1 lo ferma dopo
+   quelle righe e i cfg restanti non vengono scritti.
 6. Riavvia in sequenza (`Avvia_Tutte_Istanze_Firestone.bat`, punto 6.3). Se un'istanza resta con
    la cella vuota (il client Steam gira ma `Firestone.exe` no, visto su Steam-14 il 30/09),
    rilanciare il gioco non basta: `Start.exe /box:SteamB<N> /terminate`, poi `Avvia_Steam-<N>.bat`.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 36 of 38` e nessun `timed out` o `threw:`.
+   `Started. Enabled tasks: 39 of 41` e nessun `timed out` o `threw:`.
 8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a
    4,5 minuti per istanza (legge tutti gli eroi, spende Void Crystal ed Ethereal Shards, sblocca i
    tier pagando in meteoriti). A giri finiti, da PowerShell:
@@ -58,6 +65,26 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    e al giro dopo la rilegge. Qualunque altro `[FAILED]` di `HallOfHeroesTask`, e soprattutto
    `no unlock popup paid in Meteorites`, va guardato prima di andare avanti. Su Steam-0..16 (30/09):
    giri da 86 a 266 s e 67 tier sbloccati, nessun altro `[FAILED]`.
+9. Beasts, Guardian Evolution e War Machine Rarity (dal 30/09): partono nei primi minuti, 5-50 s
+   l'uno, e spendono solo Soul Embers, Strange Dust e Tools. A giri finiti, da PowerShell:
+
+   ```powershell
+   foreach ($n in 17..34) {
+     $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+     $t = Get-Content $log
+     "{0}: {1} | {2} | evoluzioni={3} rarita={4} | FAILED={5}" -f $n,
+       (@($t -match 'Beasts: \d+ owned') -replace '.*\[INFO\] ', '' | Select-Object -Last 1),
+       (@($t -match 'War machine rarity: ') -replace '.*\[INFO\] ', '' | Select-Object -Last 1),
+       @($t -match 'Guardian \d evolved').Count, @($t -match 'rarity raised').Count,
+       @($t -match '(BeastsTask|GuardianEvolutionTask|WarMachineRarityTask).*\[FAILED\]').Count
+   }
+   ```
+
+   Ogni istanza deve avere una riga `Beasts: N owned ('N/30'), M level(s) bought` (N è il
+   contatore del gioco: 0 se l'account non ha ancora bestie), una `War machine rarity: T Tools` con
+   un numero (non -1) e `FAILED=0`. Evoluzioni e rarità compaiono solo dove c'è abbastanza dust o
+   Tools: su Steam-0..16 il 30/09, 2 evoluzioni (300 Strange Dust) e 2 rarità (10.000 Tools). Sotto
+   il livello 60 (Beasts) o 50 (War Machine Rarity) la riga manca perché il task non parte.
 
 ---
 
@@ -487,7 +514,7 @@ dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
 
    Se segnala "chiavi mancanti", quell'istanza non ha ancora girato con la DLL nuova: torna al
    passo 1 per lei.
-4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 36 of 38`
+4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 39 of 41`
    come su Steam-0.
 
 ### 8.2 Griglia delle finestre (monitor 2560x1440)
@@ -557,7 +584,7 @@ Per OGNI istanza 17-34, in ordine:
 - [ ] Log più recente: nessun `FileNotFoundException`, presente `Started. Enabled tasks:`.
 - [ ] Titolo finestra mostra `[Steam-<N>]` (conferma che Sandboxie applica la config).
 - [ ] `FirebotPreferences.cfg` allineato a Steam-0: `apply_template.ps1 -From 17 -To 34 -Check`
-      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 36 of 38`.
+      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 39 of 41`.
 
 A livello di sistema (una tantum, non per-istanza):
 

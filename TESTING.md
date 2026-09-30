@@ -281,7 +281,7 @@ file di configurazione nuovo.
 | War Machines | `[warmachinestask]` | 50 | **off** | ⚠️ | Navigazione e stop sul popup CurrencyMissing verificati, un livellamento completo no. Spento: consuma gli stessi gettoni spedizione del Personal Tree, che la guida mette prima. |
 | War Machine Rarity | `[warmachineraritytask]` | 50 | on | ✅ | Badge `WarMachinesRarity`, altrimenti ogni 12 h. Macchina per macchina in ordine di griglia, alza la rarità solo se il costo è in Tools (`toolsIcon64`); conferma dal contatore Tools che scende. Il contatore (`counters/currencyInteraction (Tools)`) esiste solo col tab rarità aperto: letto prima dava -1 (corretto il 30/09). 30/09 dopo il rollout: Steam-2 e Steam-3 hanno alzato `warMachineSquare (1)` per 10.000 Tools (10468 → 468, 10271 → 271); gli altri 13 account non arrivavano al costo. |
 | Guardian Training | `[guardiantrainingtask]` | - | on | ✅ | Allena `guardian_index` se sbloccato, altrimenti Vermilion. |
-| Guardian Evolution | `[guardianevolutiontask]` | - | on | ✅ | Badge `GuardianEvolution`, altrimenti ogni 12 h. Evolve ogni guardiano col bottone cliccabile e il costo in Strange Dust (icona `strangeDust64`); conferma dal bottone che cambia o sparisce. 30/09 dopo il rollout: Steam-13 ha evoluto Vermilion per 300 Strange Dust (il badge apre Magic Quarters già sul guardiano; dopo il click il bottone sparisce). Gli altri 16 account non avevano evoluzioni pronte (Steam-0: serve livello 10, costo 600). |
+| Guardian Evolution | `[guardianevolutiontask]` | - | on | ✅ | Badge `GuardianEvolution`, altrimenti ogni 12 h. Evolve ogni guardiano col bottone cliccabile e il costo in Strange Dust (icona `strangeDust64`); conferma dal bottone che cambia o sparisce. 30/09 dopo il rollout: Steam-13 (13:29) e Steam-14 (13:59, col badge acceso dopo il primo giro) hanno evoluto Vermilion per 300 Strange Dust; il badge apre Magic Quarters già sul guardiano e dopo il click il bottone sparisce. Gli altri 15 account non avevano evoluzioni pronte (Steam-0: serve livello 10, costo 600). |
 | Experiments | `[experimentstask]` | 120 | on | ⚠️ | Claim verificato. Default `resource_type = "0"` (solo Dragon blood). |
 | Oracle Rituals | `[oracleritualstask]` | 200 | on | ❌ | Nessun account a 200. Vedi "Da fare e rimandato". |
 | Oracle's Gift | `[oraclesgifttask]` | 200 | on | ❌ | Nessun account a 200. |
@@ -420,28 +420,23 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 
 ## Da fare e rimandato
 
-- **`start_bot_delay = 60` sul fleet**: già nel template e nel codice (30/09), non ancora nei cfg di
-  Steam-0..16, che girano a 30. Al prossimo riavvio completo: fermare tutto, lanciare
-  `apply_template.ps1 -From 0 -To 16` (mostra `firebot_settings.start_bot_delay: 30.0 -> 60.0`), poi
-  riavviare. Sul secondo PC arriva con la solita procedura di aggiornamento.
-- **DLL del 30/09 sul fleet**: la mattina del 30/09 (Hall of Heroes) è stata distribuita su
-  Steam-0..16 (questo PC, percorso classico e sandbox), e i loro cfg sono stati allineati al template
-  (vedi "Configurazione di riferimento"; `apply_template.ps1 -Check`: 33 file, 0 differenze). Un
-  secondo PC (istanze 17-34, `MULTI_INSTANCE_SETUP.md`) va aggiornato a parte. Le sezioni e le chiavi
-  nuove (`[sigilsofprophecyeventtask]`, `last_done_date` di Daily Store Offers, `hero_snapshot`) si
-  creano da sole.
+- **Prossimo riavvio completo di Steam-0..16**: dal rollout del 30/09 alle 13:22 le 17 istanze
+  girano con Beasts, Guardian Evolution e War Machine Rarity (172ad6f). Le correzioni venute dopo
+  (Beasts che ricerca le bestie a ogni giro, attesa del Tempio in Empower, stop di Tree of Life)
+  sono solo su Steam-3, 5, 9 e 10, e `start_bot_delay = 60` solo su Steam-0 e 1 (gli altri 30).
+  Al prossimo riavvio completo: fermare tutto, build e DLL nuove su tutte, poi
+  `apply_template.ps1 -From 0 -To 16` (mostra `firebot_settings.start_bot_delay: 30.0 -> 60.0`),
+  poi riavviare. Non passare l'uscita di `apply_template.ps1` a `Select-Object -First`: in
+  PowerShell 5.1 ferma lo script dopo quelle righe e i cfg restanti non vengono scritti (30/09).
+- **Secondo PC (istanze 17-34)**: se è ancora alla versione di prima del 30/09, basta la procedura
+  "Aggiornare il bot su istanze già in funzione" di `MULTI_INSTANCE_SETUP.md`, che porta tutto
+  quello del 30/09 (Hall of Heroes, i tre task nuovi, avvio a 60 s) e ha i controlli da fare dopo.
 - **Default F2P sul fleet (da decidere)**: i default della Fase 0 nel codice (Personal Tree al posto
   delle War Machines, Empower solo a +100%, task Oracle accesi, missioni `desc`) valgono solo per i
   file nuovi. Il 29/09 il template e il fleet di questo PC sono stati allineati a Steam-0 (vedi
   "Configurazione di riferimento"), che ha ancora i valori vecchi per quei quattro punti. Se si
   passa ai default F2P: si cambiano Steam-0, il template e quella sezione, poi si ripassa
   `apply_template.ps1` su tutte le istanze.
-- **Hall of Heroes sul secondo PC (istanze 17-34)**: acceso su Steam-0..16 la mattina del 30/09
-  (template, `apply_template.ps1` e DLL nuova). Per replicarlo basta la procedura "Aggiornare il bot
-  su istanze già in funzione" di `MULTI_INSTANCE_SETUP.md`: `apply_template.ps1` mostrerà
-  `hallofheroestask.enabled: false -> true`. Al primo giro ogni account legge tutti gli eroi e spende
-  i Void Crystal, gli Ethereal Shards e i meteoriti accumulati (da 1,5 a 4,5 minuti per istanza), e
-  i controlli sono nella stessa procedura.
 - **Rituali Oracle**: ce ne sono quattro (Obedience: forzieri solar; Harmony: comet; Concentration:
   oracle's gift ed emblemi; Serenity: lunar), da 40 minuti, uno alla volta, reset ogni 6 ore. Oggi
   parte il primo in ordine di griglia. A cadenza h24 dovrebbero comunque partire tutti dentro la
