@@ -20,7 +20,34 @@ public static class ExoticMerchant
 
     public static GameElement UpgradesList => new(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradesListRoot);
 
-    public static int CoinCount => (int)new GameText(Paths.ExoticMerchantLoc.CoinCountTxt).GetParsedDoubleAbbreviated();
+    /// <summary>-1 when unreadable.</summary>
+    public static int CoinCount => (int)new GameText(Paths.ExoticMerchantLoc.CoinCountTxt).GetParsedDoubleAbbreviated(-1);
+
+    /// <summary>
+    ///     Every upgrade showing a price in Exotic Coins, affordable or not (maxed and level-locked ones
+    ///     hide the button). Read from the Transforms, so hidden buttons aren't logged as failures.
+    /// </summary>
+    public static List<(string Name, int Cost)> PricedUpgrades()
+    {
+        var upgrades = new List<(string, int)>();
+        var list = GameElement.FindTransform(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradesListRoot);
+        if (list == null) return upgrades;
+
+        for (var i = 0; i < list.childCount; i++)
+        {
+            var upgrade = list.GetChild(i);
+            var button = upgrade.Find(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradeBtn.TrimStart('/'));
+            if (button == null || !button.gameObject.activeInHierarchy) continue;
+
+            var icon = upgrade.Find(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradeCostIcon.TrimStart('/'))?.GetComponent<Image>();
+            if (icon == null || icon.sprite == null || icon.sprite.name != "exoticCoin64") continue;
+
+            var cost = (int)StringUtils.ParseAbbreviated(Text(upgrade, Paths.ExoticMerchantLoc.UpgradesLoc.UpgradeCostTxt.TrimStart('/')));
+            if (cost > 0) upgrades.Add((upgrade.name, cost));
+        }
+
+        return upgrades;
+    }
 
     /// <summary>The Sell tab's items in grid order, by their visible name ("Scroll of Health").</summary>
     public static List<(string Name, int Quantity)> SellItems()

@@ -46,14 +46,54 @@ public class MerchantQuestTask : DailyQuestTask
         yield return TownScreen.Close;
     }
 
-    /// <summary>An event challenge's exotic upgrades (EventChallengeActions): up to `count`.</summary>
+    // A bound on one challenge's sales, not a pacing choice: the upgrade's price is what stops them.
+    private const int MaxSalesForUpgrade = 200;
+
+    /// <summary>
+    ///     An event challenge's exotic upgrades (EventChallengeActions): up to `count`, each the cheapest
+    ///     one priced in Exotic Coins, whatever its priority. When the coins fall short, sells SellOrder
+    ///     items - never anything else - until they cover it (the user's choice, 30/09).
+    /// </summary>
     public static IEnumerator Upgrade(int count, Action<int> onBought)
     {
         yield return TownScreen.Open;
         yield return TownScreen.OpenExoticMerchant;
-        yield return ExoticMerchant.OpenUpgradesTab;
 
-        yield return BuyUpgrades(count, onBought);
+        var bought = 0;
+        while (bought < count)
+        {
+            yield return ExoticMerchant.OpenUpgradesTab;
+            var (name, cost) = ExoticMerchant.PricedUpgrades().OrderBy(u => u.Cost).FirstOrDefault();
+            if (name == null)
+            {
+                Logger.Debug("[INFO] Exotic upgrade: none priced in Exotic Coins.");
+                break;
+            }
+
+            var coins = ExoticMerchant.CoinCount;
+            if (coins >= 0 && coins < cost)
+            {
+                yield return ExoticMerchant.OpenSellItemsTab;
+                yield return SellJunk(MaxSalesForUpgrade, _ => { },
+                    () => ExoticMerchant.CoinCount < 0 || ExoticMerchant.CoinCount >= cost);
+                yield return ExoticMerchant.OpenUpgradesTab;
+            }
+
+            var before = ExoticMerchant.CoinCount;
+            Logger.Debug($"[INFO] Exotic upgrade: cheapest '{name}' costs {cost}, coins {coins} -> {before} after sales.");
+            if (before < cost) break;
+
+            yield return new GameButton("/" + name + Paths.ExoticMerchantLoc.UpgradesLoc.UpgradeBtn,
+                ExoticMerchant.UpgradesList).Click();
+            yield return Poll.Until(() => ExoticMerchant.CoinCount < before);
+
+            var after = ExoticMerchant.CoinCount;
+            Logger.Debug($"[INFO] Exotic upgrade '{name}': coins {before} -> {after}.");
+            if (after >= before) break;
+            bought++;
+        }
+
+        onBought(bought);
 
         yield return ExoticMerchant.Close;
         yield return TownScreen.Close;
@@ -108,13 +148,14 @@ public class MerchantQuestTask : DailyQuestTask
         yield return TownScreen.Close;
     }
 
-    private static IEnumerator SellJunk(int count, Action<int> onSold)
+    /// <summary>Up to `count` SellOrder items, stopping early once enough() says so.</summary>
+    private static IEnumerator SellJunk(int count, Action<int> onSold, Func<bool> enough = null)
     {
         Logger.Debug("[INFO] Sell grid: " + string.Join(", ", ExoticMerchant.SellItems().Select(i => $"{i.Name} x{i.Quantity}")));
 
         var sold = 0;
         foreach (var name in SellOrder)
-            while (sold < count && ExoticMerchant.TrySellOne(name))
+            while (sold < count && enough?.Invoke() != true && ExoticMerchant.TrySellOne(name))
             {
                 sold++;
                 yield return new WaitForSeconds(InteractionDelay);

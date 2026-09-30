@@ -27,15 +27,15 @@ public static class EventChallengeActions
         ChallengeKind.TreeOfLifeUpgrades => TreeOfLifeTask.Buy(challenge.Missing, onDone),
         ChallengeKind.MeteoriteResearches => MeteoriteResearchTask.Research(challenge.Missing, onDone),
         ChallengeKind.EnlightenGuardians => GuardianTrainingTask.Enlighten(challenge.Missing, onDone),
-        ChallengeKind.ExoticUpgrades => MerchantQuestTask.Upgrade(challenge.Missing, onDone),
+        ChallengeKind.ExoticUpgrades => AfterQuest<MerchantQuestTask>(() => MerchantQuestTask.Upgrade(challenge.Missing, onDone)),
         ChallengeKind.GuildDonation => Donate(challenge.Missing, onDone),
         _ => null
     };
 
     /// <summary>
-    ///     One donation. Exactly the missing coins can't be given: the game's smallest donation is
-    ///     1.000, or every coin when fewer are left ("Max"), so a 500 challenge costs one of those.
-    ///     onDone gets the coins actually donated.
+    ///     One donation, only ever for a challenge asking for one. The game's smallest is 1.000: twice
+    ///     a 500 challenge, accepted by the user (30/09). Below 1.000 coins, "Max" gives them all, and
+    ///     only when that covers what's missing. onDone gets the coins actually donated.
     /// </summary>
     private static IEnumerator Donate(int missing, Action<int> onDone)
     {
@@ -45,8 +45,9 @@ public static class EventChallengeActions
 
         var before = GuildBank.CoinCount;
         var icon = GuildBank.CoinIcon;
-        var button = GuildBank.Donate1kBtn.IsClickable() ? GuildBank.Donate1kBtn : GuildBank.DonateAllBtn;
-        if (icon == "guildCoin64" && before > 0 && button.IsClickable())
+        var button = GuildBank.Donate1kBtn.IsClickable() ? GuildBank.Donate1kBtn
+            : before >= missing ? GuildBank.DonateAllBtn : null;
+        if (icon == "guildCoin64" && button != null && button.IsClickable())
         {
             yield return button.Click();
             yield return Poll.Until(() => GuildBank.CoinCount < before);

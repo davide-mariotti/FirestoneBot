@@ -43,6 +43,8 @@ public static partial class Paths
 
             // Seen live (30/09): sprite exoticCoin64 on all 12 upgrades, next to costText (960-2208).
             public const string UpgradeCostIcon = UpgradeBtn + "/currencyIcon";
+
+            public const string UpgradeCostTxt = UpgradeBtn + "/costText";
         }
     }
 }
