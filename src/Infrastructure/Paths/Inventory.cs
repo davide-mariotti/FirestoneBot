@@ -43,10 +43,12 @@ public static partial class Paths
         public const string OpenX10Btn = Root + "/bg/openingOptions/openx10";
     }
 
-    // The results screen after an open, with its own copy of the open buttons to chain more.
+    // The results screen after an open, with its own copy of the open buttons to chain more. A menu,
+    // not a popup: under popups/ the chaining never found its buttons and each slot opened one chest
+    // (all 17 instances, 30/09; the Watchdog closed it as menus/ChestOpening).
     public static class ChestOpeningLoc
     {
-        private const string Root = MenusLoc.Root + "/popups/ChestOpening";
+        private const string Root = MenusLoc.Root + "/menus/ChestOpening";
 
         public const string CloseBtn = Root + "/closeButton";
 
