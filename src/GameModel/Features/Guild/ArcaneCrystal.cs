@@ -1,4 +1,5 @@
 using System.Collections;
+using Firebot.Core;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 
@@ -9,20 +10,39 @@ public static class ArcaneCrystal
     public static GameButton HitBtn => new(Paths.ArcaneCrystalLoc.HitBtn);
 
     /// <summary>
-    ///     One hit, once the button is back: it's disabled while the previous hit animates, and a click
-    ///     then is ignored (2 of 5 on Steam-16, 29/09). False when it never came back.
+    ///     One hit, confirmed by the pickaxe counter going down. The button can look clickable and still
+    ///     ignore a click, and an ignored click costs no pickaxe (30/09: 0 to 4 hits of 5 landed on 9
+    ///     instances, with 80-96 pickaxes left), so a click that didn't spend one is repeated. False
+    ///     when no click landed.
     /// </summary>
     public static IEnumerator Hit(System.Action<bool> onHit)
     {
-        yield return Poll.Until(() => HitBtn.IsClickable(), 20, 0.3f);
-        var ready = HitBtn.IsClickable();
-        if (ready) yield return HitBtn.Click();
-        onHit(ready);
+        const int maxClicks = 3;
+        var before = PickaxeCount;
+
+        for (var click = 1; click <= maxClicks; click++)
+        {
+            yield return Poll.Until(() => HitBtn.IsClickable(), 20, 0.3f);
+            if (!HitBtn.IsClickable()) break;
+
+            yield return HitBtn.Click();
+            yield return Poll.Until(() => PickaxeCount < before, 10, 0.3f);
+
+            var after = PickaxeCount;
+            Logger.Debug($"[ArcaneCrystal] click {click}/{maxClicks}: pickaxes {before} -> {after}.");
+            if (after >= before) continue;
+
+            onHit(true);
+            yield break;
+        }
+
+        onHit(false);
     }
 
     public static IEnumerator Close => new GameButton(Paths.ArcaneCrystalLoc.CloseBtn).Click();
 
-    public static int PickaxeCount => new GameText(Paths.ArcaneCrystalLoc.PickaxeCountTxt).GetParsedInt();
+    // '.'-grouped past 999, like the other counters.
+    public static int PickaxeCount => (int)new GameText(Paths.ArcaneCrystalLoc.PickaxeCountTxt).GetParsedDoubleAbbreviated();
 
     /// <summary>Pickaxes one click spends: 1 means a single hit, one step of the Miner quest.</summary>
     public static int HitCost => new GameText(Paths.ArcaneCrystalLoc.HitCostTxt).GetParsedInt(-1);
