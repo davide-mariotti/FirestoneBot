@@ -96,6 +96,8 @@ public class ArenaOfKingsTask : BotTask
             var chosen = ChooseOpponent(myPower, powers, attempt);
             if (chosen != null)
             {
+                Debug($"[INFO] Arena: {ArenaOfKings.TokensAvailable} token(s), look {attempt + 1}: my power {myPower}, " +
+                      $"opponents {string.Join(" / ", powers)} -> slot {chosen.Value}.");
                 onFound(chosen.Value);
                 yield break;
             }

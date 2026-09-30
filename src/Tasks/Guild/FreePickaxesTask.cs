@@ -46,6 +46,7 @@ public class FreePickaxesTask : BotTask
         yield return Notifications.FreePickaxes;
         yield return GuildShop.OpenSuppliesTab;
 
+        Debug($"[INFO] Free pickaxes: {FreePickaxes.Quantity} ('{FreePickaxes.QuantityText}'), threshold {PickaxeClaimThreshold}.");
         if (FreePickaxes.Quantity >= PickaxeClaimThreshold)
             yield return FreePickaxes.Claim;
 
