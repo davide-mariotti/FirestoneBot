@@ -19,6 +19,9 @@ public class MeteoriteResearchTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
 
+    // Up to MaxNodesPerRun scans of ~30 s each, plus the purchases: past the global 120 s.
+    internal override float? MaxRuntimeSeconds => 900f;
+
     private const int TreeCount = 5;
     private const int NodeCount = 13;
 
@@ -61,10 +64,20 @@ public class MeteoriteResearchTask : BotTask
         var minReserve = _minMeteoriteReserve?.Value ?? 3000;
         var balance = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
         Debug($"[INFO] Meteorite balance {balance} ('{MeteoriteBalanceTxt.GetParsedText()}'), reserve {minReserve}.");
-        if (minReserve <= 0 || balance >= minReserve)
-            yield return RunResearch();
-        else
+        if (minReserve > 0 && balance < minReserve)
             Debug("[INFO] Below the reserve - skipping research this run.");
+
+        // Node after node: a round that buys nothing (reserve reached, nothing affordable) ends it.
+        // ponytail: a new round scans forward from the tree the last one stopped on, so an earlier
+        // tree waits for the next run; rescan from tree 1 if that ever leaves meteorites idle.
+        for (var round = 0; round < MaxNodesPerRun && (minReserve <= 0 || balance >= minReserve); round++)
+        {
+            yield return RunResearch(minReserve);
+
+            var after = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
+            if (after >= balance) break;
+            balance = after;
+        }
 
         NextRunTime = DateTime.Now + TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60);
 
@@ -91,7 +104,11 @@ public class MeteoriteResearchTask : BotTask
     ///     chasing a better one into the next tree costs a full 13-node sweep. An unaffordable pick is
     ///     a no-op click.
     /// </summary>
-    private IEnumerator RunResearch()
+    // Safety bounds on one run's purchases, not pacing choices: the reserve is what stops it.
+    private const int MaxLevelsPerRun = 30;
+    private const int MaxNodesPerRun = 10;
+
+    private IEnumerator RunResearch(int minReserve)
     {
         var node = new MeteoriteNode();
 
@@ -174,8 +191,26 @@ public class MeteoriteResearchTask : BotTask
               $"(priorityRank={(bestPriorityRank == int.MaxValue ? "none" : bestPriorityRank.ToString())}). " +
               "Attempting - safe no-op if not yet affordable.");
 
-        yield return node.Select(bestIndex.Value);
-        yield return MeteoriteResearchPreview.Research;
+        // Level after level of the picked node while the balance stays above the reserve after paying:
+        // one level an hour left 9,000-14,000 Meteorites idle on several accounts (30/09). Each level
+        // counts only once the balance has dropped. The node is clicked again for every level, so the
+        // preview shows its next cost whether or not a purchase closes it; a maxed node shows none.
+        for (var level = 0; level < MaxLevelsPerRun; level++)
+        {
+            yield return node.Select(bestIndex.Value);
+
+            var cost = MeteoriteResearchPreview.Cost;
+            var before = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
+            if (!MeteoriteResearchPreview.IsUnlocked || cost <= 0 || before - cost < minReserve) break;
+
+            yield return MeteoriteResearchPreview.Research;
+            yield return Poll.Until(() => MeteoriteBalanceTxt.GetParsedDoubleAbbreviated() < before);
+
+            var after = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
+            Debug($"[INFO] Meteorite research '{MeteoriteResearchPreview.Name}' for {cost}: balance {before} -> {after}.");
+            if (after >= before) break;
+        }
+
         yield return MeteoriteResearchPreview.Close;
     }
 }
