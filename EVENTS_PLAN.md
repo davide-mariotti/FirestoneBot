@@ -1,258 +1,181 @@
-# Piano: completare le sfide degli eventi, non solo reclamarle
+# Piano: gli eventi del gioco
 
-> Piano da eseguire con Claude Code, scritto il 2026-09-30. **Stato al 30/09 sera**: Fase 0 chiusa
-> (risultati in sezione 7), Fasi 1 e 2 fatte e verificate su Steam-0. Fase 3 fatta: cristallo e
-> taverna verificati su Decorated Heroes; forzieri, vendite, Tree of Life e meteoriti scritti ma mai
-> visti dal vivo (compaiono solo nei mini-eventi, il prossimo è Stardust il 04/10). Fase 4 fatta
-> (approvate illuminazione, donazione e upgrade dell'Exotic Merchant; gli upgrade speciali non
-> servono, li compra Hero Upgrade): illuminazione verificata su Decorated Heroes, donazione e upgrade
-> esotico mai visti dal vivo. Decisioni dell'utente dopo la Fase 4: la donazione è di 1.000 (il
-> minimo del gioco) anche per una sfida da 500, solo quando una sfida la chiede; per l'upgrade
-> esotico si prende il più economico, ignorando la priorità, vendendo prima gli oggetti ammessi
-> se le monete non bastano; Fase 5 scartata (Map Missions solo `desc`, senza tipo di missione).
->
-> **Rollout 30/09 16:10** su Steam-0..16: DH completato su tutte (3 illuminazioni, 10 colpi, 2
-> giocate), ricerca di meteoriti vista dal vivo su Steam-1 (Sigils). Restano da vedere forzieri,
-> vendite, Tree of Life, upgrade esotico e donazione (mini-eventi, dal 04/10).
->
-> **Regola dell'utente (30/09)**: per ogni sfida si fa quello che chiede, né più né meno: solo il
-> valore che sblocca il claim del livello in corso.
+> Aggiornato il 2026-09-30 sera. Le **sfide** di Decorated Heroes e dei mini-eventi sono fatte e girano
+> su Steam-0..16 (sezione 1). Questo piano ora prepara gli **eventi che il bot non gestisce ancora**
+> (sezioni 2-6): per ognuno c'è cosa fa l'evento secondo il wiki, cosa dovrà fare il bot e quando se ne
+> vedrà la schermata. Niente codice prima di allora: i path si scrivono solo dopo averli visti dal vivo
+> (TESTING.md, "Regole").
 
 ## 0. Come partire
 
-Da incollare in una sessione nuova di Claude Code (cartella `C:\Repos\FirestoneBot`), avviata con i
-permessi che le evitano di chiedere conferma a ogni comando:
+Quando un evento della sezione 2 è in corso su Steam-0, da incollare in una sessione nuova di Claude
+Code (cartella `C:\Repos\FirestoneBot`):
 
 ```text
-Implementiamo le sfide degli eventi seguendo EVENTS_PLAN.md, con le regole di TESTING.md (test
-solo su Steam-0, path verificati dal vivo o nel dump, commit per ogni correzione verificata),
-skill ponytail attiva. Parti dalla Fase 0 (sezione 7) e vai avanti fase per fase (sezione 9).
-Il budget è quello della sezione 4, già deciso; per la Fase 4 (illuminazione, donazione,
-upgrade) chiedimi prima.
+Aggiungiamo l'evento <nome> seguendo EVENTS_PLAN.md, con le regole di TESTING.md (test solo su
+Steam-0, path verificati dal vivo, commit per ogni correzione verificata), skill ponytail attiva.
+Parti dalla sonda (sezione 7), poi la sezione dell'evento. Per spese nuove chiedimi prima.
 ```
 
-Cosa sapere prima di cominciare, oltre a TESTING.md (sezione "Per l'agente": comandi, regole, dump
-dal vivo):
+Pezzi già pronti da riusare:
 
-- **Solo Steam-0.** Le istanze Steam-1..16 girano con versioni diverse del bot (TESTING.md, "Da fare
-  e rimandato") e si aggiornano tutte insieme al prossimo riavvio completo: non toccarle.
-- **Decorated Heroes ha i giorni contati**: dura 2 settimane nei mesi dispari ed era in corso il
-  30/09. Come prima cosa, guarda nel gioco quanto manca: se finisce prima della Fase 3, le verifiche
-  di DH si spostano sui mini-eventi (uno ogni 5 giorni) o a novembre.
-- **Pezzi già pronti da riusare**, oltre a quelli della tabella in sezione 3:
-  - `IconSprite.NameAt(path)`: nome dello sprite della valuta su un bottone. Ogni spesa nuova lo
-    controlla prima del click (`strangeDust64`, `toolsIcon64`, `soulEmber64`, `meteorite64`; mai
-    `gem64`) e conferma dal contatore che scende, come `BeastsTask` e `WarMachineRarityTask`.
-  - `SpeedUpButton.IsFree(path)`: un'accelerazione si preme solo se non mostra il prezzo in gemme.
-  - `Poll.Until` / `Poll.ClickUntil`: attese limitate per le schermate lente (il Tempio, 30/09).
-  - Controlli silenziosi: `GameElement.FindTransform(path)` con `gameObject.activeInHierarchy`, per
-    gli stati normali che `IsVisible` scriverebbe come `[FAILED]`.
-  - Elenchi con figli dallo stesso nome o che si riordinano: clic dal `Transform` per indice e
-    ricerca ripetuta a ogni giro (`HallOfHeroes.TrySelectHero`, `Beasts.TrySelect`).
-- **Strange Dust**: dal 30/09 `GuardianEvolutionTask` la spende per le evoluzioni (300-600). Serve
-  saperlo quando si chiede all'utente l'illuminazione (Fase 4).
-- **Sonde**: per la Fase 0 serve un task temporaneo (`ProbeTask`) che scrive nel log il sottoalbero
-  della schermata con testi, sprite e stato dei bottoni. Non va committato; dopo averlo tolto, a
-  gioco chiuso, va cancellata dal cfg di Steam-0 la sua sezione `[probetask]`.
+- `EventTask`: apre l'evento dall'elenco (Battle → Events) per nome della carta, salta le carte
+  bloccate o in arrivo, gira sul badge del bottone Events e ogni ora. Un evento nuovo è una
+  sottoclasse con `EventNames`, `IsScreenVisible` e `RunEvent`, come `NewPlayerEventTask`.
+- `ExchangeTab`: lo scambio di uno shop evento (moltiplicatore x10/x5, acquisti per nome finché c'è
+  valuta). Priorità di oggi: Dragon blood, Meteorite, Beer. Serve solo il path del tab.
+- `IconSprite.NameAt(path)`: controllo della valuta prima di ogni spesa nuova (mai `gem64`).
+- Controlli silenziosi con `GameElement.FindTransform(path)` e `activeInHierarchy`, per gli stati
+  normali che `IsVisible` scriverebbe come `[FAILED]`.
 
-## 1. Contesto
+## 1. Sfide degli eventi: fatto (30/09)
 
-- **Oggi il bot reclama soltanto.** `DecoratedHeroesEventTask`, `MassProductionEventTask` e
-  `SigilsOfProphecyEventTask` aprono l'evento, cliccano i claim già pronti e comprano nello shop di
-  scambio. Una sfida si completa solo se i task normali fanno, per caso, quello che chiede.
-- **I mini-eventi coperti sono 2 su 11.** Tutti i mini-eventi usano la stessa schermata
-  (`events/MiniEvents`), ma i task la aprono solo per nome ("Mass Production", "Sigils of Prophecy").
-  Le sfide degli altri 9 (Stardust, Primordial Elements, Ethereal Miners, Team Effort, Mechanical
-  Superiority, World Domination, Guardians of Destiny, Blessing of the Eternals, Champions of
-  Alandria) non vengono mai reclamate. È il guadagno più facile di tutto il piano.
-- **Tipi di evento** (wiki, pagina Events):
-  | Tipo | Quando | Cosa c'è da fare | Coperto oggi |
-  |---|---|---|---|
-  | Decorated Heroes | mesi dispari, 2 settimane, livello 50 | 8 sfide giornaliere, 3 livelli ciascuna, stelle per lo shop e una medaglia (Fate +5/10/25%) | claim e shop |
-  | Mini-eventi (11) | ogni 5 giorni, per 3 giorni | 1 sfida casuale al giorno per giocatore (contratti e premio dell'evento) | claim di 2 su 11 |
-  | Calendario (Valentine, Spring, Tropicana, Space, Halloween, Winter) | mesi pari, 2 settimane | nessuna sfida: la valuta arriva da sola, si spende nello shop di scambio | no (vedi sezione 8) |
-  | New Player / anniversario | una tantum | check-in, milestone a tempo online, shop | sì |
-- **Precedente**: le quest giornaliere (`DailyQuestTask`) già leggono "fatto/obiettivo" dalla
-  schermata, fanno solo quello che manca e rileggono. Qui si fa lo stesso con le carte degli eventi.
-- **Valgono le regole di TESTING.md**: path solo se visti dal vivo o nel dump, navigazione esplicita,
-  debug dalle righe `[FAILED]`, **mai gemme**, commit per ogni correzione verificata.
+- **Cosa fa il bot**: Decorated Heroes e `MiniEventTask` (un solo task per gli 11 mini-eventi)
+  reclamano, leggono le carte, fanno quello che manca al livello in corso delle sfide azionabili,
+  riaprono e reclamano di nuovo (al massimo 4 giri). Le sfide a tempo (missioni, ricerche,
+  spedizioni, tempo online, nemici da uccidere) le completano i task che girano già.
+- **Regole dell'utente**: né più né meno di quello che sblocca il claim; nessuna riserva; prima le
+  quest giornaliere (colpi, giocate, forzieri e vendite partono solo dopo la quest del giorno che usa
+  la stessa risorsa); mai gemme. Donazione in Gilda solo se una sfida la chiede, 1.000 (il minimo del
+  gioco) anche per una sfida da 500. Upgrade esotico: il più economico, vendendo prima gli oggetti
+  ammessi (Midas' Touch, Health, Damage) se le monete non bastano. "Get 50 special upgrades": nessuna
+  azione, li compra Hero Upgrade. Map Missions solo `desc`, senza preferenza per tipo di missione.
+- **Dove si tocca**: un testo nuovo del gioco va in `ChallengeParser` (tabella delle regex, con test in
+  `ChallengeParserTests`); un'azione nuova in `EventChallengeActions`, riusando i passi dei task.
+- **Come sono fatte le carte** (sonda del 30/09): in DH il numero nel testo è l'obiettivo del livello
+  in corso e il conteggio parte dal reset delle 10:00; a sfida finita "Completed" o `N/N`; la carta
+  dell'alchimia sotto il livello 120 ha il titolo nascosto. Nei mini-eventi un giorno bloccato ha
+  `unlocked` spento. I path sono commentati in `src/Infrastructure/Paths/Events.cs`.
+- **Ancora da vedere** (stato in TESTING.md, righe Events): forzieri, vendite, Tree of Life, upgrade
+  esotico e donazione compaiono solo nei mini-eventi; Stardust, dal 04/10, è anche il primo
+  mini-evento diverso da Sigils aperto da `MiniEventTask`.
 
-## 2. Comportamento voluto
+## 2. Gli eventi del wiki e cosa copre il bot
 
-1. A ogni giro di un evento il bot legge le carte delle sfide: testo, "fatto/obiettivo" e livello.
-2. Riconosce il tipo di sfida dal testo con una tabella di espressioni regolari. Un testo che non
-   riconosce va nel log come `[INFO] Challenge not handled: '<testo>'` e resta com'è.
-3. Per le sfide **azionabili subito** fa esattamente quello che manca, fino in fondo e senza riserve,
-   subito dopo le quest giornaliere (sezione 4), poi riapre l'evento e reclama.
-4. Per le sfide **a tempo** (missioni, ricerche, spedizioni, tempo online) non fa niente di nuovo: le
-   completano i task che già girano. Al massimo le favorisce (sezione 5, Fase 5).
-5. Ogni azione scrive una riga nel log: `Event 'Decorated Heroes': 'Hit the arcane crystal 10
-   times.' 5/10 -> 10/10 (5 pickaxes)`.
+Dal wiki (`docs/wiki/pages/Events.html` e pagine dei singoli eventi) e dall'elenco eventi visto dal vivo
+il 30/09.
 
-## 3. Le sfide e cosa fare per ognuna
+| Evento | Tipo | Quando | Prossimo | Cosa c'è | Bot |
+|---|---|---|---|---|---|
+| Decorated Heroes | ricorrente | mesi dispari, 2 settimane, livello 50 | novembre | 8 sfide al giorno, stelle, medaglia Fate | ✅ sfide, claim, scambio (sezione 6 per le medaglie) |
+| Mini-eventi (11) | ricorrente | ogni 5 giorni, per 3 giorni | Stardust 04/10, Primordial elements 09/10 | una sfida al giorno | ✅ `MiniEventTask` |
+| Halloween ("Trick or treat") | calendario | ottobre, 2 settimane, livello 10 | **23/10 verso le 10:00** (carta già in elenco) | zucche → scambio | ❌ sezione 3 |
+| Winter Festival | calendario | dicembre | ~19/12 | caramelle → scambio | ❌ sezione 3 |
+| Valentine ("Love is in the air") | calendario | febbraio | ~feb 2027 | cioccolatini → scambio | ❌ sezione 3 |
+| Spring ("Nature's Dance") | calendario | aprile | ~apr 2027 | fiori → scambio | ❌ sezione 3 |
+| Tropicana | calendario | giugno | ~giu 2027 | conchiglie → scambio | ❌ sezione 3 |
+| Space ("Astral Alignment") | calendario | agosto | ~ago 2027 | capsule → scambio | ❌ sezione 3 |
+| Frostfire Festival | speciale | dicembre | **03/12 verso le 10:00** (carta già in elenco) | regali da aprire, milestone | ❌ sezione 4 |
+| Anniversario | speciale | aprile, 2 settimane | ~apr 2027 | check-in, milestone, scambio | ⚠️ sezione 5 |
+| New Player Event | per account nuovi | una volta | - | come l'anniversario | ✅ `NewPlayerEventTask` |
+| Eventi dei server nuovi, Warfront expansion | classifica | una volta | - | premi ai primi in classifica | niente da automatizzare |
 
-Testi dal wiki (pagine Decorated Heroes Event e Mini-Events) e dallo screenshot del 30/09. Il testo
-esatto va confermato in Fase 0: nel gioco è "Hit the arcane crystal 10 times.", "Play 12 times with
-the cards at the tavern.", "Complete all scout missions." (per le missioni esplorative si contano i
-cicli completi).
+Mai, in nessun evento: shop e offerte a pagamento (il Pumpkin Shop e simili, le offerte di Eve, i
+pacchetti dei mini-eventi).
 
-### Azionabili subito, con codice che esiste già
+## 3. Eventi di calendario (il primo è Halloween, 23/10)
 
-| Sfida | Dove compare | Azione | Codice da riusare | Risorsa |
-|---|---|---|---|---|
-| Hit the arcane crystal N times | DH (5/10/15), mini (4) | N colpi, uno alla volta | `ArcaneCrystal.Hit` (colpo confermato dai picconi, 30/09) | picconi |
-| Play N times in the tavern | DH (4/8/12), mini (5) | N giocate a x1 | `GamerQuestTask` (giocata singola) | gettoni gioco |
-| Open N chests | mini (2) | N forzieri dei più economici | `ChestOpening.OpenDownTo` (Collector) | forzieri Wooden/Iron |
-| Sell N items at the exotic merchant | mini (5) | vende Midas' Touch, Health, Damage | `ExoticMerchant.TrySellOne` (Merchant) | oggetti |
-| Complete 1 upgrades at your personal tree of life | mini (1) | un acquisto | `TreeOfLifeTask` (scelta per priorità) | gettoni spedizione |
-| Complete 1 meteorite researches | mini (1) | un livello | `MeteoriteResearchTask` | meteoriti |
+**Cosa fanno** (wiki, uguali per tutti e sei): un personaggio lascia cadere la valuta dell'evento
+durante la battaglia, 3.000 al giorno, raccolta da sola e anche offline (massimo 24 ore). La valuta
+si spende nell'edificio dell'evento in città (la capanna della strega al posto della fontana, il
+negozio d'inverno...), che ha tre parti: **scambio** (forzieri e valute, ogni offerta con un limite di
+acquisti), avatar (21.000 l'uno) e uno shop a pagamento. **A fine evento la valuta rimasta si perde.**
 
-### Azionabili, ma con una schermata nuova
+**Lo scambio di Halloween** (wiki, 2025): forziere gear (dipende dal livello: leggendario solo dal
+130) 2.500, forziere jewel 2.500, forziere Oracle 2.500 (25 ciascuno); 500 monete esotiche 1.250; 1
+piccone 375; 20 Strange Dust 500; 5 honor 1.500; 500 birre 1.250; **150 meteoriti 1.500 (limite
+50)**; golden key, cobra key 3.000; twilight hourglass 1.820; soul ember 1.500.
 
-| Sfida | Dove compare | Azione | Costo | Da decidere |
-|---|---|---|---|---|
-| Enlighten guardians N times | DH (1/2/3), mini (2) | illuminazione del guardian di `guardian_index` | 20 Strange Dust ciascuna (wiki) | sì o no (la dust serve anche alle evoluzioni automatiche) |
-| Donate 500 guild coins to your guild | mini | donazione in Gilda | 500 guild coin | sì o no |
-| Get 50 special upgrades | mini | upgrade speciali (`upgradesButtonUI`, mai mappato) | gold | quale upgrade comprare |
-| Complete 1 exotic upgrades | mini | un upgrade dall'Exotic Merchant | valuta del merchant | quale upgrade |
+**Cosa comprare**: la guida F2P (`docs/firestone_guida_F2P.md`, "Eventi e shop evento") dice
+meteoriti, Dragon Blood e forzieri leggendari; da evitare birra, golden key e forzieri comuni. In
+14 giorni arrivano 42.000 di valuta e i meteoriti da soli ne assorbono 75.000, quindi la priorità di
+oggi di `ExchangeTab` (Dragon blood, che qui non c'è, poi Meteorite, poi Beer) mette tutto in
+meteoriti, circa 4.200 a evento. **Da confermare con l'utente** prima di scrivere il task: tutto in
+meteoriti, o anche i forzieri gear dove sono leggendari.
 
-### A tempo: le completa il gioco
+**Da fare quando parte** (ogni evento di calendario è una carta diversa nell'elenco eventi):
 
-| Sfida | Dove compare | Chi la fa già | Cosa si può fare in più |
-|---|---|---|---|
-| Complete N cycles of scout missions / N scout, adventure, war, map missions | DH, mini | `MapMissionsTask` | Fase 5: con la sfida aperta, partire prima con quel tipo di missione |
-| Complete N firestone researches | DH (4/6/10), mini (2) | `FirestoneResearchTask` | niente (i tempi sono fissi; si accelera solo gratis) |
-| Conduct N alchemy experiments | DH (3/6/9, livello 120) | `ExperimentsTask` | niente senza spendere altre risorse |
-| Complete N guild expeditions | DH (5/10/15), mini (3) | `ExpeditionTask` | niente |
-| Train guardians N times | mini (1) | `GuardianTrainingTask` | niente (cooldown del gioco) |
-| Stay online for N minutes | DH (15/30/60) | nessuno | niente |
-| Kill 100 enemies with <eroe> | mini | la battaglia | niente |
+1. Sonda (sezione 7) sulla carta e sulla schermata che apre: nome del prefab (sotto `events/` o
+   `menus/`), tab, elenco dello scambio (nome oggetto, bottone d'acquisto, moltiplicatore), come si
+   chiude. Controllare anche se l'edificio in città apre la stessa schermata.
+2. Se i sei eventi usano lo stesso prefab (come i mini-eventi con `MiniEvents`), un solo
+   `CalendarEventTask` con i sei titoli in `EventNames`; se no, un task per evento. Si decide dal
+   primo, Halloween, e si conferma al secondo (Winter Festival, dicembre).
+3. `RunEvent`: tab di scambio → `ExchangeTab.BuyPriorityItems()` → chiudi. Nient'altro: gli avatar
+   costano troppo e lo shop è a pagamento.
+4. Verifica su Steam-0: acquisti solo delle voci attese, la valuta che scende, niente sui tab a
+   pagamento; poi rollout sulla flotta e righe in TESTING.md e nel template.
 
-## 4. Budget delle risorse (deciso con l'utente il 30/09)
+## 4. Frostfire Festival (03/12)
 
-**Finire le sfide ha la priorità massima**: i claim sono il motivo di tutto il piano. Come per le quest
-giornaliere, non si tiene nessuna riserva: se la sfida chiede 15 colpi al cristallo se ne fanno 15, se
-chiede 8 forzieri se ne aprono 8, se chiede 15 giocate in taverna se ne fanno 15, finché la risorsa
-c'è.
+Evento speciale, 2 settimane (nel 2025 dal 4 al 19 dicembre), livello 10; la carta c'è già
+nell'elenco eventi ("Frostfire Festival", in arrivo). Secondo il wiki si aprono dei regali: ognuno dà
+un forziere, delle valute (500 meteoriti, 100 Strange Dust, 1.000 monete esotiche, 100 gemme, 4
+gettoni, 2 golden key, 1.000 gettoni spedizione, 5 picconi, 500 blueprints, 4 pharaoh's token) o 3
+mystery box, e aprendo un regalo in 7 giorni diversi si ottiene un avatar. Dopo ogni regalo Eve fa
+due offerte **a pagamento: mai**.
 
-- **Sopra gli eventi ci sono solo le quest giornaliere**, perché sbloccano le settimanali, che hanno
-  i premi migliori. Un'azione di un evento che usa la stessa risorsa di una quest giornaliera (picconi
-  e Miner, gettoni e Gamer, forzieri e Collector, oggetti e Merchant) parte solo quando la quest di
-  oggi è già fatta (giorno di gioco, reset alle 10:00: `last_done_date` del task uguale a oggi); se
-  quella quest oggi non c'è o non si può fare, non blocca niente. Le giocate e i colpi delle quest
-  contano anche per gli eventi, quindi l'evento chiede solo la differenza (DH vuole 12 giocate: 10 le
-  fa Gamer, l'evento ne aggiunge 2).
-- **Nessun minimo** per le sfide: né picconi tenuti per la Miner del giorno dopo, né
-  `min_common_chest_reserve`, né `min_meteorite_reserve`. Quelle riserve restano per i task normali
-  (Collector sulle chest extra, Meteorite Research), non per le sfide.
-- **Cosa resta fisso** (non sono minimi, sono regole di sicurezza):
-  - mai gemme né offerte a pagamento, sempre col controllo dell'icona della valuta
-    (`IconSprite.NameAt`) prima del click;
-  - forzieri dal più economico al più caro;
-  - vendite solo dei tre oggetti già ammessi per Merchant (Midas' Touch, Health, Damage).
-- **Azioni della Fase 4** (illuminazione dei guardian con Strange Dust, donazione in Gilda,
-  upgrade speciali in gold, upgrade dell'Exotic Merchant): si fanno solo dopo il sì esplicito
-  dell'utente, azione per azione. Una volta approvate, valgono le stesse regole: niente minimi.
+Da capire con la sonda: quanti regali si aprono e ogni quanto (sembra uno al giorno, gratis), se
+l'apertura ha un costo (se sì, chiedere all'utente), dove sono il bottone e la milestone. Poi un task
+che apre il regalo del giorno e chiude le offerte di Eve senza toccarle.
 
-## 5. Architettura
+## 5. Anniversario (aprile)
 
-- **`ChallengeParser`** (nuovo, puro, testato come `EnchantPlanner`): dal testo e da "5/10" ricava
-  `(Kind, Done, Target)`. La tabella delle espressioni è l'unico punto da aggiornare quando il gioco
-  cambia un testo. Niente Unity, niente MelonLoader.
-- **Lettura delle carte**: `DecoratedHeroesShop.Challenges()` e `MiniEvents.Challenges()` restituiscono
-  titolo e progresso di ogni carta (path in `Paths/Events.cs`, dalla Fase 0).
-- **Azioni**: un metodo per `Kind` in un solo punto (`EventChallengeActions`), che richiama i modelli
-  esistenti (`ArcaneCrystal`, `Tavern`, `ChestOpening`, `ExoticMerchant`, `TreeOfLife`, ...). Non si
-  duplica la logica dei task: si estraggono al massimo i pezzi da riusare.
-- **Flusso di `EventTask`**: apri l'evento → leggi le carte → chiudi → esegui le azioni che mancano →
-  riapri → reclama (i claim di oggi restano) → chiudi. Se non c'è niente da fare, il giro resta quello
-  di oggi.
-- **Mini-eventi generici**: un solo task che apre la carta del mini-evento in corso, qualunque sia,
-  invece di un task per nome. Nome e giorno si leggono dalla carta.
-- **Limiti**: al massimo un'azione per sfida e per giro, e un tetto di passi per giro
-  (`MaxRuntimeSeconds` come Hall of Heroes).
+Gli account che hanno già fatto un New Player Event hanno l'anniversario (2 settimane, ogni aprile):
+stessa struttura (ricompensa giornaliera, milestone del tempo online, scambio delle activity coins)
+e, dal nome del prefab che il gioco usa per il New Player Event (`AnniversaryShop`), molto
+probabilmente la stessa schermata. Quando parte: sonda sulla carta; se apre `AnniversaryShop`, basta
+aggiungere il titolo della carta a `NewPlayerEventTask.EventNames`. Da controllare anche la priorità
+dello scambio: nell'evento del 6º anniversario il forziere leggendario era il miglior acquisto (guida
+F2P).
 
-## 6. File da toccare
+## 6. Decorated Heroes di novembre: le medaglie
 
-| File | Cosa |
+Il tab **Medals** non è mai stato aperto. La guida F2P ("Medaglie Fate") dice che la medaglia d'oro
+(+25% all'effetto Fate) chiede circa l'85-90% delle sfide giornaliere per tutto l'evento: col bot che
+ora le completa potrebbe arrivare. Al prossimo DH, con la sonda: cosa mostra il tab, se la medaglia va
+reclamata a mano e con quale bottone. Se va reclamata, un passo in `DecoratedHeroesEventTask`.
+
+## 7. La sonda
+
+Un task temporaneo (`src/Tasks/Events/ProbeTask.cs`, gruppo Events, `NextRunTime = DateTime.MaxValue`
+dopo il primo giro, `MaxRuntimeSeconds` alto) che apre la schermata e scrive nel log il sottoalbero con
+testi, sprite e stato dei bottoni. **Non va committato**; dopo averlo tolto, a gioco chiuso, va
+cancellata dal cfg di Steam-0 la sezione `[probetask]`. Il pezzo che scrive l'albero, usato il 30/09:
+
+```csharp
+private static void Walk(Transform t, string indent, int depth, int maxDepth, List<string> lines)
+{
+    for (var i = 0; i < t.childCount; i++)
+    {
+        var c = t.GetChild(i);
+        var s = $"{indent}{c.name} [{(c.gameObject.activeInHierarchy ? "on" : "off")}]";
+        var tmp = c.GetComponent<TMP_Text>();
+        if (tmp != null) s += $" text='{tmp.text?.Replace("\n", "\\n")}'";
+        var img = c.GetComponent<Image>();
+        if (img != null && img.sprite != null) s += $" sprite={img.sprite.name}";
+        var btn = c.GetComponent<Button>();
+        if (btn != null) s += $" btn(interactable={btn.interactable})";
+        lines.Add(s);
+        if (depth < maxDepth && c.gameObject.activeInHierarchy) Walk(c, indent + "  ", depth + 1, maxDepth, lines);
+    }
+}
+```
+
+Si parte da `GameElement.FindTransform("<radice>")`, con `Logger.Info` del risultato. Per trovare la
+schermata aperta dopo un click: `Watchdog.DumpActiveScreens()`. La carta dell'evento si apre con
+`EventManager.Open` e `EventManager.OpenEvent(new[] { "<titolo>" }, t => ...)`.
+
+## 8. Calendario
+
+| Quando | Cosa |
 |---|---|
-| `src/Tasks/Events/ChallengeParser.cs` (nuovo, puro) | `Kind`, tabella delle regex, `Parse(text, progress)` |
-| `tests/Firebot.TalentEngine.Tests/ChallengeParserTests.cs` (nuovo) | i testi reali della Fase 0, uno per tipo, e un testo sconosciuto |
-| `src/Infrastructure/Paths/Events.cs` | titolo e progresso delle carte DH (`challengeTitleText`, `progressBar/challengeProgressText`) e dei mini-eventi (`unlocked/challenge/questDescription`, `.../progressText`), dal dump |
-| `src/GameModel/Features/Events/DecoratedHeroesShop.cs`, `MiniEvents.cs` | lettura delle carte |
-| `src/Tasks/Events/EventTask.cs` | il flusso leggi → agisci → reclama |
-| `src/Tasks/Events/EventChallengeActions.cs` (nuovo) | le azioni, riusando i modelli |
-| `src/Tasks/Events/MiniEventTask.cs` (nuovo) | sostituisce `MassProductionEventTask` e `SigilsOfProphecyEventTask` |
-| `TESTING.md`, `README.md` | righe degli eventi |
-
-## 7. Fase 0: verifiche nel gioco (BLOCCANTE)
-
-Con sonde temporanee (come per Hall of Heroes), su istanze dove l'evento è in corso:
-
-1. **Carte di Decorated Heroes** (in corso il 30/09): testo esatto delle 8 sfide, formato del progresso
-   (`5/10`, e cosa mostra a sfida finita: "Completed"?), come si legge il livello (1-2-3), stato del
-   claim tra un livello e l'altro.
-2. **Carte dei mini-eventi**: testo della sfida di ogni giorno su più account (è casuale per
-   giocatore), progresso, carta del giorno bloccato, carta bloccata per livello (Sigils su Steam-15/16).
-3. **Mini-eventi non coperti**: che il riquadro nell'elenco eventi abbia il nome dell'evento e apra la
-   stessa schermata `MiniEvents`. Serve aspettare che ne parta uno diverso da Sigils (ogni 5 giorni).
-4. **Illuminazione dei guardian**: path del bottone in Magic Quarters, costo mostrato, come cambia la
-   dust.
-5. **Donazione in Gilda, upgrade speciali, upgrade dell'Exotic Merchant**: solo se l'utente li approva
-   (sezione 4).
-6. **Conteggio condiviso**: confermare che le giocate e i colpi delle quest giornaliere contano anche
-   per la sfida dell'evento (lo screenshot del 30/09 mostra DH a 5/10 colpi e 10/12 giocate dopo le
-   quest del mattino, quindi sembra di sì).
-
-### Risultati (Steam-0, 30/09, sonda `ProbeTask` poi tolta)
-
-1. **Decorated Heroes**: finisce il 02/10 verso le 10:00 ("Time left: 1d 19:00" alle 15). Carta
-   `challengesLayout/challenge (N)`: testo in `challengeTitleText`, progresso in
-   `progressBar/challengeProgressText`. Testi: "Complete all scout missions.", "Enlighten guardians 1
-   times.", "Complete 6 firestone researches.", "Conduct 3 alchemy experiments.", "Hit the arcane
-   crystal 10 times.", "Play 12 times with the cards at the tavern.", "Complete 10 guild
-   expeditions.", "Stay online for 60 minutes.". Il numero nel testo e il denominatore sono
-   l'obiettivo del **livello in corso** (10 colpi = livello 2, a 5/10 col livello 1 già fatto);
-   il conteggio è dal reset delle 10:00 e prosegue tra i livelli. A sfida finita il progresso dice
-   "Completed" e `claimButton` è nascosto. Livelli fatti: `progressMilestones/progress (i)/tickIcon`
-   attivo. In fondo, "Challenges will be renewed in: 19:00:53" (le 10:00).
-2. **Mini-eventi** (Sigils): `challengesLayout/miniEventChallengeInteraction (N)`, testo in
-   `unlocked/challenge/questDescription`, progresso in `unlocked/challenge/challengeProgressBg/progressText`,
-   claim in `unlocked/reward/claimButton`, `unlocked/reward/claimedText` attivo se reclamata. Giorno
-   bloccato: `unlocked` spento e `locked` acceso (il testo c'è già: il giorno 3 di Sigils su Steam-0
-   è "Get 50 special upgrades ."). Visti solo i testi di Steam-0 (le altre istanze non si toccano).
-3. **Elenco eventi**: Stardust (dal 04/10) e Primordial elements (dal 09/10) sono già in
-   `upcommingEvents`, con `mainElements/lock` acceso e "Starts in: ...". Che aprano MiniEvents si
-   vede il 04/10.
-4. **Illuminazione**: `Paths.MenusLoc.MagicQuartersLoc.EnlightenmentBtn` (già usato da Guardian
-   Training con `use_strange_dust`, spento nel fleet), "Enlightenment 1", `costText` '20',
-   `strangeDustIcon` = `strangeDust64`, XP +120.
-5. Seconda sonda (15:46): Gilda → `bank` apre `popups/GuildBank` sul tab bank; "You have" 850 guild
-   coin (icona `guildCoin64`), bottoni '1.000', '10.000', '100.000' (non cliccabili sotto il loro
-   importo) e 'Max'. Exotic Merchant, tab upgrade: 12 upgrade, `upgradeButton/currencyIcon` =
-   `exoticCoin64`, `costText` 960-2208; contatore `counters/currencyInteraction (ExoticCoin)/quantity`
-   '336'. Upgrade speciali: nessuna azione (decisione dell'utente).
-6. **Conteggio condiviso: sì.** Dopo le quest del mattino DH segnava 5/10 colpi e 10/12 giocate,
-   cioè i 5 colpi di Miner e le 10 giocate di Gamer di Steam-0.
-
-## 8. Fuori da questo piano
-
-- **Eventi di calendario** (Halloween e gli altri): non hanno sfide. La valuta si raccoglie da sola e
-  si spende in uno shop diverso per ogni evento (la capanna della strega, il negozio d'inverno...). Si
-  possono aggiungere con `ExchangeTab` quando uno è in corso e se ne vede la schermata dal vivo: il
-  prossimo è Halloween (fine ottobre).
-- **Pacchetti a pagamento dei mini-eventi**: mai.
-
-## 9. Ordine di lavoro e test dal vivo
-
-1. **Fase 1** (subito, piccola): un task generico per tutti i mini-eventi, solo claim. Verifica: il
-   prossimo mini-evento diverso da Sigils viene aperto e reclamato.
-2. **Fase 2**: `ChallengeParser` e sola lettura: il log elenca le sfide di ogni evento, riconosciute o
-   no, su tutte le istanze. Nessuna azione.
-3. **Fase 3**: azioni già pronte (cristallo, taverna, forzieri, vendite, Tree of Life, meteoriti), una
-   alla volta, con Decorated Heroes come banco di prova (8 sfide al giorno).
-4. **Fase 4**: azioni nuove approvate dall'utente (illuminazione, donazione, upgrade).
-5. **Fase 5** (facoltativa): Map Missions preferisce il tipo di missione chiesto da una sfida aperta.
-
-Criteri per ogni fase: nessuna spesa fuori budget, nessun `[FAILED]` nuovo, e per ogni sfida
-azionabile la riga `x/y -> y/y` seguita dal claim nel giro successivo.
+| 01/10, dopo le 10:30 | controlli del reset (TESTING.md e memoria del reset): DH dopo le quest, Collector e Merchant coi passi condivisi |
+| 02/10, 10:00 | fine di Decorated Heroes e di Sigils of Prophecy |
+| 04/10, 10:00 | Stardust: primo mini-evento nuovo per `MiniEventTask`, prime azioni dei mini-eventi (sezione 1) |
+| 09/10 | Primordial elements |
+| 23/10, 10:00 | Halloween: sonda e task (sezione 3) |
+| novembre | Decorated Heroes: medaglie (sezione 6) |
+| 03/12, 10:00 | Frostfire Festival (sezione 4) |
+| ~19/12 | Winter Festival: conferma del task di calendario (sezione 3) |
+| aprile 2027 | Anniversario (sezione 5) |

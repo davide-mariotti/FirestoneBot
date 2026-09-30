@@ -448,6 +448,9 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 - Rimandati perché a cadenza h24 rendono poco: modalità "Next Milestone" di Hero Upgrade, upgrade
   globali/speciali (`upgradesButtonUI`, mai mappato), spedizione con più punti, missione del drago
   prioritaria (`MissionPin` non ha il tipo di missione).
+- **Eventi non ancora gestiti** (piano in `EVENTS_PLAN.md`, con date e procedura): eventi di calendario
+  (Halloween dal 23/10, poi Winter Festival), Frostfire Festival (03/12), anniversario (aprile), tab
+  Medals di Decorated Heroes (novembre). Si fanno quando se ne vede la schermata dal vivo.
 - Non ancora gestiti: claim gratuito del Monthly pass nello shop di Scarab's Game, missioni Dungeon
   del Warfront, moltiplicatore bulk delle War Machines, Soul stones (Hall of Heroes, livello 200).
 - Scartato: la routine di push (pergamene e pouch allo stage ottimale). Fragile e rischia di
