@@ -107,8 +107,10 @@ public class EmpowerTask : BotTask
             yield return TempleOfEternals.Close;
             yield return TownScreen.Close;
 
-            // No point checking again before the minimum adventure time has passed.
-            var timeUntilMinDuration = minDuration - timePlayed;
+            // No point checking again before the minimum adventure time has passed - unless nothing read
+            // (the Temple never opened, e.g. behind the start-up popups): then its 0 time means nothing,
+            // and waiting for it cost an hour on 3 instances after a restart (30/09).
+            var timeUntilMinDuration = owned > 0 ? minDuration - timePlayed : TimeSpan.Zero;
             NextRunTime = DateTime.Now + (timeUntilMinDuration > RetryDelay ? timeUntilMinDuration : RetryDelay);
         }
     }
