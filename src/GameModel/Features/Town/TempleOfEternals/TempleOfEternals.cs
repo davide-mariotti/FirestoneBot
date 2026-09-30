@@ -1,4 +1,5 @@
 using System.Collections;
+using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 
@@ -10,6 +11,11 @@ public static class TempleOfEternals
         new GameButton(Paths.MenusLoc.TempleOfEternalsLoc.EmpowerBtn).Click();
 
     public static IEnumerator Close => new GameButton(Paths.MenusLoc.TempleOfEternalsLoc.CloseBtn).Click();
+
+    // Checked silently: polled while the screen is still opening.
+    public static bool IsShown =>
+        GameElement.FindTransform(Paths.MenusLoc.TempleOfEternalsLoc.FirestonesYouOwnTxt) is { } t &&
+        t.gameObject.activeInHierarchy;
 
     public static string AdventureTimePlayedText =>
         new GameText(Paths.MenusLoc.TempleOfEternalsLoc.AdventureTimePlayedTxt).GetParsedText();

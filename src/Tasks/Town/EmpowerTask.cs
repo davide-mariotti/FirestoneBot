@@ -69,6 +69,18 @@ public class EmpowerTask : BotTask
         yield return TownScreen.Open;
         yield return TownScreen.OpenTempleOfEternals;
 
+        // The Temple sometimes shows up seconds late: read at once, all three texts came back
+        // empty on ~20 of ~630 runs on 30/09 (Steam-10 at 14:19).
+        yield return Poll.Until(() => TempleOfEternals.IsShown);
+        if (!TempleOfEternals.IsShown)
+        {
+            Debug("[INFO] Temple of Eternals didn't open within 5 s - retrying in 5 min.");
+            yield return TempleOfEternals.Close;
+            yield return TownScreen.Close;
+            NextRunTime = DateTime.Now + RetryDelay;
+            yield break;
+        }
+
         var timePlayed = TimeParser.ParseFrom(TempleOfEternals.AdventureTimePlayedText);
         var found = TempleOfEternals.FirestonesFound;
         var owned = TempleOfEternals.FirestonesYouOwn;
