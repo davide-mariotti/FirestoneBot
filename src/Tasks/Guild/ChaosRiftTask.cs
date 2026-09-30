@@ -10,10 +10,11 @@ using Firebot.Infrastructure;
 namespace Firebot.Tasks.Guild;
 
 /// <summary>
-///     Chaos Rift: attacks the server boss with the free Moon Stones (auto-hit on, bulk hits when
-///     offered), then spends the Dark Rune earned on Tomes of Power for ForbiddenKnowledgeTask. The
-///     shop's other tabs cost real money and are never opened. The ChaosRift badge never clears; the
-///     scheduler's round-robin keeps it from crowding out other tasks.
+///     Chaos Rift: attacks the server boss with the free Moon Stones (bulk hits when offered), then
+///     spends the Dark Rune earned on Tomes of Power for ForbiddenKnowledgeTask. The shop's other tabs
+///     cost real money and are never opened. The ChaosRift badge never clears; the scheduler's
+///     round-robin keeps it from crowding out other tasks. The auto-hit button is left alone: it's a
+///     plain button with no readable state (hidden on Steam-0), so clicking it would only flip it.
 /// </summary>
 public class ChaosRiftTask : BotTask
 {
@@ -42,8 +43,6 @@ public class ChaosRiftTask : BotTask
 
         if (ChaosRift.IsVisible)
         {
-            yield return ChaosRift.EnsureAutoHitOn();
-
             yield return ChaosRift.TrySetBestQuantity();
 
             var hitThisRun = false;

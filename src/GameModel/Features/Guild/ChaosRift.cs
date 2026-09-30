@@ -3,8 +3,6 @@ using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using UnityEngine;
-using UnityEngine.UI;
-using static Firebot.Core.BotSettings;
 
 namespace Firebot.GameModel.Features.Guild;
 
@@ -22,29 +20,15 @@ public static class ChaosRift
         new GameButton(Paths.ChaosRiftLoc.ChangeHitQuantityBtn), new GameText(Paths.ChaosRiftLoc.HitQuantityTxt),
         QuantityToggle.IsBulk);
 
-    private static GameElement AutoHitToggleElement => new(Paths.ChaosRiftLoc.AutoHitToggleBtn);
-
-    /// <summary>Turns auto-hit on. It's a plain Button today; the Toggle branch covers a future change.</summary>
-    public static IEnumerator EnsureAutoHitOn()
-    {
-        if (AutoHitToggleElement.TryGetComponent<Toggle>(out var toggle))
-        {
-            if (!toggle.isOn) toggle.isOn = true;
-        }
-        else if (AutoHitToggleElement.TryGetComponent<Button>(out var button))
-        {
-            if (button.enabled && button.interactable) button.onClick.Invoke();
-        }
-
-        yield return new WaitForSeconds(InteractionDelay);
-    }
-
     public static IEnumerator WaitForHitResult()
     {
         yield return HitResultWait;
     }
 
-    public static IEnumerator OpenShop => new GameButton(Paths.ChaosRiftLoc.ShopBtn).Click();
+    // Right after the hits the Market click can be ignored (30/09 10:11 on Steam-0: the shop never
+    // opened, while a run with no hits opened it at once), so the click is retried until it shows.
+    public static IEnumerator OpenShop =>
+        Poll.ClickUntil(() => new GameButton(Paths.ChaosRiftLoc.ShopBtn), () => ChaosRiftShop.IsVisible, "ChaosRift shop");
 
     public static IEnumerator OpenUpgrades => new GameButton(Paths.ChaosRiftLoc.UpgradesBtn).Click();
 

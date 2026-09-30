@@ -17,8 +17,6 @@ public static partial class Paths
 
         public const string HitBtn = UiRoot + "/godParent/hitButton";
 
-        public const string AutoHitToggleBtn = UiRoot + "/autoHitToggle";
-
         public const string ChangeHitQuantityBtn = UiRoot + "/changeHitQuantity";
 
         public const string HitQuantityTxt = ChangeHitQuantityBtn + "/text";
