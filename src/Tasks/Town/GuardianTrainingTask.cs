@@ -121,6 +121,8 @@ public class GuardianTrainingTask : BotTask
             Logger.Debug($"[INFO] Enlightenment {done}/{times}: {before} -> {EnlightenmentState}.");
         }
 
+        if (done < times)
+            Logger.Debug($"[INFO] Enlightenment: {done}/{times} - the button isn't clickable (not enough Strange Dust?).");
         onDone(done);
 
         yield return MagicQuarters.Close;

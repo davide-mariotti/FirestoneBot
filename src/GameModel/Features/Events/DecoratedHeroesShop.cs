@@ -26,9 +26,15 @@ public static class DecoratedHeroesShop
         Paths.DecoratedHeroesShopLoc.ExchangeItemsRoot, Paths.DecoratedHeroesShopLoc.ExchangeItemNameTxt,
         Paths.DecoratedHeroesShopLoc.ExchangeItemBuyBtn);
 
-    /// <summary>Every card's text and progress ("5/10", "Completed").</summary>
+    /// <summary>
+    ///     Every shown card's text and progress ("5/10", "Completed"). A card above the account's level
+    ///     keeps its title hidden (the alchemy one below 120, seen on Steam-1..16 on 30/09): skipped
+    ///     with a silent check, since reading it would log a failure every session.
+    /// </summary>
     public static List<(string Text, string Progress)> Challenges() =>
         new GameElement(Paths.DecoratedHeroesShopLoc.ChallengeGridRoot).GetChildren()
+            .Where(card => GameElement.FindTransform(card.FullPath + Paths.DecoratedHeroesShopLoc.ChallengeTitleTxt)
+                ?.gameObject.activeInHierarchy == true)
             .Select(card => (new GameText(Paths.DecoratedHeroesShopLoc.ChallengeTitleTxt, card).GetParsedText(),
                 new GameText(Paths.DecoratedHeroesShopLoc.ChallengeProgressTxt, card).GetParsedText()))
             .ToList();
