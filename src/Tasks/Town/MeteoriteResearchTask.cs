@@ -48,8 +48,7 @@ public class MeteoriteResearchTask : BotTask
     }
 
     // Large balances show abbreviated ("12.5K").
-    private static double MeteoriteBalance =>
-        new GameText(Paths.MenusLoc.LibraryLoc.MeteoriteBalanceTxt).GetParsedDoubleAbbreviated();
+    private static GameText MeteoriteBalanceTxt => new(Paths.MenusLoc.LibraryLoc.MeteoriteBalanceTxt);
 
     public override IEnumerator Execute()
     {
@@ -60,11 +59,12 @@ public class MeteoriteResearchTask : BotTask
         yield return Library.OpenMeteoriteResearchTab;
 
         var minReserve = _minMeteoriteReserve?.Value ?? 3000;
-        var balance = MeteoriteBalance;
+        var balance = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
+        Debug($"[INFO] Meteorite balance {balance} ('{MeteoriteBalanceTxt.GetParsedText()}'), reserve {minReserve}.");
         if (minReserve <= 0 || balance >= minReserve)
             yield return RunResearch();
         else
-            Debug($"[INFO] Meteorite balance {balance} below the {minReserve} reserve - skipping research this run.");
+            Debug("[INFO] Below the reserve - skipping research this run.");
 
         NextRunTime = DateTime.Now + TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60);
 
