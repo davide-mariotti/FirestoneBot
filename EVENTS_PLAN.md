@@ -3,6 +3,46 @@
 > Piano da eseguire con Claude Code, scritto il 2026-09-30. Non c'è ancora niente di implementato. Si
 > parte dalla **Fase 0** (sezione 7, verifiche nel gioco): finché non è chiusa, la logica è bloccata.
 
+## 0. Come partire
+
+Da incollare in una sessione nuova di Claude Code (cartella `C:\Repos\FirestoneBot`), avviata con i
+permessi che le evitano di chiedere conferma a ogni comando:
+
+```text
+Implementiamo le sfide degli eventi seguendo EVENTS_PLAN.md, con le regole di TESTING.md (test
+solo su Steam-0, path verificati dal vivo o nel dump, commit per ogni correzione verificata),
+skill ponytail attiva. Parti dalla Fase 0 (sezione 7) e vai avanti fase per fase (sezione 9).
+Il budget della sezione 4 è approvato così com'è; per la Fase 4 (illuminazione, donazione,
+upgrade) chiedimi prima.
+```
+
+Se il budget della sezione 4 non va bene così, va corretto qui prima di partire, o tolta dal prompt
+la frase che lo approva: in quel caso la sessione chiede prima della Fase 3.
+
+Cosa sapere prima di cominciare, oltre a TESTING.md (sezione "Per l'agente": comandi, regole, dump
+dal vivo):
+
+- **Solo Steam-0.** Le istanze Steam-1..16 girano con versioni diverse del bot (TESTING.md, "Da fare
+  e rimandato") e si aggiornano tutte insieme al prossimo riavvio completo: non toccarle.
+- **Decorated Heroes ha i giorni contati**: dura 2 settimane nei mesi dispari ed era in corso il
+  30/09. Come prima cosa, guarda nel gioco quanto manca: se finisce prima della Fase 3, le verifiche
+  di DH si spostano sui mini-eventi (uno ogni 5 giorni) o a novembre.
+- **Pezzi già pronti da riusare**, oltre a quelli della tabella in sezione 3:
+  - `IconSprite.NameAt(path)`: nome dello sprite della valuta su un bottone. Ogni spesa nuova lo
+    controlla prima del click (`strangeDust64`, `toolsIcon64`, `soulEmber64`, `meteorite64`; mai
+    `gem64`) e conferma dal contatore che scende, come `BeastsTask` e `WarMachineRarityTask`.
+  - `SpeedUpButton.IsFree(path)`: un'accelerazione si preme solo se non mostra il prezzo in gemme.
+  - `Poll.Until` / `Poll.ClickUntil`: attese limitate per le schermate lente (il Tempio, 30/09).
+  - Controlli silenziosi: `GameElement.FindTransform(path)` con `gameObject.activeInHierarchy`, per
+    gli stati normali che `IsVisible` scriverebbe come `[FAILED]`.
+  - Elenchi con figli dallo stesso nome o che si riordinano: clic dal `Transform` per indice e
+    ricerca ripetuta a ogni giro (`HallOfHeroes.TrySelectHero`, `Beasts.TrySelect`).
+- **Strange Dust**: dal 30/09 `GuardianEvolutionTask` la spende per le evoluzioni (300-600). Il
+  budget dell'illuminazione (sezione 4) deve lasciarne abbastanza.
+- **Sonde**: per la Fase 0 serve un task temporaneo (`ProbeTask`) che scrive nel log il sottoalbero
+  della schermata con testi, sprite e stato dei bottoni. Non va committato; dopo averlo tolto, a
+  gioco chiuso, va cancellata dal cfg di Steam-0 la sua sezione `[probetask]`.
+
 ## 1. Contesto
 
 - **Oggi il bot reclama soltanto.** `DecoratedHeroesEventTask`, `MassProductionEventTask` e
