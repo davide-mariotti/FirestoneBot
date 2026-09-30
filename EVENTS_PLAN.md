@@ -12,12 +12,9 @@ permessi che le evitano di chiedere conferma a ogni comando:
 Implementiamo le sfide degli eventi seguendo EVENTS_PLAN.md, con le regole di TESTING.md (test
 solo su Steam-0, path verificati dal vivo o nel dump, commit per ogni correzione verificata),
 skill ponytail attiva. Parti dalla Fase 0 (sezione 7) e vai avanti fase per fase (sezione 9).
-Il budget della sezione 4 è approvato così com'è; per la Fase 4 (illuminazione, donazione,
+Il budget è quello della sezione 4, già deciso; per la Fase 4 (illuminazione, donazione,
 upgrade) chiedimi prima.
 ```
-
-Se il budget della sezione 4 non va bene così, va corretto qui prima di partire, o tolta dal prompt
-la frase che lo approva: in quel caso la sessione chiede prima della Fase 3.
 
 Cosa sapere prima di cominciare, oltre a TESTING.md (sezione "Per l'agente": comandi, regole, dump
 dal vivo):
@@ -37,8 +34,8 @@ dal vivo):
     gli stati normali che `IsVisible` scriverebbe come `[FAILED]`.
   - Elenchi con figli dallo stesso nome o che si riordinano: clic dal `Transform` per indice e
     ricerca ripetuta a ogni giro (`HallOfHeroes.TrySelectHero`, `Beasts.TrySelect`).
-- **Strange Dust**: dal 30/09 `GuardianEvolutionTask` la spende per le evoluzioni (300-600). Il
-  budget dell'illuminazione (sezione 4) deve lasciarne abbastanza.
+- **Strange Dust**: dal 30/09 `GuardianEvolutionTask` la spende per le evoluzioni (300-600). Serve
+  saperlo quando si chiede all'utente l'illuminazione (Fase 4).
 - **Sonde**: per la Fase 0 serve un task temporaneo (`ProbeTask`) che scrive nel log il sottoalbero
   della schermata con testi, sprite e stato dei bottoni. Non va committato; dopo averlo tolto, a
   gioco chiuso, va cancellata dal cfg di Steam-0 la sua sezione `[probetask]`.
@@ -70,8 +67,8 @@ dal vivo):
 1. A ogni giro di un evento il bot legge le carte delle sfide: testo, "fatto/obiettivo" e livello.
 2. Riconosce il tipo di sfida dal testo con una tabella di espressioni regolari. Un testo che non
    riconosce va nel log come `[INFO] Challenge not handled: '<testo>'` e resta com'è.
-3. Per le sfide **azionabili subito** fa esattamente quello che manca, entro il budget della risorsa
-   (sezione 4), poi riapre l'evento e reclama.
+3. Per le sfide **azionabili subito** fa esattamente quello che manca, fino in fondo e senza riserve,
+   subito dopo le quest giornaliere (sezione 4), poi riapre l'evento e reclama.
 4. Per le sfide **a tempo** (missioni, ricerche, spedizioni, tempo online) non fa niente di nuovo: le
    completano i task che già girano. Al massimo le favorisce (sezione 5, Fase 5).
 5. Ogni azione scrive una riga nel log: `Event 'Decorated Heroes': 'Hit the arcane crystal 10
@@ -93,13 +90,13 @@ cicli completi).
 | Open N chests | mini (2) | N forzieri dei più economici | `ChestOpening.OpenDownTo` (Collector) | forzieri Wooden/Iron |
 | Sell N items at the exotic merchant | mini (5) | vende Midas' Touch, Health, Damage | `ExoticMerchant.TrySellOne` (Merchant) | oggetti |
 | Complete 1 upgrades at your personal tree of life | mini (1) | un acquisto | `TreeOfLifeTask` (scelta per priorità) | gettoni spedizione |
-| Complete 1 meteorite researches | mini (1) | un livello | `MeteoriteResearchTask` | meteoriti (sopra la riserva) |
+| Complete 1 meteorite researches | mini (1) | un livello | `MeteoriteResearchTask` | meteoriti |
 
 ### Azionabili, ma con una schermata nuova
 
 | Sfida | Dove compare | Azione | Costo | Da decidere |
 |---|---|---|---|---|
-| Enlighten guardians N times | DH (1/2/3), mini (2) | illuminazione del guardian di `guardian_index` | 20 Strange Dust ciascuna (wiki) | budget di dust: le evoluzioni automatiche la usano già |
+| Enlighten guardians N times | DH (1/2/3), mini (2) | illuminazione del guardian di `guardian_index` | 20 Strange Dust ciascuna (wiki) | sì o no (la dust serve anche alle evoluzioni automatiche) |
 | Donate 500 guild coins to your guild | mini | donazione in Gilda | 500 guild coin | sì o no |
 | Get 50 special upgrades | mini | upgrade speciali (`upgradesButtonUI`, mai mappato) | gold | quale upgrade comprare |
 | Complete 1 exotic upgrades | mini | un upgrade dall'Exotic Merchant | valuta del merchant | quale upgrade |
@@ -116,21 +113,31 @@ cicli completi).
 | Stay online for N minutes | DH (15/30/60) | nessuno | niente |
 | Kill 100 enemies with <eroe> | mini | la battaglia | niente |
 
-## 4. Budget delle risorse (da confermare con l'utente)
+## 4. Budget delle risorse (deciso con l'utente il 30/09)
 
-Le stesse risorse servono alle quest giornaliere e ad altri task. Proposta:
+**Finire le sfide ha la priorità massima**: i claim sono il motivo di tutto il piano. Come per le quest
+giornaliere, non si tiene nessuna riserva: se la sfida chiede 15 colpi al cristallo se ne fanno 15, se
+chiede 8 forzieri se ne aprono 8, se chiede 15 giocate in taverna se ne fanno 15, finché la risorsa
+c'è.
 
-- **Ordine**: prima le quest giornaliere (partono alle 10:00), poi gli eventi. Le giocate e i colpi
-  delle quest contano anche per gli eventi, quindi l'evento chiede solo la differenza (per esempio DH
-  vuole 12 giocate: 10 le fa Gamer, l'evento ne aggiunge 2).
-- **Picconi**: tutti quelli che servono alla sfida, tenendone 5 per la quest Miner del giorno dopo.
-- **Gettoni della taverna**: tutti quelli che servono (non hanno altro uso).
-- **Forzieri**: solo Wooden/Iron/Common, mai Common sotto `min_common_chest_reserve`.
-- **Oggetti venduti**: solo i tre già ammessi per Merchant.
-- **Meteoriti**: mai sotto `min_meteorite_reserve`.
-- **Strange Dust per l'illuminazione**: da decidere (per esempio solo se dopo resta abbastanza per la
-  prossima evoluzione, che ha la precedenza).
-- **Guild coin, gold, valuta del merchant**: solo dopo una decisione esplicita.
+- **Sopra gli eventi ci sono solo le quest giornaliere**, perché sbloccano le settimanali, che hanno
+  i premi migliori. Un'azione di un evento che usa la stessa risorsa di una quest giornaliera (picconi
+  e Miner, gettoni e Gamer, forzieri e Collector, oggetti e Merchant) parte solo quando la quest di
+  oggi è già fatta (giorno di gioco, reset alle 10:00: `last_done_date` del task uguale a oggi); se
+  quella quest oggi non c'è o non si può fare, non blocca niente. Le giocate e i colpi delle quest
+  contano anche per gli eventi, quindi l'evento chiede solo la differenza (DH vuole 12 giocate: 10 le
+  fa Gamer, l'evento ne aggiunge 2).
+- **Nessun minimo** per le sfide: né picconi tenuti per la Miner del giorno dopo, né
+  `min_common_chest_reserve`, né `min_meteorite_reserve`. Quelle riserve restano per i task normali
+  (Collector sulle chest extra, Meteorite Research), non per le sfide.
+- **Cosa resta fisso** (non sono minimi, sono regole di sicurezza):
+  - mai gemme né offerte a pagamento, sempre col controllo dell'icona della valuta
+    (`IconSprite.NameAt`) prima del click;
+  - forzieri dal più economico al più caro;
+  - vendite solo dei tre oggetti già ammessi per Merchant (Midas' Touch, Health, Damage).
+- **Azioni della Fase 4** (illuminazione dei guardian con Strange Dust, donazione in Gilda,
+  upgrade speciali in gold, upgrade dell'Exotic Merchant): si fanno solo dopo il sì esplicito
+  dell'utente, azione per azione. Una volta approvate, valgono le stesse regole: niente minimi.
 
 ## 5. Architettura
 
