@@ -164,7 +164,7 @@ $bmp.Save("$env:TEMP\steam0.png")
 Lascia girare il bot finché ogni task acceso ha avuto il suo turno: uno alla volta, può volerci
 un'ora. Man mano, per ogni task, annota l'esito: finito senza errori, `[FAILED]`, mai partito
 (livello), oppure comportamento diverso da quello scritto nella colonna "Da verificare" delle
-tabelle sotto. Controlla anche i punti di "Da riverificare dopo la pulizia".
+tabelle sotto.
 
 ### Fase 2: correzioni
 
@@ -316,7 +316,7 @@ file di configurazione nuovo.
 |---|---|:-:|:-:|:-:|---|
 | Talents | `[talentstask]` | - | on | ✅ | Parte solo sul badge TalentAvailable. |
 | Path of Glory | `[pathofglorytask]` | - | on | ✅ | Traccia gratuita e Golden (se posseduta); non compra mai il pass. |
-| Hall of Heroes | `[hallofheroestask]` | - | on | ✅ | Riscritto il 29/09 (`HALL_OF_HEROES_PLAN.md`): legge la formazione dal Party, ogni 24 h rilegge tutti gli eroi (`hero_snapshot` nel cfg) e con `EnchantPlanner` decide prima cosa comprano Void Crystal ed Ethereal Shards; prima di ogni click rilegge livello e costo dallo schermo. Gli eroi sotto la gear power del tier bloccato successivo (1300 per il tier 2, 6600 per il 3) ricevono i Void Crystal per primi, tier 1 compreso anche fuori formazione; alla soglia il bot sblocca il tier confermando il popup `GearTierUnlock` (480 meteoriti per il tier 2, 720 per il 3), solo se l'icona del costo è quella dei meteoriti. Verificato su Steam-0 il 29/09 (lettura completa, incantesimi, snapshot vecchio corretto senza click, secondo giro in 8 s) e su Steam-0..16 il 30/09: primo giro su 16 account da 6-8 eroi in 86-266 s, da 4 a 120 incantesimi per account, classe 0 vista al lavoro (es. Steam-4, Cirilo da 500 a 1.800 di power); dopo la correzione del popup, 67 tier sbloccati su 13 account, nessuno rimasto bloccato, nessun timeout né eccezione. Un tier appena sbloccato ha gli slot vuoti (`M`) finché non arrivano i pezzi dai forzieri: la lettura completa del giorno dopo li vede. |
+| Hall of Heroes | `[hallofheroestask]` | - | on | ✅ | Riscritto il 29/09: legge la formazione dal Party, ogni 24 h rilegge tutti gli eroi (`hero_snapshot` nel cfg) e con `EnchantPlanner` decide prima cosa comprano Void Crystal ed Ethereal Shards; prima di ogni click rilegge livello e costo dallo schermo. Gli eroi sotto la gear power del tier bloccato successivo (1300 per il tier 2, 6600 per il 3) ricevono i Void Crystal per primi, tier 1 compreso anche fuori formazione; alla soglia il bot sblocca il tier confermando il popup `GearTierUnlock` (480 meteoriti per il tier 2, 720 per il 3), solo se l'icona del costo è quella dei meteoriti. Verificato su Steam-0 il 29/09 (lettura completa, incantesimi, snapshot vecchio corretto senza click, secondo giro in 8 s) e su Steam-0..16 il 30/09: primo giro su 16 account da 6-8 eroi in 86-266 s, da 4 a 120 incantesimi per account, classe 0 vista al lavoro (es. Steam-4, Cirilo da 500 a 1.800 di power); dopo la correzione del popup, 67 tier sbloccati su 13 account, nessuno rimasto bloccato, nessun timeout né eccezione. Un tier appena sbloccato ha gli slot vuoti (`M`) finché non arrivano i pezzi dai forzieri: la lettura completa del giorno dopo li vede. |
 
 ### Scarab Game
 
@@ -354,43 +354,6 @@ alle 17:36 e ha reclamato 3 sfide; dopo il giro dei quattro eventi il badge si �
 
 Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18 istanze su
 2560x1440).
-
-## Da riverificare dopo la pulizia del 2026-09-28
-
-Il codice è stato ripulito senza cambiare comportamento (verificato con un confronto token per
-token e rilettura di ogni logica toccata), ma alcuni pezzi condivisi sono stati riscritti. Il giro
-completo li copre; questi sono i task in cui guardare con più attenzione:
-
-- Attese e retry dei click (`Poll`): Map Missions, Warfront Daily Missions, Collector, Gamer,
-  Pharaoh's Vault, Arena of Kings, Chaos Rift.
-- Selettori di quantità (`QuantityToggle`): Miner (x5), Chaos Rift (colpi multipli), Gamer, uno
-  shop evento.
-- Base comune degli eventi (`EventTask`): uno qualsiasi dei tre. Un evento il cui riquadro c'è ma
-  non si apre ora scrive `[FAILED] '<evento>' didn't open`.
-- Tempi letti dal gioco (`TimeParser`, riscritto): Empower (minuti di avventura) e ogni `Next:` nel
-  log, che deve corrispondere al timer mostrato dal gioco.
-- Pirate's Prize e le milestone del New Player Event (ricerca delle voci per indice).
-- Watchdog: qualunque task che lasci aperto un popup.
-
-Esito del 29/09 (Steam-0): nessun timeout né eccezione in nessun giro. `Poll`: Map Missions,
-Warfront Daily, Pharaoh's Vault, Arena e Chaos Rift girano senza errori; Collector e Gamer non hanno
-lavorato (quota del giorno già fatta, gettoni sotto riserva). `QuantityToggle`: non esercitato (Miner
-già fatto, Chaos Rift senza Moon Stone, Gamer senza gettoni). `EventTask`: Decorated Heroes e Sigils
-of Prophecy si aprono e reclamano; gli eventi assenti scrivono la riga di backoff. `TimeParser`: i
-`Next:` sono plausibili (Expedition, Experiments, Firestone Research, Map Missions), non confrontati a
-schermo. Pirate's Prize: corretto (menu scaricato dal gioco). Watchdog: Guardian Holy Upgrade lasciava
-aperte tre schermate (corretto); gli altri task no.
-
-Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il comportamento cambia):
-
-- **`BadgeCooldown`** ✅: tra due giri dello stesso task partiti dal badge passano almeno 30
-  minuti. Verificato il 29/09 sul badge degli eventi (Decorated Heroes alle 17:19:40 e poi alle
-  17:49:55) e su Quests (badge acceso dopo il giro delle 16:27, nessuna ripartenza anticipata). Chaos
-  Rift e Awakening non hanno avuto il badge acceso durante il test.
-- **Free Pickaxes solo da badge** ✅: `Next` = 12/31/9999; alle 17:23 è partito dal badge e ha
-  reclamato.
-- **Empower**: la riga `[INFO] Adventure time: ...` riporta i testi grezzi tra apici. Su Steam-0 il
-  29/09 erano `'1,79bl'` e `'65,67bl'`; la lettura è stata corretta lo stesso giorno (vedi la tabella).
 
 ## Problemi noti
 
@@ -434,30 +397,13 @@ Modifiche del 29/09, fatte dopo l'analisi dei log del 26-29/09 (questa volta il 
 - **Chaos Rift a volte non apre la schermata** dal bottone della Gilda (29/09, 16:31), mentre due
   minuti dopo Guardian Holy Upgrade l'ha aperta al primo click. Non riprodotto nel giro isolato.
 
-### Analisi dei log del 26-29/09 (Steam-0, bot prima della pulizia del 28/09)
-
-Circa 69 ore di log. Il bot ha lavorato per 466 minuti in tutto: 1.038 giri di Free Pickaxes, 430 di
-Chaos Rift, 416 di Empower, 325 di Awakening. Il metodo è sommare, task per task, le righe `[Task] …
-finished in Ns | Next: …`. Il ritardo programmato si calcola rispetto alla riga `Task Table - <data>`
-che segue ogni task.
-
-| Dove va il tempo | Minuti in 3 giorni | Causa |
-|---|--:|---|
-| Free Pickaxes | 105 | timer mai letto senza badge → nuovo tentativo ogni 2 minuti |
-| Chaos Rift | 74 | badge sempre acceso |
-| Map Missions | 67 | in buona parte legittimo (missioni che finiscono a orari diversi); 19 nuovi tentativi da 2 minuti |
-| Empower | 36 | controllo ogni 5 minuti, con Firestone letti sempre a 0 |
-| Awakening | 33 | badge sempre acceso |
-| Meteorite Research | 6 | 6 s a giro, ma non ricercava mai: saldo letto 0 (corretto il 29/09) |
-
-I due loop (Free Pickaxes e i badge accesi) valgono il 45% del tempo del bot. Il loop di New Player
-Event ogni 2 minuti compare solo nei primi tre log ed è stato corretto il 26/09 alle 17:23
-(`314aa75`).
 - `HoldButton` (Hero Upgrade) manda il pointer down ma mai il pointer up: il "rilascio" avviene
   quando il bottone smette di essere interattivo. Funziona da mesi; da tenere presente se Hero
   Upgrade si comporta in modo strano.
 - I selettori di quantità si fermano sulla prima opzione x10/x5 che incontrano nel ciclo, non sulla
   più grande. Il costo è proporzionale: cambia solo il numero di click.
+- `QuantityToggle`, riscritto nella pulizia del 28/09, non è ancora stato visto al lavoro: Chaos
+  Rift a colpi multipli (serve Moon Stone) e gli shop degli eventi.
 - Collector: i tempi tra un'apertura di chest e l'altra non sono ottimali (18/09).
 
 ## Da fare e rimandato

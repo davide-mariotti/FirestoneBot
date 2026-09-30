@@ -18,7 +18,7 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 namespace Firebot.Tasks.Character;
 
 /// <summary>
-///     Hall of Heroes (HALL_OF_HEROES_PLAN.md): Void Crystals on gear enchants and tier unlocks,
+///     Hall of Heroes: Void Crystals on gear enchants and tier unlocks (Meteorites),
 ///     Ethereal Shards on jewel enchants. EnchantPlanner decides up front exactly what the balances
 ///     buy, from a snapshot of every hero kept in the config and fully re-read at most every 24 h or
 ///     when the roster grows. Every click is checked against the screen first: a stale snapshot costs

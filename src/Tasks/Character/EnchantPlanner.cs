@@ -34,8 +34,9 @@ public sealed record HeroState(string Name, bool InFormation, int GearPower, int
 public sealed record EnchantStep(HeroState Hero, EnchantCategory Category, int Slot, int FromLevel, long Cost);
 
 /// <summary>
-///     Decides, before any click, exactly which enchants a balance buys (HALL_OF_HEROES_PLAN.md,
-///     section 4). Pure: no game types, so the tests project compiles it in directly.
+///     Decides, before any click, exactly which enchants a balance buys. Gear tier unlocks come
+///     first (GatingOrder, NextGatingSlot); then the lowest effective level wins (Plan). Pure: no
+///     game types, so the tests project compiles it in directly.
 /// </summary>
 public static class EnchantPlanner
 {
@@ -51,7 +52,10 @@ public static class EnchantPlanner
     public static int MaxLevel => Tier1Costs.Length;
 
     // Subtracted from a gear slot's level to rank it: the Ring is worth a level more than the Wrist,
-    // Shoulder/Belt three less. Tiers 2 and 3 boost every hero, tier 1 only its wearer. The knobs.
+    // Shoulder/Belt three less. Tiers 2 and 3 boost every hero and stack across heroes, and each level
+    // roughly doubles both effect and cost, so the level is what counts, not who wears the piece; the
+    // hero only matters for tier 1, which boosts its wearer alone (formation only). These are the
+    // knobs to tune. Jewels get no advantages and no crew filter, on every hero, by choice.
     private static readonly int[] GearAdvantage = { -1, -2, -2, 0, -3, -3, 1, -1 };
 
     private static readonly string[] GearNames = { "Weapon", "Chest", "Boots", "Wrist", "Shoulder", "Belt", "Ring", "Relic" };
