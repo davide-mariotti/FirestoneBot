@@ -46,5 +46,30 @@ public static partial class Paths
 
             public const string UpgradeCostTxt = UpgradeBtn + "/costText";
         }
+
+        // All seen live on Steam-0 (level 166, 01/10). The tab's lock is inactive once unlocked.
+        public static class EmblemMarketLoc
+        {
+            private const string SubmenuRoot = ExoticMerchantLoc.Root + "/submenus/bg/emblemMarketSubmenu";
+
+            public const string TabBtn = ExoticMerchantLoc.Root + "/submenus/submenuButtons/emblemMarket";
+
+            public const string TabLock = TabBtn + "/lock";
+
+            public const string GearCategoryBtn = SubmenuRoot + "/categoryButtons/gear";
+
+            public const string JewelsCategoryBtn = SubmenuRoot + "/categoryButtons/jewels";
+
+            // Cells "exoticMerchantEmblemGearChest (0..3)" / "exoticMerchantEmblemJewelChest (0..3)",
+            // each carrying the game's chest component (ExoticMerchant.EmblemOffers).
+            public const string GearGrid = SubmenuRoot + "/categories/gearCategory/scrollView/Viewport/Content/productGrid";
+
+            public const string JewelsGrid = SubmenuRoot + "/categories/jewelsCategory/scrollView/Viewport/Content/productGrid";
+
+            // Each shown only while its category is open, '.'-grouped ("8.878", "10.100").
+            public const string CourageCountTxt = ExoticMerchantLoc.Root + "/counters/currencyInteraction (EmblemOfCourage)/quantity";
+
+            public const string ValorCountTxt = ExoticMerchantLoc.Root + "/counters/currencyInteraction (EmblemOfValor)/quantity";
+        }
     }
 }
