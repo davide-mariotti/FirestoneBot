@@ -21,7 +21,8 @@ public static partial class Paths
 
             public const string MailBtn = Root + "/mail";
 
-            // Not verified live: guessed from Path of Glory's badge, which sits on its own button.
+            // Guessed from Path of Glory's badge. The object exists live (read as hidden on 18 instances,
+            // 01/10), but it has never been seen lit: no mail with rewards arrived.
             public const string MailNotification = MailBtn + "/notification";
         }
 
