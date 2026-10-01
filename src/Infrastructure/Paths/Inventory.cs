@@ -43,6 +43,15 @@ public static partial class Paths
         public const string OpenX10Btn = Root + "/bg/openingOptions/openx10";
     }
 
+    // "New items" (a jewel never owned before), raised over the results screen by Golden chests;
+    // closed live by ChestOpening on Steam-1..11 (01/10).
+    public static class NewItemLoc
+    {
+        private const string Root = MenusLoc.Root + "/popups/NewItem";
+
+        public const string CloseBtn = Root + "/bg/closeButton";
+    }
+
     // The results screen after an open, with its own copy of the open buttons to chain more. A menu,
     // not a popup: under popups/ the chaining never found its buttons and each slot opened one chest
     // (all 17 instances, 30/09; the Watchdog closed it as menus/ChestOpening).

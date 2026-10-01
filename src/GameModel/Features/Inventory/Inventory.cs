@@ -23,8 +23,9 @@ public static class Inventory
 /// <summary>Opens chests of one slot: preview popup, then x10/x1 batches on the results screen.</summary>
 public static class ChestOpening
 {
-    // The reveal animation (longer for rarer chests) outlasts the standard interaction delay.
-    private const int MaxChestTransitionPolls = 25;
+    // The reveal animation (longer for rarer chests) outlasts the standard interaction delay: a Golden
+    // x10 took ~8 s (01/10). The polls end as soon as a button or popup shows, so only a stall waits it out.
+    private const int MaxChestTransitionPolls = 50;
     private const float ChestTransitionPollSeconds = 0.3f;
 
     /// <summary>
@@ -52,6 +53,7 @@ public static class ChestOpening
         var onPreview = true;
         var openPreviewAttempts = 0;
         const int MaxOpenPreviewAttempts = 3;
+        var popupsClosed = 0;
 
         while (remainingToOpen > 0)
         {
@@ -62,8 +64,14 @@ public static class ChestOpening
                 ? Paths.ChestOpenPreviewLoc.OpenX1Btn
                 : Paths.ChestOpeningLoc.OpenX1Btn);
 
-            yield return Poll.Until(() => openX10.IsClickable() || openX1.IsClickable(),
+            yield return Poll.Until(() => openX10.IsClickable() || openX1.IsClickable() || NewItemShown(),
                 MaxChestTransitionPolls, ChestTransitionPollSeconds);
+
+            if (NewItemShown() && popupsClosed++ < MaxPopupCloses)
+            {
+                yield return CloseNewItem(slotPath);
+                continue;
+            }
 
             if (remainingToOpen >= 10 && openX10.IsClickable())
             {
@@ -96,12 +104,35 @@ public static class ChestOpening
             onPreview = false; // every later click happens on the ChestOpening results screen
         }
 
-        yield return new GameButton(Paths.ChestOpeningLoc.CloseBtn).Click();
+        // The last reveal may still be running and end in a popup: the results screen's close button
+        // stays hidden until both are over, and closing too early left the screen to the Watchdog.
+        var closeResults = new GameButton(Paths.ChestOpeningLoc.CloseBtn);
+        yield return Poll.Until(() => closeResults.IsClickable() || NewItemShown(),
+            MaxChestTransitionPolls, ChestTransitionPollSeconds);
+        while (NewItemShown() && popupsClosed++ < MaxPopupCloses)
+            yield return CloseNewItem(slotPath);
+
+        yield return closeResults.Click();
         yield return new GameButton(Paths.ChestOpenPreviewLoc.CloseBtn).Click(); // no-op if already closed
 
         var actuallyOpened = totalToOpen - remainingToOpen;
         Firebot.Core.Logger.Debug($"[ChestOpening] '{slotPath}': done, opened {actuallyOpened}/{totalToOpen}.");
         onOpened?.Invoke(actuallyOpened);
+    }
+
+    // The "New items" popup ("Jewels' power + 900 ... Equip") over the results screen hides its
+    // buttons until closed: 9 of 15 Emblem market runs stopped at 10-23 of 15-35 Golden chests (01/10).
+    // A bound in case it keeps coming back; one per batch was the most seen (5 in 19 Golden).
+    private const int MaxPopupCloses = 20;
+
+    // Read silently: no popup is the normal case.
+    private static bool NewItemShown() =>
+        GameElement.FindTransform(Paths.NewItemLoc.CloseBtn)?.gameObject.activeInHierarchy == true;
+
+    private static IEnumerator CloseNewItem(string slotPath)
+    {
+        Firebot.Core.Logger.Debug($"[ChestOpening] '{slotPath}': closing the New items popup.");
+        yield return new GameButton(Paths.NewItemLoc.CloseBtn).Click();
     }
 
     /// <summary>Opens every chest of the given slot.</summary>

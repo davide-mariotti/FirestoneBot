@@ -61,6 +61,11 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    - `hero_upgrade.sweep_interval_seconds: 5.0 -> 15.0`: un terzo delle pressioni sui livelli degli
      eroi (in MAX una pressione compra già tutto quello che si può).
 
+   Il repo dell'1/10 sera aggiunge una chiave: `emblemmarkettask.enabled` risulta mancante finché
+   l'istanza non parte una volta con la DLL nuova, che crea la sezione già accesa (il task
+   dell'Emblem market, punto 12). Non serve rilanciare lo script per questo: il controllo del punto 7
+   a istanze avviate deve dare 0 differenze.
+
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
    del giorno (l'1/10 sul PC principale: Collector su 9 istanze su 17, tutte e quattro su 2). A
@@ -90,7 +95,8 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 38 of 40` e nessun `timed out` o `threw:`.
+   `Started. Enabled tasks: 39 of 41` (38 of 40 prima del task dell'Emblem market) e nessun
+   `timed out` o `threw:`.
 8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a
    4,5 minuti per istanza (legge tutti gli eroi, spende Void Crystal ed Ethereal Shards, sblocca i
    tier pagando in meteoriti). A giri finiti, da PowerShell:
@@ -191,6 +197,30 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
     Sul PC principale l'1/10 (Steam-1..16): Merchant da 7-9/10 a 10/10 su 5 istanze con la riserva,
     un'uscita di Arena su Steam-2, nessun errore.
+12. Emblem market (dall'1/10 sera, task `[emblemmarkettask]`, solo account a livello 65 o più):
+    nell'Exotic Merchant compra con gli Emblem of Courage solo il forziere gear più raro in vendita
+    (oggi Epic) e con gli Emblem of Valor solo il jewel più raro (Golden; Diamond con 100 stelle della
+    campagna), tutti i lotti che gli emblemi pagano, poi apre esattamente i forzieri comprati. Mai
+    celestials, mai un forziere più economico. Parte nei primi minuti dopo l'avvio, poi ogni 6 ore.
+    A giro fatto, da PowerShell:
+
+    ```powershell
+    foreach ($n in 17..34) {
+      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $t = Get-Content $log
+      "{0}: giri={1} FAILED={2} threw/timeout={3}" -f $n, @($t -match 'Emblem Market finished').Count,
+        @($t -match 'EmblemMarketTask.*\[FAILED\]').Count, @($t -match 'threw|timed out').Count
+      $t -match '\[INFO\] Emblem market' -replace '.*\[INFO\] ', '    '
+    }
+    ```
+
+    Sugli account a livello 65 o più ci devono essere una riga `Emblem market gear: 'Epic chest'
+    (rarity 3 Epic), 5000 each, emblems A -> B, N lot(s).`, una uguale per `jewels` (`'Golden
+    chest' (rarity 2 Golden)`) e, per ogni categoria con almeno un lotto, `Emblem market: opened
+    X/X '/Epic'` (o `'/Golden'`) con i due numeri uguali. B deve essere A meno 5.000 per lotto e
+    restare sotto 5.000. `FAILED=0`. Sotto il livello 65 il task non parte e le righe mancano. Le
+    righe `closing the New items popup` sono normali (un gioiello mai avuto). Sul PC principale
+    l'1/10: Golden su Steam-1..15 (2-7 lotti), Epic su 7 di loro, nessun `[FAILED]`.
 
 ---
 
@@ -681,6 +711,11 @@ ricompilando, elencati qui solo per completezza/consapevolezza:
   avversari restano nascosti (prima poteva bloccare il bot per un'ora); la quest Merchant si
   completa con i potenziamenti da battaglia quando finiscono gli oggetti ammessi. Controlli nel
   punto 11 della procedura di aggiornamento.
+- **Emblem market e apertura dei forzieri** (2026-10-01 sera): task nuovo che spende gli emblemi nel
+  forziere più raro di gear e jewels e apre i forzieri comprati (punto 12 della procedura di
+  aggiornamento; chiave nuova `emblemmarkettask.enabled`, accesa). L'apertura dei forzieri, comune a
+  Collector, ora chiude il popup "New items" che prima la fermava a metà (sul PC principale 9
+  aperture di Golden su 15).
 
 ---
 

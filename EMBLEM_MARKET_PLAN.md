@@ -1,7 +1,8 @@
 # Piano: acquisti nell'Emblem market dell'Exotic Merchant
 
-> Scritto il 2026-10-01. Niente è ancora implementato: questo file contiene tutto quello che serve a una
-> sessione nuova per creare il task, provarlo su Steam-0 e distribuirlo. Le regole di lavoro sono quelle
+> Scritto il 2026-10-01. **Implementato e distribuito su Steam-0..16 la sera stessa** (commit b7be001
+> e il successivo): stato, prove viste e problemi in TESTING.md (riga Emblem Market e "Problemi noti").
+> Sotto, il piano com'era, che resta valido come descrizione. Le regole di lavoro sono quelle
 > di TESTING.md ("Per l'agente": Contesto, Regole, Comandi): valgono anche qui, in particolare i path si
 > scrivono solo dopo averli visti dal vivo e mai si spendono gemme.
 
