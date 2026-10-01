@@ -1,3 +1,5 @@
+using System;
+using Firebot.Core;
 using Firebot.GameModel.Base;
 using Il2CppTMPro;
 using UnityEngine.UI;
@@ -17,6 +19,13 @@ public static class SpeedUpButton
         var icon = GameElement.FindTransform(buttonPath)?.Find("currencyIcon");
         return icon != null && !icon.gameObject.activeInHierarchy;
     }
+
+    /// <summary>
+    ///     When a countdown ending at end enters the free window. DateTime.MinValue (the text showed no
+    ///     countdown, e.g. a slot started a moment ago) stays MinValue: subtracting from it throws.
+    /// </summary>
+    public static DateTime FreeFrom(DateTime end) =>
+        end == DateTime.MinValue ? end : end.AddSeconds(-BotSettings.FreeSpeedupSeconds);
 
     public static string Describe(string buttonPath)
     {

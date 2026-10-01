@@ -119,9 +119,9 @@ public class MapMissionsTask : BotTask
         {
             yield return mission.Select();
 
-            var progress = MissionPreview.NextRunTime;
-            if (!earliest.HasValue || progress < earliest.Value)
-                earliest = progress.AddSeconds(-BotSettings.FreeSpeedupSeconds);
+            var progress = SpeedUpButton.FreeFrom(MissionPreview.NextRunTime);
+            if (progress != DateTime.MinValue && (!earliest.HasValue || progress < earliest.Value))
+                earliest = progress;
 
             yield return MissionPreview.Close;
         }

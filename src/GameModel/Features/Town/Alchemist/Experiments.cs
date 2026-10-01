@@ -73,7 +73,7 @@ public class Experiments : GameElement
             if (!new GameElement(slotPath, this).IsVisible()) continue;
 
             var path = $"{slotPath}/{Paths.MenusLoc.AlchemistLoc.ExperimentsLoc.NextRunTimeTxt}";
-            var time = new GameText(path, this).Time.AddSeconds(-BotSettings.FreeSpeedupSeconds);
+            var time = SpeedUpButton.FreeFrom(new GameText(path, this).Time);
             if (time > DateTime.Now && time < minTime) minTime = time;
         }
 

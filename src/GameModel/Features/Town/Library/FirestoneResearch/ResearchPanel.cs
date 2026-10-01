@@ -43,10 +43,10 @@ public class ResearchPanel : GameElement
         foreach (var child in GetChildren())
             if (child.IsVisible() && child.Name.StartsWith("researchSlot"))
             {
-                var time = new GameText(Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.NextRunTimeTxt, child).Time
-                    .AddSeconds(-BotSettings.FreeSpeedupSeconds);
+                var time = SpeedUpButton.FreeFrom(
+                    new GameText(Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.NextRunTimeTxt, child).Time);
 
-                if (time < minTime) minTime = time;
+                if (time != DateTime.MinValue && time < minTime) minTime = time;
             }
 
         return minTime == DateTime.MaxValue ? DateTime.MinValue : minTime;
