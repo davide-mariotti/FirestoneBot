@@ -53,7 +53,10 @@ public class MapMissionsTask : BotTask
             yield return MissionPreview.Close;
         }
 
-        foreach (var mission in ScanMissions(m => !m.IsActive && !m.IsCompleted, true))
+        var toStart = ScanMissions(m => !m.IsActive && !m.IsCompleted, true).ToList();
+        var order = string.Join(", ", toStart.Select(m => $"{m.Name} {m.TimeRequired - DateTime.Now:hh\\:mm}"));
+        var started = 0;
+        foreach (var mission in toStart)
         {
             yield return mission.Select();
 
@@ -64,7 +67,11 @@ public class MapMissionsTask : BotTask
             }
 
             yield return MissionPreview.StartMission;
+            started++;
         }
+
+        if (toStart.Count > 0)
+            Debug($"[INFO] Map missions: started {started} of {toStart.Count}, in order {order}.");
 
         DateTime? earliest = null;
         yield return FindEarliestMissionProgress(value => earliest = value);
