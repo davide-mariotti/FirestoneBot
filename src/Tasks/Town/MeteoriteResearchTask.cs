@@ -20,8 +20,13 @@ public class MeteoriteResearchTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
 
-    // Up to MaxNodesPerRun scans of ~30 s each, plus the purchases: past the global 120 s.
+    // A scan of up to 5 trees, ~30 s each, plus the purchases: past the global 120 s.
     internal override float? MaxRuntimeSeconds => 900f;
+
+    private static readonly TimeSpan NextNodeDelay = TimeSpan.FromMinutes(1);
+
+    // The game re-enables research 5 s after a purchase (reenableCompleteMeteoriteResearchTime).
+    private static readonly UnityEngine.WaitForSeconds ReenableWait = new(6f);
 
     private const int TreeCount = 5;
     private const int NodeCount = 13;
@@ -69,17 +74,17 @@ public class MeteoriteResearchTask : BotTask
         if (minReserve > 0 && balance < minReserve)
             Debug("[INFO] Below the reserve - skipping research this run.");
 
-        // Node after node: a round that buys nothing (reserve reached, nothing affordable) ends it.
-        for (var round = 0; round < MaxNodesPerRun && (minReserve <= 0 || balance >= minReserve); round++)
+        // One node per run, the Library reopened between nodes: after a purchase a second round in the
+        // same session read the stale, closed preview 13 times and stopped with 4,900 Meteorites to
+        // spend (01/10, Steam-16). A run that bought something comes back a minute later for the next.
+        var bought = false;
+        if (minReserve <= 0 || balance >= minReserve)
         {
             yield return RunResearch(minReserve, MaxLevelsPerRun);
-
-            var after = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
-            if (after >= balance) break;
-            balance = after;
+            bought = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated() < balance;
         }
 
-        NextRunTime = DateTime.Now + TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60);
+        NextRunTime = DateTime.Now + (bought ? NextNodeDelay : TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60));
 
         yield return Library.Close;
         yield return TownScreen.Close;
@@ -120,9 +125,8 @@ public class MeteoriteResearchTask : BotTask
     ///     chasing a better one into the next tree costs a full 13-node sweep. An unaffordable pick is
     ///     a no-op click.
     /// </summary>
-    // Safety bounds on one run's purchases, not pacing choices: the reserve is what stops it.
+    // A safety bound on one run's purchases, not a pacing choice: the reserve is what stops it.
     private const int MaxLevelsPerRun = 30;
-    private const int MaxNodesPerRun = 10;
 
     private static IEnumerator RunResearch(int minReserve, int maxLevels, Action<int> onResearched = null)
     {
@@ -219,13 +223,15 @@ public class MeteoriteResearchTask : BotTask
 
         // Level after level of the picked node while the balance stays above the reserve after paying:
         // one level an hour left 9,000-14,000 Meteorites idle on several accounts (30/09). Each level
-        // counts only once the balance has dropped. The node is clicked again for every level, so the
-        // preview shows its next cost whether or not a purchase closes it; a maxed node shows none.
+        // counts only once the balance has dropped. The levels are bought from the open preview, and
+        // after the last one nothing is touched for ReenableWait: re-clicking the node and closing the
+        // Library within a second or two of a purchase, which no player does, left the game unable to
+        // open any preview again until a restart (01/10, Steam-16: reproduced with one level bought).
+        yield return node.Select(bestIndex.Value);
+
         var researched = 0;
         for (; researched < maxLevels; researched++)
         {
-            yield return node.Select(bestIndex.Value);
-
             var cost = MeteoriteResearchPreview.Cost;
             var before = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
             if (!MeteoriteResearchPreview.IsUnlocked || cost <= 0 || before - cost < minReserve) break;
@@ -237,6 +243,8 @@ public class MeteoriteResearchTask : BotTask
             Logger.Debug($"[INFO] Meteorite research '{MeteoriteResearchPreview.Name}' for {cost}: balance {before} -> {after}.");
             if (after >= before) break;
         }
+
+        if (researched > 0) yield return ReenableWait;
 
         onResearched?.Invoke(researched);
 
