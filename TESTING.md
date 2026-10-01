@@ -302,7 +302,7 @@ file di configurazione nuovo.
 | Tree of Life | `[treeoflifetask]` | 10 | on | ✅ | Personal Tree. Priorità: Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner (nuova); poi il nodo al livello più basso. Dal 30/09 logga ogni acquisto (`Tree of Life: Mana Heroes 4 -> 5.`) e il nodo che non si può pagare (`... at 3 costs more tokens than are left.`): alle 14:14-14:20 acquisti su Steam-3, 4, 7, gli altri senza gettoni. Il costo dipende solo dal livello, quindi al primo nodo troppo caro prova solo quelli a livello più basso: prima li provava uno per uno, 4 s l'uno, 40-50 s a giro senza niente da comprare; su Steam-5 ora 9 s. Dal 30/09 gli acquisti sono in `TreeOfLifeTask.Buy`, usato anche dalle sfide dei mini-eventi (un acquisto per quanto chiede la sfida); il giro normale è riverificato su Steam-0 (15:28, due nodi troppo cari, 13 s) e sulla flotta dopo il rollout (Steam-1: 7 acquisti, `Rage Heroes 3 -> 4` e altri, poi stop al primo nodo troppo caro). |
 | Free Pickaxes | `[freepickaxestask]` | 50 | on | ✅ | Reclama da `pickaxe_claim_threshold` (5) in su. Dal 29/09 gira solo col badge (`NextRunTime = MaxValue`, come Talents); la strada Gilda → Guild Shop è stata tolta perché nei log del 26-29/09 non ha mai raggiunto il timer in 1.015 giri su 1.038. Verificato il 29/09: `Next` = 12/31/9999; alle 17:23 il badge ha aperto lo shop, il task ha reclamato e il badge si è spento; senza badge non è più ripartito. Dal 30/09 il giro scrive `[INFO] Free pickaxes: N ('testo'), threshold 5.`: vista l'1/10 su Steam-6, -7 e -16, `Free pickaxes: 5 ('x5')`, quindi il testo è "xN" e la lettura è giusta. |
 | Awakening | `[awakeningtask]` | 50 | on | ⚠️ | L'attesa dell'animazione è stimata. Il badge resta acceso: nei log del 26-29/09 il task ha girato 325 volte, una ogni ~50 s, per 33 minuti. Dal 29/09 `BadgeCooldown` limita i giri a uno ogni 30 minuti: verificato sugli eventi, non su Awakening (il 29/09 il suo badge non si è acceso). |
-| Chaos Rift | `[chaosrifttask]` | 100 | on | ⚠️ | Solo Tomes of Power, mai Eclipse Stones. Gira solo su Steam-0 (l'unico account a livello 100). 30/09 al reset ha colpito con le 10 Moon Stone ricaricate (poi a 0), a x5, ma il click su Market subito dopo i colpi è stato ignorato e non ha comprato niente; ora il click si ripete finché il negozio non si apre (verificato su un secondo giro, senza colpi: aperto al primo tentativo). Tolto anche il click sull'auto-hit (bottone senza stato leggibile, spento su Steam-0). 1/10 alle 11:02 (24 h dopo il giro precedente): negozio aperto al primo tentativo subito dopo i colpi. Il numero di colpi non era nel log: dall'1/10 c'è la riga `[INFO] Chaos Rift: N hit(s).` |
+| Chaos Rift | `[chaosrifttask]` | 100 | on | ⚠️ | Solo Tomes of Power, mai Eclipse Stones. Gira solo su Steam-0 (l'unico account a livello 100). 30/09 al reset ha colpito con le 10 Moon Stone ricaricate (poi a 0), a x5, ma il click su Market subito dopo i colpi è stato ignorato e non ha comprato niente; ora il click si ripete finché il negozio non si apre (verificato su un secondo giro, senza colpi: aperto al primo tentativo). Tolto anche il click sull'auto-hit (bottone senza stato leggibile, spento su Steam-0). 1/10 alle 11:02 (24 h dopo il giro precedente): negozio aperto al primo tentativo subito dopo i colpi. Il numero di colpi non era nel log: dall'1/10 c'è la riga `[INFO] Chaos Rift: N hit(s).` Dall'1/10 gira anche su Steam-1 e -4, arrivati a 100: primo giro alle 11:14 e 11:17, 1 e 0 colpi (selettore x1/x5 nascosto), negozio aperto al primo tentativo. Al reset del 2/10 controllare che i colpi coprano tutte le Moon Stone. |
 | Forbidden Knowledge | `[forbiddenknowledgetask]` | 100 | on | ✅ | Schermata verificata; il bottone dell'edificio in Gilda è ipotizzato. |
 | Guardian Holy Upgrade | `[guardianholyupgradetask]` | 100 | on | ✅ | Chaos Rift → Upgrades → Magic Quarters. 29/09: lasciava aperti LockedGuardian, Chaos Rift e la Gilda (li chiudeva il Watchdog); ora li chiude il task. |
 
@@ -379,6 +379,8 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   istanze su 17: Empower ora riprova dopo 5 minuti, ma lo stesso può capitare a qualunque primo
   task. Dal 30/09 il default e il template sono a 60 (scelta dell'utente); il fleet lo prende al
   prossimo riavvio completo, con `apply_template.ps1` a giochi chiusi (vedi "Da fare e rimandato").
+  Anche a 60 s, nel riavvio dell'1/10 alle 11:10 su 2 istanze su 16 (Steam-11 e -13) l'avatar era
+  ancora coperto al primo task (Collector, `not on the Daily tab`, riprova dopo un'ora).
   Il vecchio "what's new" non si è visto.
 - **Quest di ieri subito dopo il reset (corretto l'1/10).** Per un minuto o più dopo le 10:00 la
   schermata delle quest può mostrare ancora le quest di ieri, già complete. L'1/10 Collector, il
@@ -440,6 +442,20 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   `[massproductioneventtask]` e `[sigilsofprophecyeventtask]` restano nei cfg di Steam-1..16 senza
   un task: non fanno niente. Non passare l'uscita di `apply_template.ps1` a `Select-Object -First`: in
   PowerShell 5.1 ferma lo script dopo quelle righe e i cfg restanti non vengono scritti (30/09).
+- **1/10 alle 11:10: build 205de34 su Steam-0..16** (quest rilette dopo il reset, uscita da Arena
+  con gli avversari nascosti, colpi di Chaos Rift nel log), con lo stesso cfg (`-Check`: 0 valori
+  da cambiare). Prima del riavvio sono stati svuotati `last_done_date` e `next_run_time_internal`
+  delle quest saltate la mattina (Collector su Steam-2, 4, 7, 10, 11, 15; tutte e quattro su
+  Steam-13 e -16; Collector su Steam-0 già alle 11:05). I cfg di prima sono in
+  `C:\Repos\FirestoneBot-test-backup\2026-10-01-fleet`. Avvio 11:11-11:17, 16 su 16 `Started.
+  Enabled tasks: 38 of 40`, nessun timeout né eccezione. Quest recuperate: Collector `0/4 -> 4/4`
+  su Steam-2, 4, 7, 10, 15, 16 (e Steam-0), Merchant 10/10 su Steam-16 e 7/10 su Steam-13 (oggetti
+  finiti); Gamer e Miner su 13 e 16 erano già completi (colpi e giocate di Decorated Heroes). Su
+  Steam-11 e -13 Collector era il primo task dopo l'avvio e ha letto `not on the Daily tab` (popup
+  d'avvio, vedi "Problemi noti"): riprova da solo un'ora dopo. Steam-2, con l'arena riaperta, ha
+  letto di nuovo gli avversari (`24425 / 25876 / 23751`) e ha ripreso coi 3 gettoni rimasti. Il
+  secondo PC va aggiornato con la stessa procedura: senza, al reset del 2/10 le stesse quest saltano
+  anche lì.
 - **Secondo PC (istanze 17-34)**: se è ancora alla versione di prima del 30/09, basta la procedura
   "Aggiornare il bot su istanze già in funzione" di `MULTI_INSTANCE_SETUP.md`, che porta tutto
   quello del 30/09 (Hall of Heroes, i tre task nuovi, avvio a 60 s) e ha i controlli da fare dopo.
