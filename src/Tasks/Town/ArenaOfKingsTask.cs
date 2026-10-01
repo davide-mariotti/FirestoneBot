@@ -93,7 +93,8 @@ public class ArenaOfKingsTask : BotTask
         {
             // The opponents can stay hidden after a reroll or a battle, read as 0 - a blank isn't a weak
             // opponent (01/10: Steam-3 and -7 lost 5 minutes on it, Steam-2 the whole hour). Reopening
-            // the arena on the next run (the ArenaTokens badge) redraws them.
+            // the arena redraws them: the next run, RecheckDelay later and still before the 10:00 reset
+            // (the ArenaTokens badge goes off once the arena has been opened).
             yield return Poll.Until(() => ArenaOfKings.OpponentPowers().All(p => p > 0), MaxRerollPolls, RerollPollSeconds);
             var myPower = ArenaOfKings.MyPower;
             var powers = ArenaOfKings.OpponentPowers();

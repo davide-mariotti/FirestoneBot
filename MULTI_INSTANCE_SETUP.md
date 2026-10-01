@@ -7,7 +7,8 @@ di progetto (per quello vedi README.md/TESTING.md) - è un **elenco di verifica*
 essere letto dopo un `git pull`, punto per punto, per controllare cosa manca o cosa va rifatto
 sul nuovo PC.
 
-Scritto il 2026-09-26, aggiornato il 2026-09-30 sera (sfide degli eventi, Map Missions `desc`). Se qualcosa qui non corrisponde più a quanto
+Scritto il 2026-09-26, aggiornato il 2026-09-30 sera (sfide degli eventi, Map Missions `desc`) e
+l'1/10 (quest rilette dopo il reset, Arena of Kings, riserva di vendita del Merchant). Se qualcosa qui non corrisponde più a quanto
 trovi nel repo o sul PC principale, fidati di quello che vedi dal vivo, non di questo file (che è
 una fotografia di un momento preciso).
 
@@ -47,6 +48,32 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
    Non passare l'uscita dello script a `Select-Object -First`: in PowerShell 5.1 lo ferma dopo
    quelle righe e i cfg restanti non vengono scritti.
+
+   Il repo dell'1/10 non aggiunge chiavi: rispetto al 30/09 sera cambia solo la DLL.
+
+   **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
+   vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
+   del giorno (l'1/10 sul PC principale: Collector su 9 istanze su 17, tutte e quattro su 2). A
+   giochi ancora fermi, questo rimette in coda le quattro quest giornaliere su tutte le istanze.
+   Una quest già fatta costa solo un controllo di 4 s: il bot la rilegge completa e la segna fatta.
+
+   ```powershell
+   $utf8 = New-Object System.Text.UTF8Encoding($false)
+   foreach ($n in 17..34) {
+     $rel = "Program Files (x86)\Steam-$n\steamapps\common\Firestone\UserData\FirebotPreferences.cfg"
+     foreach ($f in "C:\$rel", "C:\Sandbox\Admin\SteamB$n\drive\C\$rel") {
+       if (-not (Test-Path $f)) { continue }
+       $t = [IO.File]::ReadAllText($f)
+       foreach ($s in 'collectorquesttask', 'gamerquesttask', 'merchantquesttask', 'minerquesttask') {
+         $m = [regex]::Match($t, "(?s)\[$s\]\r?\n.*?(?=\r?\n\[|\z)")
+         if (-not $m.Success) { continue }
+         $new = $m.Value -replace '(?m)^(next_run_time_internal|last_done_date) = ".*"', '$1 = ""'
+         $t = $t.Remove($m.Index, $m.Length).Insert($m.Index, $new)
+       }
+       [IO.File]::WriteAllText($f, $t, $utf8)
+     }
+   }
+   ```
 6. Riavvia in sequenza (`Avvia_Tutte_Istanze_Firestone.bat`, punto 6.3). Se un'istanza resta con
    la cella vuota (il client Steam gira ma `Firestone.exe` no, visto su Steam-14 il 30/09),
    rilanciare il gioco non basta: `Start.exe /box:SteamB<N> /terminate`, poi `Avvia_Steam-<N>.bat`.
@@ -123,6 +150,37 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     `attese-quest` sopra 0 vuol dire che la quest Gamer o
     Miner di oggi non è ancora finita (su Steam-11 mancavano i gettoni): l'evento riprova al giro
     dopo. Il dettaglio di un'istanza: `Select-String -Path $log -Pattern "Event '"`.
+11. Quest giornaliere, Merchant e Arena (dall'1/10). A giri finiti (5-10 minuti dopo l'avvio), da
+    PowerShell:
+
+    ```powershell
+    foreach ($n in 17..34) {
+      $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $t = Get-Content $log
+      $q = foreach ($name in 'Collector', 'Gamer', 'Merchant', 'Miner') {
+        $last = @($t -match "\] '$name' quest: ") | Select-Object -Last 1
+        if ($last) { $last -replace ".*quest: ", "$name " } else { "$name -" }
+      }
+      "{0}: {1} | riletture={2} arena-uscite={3} threw/timeout={4}" -f $n, ($q -join '; '),
+        @($t -match 'right after the reset').Count, @($t -match 'opponents not shown').Count,
+        @($t -match 'threw|timed out').Count
+    }
+    ```
+
+    - Ogni quest mostra l'ultima lettura (`Collector 0/4 -> 4/4.`) oppure `-` se in questa sessione
+      non ha girato perché era già fatta. Merchant ora arriva a 10/10 anche senza Midas' Touch e
+      Scroll di Health/Damage: finiti quelli, vende Totem of Annihilation, Totem of Agony, Guardian's
+      Rune e Dragon Armor (`Merchant: sold 0/N`, poi `sold N/N`). Mai Drums of War, Scroll of Speed,
+      gold istantaneo o barili. Gamer sotto 10/10 vuol dire gettoni finiti, come prima.
+    - `riletture` sopra 0 si vede solo nei primi 15 minuti dopo le 10:00: una quest letta già
+      completa subito dopo il reset viene riletta 5 minuti dopo (`right after the reset - read again
+      later`), e la riga successiva della stessa quest deve essere una vera, tipo `0/4 -> 4/4`.
+    - `arena-uscite` sopra 0 (solo account a livello 80) vuol dire che Arena of Kings ha trovato gli
+      avversari nascosti ed è uscita invece di restare bloccata: il gettone rimasto riparte 6 ore dopo.
+    - `threw/timeout` deve essere 0.
+
+    Sul PC principale l'1/10 (Steam-1..16): Merchant da 7-9/10 a 10/10 su 5 istanze con la riserva,
+    un'uscita di Arena su Steam-2, nessun errore.
 
 ---
 
@@ -608,6 +666,11 @@ ricompilando, elencati qui solo per completezza/consapevolezza:
 - **Sfide degli eventi** (2026-09-30): Decorated Heroes e un task unico per tutti i mini-eventi
   completano le sfide azionabili prima di reclamarle - vedi `EVENTS_PLAN.md` e il punto 10 della
   procedura di aggiornamento.
+- **Reset delle 10:00, Arena e Merchant** (2026-10-01): le quest lette già complete subito dopo
+  il reset vengono rilette (prima saltavano fino al giorno dopo); Arena of Kings esce se gli
+  avversari restano nascosti (prima poteva bloccare il bot per un'ora); la quest Merchant si
+  completa con i potenziamenti da battaglia quando finiscono gli oggetti ammessi. Controlli nel
+  punto 11 della procedura di aggiornamento.
 
 ---
 
