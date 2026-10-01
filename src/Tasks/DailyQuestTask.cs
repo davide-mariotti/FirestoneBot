@@ -19,6 +19,8 @@ public abstract class DailyQuestTask : BotTask
     internal override TaskGroup Group => TaskGroup.Quests;
 
     private static readonly TimeSpan RetryDelay = TimeSpan.FromHours(1);
+    private static readonly TimeSpan StaleWindow = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan StaleRetry = TimeSpan.FromMinutes(5);
 
     /// <summary>The quest card's name on the Daily tab ("Miner").</summary>
     protected abstract string QuestName { get; }
@@ -69,6 +71,16 @@ public abstract class DailyQuestTask : BotTask
 
         var before = (Listed: false, Done: -1, Target: -1);
         yield return CharacterScreen.CheckDailyQuest(QuestName, r => before = r);
+
+        // Right after 10:00 the Quests screen can still show yesterday's finished quest for a minute
+        // or more (01/10: Collector on 9 instances, every quest on Steam-13 and -16, up to 10:01).
+        if (before.Listed && before.Target > 0 && before.Done >= before.Target &&
+            DateTime.Now - GameDay.NextReset().AddDays(-1) < StaleWindow)
+        {
+            Debug($"[INFO] '{QuestName}' quest: {before.Done}/{before.Target} right after the reset - read again later.");
+            NextRunTime = DateTime.Now + StaleRetry;
+            yield break;
+        }
 
         var after = before;
         if (before.Listed && before.Target > 0 && before.Done < before.Target)

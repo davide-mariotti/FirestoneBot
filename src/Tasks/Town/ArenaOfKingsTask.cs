@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Primitives;
@@ -60,7 +61,7 @@ public class ArenaOfKingsTask : BotTask
         {
             var slotIndex = -1;
             yield return FindTarget(index => slotIndex = index);
-            if (slotIndex < 0) break; // FindTarget always ends up picking one
+            if (slotIndex < 0) break; // opponents not shown
 
             yield return ArenaOfKings.Fight(slotIndex);
             yield return AOKBattlePreview.Fight;
@@ -90,8 +91,18 @@ public class ArenaOfKingsTask : BotTask
 
         while (true)
         {
+            // The opponents can stay hidden after a reroll or a battle, read as 0 - a blank isn't a weak
+            // opponent (01/10: Steam-3 and -7 lost 5 minutes on it, Steam-2 the whole hour). Reopening
+            // the arena on the next run (the ArenaTokens badge) redraws them.
+            yield return Poll.Until(() => ArenaOfKings.OpponentPowers().All(p => p > 0), MaxRerollPolls, RerollPollSeconds);
             var myPower = ArenaOfKings.MyPower;
             var powers = ArenaOfKings.OpponentPowers();
+            if (powers.Any(p => p <= 0))
+            {
+                Debug($"[INFO] Arena: {ArenaOfKings.TokensAvailable} token(s), opponents not shown " +
+                      $"({string.Join(" / ", powers)}) - left for the next run.");
+                yield break;
+            }
 
             var chosen = ChooseOpponent(myPower, powers, attempt);
             if (chosen != null)

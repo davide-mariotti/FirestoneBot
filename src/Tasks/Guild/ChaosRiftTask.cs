@@ -45,16 +45,17 @@ public class ChaosRiftTask : BotTask
         {
             yield return ChaosRift.TrySetBestQuantity();
 
-            var hitThisRun = false;
-            for (var i = 0; i < MaxHits; i++)
+            var hits = 0;
+            for (; hits < MaxHits; hits++)
             {
                 if (!ChaosRift.HitBtn.IsClickable()) break;
                 yield return ChaosRift.HitBtn.Click();
-                hitThisRun = true;
             }
 
+            Debug($"[INFO] Chaos Rift: {hits} hit(s).");
+
             // Leaving before the last hit's animation ends cuts it short.
-            if (hitThisRun) yield return ChaosRift.WaitForHitResult();
+            if (hits > 0) yield return ChaosRift.WaitForHitResult();
 
             yield return ChaosRift.OpenShop;
         }
