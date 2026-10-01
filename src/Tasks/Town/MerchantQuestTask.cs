@@ -14,8 +14,7 @@ namespace Firebot.Tasks.Town;
 /// <summary>
 ///     The daily "Merchant" quest: sells as many items at the Exotic Merchant as the quest is missing,
 ///     then spends the coins on the first affordable Exotic Upgrade (only if priced in Exotic Coins). Only junk is ever sold (see
-///     SellOrder); if it runs out, the quest waits for more (CollectorQuestTask opens extra chests
-///     for it). The instant gold items are never sold nor used here.
+///     SellOrder, then FallbackOrder). The instant gold items are never sold nor used here.
 /// </summary>
 public class MerchantQuestTask : DailyQuestTask
 {
@@ -31,13 +30,24 @@ public class MerchantQuestTask : DailyQuestTask
     /// </summary>
     private static readonly string[] SellOrder = { "Midas' Touch", "Scroll of Health", "Scroll of Damage" };
 
+    /// <summary>
+    ///     The quest only, once SellOrder runs out: battle buffs the bot never uses, dozens on every
+    ///     account. Chests don't refill SellOrder (01/10: 90 Wooden/Iron gave one Midas' Touch; scrolls
+    ///     come from adventure missions), so 7 of 15 quests stopped at 3-9/10. Never Drums of War - it
+    ///     boosts the instant gold items kept for manual use (the user's choice, 01/10).
+    /// </summary>
+    private static readonly string[] FallbackOrder =
+        { "Totem of Annihilation", "Totem of Agony", "Guardian's Rune", "Dragon Armor" };
+
     protected override IEnumerator Work(int missing)
     {
         yield return TownScreen.Open;
         yield return TownScreen.OpenExoticMerchant;
         yield return ExoticMerchant.OpenSellItemsTab;
 
-        yield return SellJunk(missing, _ => { });
+        var sold = 0;
+        yield return SellJunk(missing, n => sold = n);
+        if (sold < missing) yield return SellJunk(missing - sold, _ => { }, order: FallbackOrder);
 
         yield return ExoticMerchant.OpenUpgradesTab;
         yield return BuyUpgrades(1, _ => { }); // one upgrade per run
@@ -148,13 +158,13 @@ public class MerchantQuestTask : DailyQuestTask
         yield return TownScreen.Close;
     }
 
-    /// <summary>Up to `count` SellOrder items, stopping early once enough() says so.</summary>
-    private static IEnumerator SellJunk(int count, Action<int> onSold, Func<bool> enough = null)
+    /// <summary>Up to `count` items of `order` (SellOrder by default), stopping early once enough() says so.</summary>
+    private static IEnumerator SellJunk(int count, Action<int> onSold, Func<bool> enough = null, string[] order = null)
     {
         Logger.Debug("[INFO] Sell grid: " + string.Join(", ", ExoticMerchant.SellItems().Select(i => $"{i.Name} x{i.Quantity}")));
 
         var sold = 0;
-        foreach (var name in SellOrder)
+        foreach (var name in order ?? SellOrder)
             while (sold < count && enough?.Invoke() != true && ExoticMerchant.TrySellOne(name))
             {
                 sold++;
