@@ -225,7 +225,7 @@ Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate d
 
 `[firebot_settings]`: `auto_start = true`, `start_bot_delay = 60.0`, `scan_interval = 5.0`,
 `interaction_delay = 1.0`, `max_task_runtime = 120.0`, `debug_mode = true`, `shortcut_key = "F7"`,
-`free_speedup_seconds = 170.0`, `low_resource_mode = true`, `target_frame_rate = 15`,
+`free_speedup_seconds = 170.0`, `low_resource_mode = true`, `target_frame_rate = 10` (dall'1/10; prima 15),
 `render_quality_level = 0`, `window_width = 504`, `window_height = 316`,
 `window_grid_enabled = true`, `window_grid_columns = 5`.
 
@@ -245,7 +245,7 @@ posto di `massproductioneventtask` e `sigilsofprophecyeventtask`) e le azioni di
 | `mapmissionstask` | `mission_time_order = "desc"` (dal 30/09; prima `asc`) |
 | `pathofglorytask` | `recheck_interval_minutes = 60` |
 | `talentstask` | `priority_overrides = ""` (e `guide_start_index`: vedi sopra) |
-| `hero_upgrade` | `sweep_interval_seconds = 5.0`, `upgrade_target_slots = ""` |
+| `hero_upgrade` | `sweep_interval_seconds = 15.0` (dall'1/10; prima `5.0`), `upgrade_target_slots = ""` |
 | `auto_retreat` | `stall_minutes = 3.0`, `retreat_stages = 5` |
 | `flying_bonus_hunter` | `poll_seconds = 2.0` |
 
@@ -358,12 +358,12 @@ alle 17:36 e ha reclamato 3 sfide; dopo il giro dei quattro eventi il badge si �
 
 | Azione | Sezione | Default | Stato | Da verificare / note |
 |---|---|:-:|:-:|---|
-| Hero Upgrade | `[hero_upgrade]` | on | ✅ | |
+| Hero Upgrade | `[hero_upgrade]` | on | ✅ | Tiene premuto 0,5 s ogni bottone di livello pagabile, in modalità x100/MAX. Dall'1/10 un passaggio ogni 15 s invece di 5 (default e template): in MAX una pressione compra già tutto quello che si può, quindi un terzo delle pressioni. |
 | AutoRetreat | `[auto_retreat]` | on | ✅ | Per provarlo in fretta: `stall_minutes = 1` su uno stage duro. |
-| Flying Bonus Hunter | `[flying_bonus_hunter]` | on | ⚠️ | Bersagli trovati dal vivo su Steam-0. 29/09: i 4 bottoni sono sempre attivi e cliccabili, e il bot li cliccava tutti a ogni giro (~4 s di click ogni ~6 s), con un'eccezione del gioco sugli hunter fermi. In volo è attivo solo il loro figlio (`hunter`, `dragon`, `femaleDragon`): ora clicca solo allora, e ogni click scrive `[FlyingBonusHunter] Clicking ...`. Dopo il click non compare nessun popup. Da confermare: che il click dia davvero la ricompensa (il bonus resta spesso in volo e viene cliccato 2 volte). |
+| Flying Bonus Hunter | `[flying_bonus_hunter]` | on | ✅ | Bersagli trovati dal vivo su Steam-0. 29/09: i 4 bottoni sono sempre attivi e cliccabili, e il bot li cliccava tutti a ogni giro (~4 s di click ogni ~6 s), con un'eccezione del gioco sugli hunter fermi. In volo è attivo solo il loro figlio (`hunter`, `dragon`, `femaleDragon`): ora clicca solo allora, e ogni click scrive `[FlyingBonusHunter] Clicking ...`. Dopo il click non compare nessun popup. 1/10: il bonus restava in volo e veniva cliccato 1, 2 o 3 volte (1.242 / 497 / 1.038 voli su Steam-0..16, ~315 click per istanza in 12,5 h). Un dump dal vivo su Steam-0 prima e dopo il click mostra che il primo click sgancia il carico: `dragon/beerParent/beerDrop` e `hunter/bagParent/bagDrop` spariscono dal portatore, che poi attraversa lo schermo vuoto. Ora un solo click per volo (commit 1df960b). |
 
 Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18 istanze su
-2560x1440).
+2560x1440). CPU, misurata l'1/10: ogni istanza usa il 12-16% di un core, quasi tutto per disegnare (i task girano circa l'8% del tempo); in tutto il 30% della macchina (8 core logici). Steam-0 a `target_frame_rate = 10` è sceso dal 12,5% al 7,9% di un core (le altre, a 15, al 13,5% nello stesso intervallo); in 35 minuti a 10 fps nessun errore, task con le durate di prima, rapporto di Empower a 2 h in linea con le avventure precedenti (0,33 contro 0,35 e 0,32), stesso muro degli stage (626). Dalle 16:41-16:47 dell'1/10 tutta la flotta è a 10 (build 1df960b, con anche a7c65ec del secondo PC).
 
 ## Problemi noti
 

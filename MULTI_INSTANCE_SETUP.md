@@ -51,11 +51,15 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    Non passare l'uscita dello script a `Select-Object -First`: in PowerShell 5.1 lo ferma dopo
    quelle righe e i cfg restanti non vengono scritti.
 
-   Il repo dell'1/10 non aggiunge chiavi; cambiano due valori, su ogni file:
+   Il repo dell'1/10 non aggiunge chiavi; cambiano quattro valori, su ogni file:
    - `empowertask.min_reset_ratio: 2.0 -> 1.0`: l'empower si fa a +100%, come dice la guida (col
      valore vecchio il +200% non arrivava mai e l'empower era sempre forzato a 2 ore);
    - `empowertask.max_adventure_minutes: 120 -> 360`: il limite di tempo resta solo come tetto di
-     sicurezza, a 6 ore.
+     sicurezza, a 6 ore;
+   - `firebot_settings.target_frame_rate: 15 -> 10`: circa il 40% di CPU in meno per istanza (sul PC
+     principale da 12,5% a 7,9% di un core), senza effetti sul gioco né sui task;
+   - `hero_upgrade.sweep_interval_seconds: 5.0 -> 15.0`: un terzo delle pressioni sui livelli degli
+     eroi (in MAX una pressione compra già tutto quello che si può).
 
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
