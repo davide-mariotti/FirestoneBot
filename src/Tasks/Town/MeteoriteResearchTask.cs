@@ -25,6 +25,7 @@ public class MeteoriteResearchTask : BotTask
 
     private const int TreeCount = 5;
     private const int NodeCount = 13;
+    private const string FirstTreeName = "tree1";
 
     private MelonPreferences_Entry<int> _recheckIntervalMinutes;
     private MelonPreferences_Entry<int> _minMeteoriteReserve;
@@ -69,8 +70,6 @@ public class MeteoriteResearchTask : BotTask
             Debug("[INFO] Below the reserve - skipping research this run.");
 
         // Node after node: a round that buys nothing (reserve reached, nothing affordable) ends it.
-        // ponytail: a new round scans forward from the tree the last one stopped on, so an earlier
-        // tree waits for the next run; rescan from tree 1 if that ever leaves meteorites idle.
         for (var round = 0; round < MaxNodesPerRun && (minReserve <= 0 || balance >= minReserve); round++)
         {
             yield return RunResearch(minReserve, MaxLevelsPerRun);
@@ -116,7 +115,7 @@ public class MeteoriteResearchTask : BotTask
     }
 
     /// <summary>
-    ///     Researches one node: the best-ranked priority node, else the first unlocked one showing a cost.
+    ///     Researches one node: the best-ranked priority node, else the cheapest unlocked one showing a cost.
     ///     Ranking applies within a tree - a tree that offers a priority node ends the scan, since
     ///     chasing a better one into the next tree costs a full 13-node sweep. An unaffordable pick is
     ///     a no-op click.
@@ -134,6 +133,13 @@ public class MeteoriteResearchTask : BotTask
         var bestPriorityRank = int.MaxValue;
         int? fallbackIndex = null;
         int? fallbackTreeOffset = null;
+        var fallbackCost = double.MaxValue;
+
+        // The carousel opens on the tree last viewed, and the scan only moves forward: earlier trees
+        // were never seen, and only a session's first run found a node (01/10: Steam-0 bought on 2
+        // runs of 12, Meteorites piling up to 14,000 on Steam-12..15). Start from the first tree.
+        for (var i = 0; i < TreeCount && node.CurrentTreeName != FirstTreeName; i++)
+            yield return node.PreviousTree;
 
         var treeOffset = 0;
         while (treeOffset < TreeCount && bestPriorityRank > 0)
@@ -165,8 +171,11 @@ public class MeteoriteResearchTask : BotTask
                             }
                         }
 
-                        if (fallbackIndex == null && rank == int.MaxValue)
+                        // The cheapest, not the first: on Steam-0 the first was 800 with 450 to spend
+                        // above the reserve, next to nodes at 500 and 600.
+                        if (rank == int.MaxValue && cost < fallbackCost)
                         {
+                            fallbackCost = cost;
                             fallbackIndex = index;
                             fallbackTreeOffset = treeOffset;
                         }
