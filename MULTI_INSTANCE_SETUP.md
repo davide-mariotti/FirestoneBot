@@ -25,7 +25,9 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    /terminate` per ognuna) e controlla che non resti nessun `Firestone.exe`.
 4. Copia **entrambe** le DLL (`firebot.dll` e `Firebot.TalentEngine.dll`, da
    `src\bin\Release\net6.0`) nei **due** `Mods` di ogni istanza, reale e sandbox (punto 5). Nessun
-   altro file: MelonLoader e il resto non cambiano.
+   altro file: MelonLoader e il resto non cambiano. Se il `Mods` del sandbox non esiste (così su
+   tutte le 18 istanze del secondo PC l'1/10) il gioco legge quello reale: basta quella copia, non
+   va creato.
 5. Allinea i cfg a Steam-0 (punto 8.1):
    `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`
    (da PowerShell, nella cartella del repo). Se segnala chiavi mancanti non è un
@@ -65,7 +67,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    $utf8 = New-Object System.Text.UTF8Encoding($false)
    foreach ($n in 17..34) {
      $rel = "Program Files (x86)\Steam-$n\steamapps\common\Firestone\UserData\FirebotPreferences.cfg"
-     foreach ($f in "C:\$rel", "C:\Sandbox\Admin\SteamB$n\drive\C\$rel") {
+     foreach ($f in "C:\$rel", "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\$rel") {
        if (-not (Test-Path $f)) { continue }
        $t = [IO.File]::ReadAllText($f)
        foreach ($s in 'collectorquesttask', 'gamerquesttask', 'merchantquesttask', 'minerquesttask') {
@@ -91,7 +93,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
    ```powershell
    foreach ($n in 17..34) {
-     $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+     $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
      $t = Get-Content $log
      "{0}: giri={1} sbloccati={2} FAILED={3} threw/timeout={4}" -f $n,
        @($t -match 'Hall Of Heroes finished').Count, @($t -match 'tier [23] unlocked').Count,
@@ -110,7 +112,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
    ```powershell
    foreach ($n in 17..34) {
-     $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+     $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
      $t = Get-Content $log
      "{0}: {1} | {2} | evoluzioni={3} rarita={4} | FAILED={5}" -f $n,
        (@($t -match 'Beasts: \d+ owned') -replace '.*\[INFO\] ', '' | Select-Object -Last 1),
@@ -133,7 +135,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
     ```powershell
     foreach ($n in 17..34) {
-      $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       "{0}: DH={1} Mini={2} azioni={3} claim={4} attese-quest={5} FAILED={6} threw/timeout={7}" -f $n,
         @($t -match 'Decorated Heroes Event finished').Count, @($t -match 'Events - Mini Event finished').Count,
@@ -159,7 +161,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
     ```powershell
     foreach ($n in 17..34) {
-      $log = "C:\Sandbox\Admin\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       $q = foreach ($name in 'Collector', 'Gamer', 'Merchant', 'Miner') {
         $last = @($t -match "\] '$name' quest: ") | Select-Object -Last 1
@@ -470,7 +472,7 @@ Esempio via PowerShell/bash per un'istanza sandboxata:
 ```powershell
 $src = "C:\Repos\FirestoneBot\src\bin\Release\net6.0"
 $real = "C:\Program Files (x86)\Steam-17\steamapps\common\Firestone\Mods"
-$sandbox = "C:\Sandbox\Admin\SteamB17\drive\C\Program Files (x86)\Steam-17\steamapps\common\Firestone\Mods"
+$sandbox = "C:\Sandbox\$env:USERNAME\SteamB17\drive\C\Program Files (x86)\Steam-17\steamapps\common\Firestone\Mods"
 Copy-Item "$src\firebot.dll" $real
 Copy-Item "$src\Firebot.TalentEngine.dll" $real
 Copy-Item "$src\firebot.dll" $sandbox
