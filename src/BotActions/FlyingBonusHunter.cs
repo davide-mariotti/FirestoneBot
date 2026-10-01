@@ -37,6 +37,9 @@ public static class FlyingBonusHunter
             new(Paths.FlyingBonusHunterLoc.FemaleDragonWithBeerBtn))
     };
 
+    // Per target: already clicked on its current flight. Cleared once it's off screen.
+    private static readonly bool[] ClickedThisFlight = new bool[Targets.Length];
+
     public static void Initialize()
     {
         if (_isInitialized) return;
@@ -97,12 +100,23 @@ public static class FlyingBonusHunter
                 continue;
             }
 
-            foreach (var (flying, button) in Targets)
-                if (flying.IsVisible() && button.IsClickable())
+            for (var i = 0; i < Targets.Length; i++)
+            {
+                var (flying, button) = Targets[i];
+                if (!flying.IsVisible())
                 {
-                    Logger.Debug($"[FlyingBonusHunter] Clicking {button.FullPath}.");
-                    yield return button.Click();
+                    ClickedThisFlight[i] = false;
+                    continue;
                 }
+
+                // The first click drops the load (its beerDrop/bagDrop child leaves the flyer, seen live
+                // 01/10); the flyer then crosses on empty, which used to draw 2 more clicks a flight.
+                if (ClickedThisFlight[i] || !button.IsClickable()) continue;
+
+                Logger.Debug($"[FlyingBonusHunter] Clicking {button.FullPath}.");
+                yield return button.Click();
+                ClickedThisFlight[i] = true;
+            }
 
             yield return PollWait;
         }

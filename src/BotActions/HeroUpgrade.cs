@@ -32,7 +32,7 @@ public static class HeroUpgrade
     private static MelonPreferences_Entry<string> _upgradeTargetSlots;
 
     private static bool IsEnabled => _isEnabled?.Value ?? false;
-    private static WaitForSeconds SweepIntervalWait => new(Mathf.Clamp(_sweepIntervalSeconds?.Value ?? 5f, 1f, 60f));
+    private static WaitForSeconds SweepIntervalWait => new(Mathf.Clamp(_sweepIntervalSeconds?.Value ?? 15f, 1f, 60f));
 
     public static void Initialize()
     {
@@ -53,10 +53,11 @@ public static class HeroUpgrade
 
         _sweepIntervalSeconds = section.CreateEntry(
             "sweep_interval_seconds",
-            5f,
+            15f,
             "Sweep Interval (seconds)",
             "How long to wait between upgrade passes (one pass = try every hero slot once). Doesn't need to be " +
-            "fast - gold accumulates slowly. Clamped between 1 and 60 seconds. Default: 5."
+            "fast - gold accumulates slowly, and on MAX one press buys everything affordable. Clamped between 1 " +
+            "and 60 seconds. Default: 15."
         );
 
         _upgradeTargetSlots = section.CreateEntry(
