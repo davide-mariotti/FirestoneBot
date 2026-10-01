@@ -49,7 +49,11 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    Non passare l'uscita dello script a `Select-Object -First`: in PowerShell 5.1 lo ferma dopo
    quelle righe e i cfg restanti non vengono scritti.
 
-   Il repo dell'1/10 non aggiunge chiavi: rispetto al 30/09 sera cambia solo la DLL.
+   Il repo dell'1/10 non aggiunge chiavi; cambiano due valori, su ogni file:
+   - `empowertask.min_reset_ratio: 2.0 -> 1.0`: l'empower si fa a +100%, come dice la guida (col
+     valore vecchio il +200% non arrivava mai e l'empower era sempre forzato a 2 ore);
+   - `empowertask.max_adventure_minutes: 120 -> 360`: il limite di tempo resta solo come tetto di
+     sicurezza, a 6 ore.
 
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
