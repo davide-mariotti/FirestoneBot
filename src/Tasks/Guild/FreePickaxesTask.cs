@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Guild.Shop;
+using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using MelonLoader;
@@ -45,6 +46,10 @@ public class FreePickaxesTask : BotTask
 
         yield return Notifications.FreePickaxes;
         yield return GuildShop.OpenSuppliesTab;
+
+        // At 10 fps the shop can show up after these two clicks: read at once, the quantity was ''
+        // and nothing was claimed (02/10, Steam-13: '' read 0.4 s before the shop showed 'x15').
+        yield return Poll.Until(() => FreePickaxes.QuantityText != "");
 
         Debug($"[INFO] Free pickaxes: {FreePickaxes.Quantity} ('{FreePickaxes.QuantityText}'), threshold {PickaxeClaimThreshold}.");
         if (FreePickaxes.Quantity >= PickaxeClaimThreshold)
