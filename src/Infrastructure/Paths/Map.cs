@@ -70,8 +70,26 @@ public static partial class Paths
         public const string FightBtn = Root + "/bg/mask/fightBtn";
     }
 
+    // The campaign's 90 pins (WFCampaignMissionMapInteraction), on the map layer like MissionPinLoc's.
+    // Only the next mission's pin is shown, but a hidden pin still opens its preview.
+    public static class WFCampaignLoc
+    {
+        public const string PinsRoot = "menusRoot/mapRoot/mapElements/warfrontCampaignMissions";
+    }
+
+    // Opened by a campaign pin. One column per difficulty under ModesRoot (WFCampaignModeInteraction),
+    // whose fightButton is clickable only when unlocked and the squad's power is enough.
+    public static class WFCampaignMissionPreviewLoc
+    {
+        private const string Root = MenusLoc.Root + "/popups/WFCampaignMissionPreview";
+
+        public const string CloseBtn = Root + "/bg/closeButton";
+
+        public const string ModesRoot = Root + "/bg/modes";
+    }
+
     // The live battle, under menus/ unlike its siblings. A fightBtn can open it directly, skipping
-    // WFBattleSim. Never click its closeButton - that forfeits the battle.
+    // WFBattleSim (a campaign fightButton always does). Never click its closeButton - that forfeits the battle.
     public static class WFBattleLoc
     {
         public const string Root = MenusLoc.Root + "/menus/WFBattle";

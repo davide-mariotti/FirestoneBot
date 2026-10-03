@@ -68,5 +68,8 @@
         <Reference Include="Il2CppCoreASM">
             <HintPath>$(Il2CppAssembliesDir)\Il2CppCoreASM.dll</HintPath>
         </Reference>
+        <Reference Include="Il2CppSharedASM">
+            <HintPath>$(Il2CppAssembliesDir)\Il2CppSharedASM.dll</HintPath>
+        </Reference>
     </ItemGroup>
 </Project>

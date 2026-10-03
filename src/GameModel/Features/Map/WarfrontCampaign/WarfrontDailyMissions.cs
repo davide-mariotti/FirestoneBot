@@ -59,9 +59,9 @@ public static class WFBattle
 
 public static class WFBattleResult
 {
-    public static bool IsDecided =>
-        new GameElement(Paths.WFBattleWonLoc.CloseBtn).IsVisible() ||
-        new GameElement(Paths.WFBattleDefeatLoc.CloseBtn).IsVisible();
+    public static bool IsWon => new GameElement(Paths.WFBattleWonLoc.CloseBtn).IsVisible();
+
+    public static bool IsDecided => IsWon || new GameElement(Paths.WFBattleDefeatLoc.CloseBtn).IsVisible();
 
     public static IEnumerator Close
     {

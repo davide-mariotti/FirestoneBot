@@ -103,7 +103,8 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 39 of 41` (38 of 40 prima del task dell'Emblem market) e nessun
+   `Started. Enabled tasks: 40 of 42` (39 of 41 prima del task della campagna, 38 of 40 prima
+   dell'Emblem market) e nessun
    `timed out` o `threw:`.
 8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a
    4,5 minuti per istanza (legge tutti gli eroi, spende Void Crystal ed Ethereal Shards, sblocca i
@@ -250,6 +251,29 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     restare sotto 5.000. `FAILED=0`. Sotto il livello 65 il task non parte e le righe mancano. Le
     righe `closing the New items popup` sono normali (un gioiello mai avuto). Sul PC principale
     l'1/10: Golden su Steam-1..15 (2-7 lotti), Epic su 7 di loro, nessun `[FAILED]`.
+13. Campagna del Warfront (dal 3/10, task `[warfrontcampaigntask]`, solo account a livello 50 o
+    più; dettagli in `CAMPAIGN_PLAN.md`): ogni 6 ore combatte le missioni della campagna che la
+    battle power raggiunge, dalla potenza richiesta più bassa, fino alla prima sconfitta. Battaglie
+    gratuite; una sconfitta si ritenta col 5% di potenza in più o dopo 24 h. La squadra non la
+    cambia ancora: la scrive accanto alla più forte. A giro fatto, da PowerShell:
+
+    ```powershell
+    foreach ($n in 17..34) {
+      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $t = Get-Content $log
+      "{0}: giri={1} FAILED={2} threw/timeout={3}" -f $n, @($t -match 'Warfront - Campaign finished').Count,
+        @($t -match 'WarfrontCampaignTask.*\[FAILED\]').Count, @($t -match 'Campaign.*(threw|timed out)').Count
+      $t -match '\[INFO\] Campaign' -replace '.*\[INFO\] ', '    '
+    }
+    ```
+
+    Su ogni account a livello 50 o più: una riga `Campaign squad: …; strongest: …; heroes in crews
+    N of M, crew slots S.`, una `Campaign: stars …, battle power …, unlocked …; K defeat(s) waiting
+    …, C to try.` e, per ogni battaglia, `Campaign mission 32 Easy: required …, power …, ratio … ->
+    won/lost, stars A -> B.` (B = A + 1 a ogni `won`; dopo un `lost` il giro si ferma). `FAILED=0`.
+    Sotto il livello 50 il task non parte e le righe mancano (gli account di questo PC sono a 30-59).
+    Da annotare per il passo successivo del piano: gli account con `strongest:` diverso da `the
+    same`, o con `heroes in crews` sotto il numero di eroi e posti crew liberi.
 
 ---
 
@@ -679,7 +703,7 @@ dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
 
    Se segnala "chiavi mancanti", quell'istanza non ha ancora girato con la DLL nuova: torna al
    passo 1 per lei.
-4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 38 of 40`
+4. Riavvia le istanze in sequenza (punto 6.3). Nel log di ognuna, `Started. Enabled tasks: 40 of 42`
    come su Steam-0.
 
 ### 8.2 Griglia delle finestre (monitor 2560x1440)
@@ -762,7 +786,7 @@ Per OGNI istanza 17-34, in ordine:
 - [ ] Log più recente: nessun `FileNotFoundException`, presente `Started. Enabled tasks:`.
 - [ ] Titolo finestra mostra `[Steam-<N>]` (conferma che Sandboxie applica la config).
 - [ ] `FirebotPreferences.cfg` allineato a Steam-0: `apply_template.ps1 -From 17 -To 34 -Check`
-      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 38 of 40`.
+      dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 40 of 42`.
 
 A livello di sistema (una tantum, non per-istanza):
 
