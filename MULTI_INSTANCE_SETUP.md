@@ -66,6 +66,11 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    dell'Emblem market, punto 12). Non serve rilanciare lo script per questo: il controllo del punto 7
    a istanze avviate deve dare 0 differenze.
 
+   Il repo del 3/10 non aggiunge né cambia chiavi. Porta tre correzioni nel codice: Free Pickaxes
+   aspetta che lo shop della gilda mostri la quantità (a 10 fps prima leggeva quasi sempre vuoto e
+   non reclamava), Chaos Rift fa tutti i colpi in un giro invece di uno ogni 30 minuti, e Hall of
+   Heroes alza la rarità degli eroi con i contratti (punto 8).
+
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
    del giorno (l'1/10 sul PC principale: Collector su 9 istanze su 17, tutte e quattro su 2). A
@@ -117,6 +122,27 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    e al giro dopo la rilegge. Qualunque altro `[FAILED]` di `HallOfHeroesTask`, e soprattutto
    `no unlock popup paid in Meteorites`, va guardato prima di andare avanti. Su Steam-0..16 (30/09):
    giri da 86 a 266 s e 67 tier sbloccati, nessun altro `[FAILED]`.
+
+   Dal 3/10, alla lettura completa (una al giorno: entro 24 h dall'avvio), lo stesso task alza anche
+   la rarità degli eroi con i contratti, prima quelli in formazione e poi gli altri, ogni passaggio
+   che il gioco offre (Uncommon 30, Rare 70, Epic 150). Ogni eroe ha una riga: o `Hero rarity
+   <eroe>: '<rarità attuale>', next '...' for '30' (contracts64), contracts N, '<requisiti>' -
+   nothing bought.` (requisito in grigio `#BDBEBD` = non soddisfatto), oppure, per un acquisto,
+   `Hero rarity <eroe>: 'Common - <eroe>' -> 'Uncommon - <eroe>', contracts A -> B.` con B = A meno
+   il costo. Per vederle subito senza aspettare 24 h: a gioco fermo, nel cfg di un'istanza, sezione
+   `[hallofheroestask]`, `hero_snapshot_time = ""` e `next_run_time_internal = ""`.
+
+   ```powershell
+   foreach ($n in 17..34) {
+     $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+     "{0}:" -f $n
+     (Get-Content $log) -match 'Hero rarity' -replace '.*\[(INFO|FAILED)\] ', '    '
+   }
+   ```
+
+   Un `[FAILED] Hero rarity` (contatore non sceso esattamente del costo) ferma la rarità per quel
+   giro e va guardato. Dopo un passaggio il gioco apre per qualche secondo `menus/Achievements`
+   (visto su Steam-0 sia per Cirilo sia per Boris): è normale, si chiude da solo.
 9. Beasts, Guardian Evolution e War Machine Rarity (dal 30/09): partono nei primi minuti, 5-50 s
    l'uno, e spendono solo Soul Embers, Strange Dust e Tools. A giri finiti, da PowerShell:
 
