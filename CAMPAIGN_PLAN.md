@@ -13,9 +13,9 @@ permessi che le evitano di chiedere conferma a ogni comando:
 
 ```text
 Leggi CAMPAIGN_PLAN.md e seguilo dall'inizio alla fine, con le regole di TESTING.md e la skill
-ponytail attiva. Prima fammi le domande della sezione 8 che non hanno ancora risposta, poi la sonda
-dal vivo su Steam-0 (sezione 3), il task (sezione 4) un passo alla volta, il test (sezione 5) e la
-distribuzione (sezione 6). Fai un commit per ogni passo verificato dal vivo, aggiorna TESTING.md e
+ponytail attiva. Le decisioni sono già prese (sezione 8): parti dalla sonda dal vivo su Steam-0
+(sezione 3), poi il task (sezione 4) un passo alla volta, il test (sezione 5) e la distribuzione
+(sezione 6). Fai un commit per ogni passo verificato dal vivo, aggiorna TESTING.md e
 MULTI_INSTANCE_SETUP.md, poi push. Se la sonda contraddice il piano (un costo, un limite di
 battaglie, una formazione che cambia anche l'Arena), fermati e chiedimi.
 ```
@@ -26,7 +26,7 @@ Un task nuovo e separato, `WarfrontCampaignTask` (gruppo Warfront, livello 50, c
 
 - **Formazione**: schierare la formazione più potente possibile con le War Machine dell'account.
   Cinque macchine, nell'ordine **tank, poi damage, poi healer**, e in ogni macchina gli eroi della
-  crew.
+  crew. Sempre almeno un tank e un healer, se l'account li ha (sezione 8).
 - **Progressione**: far avanzare la campagna il più possibile, in due direzioni: la missione più
   alta non ancora vinta (Easy) e, sulle missioni già fatte, la difficoltà successiva (una stella in
   più).
@@ -225,8 +225,8 @@ sonda tolta. Domande a cui rispondere, ognuna con il path o il campo visto:
   durata vista nella sonda).
 - **Stato nel cfg**, auto-gestito:
   - la potenza delle macchine all'ultima ottimizzazione della formazione;
-  - per ogni missione e difficoltà persa, la potenza della squadra al momento della sconfitta
-    (es. `"33:0@785790;12:1@785790"`).
+  - per ogni missione e difficoltà persa, la potenza della squadra e l'ora della sconfitta
+    (es. `"33:0@785790@2026-10-04T10:15;12:1@785790@2026-10-04T10:17"`).
 - Nessuna chiave di configurazione oltre `enabled`, salvo che i test la rendano necessaria.
 
 ### 4.2 Passo A: la formazione più forte
@@ -237,15 +237,16 @@ Si fa al primo giro, poi solo quando la potenza di una macchina è cambiata: liv
 1. Se la sonda trova un `bestSquadButton` che fa questo lavoro, si usa quello e si legge la battle
    power prima e dopo.
 2. Altrimenti:
-   - **Macchine**: le 5 con la battle power più alta, in campo nell'ordine tank → damage → healer
-     (davanti il tank: gli healer curano la macchina più avanti).
+   - **Macchine**: il tank con la battle power più alta, l'healer con la battle power più alta, e le
+     3 più potenti fra tutte le altre (anche altri tank o healer). Senza tank o senza healer
+     nell'account, quel posto va alla macchina più potente rimasta. In campo nell'ordine tank →
+     damage → healer: davanti il tank, perché gli healer curano la macchina più avanti.
    - **Crew**: ogni eroe libero va in un posto vuoto, perché un eroe fuori da ogni crew non dà
-     niente. Spostamenti più fini, come un eroe dove i suoi gioielli rendono di più, solo se i test
-     mostrano che cambiano la battle power in modo apprezzabile: si provano leggendo la potenza prima
-     e dopo.
+     niente. Nessuno spostamento fine tra macchine in questa versione (sezione 8). La riga di log
+     scrive la potenza di ogni macchina, così si potrà decidere coi numeri.
 3. "Save changes" e controllo: la battle power salvata non deve essere più bassa di prima. Se lo è, si
    rimette la formazione di prima e si scrive un `[FAILED]`.
-4. **Riga di log**: `Campaign formation: <macchine in ordine>, battle power A -> B.`
+4. **Riga di log**: `Campaign formation: Goliath 315764, Cloudfist …, Hunter … (tank, damage, healer), battle power A -> B, free heroes placed N.`
 
 La formazione è la stessa che usa Daily Missions (da confermare nella sonda), che quindi ne
 beneficia. Il commento di `WarfrontDailyMissionsTask` ("The formation is set up by hand once") va
@@ -257,9 +258,11 @@ aggiornato.
    battle power della squadra.
 2. **Candidati**: ogni coppia (missione, difficoltà) che non è vinta, è sbloccata (sezione 2.1:
    missione precedente a Easy, difficoltà precedente sulla stessa missione), ha la potenza richiesta
-   non oltre la battle power, e non è già stata persa con una potenza simile. Una sconfitta si ritenta
-   solo quando la battle power è salita almeno del 5% rispetto a quella della sconfitta (valore da
-   rivedere coi test).
+   non oltre la battle power, e non è in attesa dopo una sconfitta. Una sconfitta si ritenta quando la
+   battle power è salita almeno del 5% rispetto a quella della sconfitta **oppure** sono passate 24 h,
+   quello che arriva prima: le battaglie hanno una parte casuale (overdrive al 25%), quindi un
+   tentativo al giorno a parità di potenza vale il minuto che costa. Nel cfg, per ogni sconfitta,
+   potenza e ora (es. `"33:0@785790@2026-10-04T10:15"`).
 3. **Ordine**: dalla soglia più bassa alla più alta, così le battaglie più probabili vengono prima e
    missioni nuove e difficoltà nuove si alternano da sole. Con Steam-0 oggi: Easy 32 (422.800),
    33, 34, 35, 36, Normal 12 (768.500).
@@ -276,7 +279,7 @@ aggiornato.
 
 - Non tocca i bottoni di acquisto o `getMore`, né le formazioni dell'Arena.
 - Non chiude una battaglia in corso.
-- Non ritenta in loop una missione persa: vedi la regola del 5%.
+- Non ritenta in loop una missione persa: vedi la regola del 5% o 24 h.
 
 ## 5. Test (TESTING.md, "Fase 2", solo Steam-0)
 
@@ -286,7 +289,8 @@ aggiornato.
 2. **Battaglie**: Easy 32 per prima; poi le altre del giro fino alla prima sconfitta. Per ogni
    battaglia, la riga di log e il contatore delle stelle.
 3. **Giro a vuoto**: con niente da tentare il giro deve durare pochi secondi.
-4. **Sconfitta**: la missione persa non va ritentata al giro dopo con la stessa potenza.
+4. **Sconfitta**: la missione persa non va ritentata al giro dopo con la stessa potenza, ma sì dopo
+   24 h o con il 5% di potenza in più.
 5. Aggiornare TESTING.md: una riga nuova in "Map e Warfront", e la riga di Daily Missions se cambia
    la formazione.
 
@@ -309,18 +313,23 @@ aggiornato.
 - **Insane e Nightmare** (190 e 319 stelle): il task li gestisce già se le soglie e gli stati vengono
   dal gioco. Con la sola formula vanno aggiunti i due moltiplicatori, che sono già nella tabella.
 
-## 8. Domande per l'utente, da fare all'inizio della sessione
+## 8. Decisioni (03/10, l'utente ha lasciato la scelta all'agente)
 
-1. **Healer obbligatorio?** La formazione "più potente" per battle power potrebbe lasciare fuori
-   l'healer (poco danno, quindi poca potenza). Le alternative:
-   - (a) le 5 più potenti in assoluto;
-   - (b) almeno un tank e un healer se l'account li ha, poi le più potenti.
-
-   Proposta: (b), perché l'healer cura il tank ogni round e la vittoria non dipende solo dalla
-   potenza.
-2. **Regola dei ritentativi**: una sconfitta si ritenta quando la battle power è salita del 5%.
-   Va bene, o meglio una volta al giorno comunque?
-3. **Ordine**: dalla soglia più bassa (più stelle in fretta, missioni nuove e difficoltà alternate).
-   Oppure prima sempre la missione nuova più alta, per arrivare prima a 70 stelle e ai dungeon?
-4. **Crew**: basta "nessun eroe libero", o vuoi anche gli spostamenti fini tra macchine (costano
-   molti click e tempo)?
+1. **Healer obbligatorio: sì.** In formazione vanno il tank più potente, l'healer più potente, poi le
+   3 macchine più potenti fra le restanti. Se l'account non ha tank o healer, il posto va alla più
+   potente rimasta. Motivo: gli healer curano ogni round la macchina più avanti, e alla soglia (80%
+   della potenza nemica) la tenuta conta più di qualche punto di battle power. Su Steam-0 (6
+   macchine) ne resta fuori una sola. Se i test mostrano sconfitte con margini ampi, si confronta con
+   le 5 più potenti in assoluto.
+2. **Ritentativi: 5% di potenza in più oppure 24 h**, quello che arriva prima. Motivo: le battaglie
+   hanno una parte casuale (le abilità scattano col 25% di overdrive), quindi un tentativo al giorno a
+   parità di potenza vale il minuto che costa. Una sconfitta con potenza ferma, invece, non si
+   ritenta a ogni giro.
+3. **Ordine: dalla soglia più bassa alla più alta.** Motivo: per i dungeon (70) e il Diamond (100)
+   conta il numero di stelle, non quali missioni. Le battaglie più probabili danno più stelle e più in
+   fretta, e alternano da sole missioni nuove e difficoltà nuove.
+4. **Crew: nessun eroe libero, nessuno spostamento fine** in questa versione. Motivo: con più posti
+   che eroi (Steam-0: 10 eroi, 20 posti sbloccati) conta soprattutto che ogni eroe sia in una crew. Gli
+   spostamenti fini costano molti click per ogni prova. La riga di log con la potenza di ogni macchina
+   serve a decidere dopo coi numeri. Se il `bestSquadButton` del gioco fa già la squadra migliore, si
+   usa quello (passo A, punto 1).
