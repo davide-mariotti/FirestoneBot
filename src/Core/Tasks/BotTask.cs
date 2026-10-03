@@ -67,7 +67,14 @@ public abstract class BotTask
         }
     }
 
-    public DateTime NextRunTime { get; protected set; } = DateTime.MinValue;
+    private DateTime _nextRunTime = DateTime.MinValue;
+
+    // A run due on the daily reset waits for the game to show the new day (GameDay.PastReset).
+    public DateTime NextRunTime
+    {
+        get => _nextRunTime;
+        protected set => _nextRunTime = Utilities.GameDay.PastReset(value);
+    }
 
     public DateTime? LastRunTime { get; set; }
 

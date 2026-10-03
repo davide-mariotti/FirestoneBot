@@ -15,6 +15,7 @@
         <ProjectReference Include="..\..\src\TalentEngine\Firebot.TalentEngine.csproj" />
         <Compile Include="..\..\src\Utilities\TimeParser.cs" Link="TimeParser.cs" />
         <Compile Include="..\..\src\Utilities\StringUtils.cs" Link="StringUtils.cs" />
+        <Compile Include="..\..\src\Utilities\GameDay.cs" Link="GameDay.cs" />
         <Compile Include="..\..\src\Tasks\Character\EnchantPlanner.cs" Link="EnchantPlanner.cs" />
         <Compile Include="..\..\src\Tasks\Events\ChallengeParser.cs" Link="ChallengeParser.cs" />
         <Compile Include="..\..\src\Tasks\Map\CrewPlanner.cs" Link="CrewPlanner.cs" />
