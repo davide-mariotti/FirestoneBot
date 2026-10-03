@@ -145,4 +145,27 @@ public static class HallOfHeroes
         public static GameButton EnchantBtn(bool jewels, string slotName) =>
             new(Row(jewels, slotName) + "/" + Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.RowEnchantBtn);
     }
+
+    /// <summary>The selected hero's rarity step, paid in Contracts. Its tab hides the enchanting counters.</summary>
+    public static class Rarity
+    {
+        public static IEnumerator Open() => new GameButton(Paths.HallOfHeroesLoc.HeroRarityTabBtn).Click();
+
+        /// <summary>The Contracts counter, -1 when it doesn't read as a number.</summary>
+        public static long Contracts =>
+            (long)new GameText(Paths.HallOfHeroesLoc.ContractsTxt).GetParsedDoubleAbbreviated(-1);
+
+        /// <summary>"Common - Cirilo".</summary>
+        public static string Current => new GameText(Paths.HallOfHeroesLoc.RaritySubmenuLoc.CurrentTitleTxt).GetParsedText();
+
+        public static string Next => new GameText(Paths.HallOfHeroesLoc.RaritySubmenuLoc.NextTitleTxt).GetParsedText();
+
+        public static string Requirements => new GameText(Paths.HallOfHeroesLoc.RaritySubmenuLoc.RequirementsTxt).GetParsedText();
+
+        public static string CostText => new GameText(Paths.HallOfHeroesLoc.RaritySubmenuLoc.CostTxt).GetParsedText();
+
+        public static string CurrencyIconName => IconSprite.NameAt(Paths.HallOfHeroesLoc.RaritySubmenuLoc.CurrencyIcon);
+
+        public static GameButton IncreaseBtn => new(Paths.HallOfHeroesLoc.RaritySubmenuLoc.IncreaseBtn);
+    }
 }

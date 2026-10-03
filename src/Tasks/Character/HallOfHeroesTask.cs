@@ -22,7 +22,8 @@ namespace Firebot.Tasks.Character;
 ///     Ethereal Shards on jewel enchants. EnchantPlanner decides up front exactly what the balances
 ///     buy, from a snapshot of every hero kept in the config and fully re-read at most every 24 h or
 ///     when the roster grows. Every click is checked against the screen first: a stale snapshot costs
-///     a wasted visit, never a wrong spend. Soul stones (level 200) aren't handled.
+///     a wasted visit, never a wrong spend. With the full read, hero rarity in Contracts, formation first.
+///     Soul stones (level 200) aren't handled.
 /// </summary>
 public class HallOfHeroesTask : BotTask
 {
@@ -119,6 +120,8 @@ public class HallOfHeroesTask : BotTask
         if (!_stop) yield return UnlockTiers(!fullRead);
         if (!_stop && !_gearBlocked) yield return Spend(EnchantCategory.Gear);
         if (!_stop) yield return Spend(EnchantCategory.Jewels);
+        // Last: its tab hides the counters the enchants read. Once a day, with the full read.
+        if (!_stop && fullRead) yield return IncreaseRarity();
 
         _heroSnapshot.Value = EnchantPlanner.Format(_heroes);
 
@@ -481,6 +484,64 @@ public class HallOfHeroesTask : BotTask
         Debug($"[FAILED] Hero cell {index} shows '{shown}', the snapshot expects '{hero.Name}' - full read on the next run.");
         _heroSnapshotTime.Value = "";
         _stop = _rosterMoved = true;
+    }
+
+    /// <summary>
+    ///     Hero rarity, paid in Contracts: the formation first, then every other hero, in grid order
+    ///     (user's rule, 03/10: Cirilo, in the formation, before Boris). Every step the game offers
+    ///     while the contracts last, each counted only when the counter drops by exactly the cost.
+    /// </summary>
+    private IEnumerator IncreaseRarity()
+    {
+        const int maxSteps = 6; // Common to Angel
+
+        foreach (var hero in _heroes.OrderBy(h => h.InFormation ? 0 : 1).ToList())
+        {
+            yield return SelectHero(hero);
+            if (_stop) yield break;
+            yield return HallOfHeroesModel.Rarity.Open();
+
+            for (var step = 0; step < maxSteps; step++)
+            {
+                var from = HallOfHeroesModel.Rarity.Current;
+                var costText = HallOfHeroesModel.Rarity.CostText;
+                var cost = (long)StringUtils.ParseAbbreviated(costText, -1);
+                var icon = HallOfHeroesModel.Rarity.CurrencyIconName;
+                var before = HallOfHeroesModel.Rarity.Contracts;
+                var button = HallOfHeroesModel.Rarity.IncreaseBtn;
+
+                // The icon check keeps this button from ever spending anything but Contracts.
+                if (!button.IsClickable() || !icon.Contains("contract", StringComparison.OrdinalIgnoreCase) ||
+                    cost <= 0 || before < cost)
+                {
+                    Debug($"[INFO] Hero rarity {hero.Name}: '{from}', next '{HallOfHeroesModel.Rarity.Next}' for " +
+                          $"'{costText}' ({icon}), contracts {before}, '{HallOfHeroesModel.Rarity.Requirements}' - nothing bought.");
+                    break;
+                }
+
+                yield return button.Click();
+                // 03/10, Cirilo's first step: menus/Achievements opened over the hall for a few seconds and
+                // hid the counter (read -1 for 5 s), then went away by itself.
+                yield return Poll.Until(() => HallOfHeroesModel.Rarity.Contracts == before - cost, 30);
+
+                var after = HallOfHeroesModel.Rarity.Contracts;
+                if (after != before - cost)
+                {
+                    Debug($"[FAILED] Hero rarity {hero.Name}: contracts {before} -> {after} after the {cost} click on " +
+                          $"'{from}', now '{HallOfHeroesModel.Rarity.Current}' - no more rarity this run. " +
+                          $"Open: {Watchdog.DumpActiveScreens()}");
+                    yield break;
+                }
+
+                // The panel lags the counter: right after Boris's step it still showed 'Common' with a
+                // clickable button (03/10), so the next step is only judged once the title has moved on.
+                yield return Poll.Until(() => HallOfHeroesModel.Rarity.Current is { Length: > 0 } now && now != from &&
+                                              HallOfHeroesModel.Rarity.Contracts >= 0, 30);
+                var to = HallOfHeroesModel.Rarity.Current;
+                Debug($"[INFO] Hero rarity {hero.Name}: '{from}' -> '{to}', contracts {before} -> {after}.");
+                if (to == from || to.Length == 0) break;
+            }
+        }
     }
 
     /// <summary>The counter at the top, -1 (and a [FAILED] line) when it doesn't read as a number.</summary>

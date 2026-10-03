@@ -1,6 +1,6 @@
 namespace Firebot.Infrastructure;
 
-/// <summary>Hall of Heroes: gear tier unlocks and gear/jewel enchanting. Verified live on 2026-09-29.</summary>
+/// <summary>Hall of Heroes: gear tier unlocks, gear/jewel enchanting and hero rarity. Verified live on 2026-09-29 (rarity 2026-10-03).</summary>
 public static partial class Paths
 {
     public static class HallOfHeroesLoc
@@ -16,14 +16,39 @@ public static partial class Paths
 
         public const string HeroNameTxt = Root + "/base/characterPreview/standardLevelProgress/bg/name";
 
-        // Both counters show on every tab, '.'-grouped ("3.010").
+        // Both counters show on every tab but Hero rarity, '.'-grouped ("3.010").
         public const string VoidCrystalsTxt = Root + "/counters/currencyInteraction (VoidCrystal)/quantity";
 
         public const string EtherealShardsTxt = Root + "/counters/currencyInteraction (EtherealShard)/quantity";
 
+        // Shown only on the Hero rarity tab, in place of the two above.
+        public const string ContractsTxt = Root + "/counters/currencyInteraction (Contract)/quantity";
+
         public const string GearTabBtn = Root + "/submenus/submenuButtons/gear";
 
         public const string EnchantingTabBtn = Root + "/submenus/submenuButtons/enchanting";
+
+        public const string HeroRarityTabBtn = Root + "/submenus/submenuButtons/heroRarity";
+
+        // Seen live on 2026-10-03 (Steam-0, Cirilo): 'Common - Cirilo' -> 'Uncommon - Cirilo', rarityButton
+        // costText '30' with currencyIcon 'contracts64', requirementsText 'Requires to be Uncommon rarity:
+        // <color=#0FE607>Gear Items</color>'. The static dump's blessingsSubmenu isn't what the tab opens.
+        public static class RaritySubmenuLoc
+        {
+            private const string Root = HallOfHeroesLoc.Root + "/submenus/bg/raritySubmenu/rarityUnlocked";
+
+            public const string IncreaseBtn = Root + "/rarityIncrease/rarityButton";
+
+            public const string CostTxt = IncreaseBtn + "/costText";
+
+            public const string CurrencyIcon = IncreaseBtn + "/currencyIcon";
+
+            public const string CurrentTitleTxt = Root + "/CurrentRarityView/currentRarityAndHeroTitle";
+
+            public const string NextTitleTxt = Root + "/NextRarityView/nextRarityAndHeroTitle";
+
+            public const string RequirementsTxt = Root + "/requirementsBg/requirementsText";
+        }
 
         // Separate prefabs, instantiated under submenus/bg the first time their tab opens.
         public static class GearSubmenuLoc
