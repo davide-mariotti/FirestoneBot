@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using Firebot.Core;
@@ -30,6 +31,8 @@ public class WarfrontDailyMissionsTask : BotTask
     private const int MaxSimOpenPolls = 10;
     private const float SimOpenPollSeconds = 0.5f;
     private const int MaxFightAttempts = 3;
+
+    private static readonly TimeSpan RetryAfterReset = TimeSpan.FromMinutes(5);
 
     // The badge sits on the daily-missions button itself, not on the notification rail.
     protected override string[] NotificationPaths => new[] { Paths.WorldMapLoc.WarfrontLoc.DailyMissionsNotification };
@@ -112,7 +115,11 @@ public class WarfrontDailyMissionsTask : BotTask
 
         yield return WarfrontLiberationMissions.Close;
 
-        NextRunTime = WarfrontDailyMissions.NextRunTime;
+        // Right after the reset the list can still show yesterday's: on 03/10 every run that ended by
+        // 10:00:17 fought 0 of 10 (Steam-1, -6, -8, -15) and every one from 10:00:27 fought 2. Nothing
+        // fought in the reset's first hour means try again shortly, not tomorrow.
+        var nextReset = WarfrontDailyMissions.NextRunTime;
+        NextRunTime = fought == 0 && nextReset - DateTime.Now > TimeSpan.FromHours(23) ? DateTime.Now + RetryAfterReset : nextReset;
 
         yield return WarfrontDailyMissions.Close;
         yield return WorldMap.Close;

@@ -21,6 +21,19 @@ public class MissionPin : GameElement
 
     public bool IsCompleted => new GameElement(Paths.MissionPinLoc.Tick, this).IsVisible();
 
+    /// <summary>The squads this mission takes (the game's squadsReq, set by its category); 1 when unreadable.</summary>
+    public int SquadsRequired
+    {
+        get
+        {
+            if (!TryGetComponent(out MapMissionInteraction pin)) return 1;
+            var missions = GameInitialize.HandlerLoader?.MissionsHandler?.missionsOnMap;
+            for (var i = 0; missions != null && i < missions.Count; i++)
+                if (missions[i].missionType == pin.missionType) return missions[i].squadsReq;
+            return 1;
+        }
+    }
+
     public IEnumerator Select()
     {
         if (!IsVisible())

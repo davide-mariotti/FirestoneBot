@@ -53,25 +53,35 @@ public class MapMissionsTask : BotTask
             yield return MissionPreview.Close;
         }
 
+        // Missions take 1 or more squads by category: one that needs more than are free is skipped, and a
+        // shorter one further down may still fit (Steam-0 03/10: 1 squad of 5 idle behind a 2-squad one).
         var toStart = ScanMissions(m => !m.IsActive && !m.IsCompleted, true).ToList();
-        var order = string.Join(", ", toStart.Select(m => $"{m.Name} {m.TimeRequired - DateTime.Now:hh\\:mm}"));
+        var order = string.Join(", ", toStart.Select(m => $"{m.Name} {m.TimeRequired - DateTime.Now:hh\\:mm} x{m.SquadsRequired}"));
+        var free = MapMission.FreeSquads;
+        var freeBefore = free;
         var started = 0;
         foreach (var mission in toStart)
         {
+            if (free == 0) break;
+            var squads = mission.SquadsRequired;
+            if (free > 0 && squads > free) continue;
+
             yield return mission.Select();
 
             if (MissionPreview.IsNotEnoughSquads)
             {
                 yield return MissionPreview.Close;
-                break;
+                continue;
             }
 
             yield return MissionPreview.StartMission;
             started++;
+            if (free > 0) free -= squads;
         }
 
         if (toStart.Count > 0)
-            Debug($"[INFO] Map missions: started {started} of {toStart.Count}, in order {order}.");
+            Debug($"[INFO] Map missions: started {started} of {toStart.Count}, free squads {freeBefore} -> {MapMission.FreeSquads}, " +
+                  $"in order {order}.");
 
         DateTime? earliest = null;
         yield return FindEarliestMissionProgress(value => earliest = value);
