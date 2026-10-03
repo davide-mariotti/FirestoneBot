@@ -75,7 +75,8 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    reset mandavano Collector in timeout. Applicato sul secondo PC alle 13:29. Il 3/10 sera si
    aggiunge il task della campagna (punto 13): la chiave `warfrontcampaigntask.enabled` manca finché
    l'istanza non parte una volta con la DLL nuova, come per l'Emblem market. Applicato sul secondo PC
-   alle 16:12 (4d0e75b).
+   alle 16:12 (4d0e75b), poi alle 17:31 4680fcf (crew per specializzazione, giorno del bot dalle
+   10:02), che non aggiunge chiavi.
 
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle

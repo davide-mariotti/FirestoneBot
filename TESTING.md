@@ -580,6 +580,10 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   eccezione fino alle 16:27. Cfg di prima in `C:\Repos\FirestoneBot-test-backup\2026-10-03b-fleet`.
   Lo skip dei forzieri Iron (`can't be opened yet`) non si è ancora visto: Collector gira solo con la
   quest incompleta, quindi al reset del 4/10.
+  **3/10 alle 17:31: build 4680fcf su Steam-17..34** (crew per specializzazione, 10:02). `-Check` a 0
+  prima e dopo, avvio 17:31-17:38, 18 su 18 `40 of 42`, nessun timeout né eccezione fino alle 17:44;
+  quest, Daily Store Offers e Daily Missions a `10/04/2026 10:02:00` su tutte e 18. La campagna
+  riparte alle 22:18-22:25 (sposta le crew allora). Cfg di prima in `2026-10-03c-fleet`.
 - **Default F2P sul fleet (da decidere)**: i default della Fase 0 nel codice (Personal Tree al posto
   delle War Machines, Empower solo a +100%, task Oracle accesi) valgono solo per i file nuovi. Il
   template e il fleet di questo PC sono allineati a Steam-0 (vedi "Configurazione di
