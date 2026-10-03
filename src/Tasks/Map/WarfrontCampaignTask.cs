@@ -9,6 +9,7 @@ using Firebot.GameModel.Features.Map;
 using Firebot.GameModel.Features.Map.WarfrontCampaign;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
+using Il2Cpp;
 using MelonLoader;
 using Logger = Firebot.Core.Logger;
 using CampaignBattle = Firebot.GameModel.Features.Map.WarfrontCampaign.WarfrontCampaign.Battle;
@@ -152,22 +153,28 @@ public class WarfrontCampaignTask : BotTask
     }
 
     /// <summary>
-    ///     Fields the strongest squad (WarfrontCampaign.Strongest) and puts every free hero in a crew -
-    ///     the Arena fights with the same squad (user decision, 03/10). Read from the game's data each
-    ///     run, so the screen opens only when something is missing. When the machines change, they all
-    ///     come out and go back in the strongest order, spot 0 first.
+    ///     Fields the strongest squad (WarfrontCampaign.Strongest) and its crews (CrewPlanner: every free
+    ///     hero in, and heroes on the machine of their own specialization when there are any) - the Arena
+    ///     fights with the same squad (user decisions, 03/10). Decided from the game's data each run, so
+    ///     the screen opens only when something changes. When the machines change they all come out,
+    ///     which empties their crews, and go back in the strongest order, spot 0 first.
     /// </summary>
     private IEnumerator ApplySquad()
     {
         var squad = WarfrontCampaign.Squad();
         var strongest = WarfrontCampaign.Strongest(WarfrontCampaign.Machines());
-        var (heroes, crewed, perMachine) = WarfrontCampaign.Crews();
         var sameMachines = WarfrontCampaign.SameSquad(squad, strongest);
-        var freeHeroes = Math.Min(heroes - crewed, strongest.Count * perMachine - crewed);
-        Debug($"[INFO] Campaign squad: {string.Join(", ", squad)}; strongest: " +
-              $"{(sameMachines ? "the same" : string.Join(", ", strongest))}; heroes in crews {crewed} of {heroes}, " +
-              $"{perMachine} crew slots per machine.");
-        if (sameMachines && freeHeroes <= 0) yield break;
+        var heroes = WarfrontCampaign.Heroes();
+        var roles = heroes.ToDictionary(h => h.Code, h => h.Role);
+        var perMachine = WarfrontCampaign.CrewSlotsPerMachine;
+        var saved = WarfrontCampaign.SquadCrews();
+        var savedSpots = saved.Select(s => new CrewSpot((int)s.Machine.Role, s.Crew)).ToList();
+        var plan = CrewPlanner.Plan(savedSpots, roles, perMachine);
+        var moves = sameMachines ? CrewPlanner.Moves(savedSpots, plan) : -1;
+        Debug($"[INFO] Campaign squad: {Describe(saved, heroes)}; strongest: " +
+              $"{(sameMachines ? "the same" : string.Join(", ", strongest))}; {heroes.Count} heroes, {perMachine} crew slots " +
+              $"per machine, {(sameMachines ? $"{moves} crew move(s)" : "machines to change")}.");
+        if (moves == 0) yield break;
 
         var before = WarfrontCampaign.BattlePower;
         yield return WorldMap.Open;
@@ -188,54 +195,101 @@ public class WarfrontCampaignTask : BotTask
                 yield return WarfrontCampaign.DeckCard(machine.Code)?.Click();
 
             var placed = WarfrontCampaign.ScreenSpots().Select(s => s.warMachine?.code ?? "-").ToList();
-            Debug($"[INFO] Campaign squad: spots now {string.Join(", ", WarfrontCampaign.ScreenSpots().Select(s => $"{s.spotIndex}:{s.warMachine?.name ?? "-"}[{WarfrontCampaign.CrewCount(s)}]"))}.");
             if (!placed.Take(strongest.Count).SequenceEqual(strongest.Select(m => m.Code)))
             {
                 // Nothing is saved: closing drops the draft.
-                Debug("[FAILED] Campaign squad: the spots don't match the strongest squad - not saved.");
+                Debug($"[FAILED] Campaign squad: the spots ({string.Join(", ", placed)}) don't match the strongest squad - not saved.");
                 yield return Watchdog.ForceClearAll();
                 yield break;
             }
         }
 
-        // Free heroes go one at a time to the machine with the smallest crew, front first: the first
-        // hero multiplies a machine's power about 13x, the second takes it to about 20x (Steam-0 03/10).
         var spots = WarfrontCampaign.ScreenSpots().Where(s => s.warMachine != null).ToList();
-        var crews = spots.Select(WarfrontCampaign.CrewCount).ToArray();
-        var adds = new int[spots.Count];
-        for (var free = heroes - crews.Sum(); free > 0; free--)
+        if (!sameMachines)
+            plan = CrewPlanner.Plan(spots.Select(s => new CrewSpot((int)s.warMachine.specialization, WarfrontCampaign.ScreenCrew(s))).ToList(),
+                roles, perMachine);
+        yield return SetCrews(spots, plan);
+        if (!CrewsAre(spots, plan))
         {
-            var open = Enumerable.Range(0, spots.Count).Where(i => crews[i] + adds[i] < perMachine).ToList();
-            if (open.Count == 0) break;
-            adds[open.OrderBy(i => crews[i] + adds[i]).First()]++;
+            Debug($"[FAILED] Campaign squad: crews {Describe(spots, heroes)} instead of the plan - not saved.");
+            yield return Watchdog.ForceClearAll();
+            yield break;
+        }
+
+        var save = new GameButton(Paths.SelectWarMachinesLoc.SaveBtn);
+        yield return save.Click();
+        yield return Poll.Until(() => !save.IsClickable() && WarfrontCampaign.BattlePower != before, 20);
+        var after = WarfrontCampaign.BattlePower;
+        Debug($"[INFO] Campaign squad set: {Describe(spots, heroes)}; battle power {before:0} -> {after:0}.");
+
+        if (after < before && sameMachines)
+        {
+            // Only heroes moved: put the saved crews back.
+            var back = saved.Select(s => s.Crew).ToList();
+            yield return SetCrews(spots, back);
+            yield return save.Click();
+            yield return Poll.Until(() => !save.IsClickable() && WarfrontCampaign.BattlePower != after, 20);
+            Debug($"[FAILED] Campaign squad: battle power dropped, {before:0} -> {after:0}; crews put back " +
+                  $"({(CrewsAre(spots, back) ? "done" : "not matching")}), battle power {WarfrontCampaign.BattlePower:0}.");
+        }
+        else if (after < before) Debug($"[FAILED] Campaign squad: battle power dropped, {before:0} -> {after:0}.");
+
+        yield return Watchdog.ForceClearAll();
+    }
+
+    // A hero is listed only in its own crew's popup and among the free ones: everyone leaving a crew
+    // goes out first, then the newcomers go in.
+    private IEnumerator SetCrews(List<WarMachineFormationSettingSpot> spots, List<List<int>> target)
+    {
+        for (var i = 0; i < spots.Count; i++)
+        {
+            var leaving = WarfrontCampaign.ScreenCrew(spots[i]).Except(target[i]).ToList();
+            if (leaving.Count > 0) yield return ToggleCrew(spots[i], leaving);
         }
 
         for (var i = 0; i < spots.Count; i++)
         {
-            if (adds[i] == 0) continue;
-            var edit = new GameButton(transform: (spots[i].editCrewButton.gameObject.activeInHierarchy
-                ? spots[i].editCrewButton : spots[i].addCrewButton).transform);
-            yield return edit.Click();
-            yield return Poll.Until(() => WarfrontCampaign.IsCrewPopupVisible);
-            foreach (var hero in WarfrontCampaign.FreeHeroCards().Take(adds[i]))
-                yield return hero.Click();
-            yield return new GameButton(Paths.SelectWarMachineHeroesLoc.SaveBtn).Click();
-            yield return Poll.Until(() => !WarfrontCampaign.IsCrewPopupVisible);
-            if (WarfrontCampaign.IsCrewPopupVisible) yield return new GameButton(Paths.SelectWarMachineHeroesLoc.CloseBtn).Click();
+            var joining = target[i].Except(WarfrontCampaign.ScreenCrew(spots[i])).ToList();
+            if (joining.Count > 0) yield return ToggleCrew(spots[i], joining);
+        }
+    }
+
+    /// <summary>Opens a spot's crew, clicks each hero's card (in or out of the crew), saves the crew.</summary>
+    private IEnumerator ToggleCrew(WarMachineFormationSettingSpot spot, List<int> heroes)
+    {
+        var edit = spot.editCrewButton.gameObject.activeInHierarchy ? spot.editCrewButton : spot.addCrewButton;
+        yield return new GameButton(transform: edit.transform).Click();
+        yield return Poll.Until(() => WarfrontCampaign.IsCrewPopupVisible);
+        foreach (var code in heroes)
+        {
+            var card = WarfrontCampaign.HeroCard(code);
+            if (card?.button == null)
+            {
+                Debug($"[FAILED] Campaign squad: hero {code} isn't in {spot.warMachine?.name}'s crew list.");
+                continue;
+            }
+
+            yield return new GameButton(transform: card.button.transform).Click();
         }
 
-        Debug($"[INFO] Campaign squad: spots before saving {string.Join(", ", WarfrontCampaign.ScreenSpots().Select(s => $"{s.spotIndex}:{s.warMachine?.name ?? "-"}[{WarfrontCampaign.CrewCount(s)}]"))}.");
-        var save = new GameButton(Paths.SelectWarMachinesLoc.SaveBtn);
-        yield return save.Click();
-        yield return Poll.Until(() => !save.IsClickable() && WarfrontCampaign.BattlePower != before, 20);
-        yield return Watchdog.ForceClearAll();
-
-        var after = WarfrontCampaign.BattlePower;
-        var (_, crewedAfter, _) = WarfrontCampaign.Crews();
-        Debug($"[INFO] Campaign squad set: {string.Join(", ", WarfrontCampaign.Squad())}; heroes in crews {crewed} -> {crewedAfter}; " +
-              $"battle power {before:0} -> {after:0}.");
-        if (after < before) Debug($"[FAILED] Campaign squad: battle power dropped, {before:0} -> {after:0}.");
+        yield return new GameButton(Paths.SelectWarMachineHeroesLoc.SaveBtn).Click();
+        yield return Poll.Until(() => !WarfrontCampaign.IsCrewPopupVisible);
+        if (WarfrontCampaign.IsCrewPopupVisible) yield return new GameButton(Paths.SelectWarMachineHeroesLoc.CloseBtn).Click();
     }
+
+    private static bool CrewsAre(List<WarMachineFormationSettingSpot> spots, List<List<int>> target) =>
+        spots.Select((s, i) => WarfrontCampaign.ScreenCrew(s).ToHashSet().SetEquals(target[i])).All(same => same);
+
+    // "Goliath Tank 10285 [Boris T, Leo T]": each hero's specialization initial.
+    private static string Describe(IEnumerable<(WarfrontCampaign.Machine Machine, List<int> Crew)> crews, List<WarfrontCampaign.Hero> heroes)
+    {
+        string Name(int code) => heroes.FirstOrDefault(h => h.Code == code) is { } hero ? $"{hero.Name} {"DTH"[hero.Role]}" : code.ToString();
+        return string.Join(", ", crews.Select(c => $"{c.Machine} [{string.Join(", ", c.Crew.Select(Name))}]"));
+    }
+
+    private static string Describe(List<WarMachineFormationSettingSpot> spots, List<WarfrontCampaign.Hero> heroes) =>
+        Describe(spots.Select(s => (new WarfrontCampaign.Machine(s.warMachine.code, s.warMachine.name, s.warMachine.specialization,
+            s.warMachine.powerNoCrew), WarfrontCampaign.ScreenCrew(s))), heroes);
 
     private static List<Defeat> ParseDefeats(string value)
     {

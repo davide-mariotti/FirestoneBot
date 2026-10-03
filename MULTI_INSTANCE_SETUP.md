@@ -255,8 +255,9 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     più; dettagli in `CAMPAIGN_PLAN.md`): ogni 6 ore combatte le missioni della campagna che la
     battle power raggiunge, dalla potenza richiesta più bassa, fino alla prima sconfitta. Battaglie
     gratuite; una sconfitta si ritenta col 5% di potenza in più o dopo 24 h. Prima delle battaglie
-    schiera la squadra più forte (tank davanti, healer in fondo) e mette ogni eroe libero in una
-    crew, se manca qualcosa: è la stessa squadra dell'Arena. A giro fatto, da PowerShell:
+    schiera la squadra più forte (tank davanti, healer in fondo), mette ogni eroe libero in una
+    crew e sposta gli eroi sulla macchina della loro specializzazione (Tank sul tank e così via), se
+    serve: è la stessa squadra dell'Arena. A giro fatto, da PowerShell:
 
     ```powershell
     foreach ($n in 17..34) {
@@ -268,10 +269,13 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     }
     ```
 
-    Su ogni account a livello 50 o più: una riga `Campaign squad: …; strongest: …; heroes in crews
-    N of M, S crew slots per machine.`; se `strongest:` non dice `the same` o N è sotto M, anche
-    `Campaign squad set: …; heroes in crews N -> N2; battle power A -> B.` con B più alta di A (sul
-    PC principale, Steam-8: da una macchina a quattro, 51.583 -> 99.430). Poi `Campaign: stars …,
+    Su ogni account a livello 50 o più: una riga `Campaign squad: Goliath Tank 2449 [Boris T, …], …;
+    strongest: …; N heroes, S crew slots per machine, K crew move(s).` (T/D/H: la specializzazione
+    dell'eroe); se `strongest:` non dice `the same` o K è sopra 0, anche `Campaign squad set: …;
+    battle power A -> B.` con B più alta di A (sul PC principale, Steam-8: da una macchina a quattro,
+    51.583 -> 99.430; Steam-0: due eroi spostati per specializzazione, 800.053 -> 808.914). Al giro
+    dopo K deve essere 0. Un `[FAILED] Campaign squad: battle power dropped` dice che le crew salvate
+    sono state rimesse. Poi `Campaign: stars …,
     battle power …, unlocked …; K defeat(s) waiting …, C to try.` e, per ogni battaglia, `Campaign
     mission 32 Easy: required …, power …, ratio … -> won/lost, stars A -> B.` (B = A + 1 a ogni
     `won`; dopo un `lost` il giro si ferma; dopo 10 battaglie riparte entro 30 minuti). `FAILED=0`.

@@ -76,7 +76,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Map Missions**: collects finished missions and starts new ones, longest first (`mission_time_order`).
 - **Warfront Campaign Loot** and **Warfront Daily Missions** (the liberation battles, with the active squad).
-- **Warfront Campaign**: every 6 h, first fields the strongest war machine squad (tank in front, healer last) with every free hero in a crew - the same squad the Arena and the daily missions use - then fights the campaign missions the battle power reaches, lowest requirement first, until the first defeat; a defeat is retried at 5% more power or after 24 h.
+- **Warfront Campaign**: every 6 h, first fields the strongest war machine squad (tank in front, healer last) with every free hero in a crew and each hero on a machine of its own specialization when possible - the same squad the Arena and the daily missions use - then fights the campaign missions the battle power reaches, lowest requirement first, until the first defeat; a defeat is retried at 5% more power or after 24 h.
 
 **Character**
 

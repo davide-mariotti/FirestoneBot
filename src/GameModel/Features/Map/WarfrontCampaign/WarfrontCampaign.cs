@@ -135,21 +135,29 @@ public static class WarfrontCampaign
         return new[] { tank }.Concat(middle).Append(healer).Where(m => m != null).ToList();
     }
 
-    /// <summary>Owned heroes, those in a crew of the active squad, and the crew slots of one machine.</summary>
-    public static (int Heroes, int Crewed, int PerMachine) Crews()
+    /// <summary>An owned hero; Role is its Specialization as an int, as CrewPlanner takes it.</summary>
+    public record Hero(int Code, string Name, int Role);
+
+    // heroesDict holds every hero in the game (42); one not owned has id 0 (Steam-0 03/10: 10 owned,
+    // the 10 in its crews). heroesUnlockState isn't ownership either: 38 true.
+    public static List<Hero> Heroes()
     {
-        var crewed = new HashSet<int>();
-        foreach (var spot in Spots())
-            for (var i = 0; i < spot.warMachineHeroCodes.Count; i++)
-                crewed.Add(spot.warMachineHeroCodes[i]);
-
-        // heroesDict holds every hero in the game (42); one not owned has id 0 (Steam-0 03/10: 10 owned,
-        // the 10 in its crews). heroesUnlockState isn't ownership either: 38 true.
-        var heroes = 0;
+        var heroes = new List<Hero>();
         foreach (var hero in Handlers.HeroServerHandler.heroesDict)
-            if (hero.Value != null && hero.Value.id != 0) heroes++;
+            if (hero.Value != null && hero.Value.id != 0)
+                heroes.Add(new Hero(hero.Value.code, hero.Key.ToString(), (int)hero.Value.specialization));
+        return heroes;
+    }
 
-        return (heroes, crewed.Count, Handlers.EngineerLevel.heroSpots);
+    public static int CrewSlotsPerMachine => Handlers.EngineerLevel.heroSpots;
+
+    /// <summary>The active squad's machines with their crews (hero codes) as saved, the front spot first.</summary>
+    public static List<(Machine Machine, List<int> Crew)> SquadCrews()
+    {
+        var machines = Machines();
+        return Spots().OrderBy(s => s.spotIndex)
+            .Select(s => (Machine: machines.FirstOrDefault(m => m.Code == s.code), Crew: ToList(s.warMachineHeroCodes)))
+            .Where(s => s.Machine != null).ToList();
     }
 
     public static bool IsSquadScreenVisible => new GameElement(Paths.SelectWarMachinesLoc.CloseBtn).IsVisible();
@@ -170,8 +178,6 @@ public static class WarfrontCampaign
             .GetComponentsInChildren<WarMachineFormationSettingSpot>().OrderBy(s => s.spotIndex).ToList()
         ?? new List<WarMachineFormationSettingSpot>();
 
-    public static int CrewCount(WarMachineFormationSettingSpot spot) => spot.tempCrewHeroIds?.Count ?? 0;
-
     /// <summary>The deck card that adds a machine to the squad or takes it out.</summary>
     public static GameButton DeckCard(string code)
     {
@@ -181,13 +187,21 @@ public static class WarfrontCampaign
         return card?.clickButton == null ? null : new GameButton(transform: card.clickButton.transform);
     }
 
-    /// <summary>The open crew popup's free heroes: listed but not selected for this crew.</summary>
-    public static List<GameButton> FreeHeroCards() =>
+    /// <summary>A spot's crew in the open squad screen's unsaved draft.</summary>
+    public static List<int> ScreenCrew(WarMachineFormationSettingSpot spot) => ToList(spot.tempCrewHeroIds);
+
+    /// <summary>A hero's card in the open crew popup, which lists that crew's heroes and the free ones.</summary>
+    public static HeroInteractionSelect HeroCard(int code) =>
         GameElement.FindTransform(Paths.SelectWarMachineHeroesLoc.HeroGridRoot)?
             .GetComponentsInChildren<HeroInteractionSelect>()
-            .Where(h => h.hero != null && !h.isEmpty && !h.IsSelected() && h.button != null)
-            .Select(h => new GameButton(transform: h.button.transform)).ToList()
-        ?? new List<GameButton>();
+            .FirstOrDefault(h => h.hero != null && !h.isEmpty && h.hero.code == code);
+
+    private static List<int> ToList(Il2CppSystem.Collections.Generic.List<int> list)
+    {
+        var items = new List<int>();
+        for (var i = 0; list != null && i < list.Count; i++) items.Add(list[i]);
+        return items;
+    }
 
     private static List<WarMachineSpotData> Spots()
     {

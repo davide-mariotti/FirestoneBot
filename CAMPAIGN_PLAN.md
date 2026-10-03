@@ -482,3 +482,8 @@ aggiornato.
    altrove; corretto il 3/10 dopo il primo giro della flotta, prima era battle power / richiesta, che
    non confronta i tre gruppi). Su Steam-0 oggi, persa Easy 33 a 1,33× il nemico, Normal 12 (0,83×)
    non si tenta.
+7. **Crew per specializzazione (utente, 3/10, rivede il punto 4).** Gli eroi stanno sulla macchina
+   della loro specializzazione (Tank sul tank, Healer sull'healer, Damage sui damage), anche
+   spostandoli fra crew già piene; la dimensione di ogni crew non cambia (gli eroi liberi vanno alla
+   più piccola). Senza eroi adatti un posto si riempie con chi resta, mai vuoto. Se la battle power
+   scende, si rimettono le crew salvate.
