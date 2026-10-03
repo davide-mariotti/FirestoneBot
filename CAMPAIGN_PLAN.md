@@ -154,8 +154,10 @@ con `GetComponentsInChildren<…>()` (`src/GameModel/Features/Town/ExoticMerchan
   - `currentFormationPowerBattle`, `formationBattlePowerText`;
   - `editFormationButton`, `editCrewButton`, `addCrewButton`, `setCrewButton`;
   - `crewHeroIds`, `tempCrewHeroIds`, `crewBonuses`, `heroesOnCrewList`;
-  - un `bestSquadButton`: se è della formazione del Warfront e fa "squadra migliore" da solo, il
-    passo A si riduce a un click (da vedere nella sonda).
+  - nessun "squadra migliore" automatico. L'unico `bestSquadButton` del gioco è del Tower of Souls
+    (`TowerOfSoulsSubmenu`, `SelectTOSFormationViewController`, `TowerOfSoulsHandler.GetBestSquad`,
+    formazione di eroi), letto dai metadati dell'assembly il 3/10. Nessun membro "best", "auto",
+    "recommend" od "optimal" nelle classi di War Machine, formazione, squadra, crew o campagna.
 - **Arena**: `attackerFormation` e `defenderFormation` sono separate, quindi la formazione di battaglia
   dovrebbe essere un'altra. Da confermare.
 
@@ -198,8 +200,7 @@ sonda tolta. Domande a cui rispondere, ognuna con il path o il campo visto:
    - la potenza di ogni macchina (o dove leggerla);
    - la specializzazione (dal nome con la tabella della wiki, o da un campo);
    - il testo "Battle power", e se si aggiorna prima di "Save changes";
-   - il bottone "Save changes" e cosa succede chiudendo senza salvare;
-   - `bestSquadButton`: c'è, e cosa fa?
+   - il bottone "Save changes" e cosa succede chiudendo senza salvare.
 5. **Crew**: il popup "Select crew". Servono:
    - i posti, sbloccati e col lucchetto, e cosa li sblocca;
    - la lista degli eroi: mostra solo quelli liberi?
@@ -234,16 +235,16 @@ sonda tolta. Domande a cui rispondere, ognuna con il path o il campo visto:
 Si fa al primo giro, poi solo quando la potenza di una macchina è cambiata: livelli di
 `WarMachinesTask`, rarità di `WarMachineRarityTask`, gioielli degli eroi da Hall of Heroes.
 
-1. Se la sonda trova un `bestSquadButton` che fa questo lavoro, si usa quello e si legge la battle
-   power prima e dopo.
-2. Altrimenti:
-   - **Macchine**: il tank con la battle power più alta, l'healer con la battle power più alta, e le
-     3 più potenti fra tutte le altre (anche altri tank o healer). Senza tank o senza healer
-     nell'account, quel posto va alla macchina più potente rimasta. In campo nell'ordine tank →
-     damage → healer: davanti il tank, perché gli healer curano la macchina più avanti.
-   - **Crew**: ogni eroe libero va in un posto vuoto, perché un eroe fuori da ogni crew non dà
-     niente. Nessuno spostamento fine tra macchine in questa versione (sezione 8). La riga di log
-     scrive la potenza di ogni macchina, così si potrà decidere coi numeri.
+Il gioco non ha un "squadra migliore" automatico per le War Machine (vedi 2.4), quindi la scelta la
+fa il task:
+
+1. **Macchine**: il tank con la battle power più alta, l'healer con la battle power più alta, e le 3
+   più potenti fra tutte le altre (anche altri tank o healer). Senza tank o senza healer
+   nell'account, quel posto va alla macchina più potente rimasta. In campo nell'ordine tank → damage
+   → healer: davanti il tank, perché gli healer curano la macchina più avanti.
+2. **Crew**: ogni eroe libero va in un posto vuoto, perché un eroe fuori da ogni crew non dà niente.
+   Nessuno spostamento fine tra macchine in questa versione (sezione 8). La riga di log scrive la
+   potenza di ogni macchina, così si potrà decidere coi numeri.
 3. "Save changes" e controllo: la battle power salvata non deve essere più bassa di prima. Se lo è, si
    rimette la formazione di prima e si scrive un `[FAILED]`.
 4. **Riga di log**: `Campaign formation: Goliath 315764, Cloudfist …, Hunter … (tank, damage, healer), battle power A -> B, free heroes placed N.`
@@ -331,5 +332,4 @@ aggiornato.
 4. **Crew: nessun eroe libero, nessuno spostamento fine** in questa versione. Motivo: con più posti
    che eroi (Steam-0: 10 eroi, 20 posti sbloccati) conta soprattutto che ogni eroe sia in una crew. Gli
    spostamenti fini costano molti click per ogni prova. La riga di log con la potenza di ogni macchina
-   serve a decidere dopo coi numeri. Se il `bestSquadButton` del gioco fa già la squadra migliore, si
-   usa quello (passo A, punto 1).
+   serve a decidere dopo coi numeri.
