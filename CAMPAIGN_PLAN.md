@@ -179,6 +179,30 @@ con `GetComponentsInChildren<…>()` (`src/GameModel/Features/Town/ExoticMerchan
   (`Paths.WarMachinesLoc.MachineGridRoot`, `bg/warMachinePreview/info/power` nel dump statico), già
   usato da `WarMachinesTask`.
 
+### 2.6 Dalla guida Steam (settembre 2026, gioco 9.1.1; testo in `docs/guida_steam_completa.md`)
+
+La copia ricevuta il 3/10 è parziale: la sezione dedicata, "Warfront/Warmachine Expansion", non c'è
+ancora. Dalle parti presenti ("Quick Tips 4" e "Hero Equipment 3"):
+
+- **Obiettivo**: "reach 190 (319) campaign stars to unlock all daily missions (liberation/dungeon)".
+  Le stelle valgono più delle singole missioni: conferma l'ordine dalla soglia più bassa (sezione 8).
+- **Macchine consigliate**: "Solo Damage WM: Cloudfist / Multi-damage WM: Thunderclap and Tank:
+  Goliath", ma "Talos instead of Cloudfist or Fortress instead of Goliath … are still good WM's".
+  Nessuna parola sugli healer. Il task non usa una classifica fissa: sceglie per battle power
+  dell'account (sezione 4.2), che alla soglia è ciò che conta. La guida conferma comunque che il tank
+  va sempre schierato.
+- **Crescita**: concentrarsi su una macchina, poi alzare piano le altre; blueprint su tutti e tre gli
+  attributi; dopo aver portato le preferite a Uncommon, portare le altre al livello 10 prima di
+  Uncommon. Riguarda `WarMachinesTask` e `WarMachineRarityTask`, non questo task.
+- **Crew e gioielli**: gli eroi in una macchina damage alzano i gioielli di danno, quelli in una
+  macchina tank o healer salute e armatura; i gioielli tier 2 prima dei tier 1. È la base per la crew
+  fine, se un giorno si fa (sezione 8, punto 4).
+- **Contratti**: "As soon as you have filled your main WM's with heroes/mercenaries, you can use the
+  contracts for at least for the first couple of rarity levels". Prima i mercenari, finché le crew
+  delle macchine principali non sono piene, poi la rarità degli eroi. Il task di Hall of Heroes del
+  3/10 spende invece i contratti sulla rarità appena può: è una decisione per l'utente, fuori da
+  questo piano (Steam-0: 10 eroi per 20 posti di crew).
+
 ## 3. Sonda dal vivo (Fase 0, su Steam-0, senza combattere)
 
 Come per la rarità degli eroi: build con la sonda, Steam-0 con il task messo in coda, lettura del log,

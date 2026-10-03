@@ -9,6 +9,7 @@ sources: 5 video YouTube di Ashstronox (V1-V5) + guida Steam Community
 <!-- ISTRUZIONI PER L'AI: questo file è una knowledge base su Firestone Idle RPG per giocatori free-to-play.
 Le sigle V1-V5 indicano il video di origine (vedi tabella iniziale e sezione Fonti).
 "Guida Steam" = guida community su Steam. Valori e costi possono essere cambiati con aggiornamenti del gioco.
+Testo originale della guida Steam (versione di settembre 2026, gioco 9.1.1, copia parziale): docs/guida_steam_completa.md.
 Quando due fonti divergono (es. battle pass) la guida riporta entrambe le posizioni. -->
 
 # Firestone Idle RPG – Guida completa F2P
@@ -16,7 +17,7 @@ Quando due fonti divergono (es. battle pass) la guida riporta entrambe le posizi
 
 ## Come usare questa guida
 
-In Firestone si cresce moltiplicando il gold. Quasi ogni scelta si giudica così: questa cosa aumenta il gold guadagnato, i Firestone del prestige o il danno di tutta la squadra? La guida mette insieme i 5 video F2P di Ashstronox (da 10 giorni a 9 mesi di gioco), riorganizzati per argomento. Dove serve, aggiunge dati dalla [Firestone Idle RPG Wiki](https://firestone-idle-rpg.fandom.com/wiki/Firestone_Idle_RPG_Wiki).
+In Firestone si cresce moltiplicando il gold. Quasi ogni scelta si giudica così: questa cosa aumenta il gold guadagnato, i Firestone del prestige o il danno di tutta la squadra? La guida mette insieme i 5 video F2P di Ashstronox (da 10 giorni a 9 mesi di gioco), riorganizzati per argomento. Dove serve, aggiunge dati dalla [Firestone Idle RPG Wiki](https://firestone-idle-rpg.fandom.com/wiki/Firestone_Idle_RPG_Wiki). Il testo originale (in inglese) della [guida Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=2788843533), aggiornata a settembre 2026, è in [guida_steam_completa.md](guida_steam_completa.md): da lì si controllano i dati riportati qui.
 
 **Video di riferimento** (citati nel testo con la sigla):
 
