@@ -48,6 +48,8 @@ public class ChaosRiftTask : BotTask
             var hits = 0;
             for (; hits < MaxHits; hits++)
             {
+                // The button is unclickable while a hit plays (2/10: one hit per run), as in ArcaneCrystal.Hit.
+                yield return Poll.Until(() => ChaosRift.HitBtn.IsClickable(), 20, 0.3f);
                 if (!ChaosRift.HitBtn.IsClickable()) break;
                 yield return ChaosRift.HitBtn.Click();
             }
