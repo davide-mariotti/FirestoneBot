@@ -578,6 +578,10 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 - **Eventi non ancora gestiti** (piano in `EVENTS_PLAN.md`, con date e procedura): eventi di calendario
   (Halloween dal 23/10, poi Winter Festival), Frostfire Festival (03/12), anniversario (aprile), tab
   Medals di Decorated Heroes (novembre). Si fanno quando se ne vede la schermata dal vivo.
+- **Campagna del Warfront** (missioni 1-90, difficoltà Easy → Nightmare, formazione e crew delle War
+  Machine): piano in `CAMPAIGN_PLAN.md` (3/10), da implementare in una sessione nuova. Le soglie di
+  potenza vengono dalla formula della wiki, verificata sul "Power required" di Riverlands 1 Hard
+  (56.463.500), o direttamente dal gioco (`modePowerReqDict`).
 - Non ancora gestiti: claim gratuito del Monthly pass nello shop di Scarab's Game, missioni Dungeon
   del Warfront, moltiplicatore bulk delle War Machines, Soul stones (Hall of Heroes, livello 200).
 - Scartato: la routine di push (pergamene e pouch allo stage ottimale). Fragile e rischia di
@@ -597,8 +601,11 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 
 ## Tornare indietro
 
-Il tag `pre-hall-of-heroes-2026-09-29` segna il codice prima della riscrittura di Hall of Heroes
-(commit `6a75e0a`). Il tag `pre-cleanup-2026-09-28` segna il codice prima della pulizia (commit `a27ecf0`, già con il
+Il tag `pre-campaign-2026-10-03` segna il codice prima del task della campagna del Warfront
+(`CAMPAIGN_PLAN.md`), con già la rarità degli eroi e le correzioni di Chaos Rift e Free Pickaxes
+(commit `a13bdfd`; cfg e DLL di Steam-0 di quel momento in
+`C:\Repos\FirestoneBot-test-backup\2026-10-03-pre-campaign`). Il tag `pre-hall-of-heroes-2026-09-29`
+segna il codice prima della riscrittura di Hall of Heroes (commit `6a75e0a`). Il tag `pre-cleanup-2026-09-28` segna il codice prima della pulizia (commit `a27ecf0`, già con il
 riallineamento alla guida F2P). Il commit precedente al riallineamento è `10eebca`.
 
 ```powershell
