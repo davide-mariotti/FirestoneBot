@@ -127,8 +127,8 @@ public static class WarfrontCampaign
         return new[] { tank }.Concat(middle).Append(healer).Where(m => m != null).ToList();
     }
 
-    /// <summary>Unlocked heroes, those in a crew of the active squad, and the squad's crew slots.</summary>
-    public static (int Heroes, int Crewed, int Slots) Crews()
+    /// <summary>Owned heroes, those in a crew of the active squad, and the crew slots of one machine.</summary>
+    public static (int Heroes, int Crewed, int PerMachine) Crews()
     {
         var crewed = new HashSet<int>();
         foreach (var spot in Spots())
@@ -141,8 +141,45 @@ public static class WarfrontCampaign
         foreach (var hero in Handlers.HeroServerHandler.heroesDict)
             if (hero.Value != null && hero.Value.id != 0) heroes++;
 
-        return (heroes, crewed.Count, Spots().Count * Handlers.EngineerLevel.heroSpots);
+        return (heroes, crewed.Count, Handlers.EngineerLevel.heroSpots);
     }
+
+    public static bool IsSquadScreenVisible => new GameElement(Paths.SelectWarMachinesLoc.CloseBtn).IsVisible();
+
+    public static bool IsCrewPopupVisible => new GameElement(Paths.SelectWarMachineHeroesLoc.CloseBtn).IsVisible();
+
+    /// <summary>The squad screen, through a mission preview's "Battle formation"; the Warfront tab must be open.</summary>
+    public static IEnumerator OpenSquadScreen()
+    {
+        yield return OpenPreview(1);
+        yield return new GameButton(Paths.WFCampaignMissionPreviewLoc.ChangeFormationBtn).Click();
+        yield return Poll.Until(() => IsSquadScreenVisible);
+    }
+
+    /// <summary>The open squad screen's spots, front (spotIndex 0) first, as the unsaved draft shows them.</summary>
+    public static List<WarMachineFormationSettingSpot> ScreenSpots() =>
+        GameElement.FindTransform(Paths.SelectWarMachinesLoc.SpotsRoot)?
+            .GetComponentsInChildren<WarMachineFormationSettingSpot>().OrderBy(s => s.spotIndex).ToList()
+        ?? new List<WarMachineFormationSettingSpot>();
+
+    public static int CrewCount(WarMachineFormationSettingSpot spot) => spot.tempCrewHeroIds?.Count ?? 0;
+
+    /// <summary>The deck card that adds a machine to the squad or takes it out.</summary>
+    public static GameButton DeckCard(string code)
+    {
+        var card = GameElement.FindTransform(Paths.SelectWarMachinesLoc.DeckRoot)?
+            .GetComponentsInChildren<WarMachineSelectInteraction>()
+            .FirstOrDefault(c => c.warMachine != null && c.warMachine.code == code);
+        return card?.clickButton == null ? null : new GameButton(transform: card.clickButton.transform);
+    }
+
+    /// <summary>The open crew popup's free heroes: listed but not selected for this crew.</summary>
+    public static List<GameButton> FreeHeroCards() =>
+        GameElement.FindTransform(Paths.SelectWarMachineHeroesLoc.HeroGridRoot)?
+            .GetComponentsInChildren<HeroInteractionSelect>()
+            .Where(h => h.hero != null && !h.isEmpty && !h.IsSelected() && h.button != null)
+            .Select(h => new GameButton(transform: h.button.transform)).ToList()
+        ?? new List<GameButton>();
 
     private static List<WarMachineSpotData> Spots()
     {

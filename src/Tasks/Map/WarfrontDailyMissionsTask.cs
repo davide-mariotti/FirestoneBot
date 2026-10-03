@@ -12,8 +12,8 @@ namespace Firebot.Tasks.Map;
 
 /// <summary>
 ///     Fights the Warfront's daily liberation missions (not the dungeons), one real battle at a time,
-///     which also completes the daily "Liberator" quest. The formation is set up by hand once; this
-///     only presses start.
+///     which also completes the daily "Liberator" quest. The formation is the active squad, which
+///     WarfrontCampaignTask keeps at its strongest; this only presses start.
 /// </summary>
 public class WarfrontDailyMissionsTask : BotTask
 {

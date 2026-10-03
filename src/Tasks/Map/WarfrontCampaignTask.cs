@@ -8,6 +8,7 @@ using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Map;
 using Firebot.GameModel.Features.Map.WarfrontCampaign;
 using Firebot.GameModel.Primitives;
+using Firebot.Infrastructure;
 using MelonLoader;
 using Logger = Firebot.Core.Logger;
 using CampaignBattle = Firebot.GameModel.Features.Map.WarfrontCampaign.WarfrontCampaign.Battle;
@@ -36,6 +37,10 @@ public class WarfrontCampaignTask : BotTask
     private const double RetryPowerGain = 1.05;
     private const int MaxBattles = 10;
 
+    // A run that ends on MaxBattles still had fights to try (12 of 16 accounts on 03/10): back soon,
+    // with the other tasks in between.
+    private static readonly TimeSpan MoreBattlesDelay = TimeSpan.FromMinutes(30);
+
     private const int MaxBattlePolls = 90;
     private const float BattlePollSeconds = 2f;
 
@@ -51,10 +56,11 @@ public class WarfrontCampaignTask : BotTask
 
     public override IEnumerator Execute()
     {
-        LogSquad();
+        yield return ApplySquad();
 
         var defeats = ParseDefeats(_defeats.Value);
         var tried = new HashSet<(int, int)>();
+        var stopped = false;
         for (var attempt = 0; attempt < MaxBattles; attempt++)
         {
             var power = WarfrontCampaign.BattlePower;
@@ -74,7 +80,11 @@ public class WarfrontCampaignTask : BotTask
                       $"; {waiting.Count} defeat(s) waiting (margin up to {bar:0.00}), {candidates.Count} to try.");
 
             var next = candidates.FirstOrDefault();
-            if (next == null) break;
+            if (next == null)
+            {
+                stopped = true;
+                break;
+            }
             tried.Add((next.Mission, next.Mode));
 
             var stars = WarfrontCampaign.Stars;
@@ -88,12 +98,13 @@ public class WarfrontCampaignTask : BotTask
 
             defeats.RemoveAll(d => Same(next, d));
             defeats.Add(new Defeat(next.Mission, next.Mode, power, DateTime.Now));
+            stopped = true;
             break;
         }
 
         _defeats.Value = string.Join(";", defeats.Select(d =>
             $"{d.Mission}:{d.Mode}@{d.Power.ToString("0", CultureInfo.InvariantCulture)}@{d.Time:s}"));
-        NextRunTime = DateTime.Now + RecheckDelay;
+        NextRunTime = DateTime.Now + (stopped ? RecheckDelay : MoreBattlesDelay);
     }
 
     private static bool Same(CampaignBattle b, Defeat d) => b.Mission == d.Mission && b.Mode == d.Mode;
@@ -139,16 +150,90 @@ public class WarfrontCampaignTask : BotTask
         result(won);
     }
 
-    // ponytail: reports the strongest squad without applying it. Steam-0 already has it (03/10), so
-    // the squad and crew clicks couldn't be seen live; the fleet's lines say which accounts need them.
-    private void LogSquad()
+    /// <summary>
+    ///     Fields the strongest squad (WarfrontCampaign.Strongest) and puts every free hero in a crew -
+    ///     the Arena fights with the same squad (user decision, 03/10). Read from the game's data each
+    ///     run, so the screen opens only when something is missing. When the machines change, they all
+    ///     come out and go back in the strongest order, spot 0 first.
+    /// </summary>
+    private IEnumerator ApplySquad()
     {
         var squad = WarfrontCampaign.Squad();
         var strongest = WarfrontCampaign.Strongest(WarfrontCampaign.Machines());
-        var (heroes, crewed, slots) = WarfrontCampaign.Crews();
+        var (heroes, crewed, perMachine) = WarfrontCampaign.Crews();
+        var sameMachines = WarfrontCampaign.SameSquad(squad, strongest);
+        var freeHeroes = Math.Min(heroes - crewed, strongest.Count * perMachine - crewed);
         Debug($"[INFO] Campaign squad: {string.Join(", ", squad)}; strongest: " +
-              $"{(WarfrontCampaign.SameSquad(squad, strongest) ? "the same" : string.Join(", ", strongest))}; " +
-              $"heroes in crews {crewed} of {heroes}, crew slots {slots}.");
+              $"{(sameMachines ? "the same" : string.Join(", ", strongest))}; heroes in crews {crewed} of {heroes}, " +
+              $"{perMachine} crew slots per machine.");
+        if (sameMachines && freeHeroes <= 0) yield break;
+
+        var before = WarfrontCampaign.BattlePower;
+        yield return WorldMap.Open;
+        yield return WorldMap.OpenWarfrontCampaignTab;
+        yield return WarfrontCampaign.OpenSquadScreen();
+        if (!WarfrontCampaign.IsSquadScreenVisible)
+        {
+            Debug($"[FAILED] Campaign squad: screen not open. Screens: {Watchdog.DumpActiveScreens()}");
+            yield return Watchdog.ForceClearAll();
+            yield break;
+        }
+
+        if (!sameMachines)
+        {
+            foreach (var code in WarfrontCampaign.ScreenSpots().Where(s => s.warMachine != null).Select(s => s.warMachine.code).ToList())
+                yield return WarfrontCampaign.DeckCard(code)?.Click();
+            foreach (var machine in strongest)
+                yield return WarfrontCampaign.DeckCard(machine.Code)?.Click();
+
+            var placed = WarfrontCampaign.ScreenSpots().Select(s => s.warMachine?.code ?? "-").ToList();
+            Debug($"[INFO] Campaign squad: spots now {string.Join(", ", WarfrontCampaign.ScreenSpots().Select(s => $"{s.spotIndex}:{s.warMachine?.name ?? "-"}[{WarfrontCampaign.CrewCount(s)}]"))}.");
+            if (!placed.Take(strongest.Count).SequenceEqual(strongest.Select(m => m.Code)))
+            {
+                // Nothing is saved: closing drops the draft.
+                Debug("[FAILED] Campaign squad: the spots don't match the strongest squad - not saved.");
+                yield return Watchdog.ForceClearAll();
+                yield break;
+            }
+        }
+
+        // Free heroes go one at a time to the machine with the smallest crew, front first: the first
+        // hero multiplies a machine's power about 13x, the second takes it to about 20x (Steam-0 03/10).
+        var spots = WarfrontCampaign.ScreenSpots().Where(s => s.warMachine != null).ToList();
+        var crews = spots.Select(WarfrontCampaign.CrewCount).ToArray();
+        var adds = new int[spots.Count];
+        for (var free = heroes - crews.Sum(); free > 0; free--)
+        {
+            var open = Enumerable.Range(0, spots.Count).Where(i => crews[i] + adds[i] < perMachine).ToList();
+            if (open.Count == 0) break;
+            adds[open.OrderBy(i => crews[i] + adds[i]).First()]++;
+        }
+
+        for (var i = 0; i < spots.Count; i++)
+        {
+            if (adds[i] == 0) continue;
+            var edit = new GameButton(transform: (spots[i].editCrewButton.gameObject.activeInHierarchy
+                ? spots[i].editCrewButton : spots[i].addCrewButton).transform);
+            yield return edit.Click();
+            yield return Poll.Until(() => WarfrontCampaign.IsCrewPopupVisible);
+            foreach (var hero in WarfrontCampaign.FreeHeroCards().Take(adds[i]))
+                yield return hero.Click();
+            yield return new GameButton(Paths.SelectWarMachineHeroesLoc.SaveBtn).Click();
+            yield return Poll.Until(() => !WarfrontCampaign.IsCrewPopupVisible);
+            if (WarfrontCampaign.IsCrewPopupVisible) yield return new GameButton(Paths.SelectWarMachineHeroesLoc.CloseBtn).Click();
+        }
+
+        Debug($"[INFO] Campaign squad: spots before saving {string.Join(", ", WarfrontCampaign.ScreenSpots().Select(s => $"{s.spotIndex}:{s.warMachine?.name ?? "-"}[{WarfrontCampaign.CrewCount(s)}]"))}.");
+        var save = new GameButton(Paths.SelectWarMachinesLoc.SaveBtn);
+        yield return save.Click();
+        yield return Poll.Until(() => !save.IsClickable() && WarfrontCampaign.BattlePower != before, 20);
+        yield return Watchdog.ForceClearAll();
+
+        var after = WarfrontCampaign.BattlePower;
+        var (_, crewedAfter, _) = WarfrontCampaign.Crews();
+        Debug($"[INFO] Campaign squad set: {string.Join(", ", WarfrontCampaign.Squad())}; heroes in crews {crewed} -> {crewedAfter}; " +
+              $"battle power {before:0} -> {after:0}.");
+        if (after < before) Debug($"[FAILED] Campaign squad: battle power dropped, {before:0} -> {after:0}.");
     }
 
     private static List<Defeat> ParseDefeats(string value)

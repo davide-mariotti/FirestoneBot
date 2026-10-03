@@ -17,7 +17,8 @@ namespace Firebot.Tasks.Town;
 ///     lower the rank - only a win changes it - so a token is never left unused: each one gets up to
 ///     12 looks at the 3 opponents (a reroll is free every 5 s), accepting a slightly stronger
 ///     opponent the longer it searches (see SearchPhases), and fights the weakest on the last look.
-///     The formation is set up by hand once; the task never touches it.
+///     It fights with the active squad, which WarfrontCampaignTask keeps at its strongest; this task
+///     never touches it.
 /// </summary>
 public class ArenaOfKingsTask : BotTask
 {

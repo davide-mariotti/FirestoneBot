@@ -86,6 +86,39 @@ public static partial class Paths
         public const string CloseBtn = Root + "/bg/closeButton";
 
         public const string ModesRoot = Root + "/bg/modes";
+
+        // "Battle formation": opens SelectWarMachinesLoc.
+        public const string ChangeFormationBtn = Root + "/bg/changeFormationButton";
+    }
+
+    // The active squad, the one the campaign, Daily Missions and the Arena all fight with. Spots
+    // (WarMachineFormationSettingSpot, spotIndex 0-4) and deck cards (WarMachineSelectInteraction).
+    public static class SelectWarMachinesLoc
+    {
+        private const string Root = MenusLoc.Root + "/menus/SelectWarMachines";
+
+        public const string CloseBtn = Root + "/closeButton";
+
+        // Clickable only with unsaved changes.
+        public const string SaveBtn = Root + "/bg/formationData/saveChanges";
+
+        public const string SpotsRoot = Root + "/bg/formationSpots";
+
+        public const string DeckRoot = Root + "/bg/warmachinesDeck/warMachinesScroll/Viewport/grid";
+    }
+
+    // A spot's crew, opened by its crew/editButton (or addButton). Lists that crew's heroes (selected)
+    // and the free ones (HeroInteractionSelect).
+    public static class SelectWarMachineHeroesLoc
+    {
+        private const string Root = MenusLoc.Root + "/popups/SelectWarMachineHeroes";
+
+        public const string CloseBtn = Root + "/bg/closeButton";
+
+        // "Save changes".
+        public const string SaveBtn = Root + "/bg/setCrewButton";
+
+        public const string HeroGridRoot = Root + "/bg/heroListScroll/Viewport/grid";
     }
 
     // The live battle, under menus/ unlike its siblings. A fightBtn can open it directly, skipping
