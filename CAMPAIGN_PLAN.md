@@ -34,8 +34,10 @@ Un task nuovo e separato, `WarfrontCampaignTask` (gruppo Warfront, livello 50, c
   lo giustifica, in base alla potenza dei nemici di quella missione. Le soglie si prendono dal gioco
   se possibile, altrimenti dalla formula della wiki (sezione 2.1, già verificata).
 - **Perché**: ogni vittoria dà una stella e una ricompensa unica (forzieri jewel, Emblem of Valor,
-  blueprint). Le stelle sbloccano funzioni (sezione 2.1). Steam-0 ne ha 42: a 70 si aprono i dungeon
-  delle missioni giornaliere, a 100 il forziere Diamond dell'Emblem market.
+  blueprint). Le stelle sbloccano altre missioni giornaliere: liberation a 5, 10, 20, 40, 60, 80, 110,
+  155, 190, 319 e dungeon a 70 e 120 (sezione 2.6). Danno anche funzioni nuove (sezione 2.1). Steam-0
+  ne ha 42: le prossime soglie sono 60 (una liberation in più), 70 (il primo dungeon) e 100 (il
+  forziere Diamond, anche nell'Emblem market).
 - **Mai**: spendere qualcosa (le battaglie della campagna dovrebbero essere gratuite: la sonda lo
   conferma), cliccare `getMore` sui contatori, chiudere una battaglia in corso (il `closeButton` di
   `WFBattle` la abbandona, vedi `Paths.WFBattleLoc`), toccare le formazioni dell'Arena.
@@ -181,27 +183,74 @@ con `GetComponentsInChildren<…>()` (`src/GameModel/Features/Town/ExoticMerchan
 
 ### 2.6 Dalla guida Steam (settembre 2026, gioco 9.1.1; testo in `docs/guida_steam_completa.md`)
 
-La copia ricevuta il 3/10 è parziale: la sezione dedicata, "Warfront/Warmachine Expansion", non c'è
-ancora. Dalle parti presenti ("Quick Tips 4" e "Hero Equipment 3"):
+Sezioni "Quick Hints 4", "Hero Equipment 3", "Personal Tree vs WM", "Warfront/Warmachine Expansion 1
+e 2", "Pirate ship / Mercenaries" e "Unlocks". Le citazioni sono tra virgolette.
 
-- **Obiettivo**: "reach 190 (319) campaign stars to unlock all daily missions (liberation/dungeon)".
-  Le stelle valgono più delle singole missioni: conferma l'ordine dalla soglia più bassa (sezione 8).
-- **Macchine consigliate**: "Solo Damage WM: Cloudfist / Multi-damage WM: Thunderclap and Tank:
-  Goliath", ma "Talos instead of Cloudfist or Fortress instead of Goliath … are still good WM's".
-  Nessuna parola sugli healer. Il task non usa una classifica fissa: sceglie per battle power
-  dell'account (sezione 4.2), che alla soglia è ciò che conta. La guida conferma comunque che il tank
-  va sempre schierato.
-- **Crescita**: concentrarsi su una macchina, poi alzare piano le altre; blueprint su tutti e tre gli
-  attributi; dopo aver portato le preferite a Uncommon, portare le altre al livello 10 prima di
-  Uncommon. Riguarda `WarMachinesTask` e `WarMachineRarityTask`, non questo task.
-- **Crew e gioielli**: gli eroi in una macchina damage alzano i gioielli di danno, quelli in una
-  macchina tank o healer salute e armatura; i gioielli tier 2 prima dei tier 1. È la base per la crew
-  fine, se un giorno si fa (sezione 8, punto 4).
-- **Contratti**: "As soon as you have filled your main WM's with heroes/mercenaries, you can use the
-  contracts for at least for the first couple of rarity levels". Prima i mercenari, finché le crew
-  delle macchine principali non sono piene, poi la rarità degli eroi. Il task di Hall of Heroes del
-  3/10 spende invece i contratti sulla rarità appena può: è una decisione per l'utente, fuori da
-  questo piano (Steam-0: 10 eroi per 20 posti di crew).
+**Perché le stelle contano.** "Your first goal should be to reach 190 campaign stars to unlock all
+daily missions (liberation/dungeon)". Le liberation missions giornaliere si aggiungono a 5, 10, 20, 40,
+60, 80, 110, 155, 190 e 319 stelle; i dungeon a 70 (Ethereal Cavern) e 120 (Dragon's Lair). A 100
+stelle il forziere Diamond (anche nell'Emblem market: "3 Diamond Chests = 5000 Emblems of Valour"),
+a 190 Insane, a 319 Nightmare e una liberation in più. Ogni stella aumenta quindi le ricompense di
+tutti i giorni: conferma l'ordine dalla soglia più bassa (sezione 8).
+
+**Le War Machine, classi e classifica della guida:**
+
+- Damage singolo: "Cloudfist > Talos > Aegis > Firecracker", e "any single damage is better than any
+  multi damage" (opinione dell'autore; Cloudfist "on the same level as Thunderclap").
+- Damage multiplo: "Thunderclap > before Judgement and > Harvester".
+- Tank: "Goliath > Fortress/Earthshatterer". Goliath per l'autocura del 10%, che sale con la rarità
+  ("Already at rarity level 2, the chance of triggering the self-healing ability is 28%").
+- Healer: "Hunter > Sentinel > Curator".
+- **Le prime 5 macchine arrivano sempre in quest'ordine di classe**: damage singolo, damage singolo,
+  tank, damage multiplo, healer ("Which damage or which tank/healer you exactly get is random, the
+  order isn't"). Dalla sesta è casuale. Quindi un account con 5 macchine ha già esattamente un tank e
+  un healer, e la scelta del passo A conta solo dalla sesta (Steam-0 ne ha 6).
+
+Il task non usa la classifica come regola: sceglie per battle power dell'account (sezione 4.2), che è
+quello che la soglia confronta. La classifica dice però che la regola "un tank e un healer sempre in
+squadra" (sezione 8) è coerente con la guida.
+
+**La crew, con la formula:**
+
+- "crew member bonus = (1 + specialization bonus) * jewel bonus"; "crew bonus = crew member 1 bonus +
+  crew member 2 bonus + ..."; "Battle attribute = basic attribute * (1 + crew bonus)".
+- "The specialization bonus is 40% if the hero's specialization matches the attribute (damage
+  specialization matches damage, healer specialization matches health and tank specialization matches
+  armor)". "If the hero doesn't own any jewels for the attribute, the jewel bonus is 40%".
+- Ogni eroe in crew aggiunge quindi **almeno +40% a ognuno dei tre attributi** della macchina. Un posto
+  vuoto perde quel +40%: la regola "nessun eroe libero" è la mossa che rende di più ed è certa.
+- Il bonus crew di ogni eroe si legge nel gioco: "Town -> Hall of Heroes -> first tab of the hero ->
+  scroll down a bit to the crew bonus" (nel dump statico `infoSubmenu/.../crewBonus/unlocked`).
+  Con questi numeri, la crew ottimale (quale eroe su quale macchina) si potrebbe calcolare senza
+  provare a mano: è la strada per la crew fine (sezione 7).
+- Posti: "4 members; 5 members: engineer level 30; 6 members: engineer level 60".
+- Gioielli: per gli eroi in una macchina damage quelli di danno, in tank o healer salute e armatura;
+  tier 2 prima dei tier 1. Riguarda Hall of Heroes, non questo task.
+
+**Squadre.** Ingegnere, secondo tab "Active Squad": si mettono gli eroi nelle macchine e si creano
+**squadre alternative**, per esempio "1st squad for the campaign … and 1 other squad for the arena,
+where you can switch from 'Battle Attributes' to 'Arena Attributes' under 'Select Crew'". Il task deve
+modificare solo la squadra attiva usata dalla campagna (sezione 3, punto 7).
+
+**Altri dati utili:**
+
+- "Globally, stats are multiplicative in the Campaign and additive in Arena (PvP)".
+- La potenza: `power = (10 * damage)^0.7 + (1 * health)^0.7 + (10 * armor)^0.7`. "Base power" è senza
+  crew (classifica), "Battle power" con la crew (campagna), "Arena power" con la formula dell'arena.
+- Muri della campagna: secondo la sezione "Personal Tree vs WM", "Upgrading our tanks by 15(!) levels
+  provides us with a mere progress of 5 normal missions on average". La progressione è lenta, ed è il
+  motivo della regola dei ritentativi (5% o 24 h).
+- Bottone di velocità: la guida lo dà da 1 stella ("Campaign Stars: 1; ×1, x2 and x4 battle speed
+  button"), la wiki da 20. Su Steam-0 (42 stelle) c'è in ogni caso; la sonda guarda se resta impostato.
+- Preferite: il terzo tab dell'Ingegnere sceglie 5 macchine preferite, che ricevono l'80% dei
+  componenti dai forzieri jewel. Riguarda la crescita delle macchine (`WarMachinesTask`), non questo
+  task.
+
+**Contratti** (non è di questo piano, ma riguarda il task di rarità del 3/10): "beginner should only
+get the first mercenary for 400 contracts and then use the contracts for the hero rarities", e "The
+best choice here is to get Cirilo as the first mercenary". Steam-0 ha già Cirilo, quindi il task di
+rarità è in linea con la guida. Un account senza nessun mercenario dovrebbe invece tenere 400
+contratti per il primo: decisione per l'utente.
 
 ## 3. Sonda dal vivo (Fase 0, su Steam-0, senza combattere)
 
@@ -236,7 +285,13 @@ sonda tolta. Domande a cui rispondere, ognuna con il path o il campo visto:
    - popup di vittoria (`WFBattleWon`) con forzieri o ricompense da chiudere;
    - il contatore delle stelle sale;
    - nessun costo e nessun limite di tentativi.
-7. **Arena**: cambiare la formazione di battaglia tocca le formazioni dell'Arena? (Attesa: no.)
+7. **Squadre** (sezione 2.6): l'Ingegnere ha un tab "Active Squad" con squadre alternative (es. una
+   per la campagna e una per l'Arena). Quale squadra usa la campagna, come si riconosce quella attiva,
+   e cambiarla tocca le formazioni dell'Arena (`attackerFormation`, `defenderFormation`)? Il task deve
+   modificare solo la squadra della campagna.
+8. **Bonus crew**: il tab info dell'eroe in Hall of Heroes mostra il "Crew Bonus" (danno, salute,
+   armatura). Basta annotare path e testi: serve solo per la crew fine (sezione 7), non per questa
+   versione.
 
 ## 4. Il task
 
@@ -266,7 +321,9 @@ fa il task:
    più potenti fra tutte le altre (anche altri tank o healer). Senza tank o senza healer
    nell'account, quel posto va alla macchina più potente rimasta. In campo nell'ordine tank → damage
    → healer: davanti il tank, perché gli healer curano la macchina più avanti.
-2. **Crew**: ogni eroe libero va in un posto vuoto, perché un eroe fuori da ogni crew non dà niente.
+2. **Crew**: ogni eroe libero va in un posto vuoto. Per la formula della guida (sezione 2.6) ogni
+   eroe in crew aggiunge almeno +40% a ognuno dei tre attributi della macchina, quindi un posto vuoto
+   è la perdita più grande. I posti si riempiono partendo dalle macchine in campo, la prima davanti.
    Nessuno spostamento fine tra macchine in questa versione (sezione 8). La riga di log scrive la
    potenza di ogni macchina, così si potrà decidere coi numeri.
 3. "Save changes" e controllo: la battle power salvata non deve essere più bassa di prima. Se lo è, si
@@ -335,6 +392,11 @@ aggiornato.
 - **Dungeon** (70 stelle): oggi `WarfrontDailyMissionsTask` fa solo le liberation missions
   (`Paths.WFDailyMissionsLoc`, "Only the liberation missions are wired, not the dungeons"). Quando un
   account arriva a 70 stelle va aggiunto il ramo dei dungeon, con una sonda sua.
+- **Crew calcolata**: con il "Crew Bonus" di ogni eroe letto da Hall of Heroes e la formula della
+  guida (sezione 2.6: bonus di specializzazione 40% sull'attributo giusto, somma dei membri, battle
+  attribute = basic × (1 + crew bonus), potenza `(10d)^0,7 + h^0,7 + (10a)^0,7`), l'assegnazione eroi →
+  macchine che massimizza la battle power si calcola senza provarla a click. Poi si applica solo la
+  differenza. Da fare se i numeri del log mostrano che la crew conta.
 - **Insane e Nightmare** (190 e 319 stelle): il task li gestisce già se le soglie e gli stati vengono
   dal gioco. Con la sola formula vanno aggiunti i due moltiplicatori, che sono già nella tabella.
 
@@ -353,7 +415,8 @@ aggiornato.
 3. **Ordine: dalla soglia più bassa alla più alta.** Motivo: per i dungeon (70) e il Diamond (100)
    conta il numero di stelle, non quali missioni. Le battaglie più probabili danno più stelle e più in
    fretta, e alternano da sole missioni nuove e difficoltà nuove.
-4. **Crew: nessun eroe libero, nessuno spostamento fine** in questa versione. Motivo: con più posti
+4. **Crew: nessun eroe libero, nessuno spostamento fine** in questa versione. Motivo: per la formula
+   della guida ogni eroe in crew vale almeno +40% su ogni attributo della macchina, e con più posti
    che eroi (Steam-0: 10 eroi, 20 posti sbloccati) conta soprattutto che ogni eroe sia in una crew. Gli
-   spostamenti fini costano molti click per ogni prova. La riga di log con la potenza di ogni macchina
-   serve a decidere dopo coi numeri.
+   spostamenti fini costano molti click per ogni prova. Si potranno calcolare dai bonus crew (sezione
+   7). La riga di log con la potenza di ogni macchina serve a decidere dopo coi numeri.

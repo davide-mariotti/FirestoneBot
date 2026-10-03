@@ -9,7 +9,7 @@ sources: 5 video YouTube di Ashstronox (V1-V5) + guida Steam Community
 <!-- ISTRUZIONI PER L'AI: questo file è una knowledge base su Firestone Idle RPG per giocatori free-to-play.
 Le sigle V1-V5 indicano il video di origine (vedi tabella iniziale e sezione Fonti).
 "Guida Steam" = guida community su Steam. Valori e costi possono essere cambiati con aggiornamenti del gioco.
-Testo originale della guida Steam (versione di settembre 2026, gioco 9.1.1, copia parziale): docs/guida_steam_completa.md.
+Testo originale completo della guida Steam (versione di settembre 2026, gioco 9.1.1): docs/guida_steam_completa.md.
 Quando due fonti divergono (es. battle pass) la guida riporta entrambe le posizioni. -->
 
 # Firestone Idle RPG – Guida completa F2P

@@ -3,10 +3,8 @@ title: Firestone: Online Idle RPG: Complete Guide (Beginners & Advanced Players)
 source: https://steamcommunity.com/sharedfiles/filedetails/?id=2788843533
 version: aggiornata a settembre 2026 (gioco 9.1.1), copiata dall'utente il 2026-10-03
 note: testo originale in inglese, copiato com'è (refusi compresi) come riferimento per sviluppi e controlli.
-      Le immagini della guida (es. la "Power/Crystal Table") non ci sono.
-      COPIA PARZIALE: il testo ricevuto si ferma a metà della sezione Empower (limite di lunghezza del
-      messaggio). Mancano le sezioni successive, tra cui "Warfront/Warmachine Expansion" e il Changelog:
-      vanno aggiunte in fondo quando l'utente le incolla.
+      Titoli e paragrafi rifatti in markdown; le immagini della guida (es. la "Power/Crystal Table") non ci
+      sono, e nemmeno il Changelog (non era nel testo incollato).
       Riassunto in italiano e confronto con altre fonti: docs/firestone_guida_F2P.md.
 -->
 
@@ -604,8 +602,2823 @@ You will also run into empower walls when you don’t get any gold bonus through
 It’s best to use Temple Tokens when you have reached one of these walls. That is when you get the most out of the Temple Tokens. It may sound weird, you might think they are better used when you have a very high multiplier, but that’s wrong as they only work as an effective x2 multiplier (your bonus is x2 larger than the previous).
 
 The formula for calculating the total firestone effect is:
-Total firestone effect = (1% + all meteorite trees (add) + all firestone trees (add) + all exotic upgrades (add) + all experiments (add) + gu
 
-> **[Copia interrotta qui]** Il testo incollato si ferma a questo punto (limite di 50.000 caratteri
-> per messaggio). Il resto della guida, comprese le sezioni "Warfront/Warmachine Expansion", "Pirate
-> ship/Mercenaries" e "Changelog", va aggiunto qui sotto.
+Total firestone effect = (1% + all meteorite trees (add) + all firestone trees (add) + all exotic upgrades (add) + all experiments (add) + guild tree) * tavern card * all artifacts (mult) * fate aura (mult)
+
+(add = additive / mult = multiplicative)
+
+In the Temple of the Eternals you can check the total real time since your last Empowerment
+
+## Stages & Farming
+
+Every stage that you go up will grant you 25% more gold while the enemies get at least 50% stronger. The last number goes up gradually and caps out at 200% at stage 200. After stage 200, enemies get 200% stronger, so you see their HP and damage triple every stage you go up.
+
+Every 50 stages, enemy damage and health increase by additional factors.
+
+Since enemies' health increases by a lot while their worth only increases by a small amount, it’s better to farm at a stage where you quickly kill your enemies. Try finding a stage where most of your heroes kill enemies with one single blow. If you use a balanced build, you don’t need a full team that can kill all enemies with a single blow, because with 5 heroes, that attack every 2 seconds, it’s very likely that 2 heroes attack the same enemy. Resulting in wasted attacks. So having 3 capable heroes is more than enough, as it reduces the overall chance of 2 heroes attacking the same enemy. With a glass cannon build, try to aim for at least 4 heroes capable of killing enemies with a single blow. Since the heroes spend most of the time dead, the attack interval is like 10 seconds, which means it’s less likely 2 heroes will attack at the same time and so less likely wasted attacks occur.
+
+When you are going offline, you may be able to farm a few stages higher than your heroes can handle online. This is due to your overall party DPS. If your party DPS is higher than the waves total HP, you can farm this stage offline. This is due to your parties HP stat not being taken into effect while you are offline.
+
+### The exact formula for gaining xp
+
+xp = (mantissa/10 + exponent) * 3000
+
+where
+
+firestones = mantissa * 10^exponent
+
+### The exact formula for offline gold gains
+
+avg hero speed = (hero 1 speed + … + hero 5 speed) / 5
+
+avg attacks per sec = 5 / avg hero speed
+
+avg hero dmg = (hero 1 dmg + … + hero 5 dmg) / 5
+
+avg attacks per kill = 1 + floor(enemy health / avg hero dmg)
+
+avg kills per sec = avg attacks per sec / avg attacks per kill
+
+avg gold per sec = avg kills per sec * gold per kill
+
+offline gold = avg gold per sec * offline time (sec)
+
+## Fellowship
+
+Fellowships are a way for players to band together to add their powers. It's similar a guild with separate chat. A fellowship consists of up to 5 players which share a common fellowship aura. The fellowship auras give bonuses to hero attributes, team and leaderbonus, gold gain and firestone gain.
+
+At level 7 you can join a fellowship. For better progress, make sure you join a full (5 members) and active fellowship.
+
+The higher the Battle Cry/Fate of the individual members, the higher the Fellowship Aura. (Attribute damage, armour and health, leadership and team bonus, Firestone effect and gold rain).
+
+Make sure you are always in a full and active fellowship.
+
+Just 1 member in sleep mode (5+ days off) will remove the entire gold bonus.
+
+There are two fellowship ranks with the following privileges:
+
+1. Leader (1)
+
+Kick a fellowship member
+
+Transfer leadership to another fellowship member
+
+Set join requirements (battle cry and fate attributes) and set join password
+
+Rename the Fellowship
+
+2. Member (4)
+
+### Offline/Inactive
+
+A fellowship member who is offline for more than 5 days will go into offline mode and will be marked by OfflineMode. A fellowship member who is offline for more than 1 week will be automatically kicked from the fellowship. If the fellowship leader is kicked due to inactivity, a random fellowship member becomes the new leader.
+
+There are two kinds of fellowship auras:
+
+Aura: Battlecry
+
+Aura: Fate
+
+### Battlecry
+
+The battle cry aura is determined from two factors: the base aura and the aura effect.
+
+battle cry aura = base aura × aura effect
+
+The base aura only depends on the number of online players in the fellowship and consists of up to four bonuses
+
+The aura effect is determined by multiplying the battle cry attributes of each online player in the fellowship:
+
+aura effect = (1 + player 1 battle cry %) × (1 + player 2 battle cry %) × ...
+
+The battle cry attribute of a player in offline mode stops contributing to the fellowship effect until the player returns to the game.
+
+Formula for Battlecry:
+
+battle cry % = (1 + talent 1 %) × (1 + talent 2 %) × (1 + talent 3 %) × (1 + tree of life %) × (1 + campaign perk %) - 1
+
+Where the battle cry can be boosted:
+
+1. Guild: Personal Tree (level 10)
+
+2. Campaign (level 50)
+
+3. Talent Tree (1. at level 101 and 2. at level 401 and 3. at level 950)
+
+### Fate
+
+The fate aura unlocks at character level 200. With the Oracle, there are two types of blessings: the twelve outer blessings and one inner blessing (Fate). All blessings require glyphs, which are obtained by opening celestial chests. Blessings will give you a permanent attribute or gold bonus as well as virtue. You need to level all outer blessings five times before you can level the inner blessing, the Fate once. The Fate aura gives you benefits in your fellowship and is determined by two factors:
+
+fate aura = base aura × aura effect
+
+The base aura again depends on the number of online players in the fellowship and consists of up to four bonuses in the following way:
+
+The aura effect is determined by multiplying the fate attributes of each online player in the fellowship:
+
+aura effect = (1 + player 1 fate %) × (1 + player 2 fate %) × ...
+
+Formula for Fate:
+
+fate % = (1 + talent 1 %) × (1 + talent 2 %) × (1 + talent 3 %) × (1 + blessing %) × (1 + medal 1 %) × (1 + medal 2 %) * ... - 1
+
+Where the Fate can be boostedy:
+
+1. Oracle: Blessing
+
+2. Talent Tree (1. at level 531 and 2. at level 801 and 3. at level 1130)
+
+3. During the event: Decorated heroes*
+
+During the event: Decorated heroes*
+
+Depending on how many stars of recognition you obtained during the event, you will rewarded with a medal of courage after the end of the event. You will only get the highest medal you reached. The medal permanently increases your fate attribute multiplicatively.
+
+## Guilds
+
+At level 10 you can join a guild. Like with the fellowship, you should make sure to join a full and active guild. The higher the guild, the higher the guild benefits. (Benefits via the things that have been levelled in the guild tree and through the guild level).
+
+Available as soon as you enter a guild are Expeditions, these are missions separate from your regular map missions that reward you with Guild Coins and Expedition Tokens. The coins are automatically donated into the guild bank (with exception of ones purchased through the shop, from the Battle Pass or the rewards from the arena) the tokens are used to upgrade your personal tree, your wm's or to purchase pickaxes, jewel chets, elixir of life, tools or emblem of valor.
+
+Guilds play a major role in terms of your progression in the game too. Guilds have perks for the whole guild, and your own personal perk tree. This will help boost you to pushing further into the game.
+
+There are two Trees of Life, the guild tree and the personal tree. Each tree offers upgrades which can be bought with guild coins or expedition tokens.
+
+Each tree also has a tree level which is increased by buying upgrades which also yields tree xp. The tree level determines the maximum upgrade level you can obtain for each upgrade.
+
+The tree xp gain per upgrade starts at 100 for upgrade level 1 and increases by 10 per level. The tree xp requirement to level-up the tree starts at 1140 xp for level 2 and increases by 15 xp per level until level 10. Level 11 then costs 23 xp more. From level 12 on the increase is 45 xp per level. At certain milestones in the tree level, boss avatars are unlocked.
+
+Pickaxes are unlocked at level 50, and are used in the Arcane Crystal (both require a guild level 5+). This is a guild based event, and rewards you with Arcane Crystals based on the damage you dealt with your pickaxes. Each guild has their own crystal and etiquette based on who should be in 1st, 2nd and 3rd place. These crystals are used in Awakening to strengthen your heroes and upgrade their passive abilities.
+
+### Guild Spirit
+
+The guild spirit can be found in the guild hall, second tab on the left side.
+
+The spirit level of the guild is determined by the spirit of all guild members together. Spirit is obtained by unlocking and upgrading beasts. All beasts you get from Pharaoh's Chests have an initial Spirit value of 1000, which you can increase by upgrading their rarity level. Spirit level 2 requires 5000 total spirit from all guild members. For each subsequent spirit level the levelup requirement increases by 1 spirit per level.
+
+Each spirit level increases one of All Attributes, Raining Gold and Firestone Finder for all guild members multiplicatively by 100%.
+
+### Leader / Officer / Member
+
+Officers can promote, demote and kick any member below officer.
+
+Guild leaders and officers are now able to see the previous month's guild donations.
+
+Guild leaders and officers can invite and decline recruits.
+
+Guild leaders and officers can set guild description and join requirements.
+
+Guild leaders and officers can invest guild coins in the guild Tree of Life and upgrade the Arcane Crystal
+
+Guild leaders can choose one of the guild banners that have already been unlocked.
+
+Guild leaders can promote, demote and kick any member.
+
+The guild leader or a nominated officer becomes the treasurer of the guild and can distribute the treasures the guild has obtained in the Chaos Rift competition to the guild members.
+
+Guild members who have been inactive for 5 days will be marked with an inactivity symbol (as in Fellowship).
+
+Guild members who have been inactive for 10 days will be marked with a grey inactivity symbol
+
+Guild members who have been inactive for 30 days will be automatically removed from the guild (Guild leaders will not be removed)
+
+Active guild expeditions are now canceled when leaving the Guild. Also in this case the guild coins from completed but unclaimed guild expeditions will be automatically donated to the Guild.
+
+The last 50 guild actions are logged in the guild log. The following actions are logged:
+
+Promotions and demotions of guild members
+
+Joining, leaving and kicking of guild members
+
+Guild tree upgrades and level-ups
+
+Guild level-ups
+
+Arcane crystal breakings and upgrades
+
+Rank changes due to inactivity (leader and officer)
+
+Guild leader leaving the guild
+
+In the Guild Bank, you can donate the guild coins that you have purchased in or received from the Arena of Kings or the Battle Pass to your guild. Guild coins earned from expeditions will be automatically donated. The monthly donations from the guild members for the current month can also be seen there. Guild leaders and officers can see members' donations for the previous month.
+
+The manual guild donations from the guild members are documented in the guild bank log.
+
+In the treasury, the guild's treasurers can distribute the treasures the guild has obtained in the Chaos Rift competition to the guild members.
+
+The damage that a player does in the chaos rift is tied to that player, if he leaves the guild (or he gets kicked) he will take the damage with him.
+
+### Automated System
+
+Fellowship:
+
+After 5 days off, they become a "sleeper"
+
+After 7 days off, they are automatically removed from the fs
+
+Guild:
+
+If the guild leader is inactive for longer than a 5 days and if there are no active officers in the guild, an active member gets promoted to officer.
+
+If the guild leader is inactive for longer than 20 days, an active officer gets promoted to guild leader.
+
+After 5 days offline, they become a "sleeper"
+
+After 10 days offline, they become a "super sleeper", where the guild loses the spirit bonus from the offline member
+
+After 30 days offline, they will be removed from the guild
+
+On a new game server while there is an ongoing competition event, when the guild leader is inactive an active member is promoted to officer in 2 days instead of 5 days and an active officer is promoted to guild leader in 5 days instead of 20 days
+
+### Tree of Life
+
+Tree of Life is your “Guild Tree”, which has two different types. A guild boosting one, and a personal boosting one. The “Guild” boosting tree affects everyone who is part of the guild, and the “personal” boosting tree affects just you. If you switch guilds, the guild tree changes depending on what upgrades that guild has done, but your personal tree stays the same and carries over all progress previously.
+
+For each upgrade, you can only level them up to 5 to start, and as your tree level progresses by 10 levels, you can then level up each upgrade a further 5 times. Each upgrade you do grants you “XP” towards your tree level, so they work together.
+
+There are two Trees of Life, the guild tree and the personal tree. Each tree offers upgrades which can be bought with guild coins or expedition tokens.
+
+Each tree also has a tree level which is increased by buying upgrades which also yields tree xp. The tree level determines the maximum upgrade level you can obtain for each upgrade.
+
+### Guild Tree
+
+The guild tree has 23 upgrades and affects all guild members. Only the guild leader and guild officers can buy upgrades. The cost for each upgrade starts at 5000 guild coins for level 1 and increases by 1000 coins per level.
+
+Recommendation:
+
+1. Gold rain (left side of tree below)
+
+2. Librarian (left side of tree below)
+
+3. Alchemy (right side of the tree at the bottom)
+
+4. Attribute damage (tree trunk at the top)
+
+5. Damage specialisation (right side of tree in the middle)
+
+6. Main attributes (right side of tree at the bottom)
+
+7. Team bonus (left side of tree at top)
+
+8. Leadership (left side of tree at top)
+
+9-11. Energy/Mana/Rage
+
+12-14. Fist fight/Preciseness/Magic spells
+
+....
+
+### Personal guild tree
+
+The personal tree has 20 upgrades and affects only you. You will keep these upgrades even if you leave your current guild. The cost for each upgrade starts at 600 expedition tokens for level 1 and increases by 100 tokens per level.
+
+There are also milestones in the personal tree where you can unlock boss avatars when you reach certain tree levels. However, these are just normal avatars, not new heroes!
+
+Recommendation:
+
+1/2. Battlecry (tree trunk/centre)
+
+1/2. Miner (tree trunk/centre)
+
+3. Firestone Finder (tree trunk/centre)
+
+4. Gold rain (tree trunk/centre)
+
+5. Attribute damage (left side)
+
+6. Main attributes (tree trunk/centre)
+
+7. Firestone effect (tree trunk/centre - as it is additive, it's only worth it at the beginning, the higher you level it the less effective it is and should then be leveled after 11-13)
+
+8-10. Energy/Mana/Rage (left side)
+
+11-13. Fist fight/Preciseness/Magic spells (right side)
+
+....
+
+It should be mentioned here that levelling the wm's and the scarab-games are always preferable to levelling the personal tree of life, as the wm campaign and the Scrab-level brings better bonuses than the ptree.
+
+The benefits are definitely better there and you don't have any useless things like in the ptree. There are a lot of useless upgrades in the ptree, but you still have to upgrade them in order to reach the next milestone in the ptree, and it's becoming more and more expensive.
+
+## Personal Tree vs WM : Math & Formulas
+
+Messaggio originale di Cryozene:
+
+A lot of formulas here will be rough estimates and rounded at various points to keep the numbers somewhat nice. If you use the formulas provided here, keep in mind that they serve to show the order of magnitude for each category, never an exact breakpoint.
+
+The effectiveness of upgrading your personal tree of life in favor of Warmachines depends very much on what you want to achieve. So first of all, we need to map out the actual gains of each choice.
+
+To make things easier, I’ll calculate a single number as gold/token. Increased Firestone gain will impact this directly. Gold gain impacts firestone gain and vice versa, so effective gold gain will be multiplied by the amount of firestones generated by getting more gold (goldgainlog(2)/log(6)). Damage is a 25% gold multiplier for every increase of 3 (the gold per increase in stage and the increase in enemy strength per stage for the main game).
+
+### Campaign level progress
+
+I’ll gracefully ignore the increased research speeds, more beer, explorer bonus etc here and focus on damage only. The personal tree will give you a higher miner level (and more arcane crystals), battles will give you faster library progress. In general, the bonus through faster research is better, but only very long term.
+
+The main bonuses are the x2 for gold and stats for 5 campaign stars each. So, in other words, it is directly linked to the increase in actual fighting power. Each level increases enemy power by 20% and another 200% every two levels. That's an average of 103*1.21.4 .
+
+For a progress of 5 levels, we need about 1.45=4.3times the actual power.
+
+WMs increase power by 5% for every level and by another 5% for every BP level on relevant stats. Thats 1.052=1.1025times the actual power for each WM level.
+
+1.1025x=4.3 x 15: Upgrading our tanks by 15(!) levels provides us with a mere progress of 5 normal missions on average. Of course, progress will be accelerated by hero jewels, your setup
+
+## Arcane Crystal
+
+As stated earlier, once you are in a guild, you can access the Arcane Crystal once you are character level 50. Obtaining pickaxes, like a lot of other resources is a passive income where you can claim 1 free pickaxe every 96 minutes, meaning 15 per day and will cap at being able to claim 30, but you can hold onto as many as you want.
+
+The multiplier option is unlocked after: 60 hits. When you unlock a multiplier option for a mechanism you unlock it for all your servers (it's account-wise unlock).
+
+Your reward is based on your performance and “damage dealt” to the crystal with your pickaxes, and as mentioned earlier, each guild works on this differently as to ensure everyone is getting their own fair share of crystals. There are 4 types of rewards: The 3 rank rewards and the base reward but despite all speculation and rumours, there is no ‘break’ or ‘last hit’ reward!
+
+The base reward is for the guild members who haven't hit the crystal/didn't damage the crystal. The top 3 players on the damage leaderboard will additionally get the following rewards when the crystal is broken:
+
+1st place: rank reward = 10% * break reward
+
+2nd place: rank reward = 6% * break reward
+
+3rd place: rank reward = 4% * break reward
+
+Base reward: rank reward = basic reward = 1% * break reward
+
+These 3 ranks of ‘“Break Rewards’” has nothing to do with the last hit on the crystal, but is only based on the damage you have done to the crystal.
+
+To see the full formula of how your reward is calculated you can view the wiki page at this link: https://firestone-idle-rpg.fandom.com/wiki/Arcane_Crystal
+
+### Personal Tree vs Arcane Crystal
+
+Messaggio originale di UnNaMeD:
+
+The ratio between crystal health and crystal rewards is a logarithmic function.
+
+This means that early upgrades will be giving significantly more crystal for each hit. It also means that later upgrades will continue giving more upgrades per health, but the difference wlil get smaller and smaller, while still always giving more.
+
+This means that upgrading the crystal is always profitable, but the profit diminishes with every upgrade - yet still always remains profitable.
+
+However, something else to consider, is the cost to upgrade the crystal. Crystal costs guild coins, as well as the guild tree - BUT the crystal will not grant guild exp and make your guild grow. The crystal profits to the guild members, not the guild itself.
+
+With that in mind, you need to find the balance that satisfies you between gaining guild levels and getting more rewards from the crystal.
+
+My personal opinion: given the crystal rewards growth of early levels, would be to upgrade the crystal every time it reaches 5/5 breaks until the rewards get significantly lower than previous level, which is around crystal level 50.
+
+I know that some guilds prefer to ignore the crystal to get more guild levels, because these will unlock new spots in your guild for more members. It's also a good strategy, more members will have your guild snowballing.
+
+Either way, upgrading the crystal or the tree is slow, we are of course on an idle game.
+
+As for the limit, it hasn't been reached yet, with a crystal lvl 308 or 309 at the highest as I write the message.
+
+See: https://firestone-idle-rpg.fandom.com/wiki/Arcane_Crystal
+
+The formula for reward/heatlh => Y = (3000 + (X + 1) * 3000) / (22500 + (X + 1) * 675)
+
+## Hero Awakening
+
+Linking into Arcane Crystals, Hero Awakening unlocks at level 50, and is where you use your obtained Arcane Crystals. Similar to how Alchemist Experiments work, Hero Awakening will apply to Random Heroes rather than you specifically choosing which hero to focus on. Each upgrade costs 500 Arcane Crystals and gives varying experience when used. Every hero gives a different effect of either Raining Gold, Firestone Finder or All Attributes where the effect increases with each hero level gained.
+
+To view the full list of how much experience is needed to level a hero, and the strength of their relevant effect you can go to this link: https://firestone-idle-rpg.fandom.com/wiki/Awakening
+
+## Magic Quarter & Guardian 1
+
+Guardians help your heroes battling enemies. The Guardians auto attack ability will be unlocked at level 21. The toggles guardians auto attack are located in the party menu. All guardians have the same main and advanced attributes, but they attack differently and also have different auras. Guardians are upgraded by gaining experience and can be evolved when they reach upgrade level 10. Currently there are four guardians in the game.
+
+### Dragon (Vermilion)
+
+Unlocking: Activated automatically as the first Guardian.
+
+Guardian Aura: Golden Rain
+
+Attack Type: Single damage, attacks up to 10 times per second.
+
+### Fairy (Grace)
+
+Unlocking: Unlocked at Vermilion Evolution 2.
+
+Guardian Aura: Main attributes (damage/health/armour)
+
+Attack Type: Single damage, attacks up to 10 times per second.
+
+### Phoenix (Ankaa)
+
+Unlocking: Unlocked at Vermilion Evolution 5
+
+Guardian Aura: Firestone Finder
+
+Attack Type: Multi damage, attacks a bit faster than once per second. The attack hits all enemies, with the main target taking 100% of the damage and surrounding enemies taking 50% of the damage.
+
+### Djinn (Azhar)
+
+Unlock: Unlocked from personal tree of life 50.
+
+Guardian Aura: Main attributes (damage/health/armour)
+
+Attack Type: Single damage, attacks up to 10 times per second.
+
+The dragon is the one you start with, you have to bring the dragon to level 10 in order to evolve him. The first evolution costs 300 dust. After you have evolved the dragon once (to the second evolutionlevel), you unlock the fairy and the phoenix will be unlocked as soon as Vermilion and Grace have both reached their fifth evolution. However, the djinni can only be unlocked at personal tree of life level 50. All 4 auras are active at the same time. In a way, you have to level up the fairy, dragon, phoenix and djinni as well. At level 100 the guardians can fight against the dark gods in the Chaos Rift, which means it makes sense to unlock and evolve all 4 guardians + increase their rarity levels.
+
+There are 2 (3) ways to do this:
+
+Game progress optimised = focus on the: Dragon and Phoenix for the better guardian auras
+
+Chaos rift optimised = level all guardians more equally
+
+Game progress + chaos rift mixed: Level the dragon and phoenix for the better guardian auras always some evolutions level higher than the fairy and the djinn, but don't neglect the other two guardians for the better chaos rift strategy and level them evenly, even if it's some evolution levels below the dragon/phoenix.
+
+### Strange dust
+
+Since strange dust is needed for several things, the question is where to use it in the most useful/effective way.
+
+My recommendation:
+
+1. For the Guardians + Alchemy experiments (split up)
+
+First, you should try to unlock all 4 guardians, use the dust to bring the dragon, the fairy and the phoenix to evolution level 5, to enable them to fight together against the dark gods and to be able do more damage to the gods in the Chaos rift (from level 100). But it is also important to use the dust for the alchemy experiments.
+
+2. Starting at level 200 with the Oracle and the soulstones being unlocked, the dust is also needed for another thing.
+
+After you have unlocked all 3 guardians with dust, you should start using the dust to unlock tier 2 soulstones for all heroes.
+
+3. Then split the dust between the guardians and alchemy
+
+### Guardian Info
+
+In the Guardian Info tab you can train your guardian every 8 hours. You can also enlighten the guardian at the cost of 20 dust without a cooldown. This is also the place where you can switch between the guardians. By clicking on the guardian you want, and click the "Set Active" button.
+
+Therefore it makes sense to shorten the time for guard training (through talent trees or other research trees). With all the possible guardian training time reductions in the game, you can go from every 8 hours to every 4 hours. Which halves the time or doubles the gain
+
+### Evolution
+
+The evolution tab is unlocked once you make your guardian level 10. Once your guardian is level 10 you need 300 Strange Dust to evolve your guardian. The evolution a guardian significantly increases his main attributes, his advanced attributes and his guardian aura.
+
+Required amount of dust for the next evolution or the next rarity level
+
+120 = 20 means => 120 xp = 20 dust
+
+120 => is the XP for the guardian level, which you get via "Enlightenment" for 20 dust
+
+Not included in the calculation: the XP from guardian training
+
+Bronze 5 Stars = 147.932
+
+147.932 = 24.655
+
+120 = 20
+
+Dust for Evo: 3.200
+
+Bronze = 24.655 + 3.200 = 27.855 dust
+
+Silver 5 Stars = 274.900
+
+274.900 = 45.816
+
+120 = 20
+
+Dust for Evo: 3.450
+
+Bronze + Silver: 27.855 + 45.816 + 3.450 = 77.121 dust
+
+Gold 5 Stars = 299.300
+
+299.300 = 49.883
+
+120 = 20
+
+Dust for Evo: 3.700
+
+Bronze/Silver + Gold: 77.121 + 49.883 + 3.700 = 130.704 dust
+
+Platinum 5 Stars = 321.800
+
+321.800 = 53.633
+
+120 = 20
+
+Dust for Evo: 3.950
+
+Bronze/Silver/Gold + Platinum: 130.704 + 53.633 + 3.950 = 188.287 dust
+
+Ruby 5 stars = 344.300
+
+344.300 = 57.388
+
+120 = 20
+
+Dust for Evo: 4.200
+
+Bronze/Silver/Gold/Platinum + Ruby: 188.287 + 57.388 + 4.200 = 249.875 dust
+
+Sapphire 5 stars = 371.250
+
+371.250 = 61.875
+
+120 = 20
+
+Dust for Evo: 4.500
+
+Bronze/Silver/Gold/Platinum/Ruby + Sapphire: 249.875 + 61.875 + 4.500 = 316.250 dust
+
+Evolution costs can be found here: https://firestone-idle-rpg.fandom.com/wiki/Guardians#Evolution
+
+Continues with Magic Quarter & Guardian 2 next chapter
+
+## Magic Quarter & Guardian 2
+
+### Rarity
+
+There are eight guardian rarities. Each rarity increase costs contracts and requires a certain number of guardian evolutions. A higher guardian rarity multiplicatively increases the guardian's damage and the guardian's aura effect.
+
+Rarity level 1: Common:
+
+Rarity level 2 Uncommon:30 contracts + 5 evolutions
+
+Guardian damage: x61
+
+Guardian aura: x51
+
+Rarity level 3 Rare: 70 contracts + 10 evolutions
+
+Guardian damage: x85
+
+Guardian aura: x71
+
+Rarity level 4 Epic: 150 contracts + 20 evolutions
+
+Guardian damage: x121
+
+Guardian aura: x101
+
+Rarity level 5 Legendary: 200 contracts + 30 evolutions
+
+Guardian damage: x181
+
+Guardian aura: x151
+
+Rarity level 6 Mythic: 250 contracts + 40 evolutions
+
+Guardian damage: x241
+
+Guardian aura: x201
+
+Rarity level 7 Titan: 300 contracts + 55 evolutions
+
+Guardian damage: x361
+
+Guardian aura: x301
+
+Rarity level 8 Angel: 350 contracts + 70 evolutions
+
+Guardian damage: x481
+
+Guardian aura: x401
+
+As guardians do not take damage, they have no health or armor. So the only main attribute displayed is Attack and the passive guardian aura.
+
+### Attributes
+
+Main attributes
+
+The base damage of a guardian starts at 20 and increases by 35% per level and by an additional 700% per evolution. It also increases with the rarity of your guardian.
+
+base damage = 20 × 1.35 (level-1) × (8 * 1.3510) (evolution-1) × rarity effect - 1
+
+The adventure damage is obtained from the base damage by multiplication with the Guardian Power, Attribute Damage and All Attributes researches, the guardian gold upgrades, the effect from wrists and relics and the honor effect:
+
+adventure damage = base damage × research multiplier × gear multiplier × gold upgrade multiplier × honor multiplier
+
+Advanced attributes
+
+The critical chance of a guardian starts at 1% and increases by 1% per evolution up to a cap of 50%. The critical damage of a guardian starts at 300% and increases by 10% per evolution up to a cap of 800%.
+
+Chaos rift attributes
+
+In the Chaos Rift, guardians have the following special attributes:
+
+Holy damage: Basic damage against a god
+
+- Base value: 1000
+
+- Increase: +0.5% per total guardian evolutions
+
+5% per holy damage upgrade
+
+Double strike Chance to do double damage against a god
+
+- Base value: 5%
+
+- Increase: +3% per rarity
+
+Precision hit chance Chance to do a critical strike against a god
+
+- Base value: 5%
+
+- Increase: +3% per rarity
+
+Precision hit damage Extra damage of a critical strike against a god
+
+- Base value: 100%
+
+- Increase: +50% per rarity
+
+Redemption Increases the holy damage of all guardians
+
+- Base value: 0%
+
+- Increase: +0.5% per evolution
+
+The holy damage can be upgraded until the end of the current month with orbs of lights. Each upgrade level multiplicatively increases the holy damage by 5%. The upgrade cost starts at 2,000 orbs of light and multiplicatively increases by 13% per upgrade level. The improvements will be reset after each month and you start afresh with the next dark event god.
+
+For the Chaos Rift it is better to unlock all 4 Guardians as early as possible. To increase the damage of the guardians you have to upgrade the holy damage in the magic quarter with the light orbs, evolve the guardians and increase their rarity levels. (see table above) All the guardian upgrades outside of the magic quarter, like the talent points, from the various research trees, artefacts or the tree of life etc., don't have any effect on the damage of the guardians in the chaos rift.
+
+### Aura
+
+The aura of a guardian can be one of Heroes All Attributes, Raining Gold and Firestone Finder. The aura of a guardian is always active even when it is not your active guardian. The strength of an aura starts at 10% and increases by 30% per level and by an additional 700% per evolution. It also increases with the rarity of your guardian
+
+aura effect = 0.1 + 1.3 (level-1) × (8 * 1.310) (evolution-1) × rarity effect - 1
+
+## Firestone Research
+
+The library will be unlocked at stage 11, the most important thing here is to buy the second research spot for 1500 meteorites as soon as possible and as well as level up the ‘Librarian’ talent. Most researches here are multiplicative. So it doesn’t matter how many levels there are in a certain research, it remains good to level it up.
+
+Again focusing on gold boosting upgrades is best here, although Critical Loot Bonus/Chance are not as great in tree 1 due to calculations. Raining Gold and Firestone Effect will still be your priority, afterwards focusing on specifics depending on your team comp will help you more. So if you run more mana heroes, focus the mana talents etc...
+
+### Firestone-Research-Trees
+
+Multiplikative
+
+Attribute Damage
+
+Attribute Health
+
+Attribute Armor
+
+Guardian Power
+
+Fist Fight
+
+Projectiles
+
+Raining Gold
+
+Rage Heroes
+
+Mana Heroes
+
+Energy Heroes
+
+Magic Spells
+
+Tank Specialization
+
+Healer Specialization
+
+Damage Specialization
+
+All Main Attributes
+
+Leadership
+
+Team Bonus
+
+Additive
+
+Critical Loot Bonus
+
+Critical Loot Chance
+
+Weaklings
+
+Expose Weakness
+
+Medal of Honor
+
+Trainer Skills
+
+Skip Wave
+
+Skip Stage
+
+Expeditioner
+
+Firestone Finder
+
+Powerless Enemy
+
+Powerless Boss
+
+Meteorite Hunter
+
+Firestone Effect
+
+Meteorites
+
+Meteorites
+
+Once you have unlocked the Library at Stages 45, you will also see the miner coming into the battlefield, the meteorites are collected automatically just like the gold or beer. Meteorites are automatically gathered by miners with a rate of one meteorite per minute. There are several ways to get more meteorites
+
+They can also be gained from daily rewards, from daily quests, from card draws and can be earned from the mystery boxes and the oracle gifts.
+
+Amulet of Heaven
+
+They can also be bought with platform currency in Special Offers.
+
+Meteorite gain can be increased with the meteorite hunter talent and upgrade as well as the coworkers talent.
+
+You can also use the gold items from your inventory to get more meteorites.
+
+The maximum amount of offline meteorites is 720, which is the equivalent of 12 hours.
+
+But with all the extra benefits like Amulet of Heaven, Meteorite Hunter, Coworkers, you can reach the maximum of 720 meteorites faster than in 12 hours.
+
+When using / spending your meteorites, your first priority should be to unlock the second research slot in the library (1500 meteorites), and then unlocking tier 2 and tier 3 equipment (tier 2 = 480 meteorites and tier 3 = 720 meteorites) on your heroes. The remaining meteorites can be spent inside the library on meteorite research. Always save enough Meteorites for your next hero unlock!
+
+## Meteorite Research
+
+The library will be unlocked at stage 45.
+
+Here you can spend your meteorites on research. Unlike Firestone Research, they don’t take time to complete. Just get the right amount of meteorites and you can upgrade them. Also what makes meteorite research different is that every research bonus goes up linear. What this means is that the more levels you put in a research, the less benefit the next one gives you.
+
+Each with different bonuses however they are pretty similar.
+
+In each tree, you should prioritize what is going to increase your gold gain, such as Raining Gold fire, then Firestone Effect and Firestone Finder for example.
+
+The Meteorite Research Tree is additive, i.e. the more you level it up, the less effect it has.
+
+## Character Level & Talents
+
+You will earn experience when you earn firestones (means gold too). Everytime the total earned firestones goes up by 10x, you have earned about 3000 EXP. Your character level will unlock certain features in this game. Tavern at level 15. Exotic Merchant at level 30. Campaign, Battles, Crystal, Engineer and Awakening at level 50. Emblems and 3rd tab inside Exotic Merchant at level 65. Monster Missions at level 70. Arena at level 80. Chaos Rift at level 100. Alchemist, Dragon Missions and Dragon Blood at level 120. Transmuting at level 130. Naval Missions at level 140. Oracle at level 200.
+
+### Talenttree
+
+Everytime you level up you gain 1 talent point. With it you can level up some basic and special things. Don't level up your talent tree from top to bottom up to the maximum. Unlock everything as much as possible first. There are always hurdles, where you have to have a certain level to unlock the next one. Use these hurdles to level up what is important to you.
+
+There are currently 2037 talent points in the game.
+
+Librarian
+
+Alchemy
+
+Twin dragons
+
+Battle Cry
+
+Fate
+
+Expeditioner
+
+Trainer Skills
+
+Coworkers
+
+Meteorite Hunter
+
+Raining Gold
+
+All main attributes
+
+Party - Auto Abilities
+
+Leader - Auto Abilities
+
+Which of these you level up first is up to you, but the Research Time Reductions, Double Beer, Battle Cry, Fate and also Gold should always be levelled up fast. If you feel unsure, you can always use the order above as a reference.
+
+Level these at the end (only level these if it' necessary to unlock the next one in the talent tree).
+
+Team Bonus
+
+Leadership
+
+Attack speed
+
+Damage Specialization
+
+Mana/Energie/Rage Heroes
+
+Tank/Healer Specialization
+
+Critical chance
+
+Critical damage
+
+Weaklings
+
+Powerless enemy
+
+Dodge
+
+Expose weakness
+
+Powerless boss
+
+Guardian Power
+
+Team Bonus should be one of the first things you level up. Enemy should always be before Boss (HP/DMG) and HP always before DMG. If you feel unsure, you can always use the order above as a reference.
+
+All talent upgrades (except the auto abilities) are additive per level. All upgrades (except dodge, critical chance and critical damage) are multiplicative with the other upgrades of the same type, also within the talent tree.
+
+A list of talents you find here: Firestone Idle RPG Wiki: Talents[firestone-idle-rpg.fandom.com]
+
+## Avatar/Skins
+
+The game has several different types of avatars and skins.
+
+Basic Avatars: These basic avatars are available from the beginning regardless of level or progress.
+
+Heroes/Mercenary: As soon as a Heroes/Mercenary is unlocked, the appropriate Heroes/Mercenary avatar is also available.
+
+Bosses/Milestones: Boss avatars will be unlocked through your personal guild tree when you reach certain milestones/levels.
+
+Event Avatars: Event Avatars are special avatars that you can only get during the event.
+
+Skins: Skins are new looks/new designs for your heroes they can be unlocked via the anniversary event or through certain in-game quests.
+
+Valentine's Event: 4 Special Avatars (+3 new Avatars will be added every year)
+
+Anniversary Event: 4 Special Avatars and 2 Skins
+
+Spring Event: 4 Special Avatars (+3 new Avatars will be added every year)
+
+Tropicana Event: 4 Special Avatars (+3 new Avatars will be added every year)
+
+Astral Alignment Event: 4 Special Avatars (+3 new Avatars will be added every year)
+
+Halloween Event: 4 Special Avatars (+3 new Avatars will be added every year)
+
+Winter Festival: 4 Special Avatars (+3 new Avatars will be added every year)
+
+### Background
+
+The background colour of the avatar depends on the level of the character as follows:
+
+Level 1-29 = Brown
+
+Level 30-64 = Green
+
+Level 65-119 = Blue
+
+Level 120-249 = Purple
+
+Level 250-399 = Bronze
+
+Level 400-549 = Turquoise
+
+Level 550-699 = Gold
+
+Level 700-849 = Red
+
+Level 850-999 = Celestial
+
+Level 1000-1149 = Immortal
+
+Level 1150- = Primordial
+
+It is possible to choose one of the background colours that have already been unlocked
+
+## Daily/Weekly Quests
+
+Early in the game, daily quests are more important since you don’t get many missions and so the resources you get daily from missions is limited, the daily quests rewards are a nice addition to that. Some of them are difficult to complete and require you to play for a long period of time or come back later in the day and do some stuff. Some planning goes a long way.
+
+To make the “open 3 chests” quest easier, you have to save the chest you get from this quest for the next day. So you start the day with 1 chest, then early in the day you can start a chest mission, and later in the day you can start another chest mission. You have 3 total. Open them. Accept the reward and hold onto that chest for the next day.
+
+To make the “Train the guardian twice” quest easier, level up the “Trainer Skills” talent, and later in Firestone Research Tree 1, you can reduce the time for training even further. Lowering it down to 4 hours for each training.
+
+The “complete 6 map missions” quest will mostly go to waste when your rank is low. But this, as well as every other quest, gets easier when rank goes up.
+
+### Daily Quests
+
+Trainer: Train guardians 2 times • Reward: strange dust (20 + 2 × rank)
+
+Conqueror: Complete 6 map missions • Reward: honor (3 + rank)
+
+Collector: Open 4 chests • Reward: 1 random gear chest
+
+Gamer: Play 10 times in the tavern • Reward: 300 beers (unlock: level 15)
+
+Expeditioner Complete 5 guild expeditions • Reward: 300 expedition tokens (unlock: level 18)
+
+Merchant: Sell 10 items at the exotic merchant • Reward: exotic coins (100 + 10 × rank) (unlock: level 30)
+
+Liberator: Complete 2 liberation missions • Reward: blueprints (100 + 2 × campaign level) (unlock: level 50)
+
+Miner: Hit the arcane crystal 5 times • Reward: 2 pickaxes (unlock: level 50)
+
+Prohpet: Complete 2 rituals at the Oracle • Reward: virtue (20 + 5 × oracle milestone) (unlock: level 200)
+
+Weekly quests reset every 7 days at your weekly reset time. Some quests have a character level requirement and appear only when the corresponding game feature is unlocked. For some quests, the reward scales with your character level, map rank or campaign stars. You receive the weekly rewards if you have completed 5/5 of the respective daily tasks within 7 days.
+
+### Weekly Quests
+
+Loyalty-Weekly: Claim 5 daily rewards • Reward: 210 gems
+
+Trainer-Weekly: Complete 5 times the quest "Trainer" • Reward: 3 gear chests, which type of chest depends on character level
+
+Conqueror-Weekly: Complete 5 times the quest "Conqueror" • Reward: 2 gear chests, which type of chest depends on character level
+
+Collector-Weekly: Complete 5 times the quest "Collector"" • Reward: 1 gerad chest, which type of chest depends on character level
+
+Gamer-Weekly: Complete 5 times the quest "Gamer" • Reward: 700 meteorites (unlock: level 15)
+
+Expeditioner-Weekly: Complete 5 times the quest "Expeditioner" • Reward: 1500 expedition tokens (unlock: level 18)
+
+Merchant-Weekly: Complete 5 times the quest "Merchant" • Reward: (500 + 50 × rank) exotic coins (unlock: level 30)
+
+Liberator-Weekly: Complete 5 times the quest "Liberator" • Reward: 1 jewel chest, which type of chest depends on your Campagne Stars
+
+Miner-Weekly: Complete 5 times the quest "Miner" • Reward: 2 jewel chest, which type of chest depends on your Campagne Stars
+
+Prohpet - Weekly: Complete 5 times the quest "Prohpet" • Reward: 1 celestial chest, the type of chest depends on the oracle level.
+
+## Tavern 1
+
+At level 15, you unlock the Tavern building in the town.
+
+The Tavern is divided into subcategories:
+
+1. Tavern (fat level 15)
+
+2. Scarab Game (at level 60)
+
+1. Tavern
+
+There are four main parts to this feature of the game.
+
+1. Tavern Game
+
+2. Sacred Cards
+
+3. Luck Level
+
+4. Elements and Artifacts (Section: Artifacts and Elements)
+
+1. Tavern Game
+
+When you unlock Tavern at level 15, you will start earning beer. The beers are dropped automatically by one or two dragons in battlefield, you have various ways to increase the amount of the beers.
+
+Amulet of Luck (Increases the chance to get 2 beers from an enemy instead of 1 +5% (20 golden keys) It may not sound like much but it is definitely worth it.
+
+Talent: Twin Dragons (Increases the chance for 2 dragons to appear with beers)
+
+By campaign level (Campaign perks)
+
+By guild level (Guild perks)
+
+The offline generated beer will be dropped by the first dragon crossing the battlefield after the login. When you have collected 1500 beers, you can convert it into 5 Game Tokens and you can use them to play a game of cards. 6 cards will be presented in front of you and you can select 1 of them.
+
+It doesn't really matter which one you select as rewards are pre-generated, but it gives the player the sensation there is something behind every card and that you might get lucky when you choose the right card. Anyway, when you have selected a card, there are various rewards you can get.
+
+The amount of items you get depends on character level, rank and/or luck level. In the ‘bag’ at the bottom left, you can see which items are available as rewards and their quantities.
+
+The multiplier option is unlocked after: 40 plays. When you unlock a multiplier option for a mechanism you unlock it for all your servers (it's account-wise unlock).
+
+### How to play?
+
+There are always 6 decks of cards where you choose exactly one (1) of them, if you pull 1 card after the other then all 6 cards turn over each time, and the card you selected is outlined in green, the other 5 cards are the ones you haven't pulled, the discarded ones. However, if you use the multiplier x10 or x50 instead of 1 card after the other, then you select one (1) of the 6 piles of cards as usual, the cards that are then turned over (x10 or x50) are always the cards that you have pulled, the 5 other piles that you haven't pulled can be seen (if you like) under ‘discarded cards’. There is no advantage or disadvantage whether you draw the cards one by one or via the multiplier x10 / x50 as the rewards are pre-generated, only that it takes a bit longer for individual pulls, but no difference in what you draw.
+
+From tavern you can obtain golden and cobra keys, these will be used to upgrade your Artifacts and Beasts. Golden keys shouldn't be used for purchasing Amulets except for Amulet of Luck.
+
+The auto function will be unlocked with luck level 3.
+
+To view the full reward list here is the wiki link: https://firestone-idle-rpg.fandom.com/wiki/Tavern
+
+2. Sacred Cards
+
+Most of the cards you select will reward you with sacred cards. The amount of sacred cards you will get depends on your luck level. Your luck level will slightly increase the amount of sacred cards you will get.
+
+There are sacred cards for every hero, every guardian, for each war machines and pretty much every attribute in the game. You first have to collect the cards, they will start out as level 1. At level 1 you get a bonus already, and all the bonuses, including that of Firestone Effect, is multiplicative. When the bar fills up, the card levels up, and the bonus increases multiplicatively. So if level 1 gives +30% (x1.3), the next level gives +69% (1.3x1.3 => x1.69).
+
+3. Luck Levels
+
+Luck is gained by drawing cards in the tavern. Every card that you choose gives you a reward, and based on the reward and the amount, you will earn luck. Something like Meteorites, Exotic Coins or Emblems give a very low amount of luck, usually less than 100. But things like Honor or Scrolls, you can earn many hundreds, even thousands of luck.
+
+Luck determines your Luck level, which grants permanent bonuses to attributes, gold gain, and meteorite gain. Faster Meteorites and more Sacred Cards is what you always get when you level up. As for All Attributes and Raining Gold, they increase in turn. First Attributes, then Gold, then Attributes again. In addition, in odd levels past 42, the raining gold bonus is 25% higher than for the previous level. Your luck level also determines the ranges of some rewards from card draws
+
+The luck level also determines the number of items obtained by drawing cards for sacred cards and some other rewards. However, since these rewards are also based on character level or rank, it is possible that you may not always notice a change.
+
+At Luck Level 2 you will also be able to get Temple Tokens. With this you can do epic (2x) empower for free.
+
+You can see the bonuses under the Luck level in the top left corner of the tavern by simply clicking on it.
+
+## Artifacts and Elements
+
+Currently there are 63 artifacts in game
+
+Earning an Artefact or Element isn't a matter of luck.
+
+The game guarantees:
+
+5 Elements within 400 game tokens = which means a whole Artefact.
+
+The 5 Elements drop within 400 Game Tokens [1 - 400]
+
+1 Full Artefact within 2000 game tokens
+
+The Artefact drops within 2000 Game Tokens [1 - 2000]
+
+Artifacts greatly improve your game. They have 6 various improvements.
+
+Raining Gold, Firestone Effect (multiplicative) or All Attributes
+
+Basic attributes such as damage, health or armor.
+
+Group of heroes based on what resource (rage, energy, mana) they use
+
+Generation rate of the same resource or Librarian, Explorer, Alchemy, War Machine: Damage/Health/Armor.
+
+Certain specialization (tank, damage, healer)
+
+Guardian damage, leadership, team bonus or hero-damage.
+
+Ancient Artifacts have 8 rarities (Epic, Legendary, Mythic, Titan, Angel, Celestial, Immortal and Primordial) and can be upgraded with golden keys. The enchantment cost starts at 20 golden keys and increases by 5 golden keys per rarity till Immortal, the last rarity level costs 40 golden keys, which is then the cap. Each rarity doubles the effect of all artifact attributes except for health and armor attributes which increase by ×4 instead. Resource regenerations, the alchemy perk and the librarian perk increase by 0.5% per rarity and the explorer perk increases by 0.2% per rarity. War machine attributes increase by 5% per rarity.
+
+Epic
+
+Legendary: Upgrade Cost: 20 golden keys.
+
+Mythic: Upgrade Cost: 25 golden keys.
+
+Titan: Upgrade Cost: 30 golden keys.
+
+Angel: Upgrade Cost: 30 golden keys.
+
+Celestial: Upgrade Cost: 30 golden keys.
+
+Immortal: Upgrade Cost: 30 golden keys.
+
+Primordial: Upgrade Cost: 40 golden keys.
+
+Which artefacts to upgrade depends on various factors.
+
+Basically, you can say that there isn't a purely bad artefact, as they all help you in one way or another, but you should definitely refrain from trying to upgrade them all. Golden keys are rare in the game, so every "wasted" golden key hurts.
+
+The highest value in the artefacts is to get the artefact at all, obtaining an artefact gives the most bonus, the upgrade is always lower than the artefact itself.
+
+### So, how to decide?
+
+Instead of going by the heroes you have in the game, it's better to go by other criteria
+
+WM: Damage
+
+Firesteone research (only if you are actively playing)
+
+WM Health
+
+Explorer
+
+Alchemy research (only if you are actively playing)
+
+WM Armour
+
+Gold bonus ... Damage etc...
+
+The energy/mana/rage regeneration artifacts are the ones i would upgrade last or even never, but never before the others (above), imo it's enough to have this kind of artefacts, without upgrading it.
+
+Of course, you can adjust the list... for some, the WM is always to be favoured, while others are looking for a more balanced path between 1. wm but also the 2. research times and 3. the explorer, everyone can then decide for themselves where the priorities should be.
+
+The hero spec (like mana/rage/energy/healer/tank/damage) should be seen more as a kind of bouns, so in addition to the points from above, but with lower priority than e.g. the WM, the research time reductions or the explorer artefacts and should not be the deciding factor.
+
+This is a general order that you can follow:
+
+Top row
+
+- Gold rain before firestone/main attributes and firestone before main attributes
+
+- Damage before health/armour and health before armour
+
+(Although the difference between health and armour isn't really big.).
+
+Middle row:
+
+- Energy before Mana/Rage and ...
+
+However, this is a question of "personal preference" for me energy is before mana/rage because i play glass canon with 5 energy heroes, so depending on your game style the order can be quite different.
+
+- Librarian/Explorer before Alchemist and Librarian/Explorer/Alchemist before Mana/Rage/Energy Regeneration.
+
+- Warmachine: Damage before Armor + Health
+
+The first priority is for me War Machine Attribute: Damage.
+
+The 3 Artifacts (War Machine: Damage + Health + Armor) at the base 30% equals about 2.7 WM levels with full blueprint upgrades
+
+Plus you get about 1 more War Machine level per artifact rarity upgrade, though not quite the same since it's additive 5% vs. multiplicative 5%
+
+1,3 = 1,05^5,377
+
+Then follows Librarian. Librarian is before Explorer because the shortened Firestone research times are more important to me than the +0.5-1% Explorer.
+
+But players who for example only log into the game 1-2-3 times a day, for them it is less interesting if the research time is 1-2% shorter or longer, as it will in any case have ended after logging into the game the same goes for the alchemist. For these players, increasing the chance of a double reward in the map missions is more effective.
+
+Bottom row:
+
+- Damage before tank/healer and tank before healer.
+
+- Hero damage/team bonus before leader/guardian and leader before guardian
+
+And of course, the more of these 6 improvements are appropriate for you, the better it is.
+
+Full list of artifacts can be found here:
+
+https://firestone-idle-rpg.fandom.com/wiki/Ancient_Artifacts
+
+## Tavern 2 - Scarab's Game
+
+2. Scarab's Game
+
+The scarab's game is a part of the Tavern where you can gamble pharaoh's tokens or noble's tokens on slot machine spins which yield ancient coins. These ancient coins can then be used in the pharaoh's vault to obtain random rewards. These rewards include sigils of prophecy which are used to release unique beasts.
+
+You can use 1000 gems in Scarab's shop to buy 20 Pharaoh tokens, which reduces the strain on expedition tokens and is also a good opportunity to balance the soul embers with the keys
+
+There are 5 main parts to this feature of the game.
+
+1. Scarab's Game
+
+2. Pharaoh's Vault
+
+3. Sigils of Prophecy
+
+4. Scarab Level
+
+5. Scarab Milestones
+
+1. Scarab's Game
+
+The scarab's game is a slot machine which uses pharaoh's tokens or noble's tokens for spins. There are three reels which can show one of four symbols which have the following base values:
+
+Ceremonial Fire: 10 ancient coins
+
+Ankh: 20 ancient coins
+
+Queen: 50 ancient coins
+
+Cat Goddess: 100 ancient coins
+
+### How does the game work?
+
+Every morning you get 10 free noble tokens (+1 pharaoh token as a gift), which you can spend in the game. If you want to use more than these 10 free tokens in the game, you have to buy pharaoh tokens with expedition tokens in the shop. You can own at most 10 noble tokens, they can't be collected. Each day your noble's token will recharge to 10.
+
+The amount of ancient coins you obtain from a spin is the sum of the values of the symbols shown in the middle row. If a symbol appears twice in the row, both of their values are multiplied by 3. If a symbol appears three times in the row, all of their values are multiplied by 9. If you use more than one token on the spin, the amount of ancient coins you obtain is multiplied by the number of tokens spent.
+
+Nevertheless, it is important to note that nothing here is based on chance or luck. Multiple jackpots in a row may give the impression of luck, and for a short time it may look as if someone has an advantage due to high roll numbers, but this evens out. There is a safety net. At Firestone, nothing is pure luck. Over time, there are nets everywhere to ensure that no one is unlucky or lucky and that it always evens out in the end (+- ).
+
+The multiplier option is unlocked after: 150 plays. When you unlock a multiplier option for a mechanism you unlock it for all your servers (it's account-wise unlock).
+
+2. Pharaoh's Vault
+
+When you have collected 5000 ancient coins, you can use them to open the pharaoh's vault which will give you five rewards. Possible rewards are
+
+Currencies (such as eclipse stones, dust, exp. token, guild coins, etc.)
+
+Jewel chests
+
+Celestial chests
+
+Lost inscriptions
+
+Sigils of prophecy
+
+Each reward also gives you scarabs depending on the type and amount drawn. Scarabs are basically the "XP" for the Scarab level. Also here, the rewards are neither purely random nor luck-based, but pooled.
+
+scarab gain = number of items * reward scarab multiplier
+
+The chance for a given reward is a pooled random where N is the total number of rewards in the reward pool (ranging between N=? and N=?). The number of drawn items is uniformly random within your current range for that reward.
+
+A list of the complete rewards can be found here: https://firestone-idle-rpg.fandom.com/wiki/Scarab%27s_Game
+
+3. Sigils of Prophecy
+
+There are six different sigils of prophecy.
+
+On the left side of the Scarab game, you have a stone block with 3 free spaces on each side and a scarab eye as a progress bar in the middle. Once you receive a sigil from the pharaoh's vault, the progress bar fills up, and with all 6 sigils, you unlock a beast. (Section: Beasts)
+
+The first beast or the first 6 seals will be received within 96 draws / a maximum of 20 Pharaoh's Vaults.
+
+Each additional beast or 6 seals can then be obtained within 192 draws / a maximum of 39 Pharaoh's Vaults.
+
+As an f2p player and with only the 10 free noble tokens per day, you can unlock approximately 1 beast per month.
+
+The chance to get a sigil or soul embers or hourglasses is:
+
+6/192 + (186/192 * 1/31) + (186/192 * 30/31 * 1/16) = 31/256 = 12.1%
+
+N * 1.121 is the number of reward draws to get through the pool once.
+
+4. Scarab Level
+
+With every reward drawn from the pharaoh's vault you also earn scarabs. When you have gained enough scarabs, your scarab level increases. Scarab level 2 requires 40,000 scarabs. Each subsequent scarab level requires 4,000 more scarabs than the previous level. At certain scarab level increments, you get permanent bonuses.
+
+Miner (additive)
+
+Mechanical Fury (additive)
+
+Firestone Finder (multiplicative)
+
+Raining Gold (multiplicative)
+
+All Attributes (multiplicative)
+
+Attribute Damage (multiplicative)
+
+Attribute Health (multiplicative)
+
+Attribute Armor (multiplicative)
+
+You can see the bonuses under the Scarab Level in the top left corner of the Scarab's Game by simply clicking on it.
+
+5. Scarab Milestones
+
+While you are collecting scarabs, you will receive additional rewards at certain scarab milestones. The milestone rewards can be found here:
+
+"Scarab Game => Pharaoh's Vault => Milestones"
+
+Each subsequent milestone from 21-49 requires 7000 + 500 additional scarabs and will reward you 5000 ancient coins , from milestone 50- you then need 21000 scarabs to unlock the next one. The milestone counter resets on the 21st of each month.
+
+### Beasts
+
+Beasts are unique companions which give large permanent bonuses. They can be obtained in the Pharaoh's Vault (at lvl 60) when you find all six sigily of prophecy. You get the beasts in a random order.
+
+The first beast or the first 6 seals will be received within 96 draws / a maximum of 20 Pharaoh's Vaults.
+
+Each additional beast or 6 seals can then be obtained within 192 draws / a maximum of 39 Pharaoh's Vaults.
+
+As an f2p player and with only the 10 free noble tokens per day, you can unlock approximately 1 beast per month.
+
+Beast companions are similar to the artefacts.
+
+Each beast offers 6 different bonuses:
+
+1. Spirit
+
+2. Gold Rain / Firestone Finder and all main attributes
+
+3. Attribute: Damage / Health / Armor
+
+4. Firestone Research and Alchemy Experiments
+
+5. Resource: Mana / Rage / Energy
+
+6. Specialization: Damage / Healer / Tank
+
+They are divided into: 15 Firestone Research beasts and 15 Alchemy Experiments beasts
+
+Each beast has a level and rarity.
+
+1. Beast Rarity
+
+2. Beast Upgrades/Level
+
+The level of a beast can be increased with soul embers, which can be obtained from the Pharaoh's Treasury at level 60. The upgrade cost starts at 10 soul embers per level and increases by 1 soul ember every 10 levels. Each level upgrade increases all attributes of the beast, except for spirit, alchemy and librarian, multiplicatively by 10%. The maximum level of a beast is 110.
+
+When a beast reaches a certain level, its rarity has to be increased with cobra keys, which you can get from the normal tavern, before it can be leveled up further. Each rarity upgrade significantly increases the spirit gained from the beast. In addition, all attributes of the beast double, except for alchemy and librarian which only increase additively by 0.15%.
+
+All upgrades are multiplicative between different beasts and with other upgrades of the same type.
+
+1. Beast Rarity
+
+Which beasts to upgrade depends on various factors. Basically, you can say that there isn't a purely bad beast, as they all help you in one way or another.
+
+For each rarity level of the beast, you first have to upgrade each one 10 times with soul ember. However, since soul ember are pretty rare in the game, you should definitely refrain from trying to upgrade all of them right away.
+
+The highest value in the beasts is to get the beast at all, obtaining an beast gives the most bonus, the upgrade is always lower than the beast itself.
+
+### So, how to decide?
+
+Instead of going by the heroes you have in the game, it's better to go by other criteria
+
+Firesteone research
+
+Alchemy research
+
+Gold bonus
+
+Firestone Finder
+
+Damage etc...
+
+The hero spec (like mana/rage/energy/healer/tank/damage) should be seen more as a kind of bouns, so in addition to the points from above, but with lower priority than e.g. the research time reductions should be the deciding factor.
+
+This is a general order that you can follow:
+
+Top row
+
+● Spirit
+
+● Librarian before Alchemist
+
+However, based on the length of the research or experiments, everyone can decide individually which aspects should be prioritised in order to reduce the research time.
+
+Middle row:
+
+● Gold rain / Firestone finder always before main attributes
+
+● Energy before Mana/Rage
+
+However, this is a question of "personal preference" can be different for everyone, depending on which heroes you have in your party/team.
+
+Bottom row:
+
+● Attribute: Damage before health/armour and health before armour
+
+● Specialization: Damage before tank/healer and tank before healer.
+
+2. Beast Upgrades/Level
+
+Each level upgrade increases all attributes of the beast, except for spirit, alchemy and librarian, multiplicatively by 10%. The maximum level of a beast is 110.
+
+The priorities should be based on the following criteria:
+
+Gold rain / Firestone finde always before main attributes
+
+Attribute: Damage
+
+Mana/Rage/Energy and Damage/Healer/Tank.
+
+Depending on which heroes you have in your party/team.
+
+And of course, the more of these 6 improvements are appropriate for you, the better it is.
+
+Full list of beasts can be found here: https://firestone-idle-rpg.fandom.com/wiki/Beasts
+
+## Exotic Merchant
+
+You will unlock Exotic Merchant at level 30. Here you can sell items and scrolls and receive Exotic Coins in return. With these coins you can buy permanent upgrades. Also at level 65, you will unlock Emblems. From this point on, you receive emblems through missions and you can buy emblems with gems. With these emblems you can buy Epic Chests at the exotic merchant. Using your gems here is not worthwhile though, just use the passive emblems you receive through your map missions.
+
+Back to exotic coins. You want to sell pretty much everything with the exception of (certain) gold items. Either you use all gold items for quicker empower and meteorites.
+
+As for exotic upgrades. Your first priority is Firestone Finder . Yes, whereas Firestone Finder in Firestone Research is not that good because it’s low percentage and linear. Inside Exotic Merchant, Firestone Finder is higher percentage and multiplicative. But it has a level requirement. You need to be at least level 50 to buy the first level, and that level requirement goes up by 2 for every purchase you do. Second priority is Raining Gold. After those 2 are maxed, you go raise attributes. Depending on the build, you can go many ways. With a glass cannon build, go for Hero DMG. Then you must decide, All Attributes to support all kinds of heroes, or ready yourself for a mana spellcaster party and level up Magic Spells. All up to you.
+
+### Emblem Market
+
+The emblem market unlocks at character level 65. In the market you can buy gear chests with emblems of courage and jewel chests with emblems of valor and celestial chests with emblems of brotherhood.
+
+There are 3 tabs on the left side at the Exotic Merchant -> Emblem Market: one for the emblem market of the gear chests/emblems of courage, another one for the jewel chests/emblems of valor and third tab for the soulstones/emblems of brotherhood.
+
+4 Common chests = 2000 emblems of courage
+
+4 Uncommon chests = 3000 emblems of courage
+
+5 Rare chests = 5000 emblems of courage
+
+3 Epic chests = 5000 emblems of courage
+
+4 Wooden chests = 2000 emblems of valor
+
+4 Iron chests = 3000 emblems of valor
+
+5 Golden chests = 5000 emblems of valor
+
+3 Diamond chests = 5000 emblems of valor (Requires 100 campaign stars)
+
+4 Comet Chests = 2000 emblems of brotherhood
+
+4 Lunar Chests = 3000 emblems of brotherhood
+
+5 Solar Chests = 5000 emblems of brotherhood
+
+3 Nebula Chests = 5000 emblems of brotherhood (Requires oracle level 98)
+
+I recommend
+
+Gear Chests:
+
+3 Epic Chests = 5000 emblems of courage for the heroes.
+
+Soulstone
+
+3 Nebula Chest: 5000 emblems of brotherhood (Requires oracle level 98)
+
+Jewel Chests:
+
+3 Diamond Chests = 5000 Emblems of Valour (Requires 100 campaign stars).
+
+3 Diamond Chests = 132 (3x 44) components
+
+5 Golden Chests = 5000 Emblems of Valour
+
+5 Golden Chests = 165 (5x 33) components
+
+If you have all the legendary seals for your heroes (or even before), the 5 golden chests are a good alternative, they contain more equipment for the war machines than the 3 diamond chests.
+
+## Warfront/Warmachine Expansion 1
+
+### Warfront Expansion
+
+At level 50, the Warfront will be unlocked with the War Machines, the Campaign and the Engineer in the town. Then you will get your first WM from the engineer, where you can put your heroes in and then do your first campaign missions (campaign star) in the Town -> Battles -> Campaign.
+
+The Warfront expansion has two buildings in the towm.
+
+1. Battles: with the subcategories:
+
+- Campaign
+
+- Arena of Kings
+
+2. Engineer with the subcategories:
+
+- Engineer (A)
+
+- Garage (B)
+
+- Training Base (C)
+
+### Engineer (A)
+
+The first tab with the identical name "Engineer" has the function: Tool production, every 6 hours you can collect a certain amount of tools there, the amount depends on the engineer level, i.e. increases when you level up your war machines and thus also the engineer level.
+
+The amount of tools you can claim increases with the engineer level as follows:
+
+Tools = 225 + 25 × Engineer Level
+
+The Amulet of Tinkering, which increase the chance to get 100% more tools from the Engineer to 5%. However, from a purely mathematical point of view, it is only helpful in the first year.
+
+The second tab "Active Squad" allows you to 1. place your heroes in the war machines and 2. create alternative squads.
+
+Example: 1st squad for the campaign, where you can select the campaign power and 1 other squad for the arena, where you can switch from "Battle Attributes" to "Arena Attributes" under "Select Crew".
+
+From engineer level 30 a fifth spot in the WM will be unlocked for the heroes and at engineer level 60 a sixth spot, but this is more for a late game feature.
+
+The third tab is for selecting your 5 favourite war machines.
+
+By selecting favoured war machines, you can better control the way components from jewel chests are distributed. 80% of the drawn components will go to your five favoured war machines while the remaining 20% of drawn components will be distributed among all your war machines.
+
+The fourth tab: War Machines can be unlocked via the Arcane conduits, for this you need 3 different items
+
+Chaos turbine
+
+Energy core
+
+Mana reactor
+
+These 3 items can be found in the Jewel(WM) chests, once you obtain the required amount you will automatically unlock the next war machine. The number of arcane conduits you obtain is also pooled random with a 3 in 22 chance per 11 components in the chest.
+
+The first 3-6 WM's can be unlocked quite early in the game, from the 7th WM the required components are higher but don't have a visible "pattern"
+
+A list of the required items for the war machines can be found in the wiki,
+
+https://firestone-idle-rpg.fandom.com/wiki/Engineer[/list]
+
+There's 4 classes of machines:
+
+1. Single damage
+
+In my opinion, any single damage is better than any multi damage.
+
+In single damages, there is a clear ranking:
+
+Cloudfist > Talos > Aegis > Firecracker
+
+Although Cloudsfist is on the same level as Thunderclap.
+
+2. Multi damage
+
+Thunderclap > before Judgement and > Harvester
+
+3. Tank
+
+Goliath is considered as the best tank, not only due his stats as a tank but also due to his ability of 10% self-healing, which can be increased by upgrading the rarity levels. Already at rarity level 2, the chance of triggering the self-healing ability is 28%. The abilities of the other two tanks, Fortress and Earthshatterer, is damage dealing, which is rather marginal, although both are good as tanks and could be used as great second tanks. Therefore the order is:
+
+Goliath > Fortress/Earthshatterer
+
+4. Healer
+
+Hunter is rated as the best healer. Sentinel before Curator, whereby Curator always heals the machine with the lowest health by 300% but only 1 WM and Sentinel's ability is somewhat broader based and heals all WM's by 150%. Therefore the order is:
+
+Hunter > Sentinel > Curator
+
+In this order you will receive your first 5 war machines:
+
+1. Damage (single)
+
+2. Damage (single)
+
+3. Tank
+
+4. Damage (multi)
+
+5. Healer
+
+Which damage or which tank/healer you exactly get is random, the order isn't.
+
+From the 6th tank it's completely random
+
+### Garage (B)
+
+The first tab in the garage is the Info page, where the main and advanced attributes as well as the abilities of the individual war machines are described.
+
+Second tab, you can level up the war machines with the components you get from the Jewel(WM) chests.
+
+The third tab allows you to upgrade your war machines with blueprints (every 5 levels)
+
+The fourth tab is where you can increase the rarity level of your war machines using the tools you receive from the Engineer.
+
+There are 4 different effects that can be increased, 3 of which are multiplicative
+
+War machine effect: Increases the attributes of this war machine (multiplicative)
+
+All main attributes of war machines: Increases the damage, health and armour of all war machines. (multiplicative)
+
+Mechanical Fury: Increases the Arena attributes of all war machines (multiplicative).
+
+Overdrive: Increases the chance to trigger the war machines' ability.
+
+Each rarity increases the attributes of this and other war machines by 5% / Overdrive by 3%. Increasing the rarity of a WM requires a certain WM level, the higher the rarity level, the higher the WM-Level has to be. The amount of tools you need for the rarity levels increases significantly after the first rarity level, but the fact that two of the will affect to all WMs makes it worthwhile despite the costs. Once you've upgraded all your favourite WMs to uncommon, it's definitely worth bringing all your other WMs to level 10 before upgrading them to uncommon. The next higher rarity level is then "rare" (at WM level 50), once you upgrade your favoured WM's at this level, you should decide whether you also upgrade the non-favoured WM's to "rare" as before or only upgrade the 5 favoured WM's.
+
+WM-Level 10 - 1nd rarity level Uncommon = 10.000 Tools
+
+WM-Level 50 - 2rd rarity level Rare = 51.000 Tools
+
+WM-Level 100 - 3nd rarity level Epic = 180.000 Tools
+
+WM-Level 160 - 4rd rarity level Legendary = 220.000 Tools
+
+WM-Level 230 - 5nd rarity level Mythic = 280.000 Tools
+
+WM-Level 310 - 6rd rarity level Titan = 300.000 Tools
+
+WM-Level 400 - 7nd rarity level Angel = 310.000 Tools
+
+WM-Level 500 - 8nd rarity level Celestial = 320.000 Tools
+
+The quantity for the 3rd rarity level could theoretically be used to upgrade 3.5 of the non-favoured WMs to the 2nd rarity level. This approach has in addition to the negative "high cost effect" the positive "side effect" that by levelling the non-favoured WM's, you will also increase your engineer level, which results in an increase in "every 6 hours" tool quantity as well as the engineer bonus increases.
+
+## Warfront/Warmachine Expansion 2
+
+### War Machine component distribution from jewel chests
+
+80% of components from the jewel chests goes to the 5 favourite WM's, the remaining 20% will be distributed among all your war machines.
+
+With 5 favoured WMs, with balanced components (amount) and a new WM or a WM without components, the new (non-favourite) WM receives 20% of the components, while each favoured WM receives 16% of the components. This allows the new WM to slowly catch up with the old WMs.
+
+However, this is only possible with 6 Wm's. 5 WMs (old or favoured) and 1 WM (new and non-favourite)
+
+Starting with the seventh (7) WM, the two new, not favoured, WMs will only receive 10% of the components, which makes it impossible to catch up with the old WMs.
+
+If the new WM will be added to the non-favourites, they will get 20% and the 5 favourites will still get 80% of the components (i.e. 16%/per WM).
+
+But it is also possible to "play" with this system
+
+Add the new WM to the favourites so that they can catch up faster, as they receive 100% (80+20)
+
+Or take it as a non-favourite with the 20%, so that your old WM's continue to get the 80%
+
+Or alternating, first as a favourite for a while, so that the new WM can catch up fast but in order that your old WM's also get some components in between, take them out of the favourites and then "alternately" in and out of the favourites, depending on the situation.
+
+▶ The shortest when you have only one new WM is to include it as favourite or not have favourites at all. This means that the new WM receives the 80% of the favourites and, as it has to catch up, also the 20% from the rests, i.e. 100% of the components.
+
+▶ The shortest when you have more than one new WM and you only want one to catch up is to add it to your favourites
+
+### Training Base (C)
+
+Just to be mentioned here ...
+
+📢 Your first goal should be to reach 190 campaign stars to unlock all daily missions (liberation/dungeon).
+
+Later in the endgame, from campaign star 319 there will be an additional liberation mission.
+
+The most efficient way to do this is to focus on 1 WM and then slowly level up the other WMs to progressively increase their rarity. For the solo strategy, you should use the blueprints for all 3 points. (War machine damage, health and armour).
+
+There will always be walls/hurdles in the campaign where you can use the expedition tokens for level up your personal guild tree or for rarity levels.
+
+I would recommend to use these hurdles for upgrading the rarity levels, at least until campaign star 190.
+
+Later in the game you can always decide to level up more war machines as a second/third main WM.
+
+More information can be found under:
+
+Globally, stats are multiplicative in the Campaign and additive in Arena (PvP). A single machine that is fully boosted in the Campaign is much cheaper to level/upgrade and more efficient than a full tank team. Given the additivity of stats, the first upgrades will be more effective than the next. Going from 5 to 10 effectively doubles your stats, while going from 100 to 105 only adds 5%.
+
+The Arena (PvP) gives small daily rewards, which in higher ranks are quite good, but not in comparison to the bonuses/benefits you get through the Campaign (Reduction of Research time, Battlecry, Gold Bonus, Explorer, etc.).
+
+The power rating of a single war machine is determined from its attributes in the following way:
+
+power = (10 * damage)0.7 + (1 * health)0.7 + (10 * armor)0.7
+
+The rating is called battle power, when battle attributes are used, and arena power, when arena attributes are used. The power rating of a squad is the sum of the power ratings of all war machines in the squad.
+
+Each crew member increases each attribute of the war machine according to the hero's specialization and the hero's jewels:
+
+crew member bonus = (1 + specialization bonus) * jewel bonus
+
+The specialization bonus is 40% if the hero's specialization matches the attribute (damage specialization matches damage, healer specialization matches health and tank specialization matches armor) and 0% else. The jewel bonus is the sum of all the hero's jewel effects for the attribute. If the hero doesn't own any jewels for the attribute, the jewel bonus is 40%. Crew bonus can be found in: Town -> Hall of Heroes -> first tab of the hero -> scroll down a bit to the crew bonus The crew bonus of each attribute is then the sum of the crew member bonuses for the attribute:
+
+crew bonus = crew member 1 bonus + crew member 2 bonus + ...
+
+There are 3 types of power:
+
+### Base Power
+
+Basic attribute = base attribute * (1 + level bonus) * (1 + engineer bonus) * (1 + blueprint bonus) * (1 + rarity bonus) * (1 + sacred card bonus) * (1 + artifact bonus)
+
+- Used in the war machines power leaderboard
+
+### Battle Power
+
+- Battle attribute = basic attribute * (1 + crew bonus)
+
+- Used in the warfront campaign.
+
+### Arena Power
+
+- Arena attribute = base attribute × (1 + log10(battle attribute / base attribute))2 × ( 1 + mechanical fury bonus) × ( 1 + battle card bonus)
+
+- Used in the arena of kings and the player inspect.
+
+Both, battle power and arena power include the crew
+
+Detailed info can be found here:
+
+### Arena of Kings
+
+https://firestone-idle-rpg.fandom.com/wiki/Arena_of_Kings
+
+The relevant guide can be found here:
+
+Ultimate War Machine strategy guide
+
+## Pirate ship / Mercenaries
+
+The pirate ship is a building in town that unlocks at character level 10. Here you can hire mercenaries and claim the pirate's prize.
+
+### Mercenaries
+
+There are currently 11 mercenaries in the game,which can be unlocked at level 30. Once you unlock the Mercenaries they are exactly the same as your heroes, with the same attributes, skills and equipment, awakening auras etc. exactly the same as the normal heroes. The only difference is the way you unlock them. Instead of a stage milestone, mercenaries will be unlocked with contracts. To unlock the first mercenary, you need 400 contracts. Each following mercenary will cost you 1000 contracts.
+
+The mercenaries can be unlocked in the Town => Pirate ship => Mercenaries.
+
+### Which mercenaries should be the fist choice?
+
+If you choose a mercenary you should rather go by raining gold, firestone finder and if the hero has an aoe than by hero specialisation, hero specialisation might be important at the beginning when you have only a few artefacts or beasts cards, but the more artefacts and beasts cards you have the less it will matter, awakening bonuses like raining gold or firestone finder are much more effective.
+
+At the moment Cirilo would be the best choice.
+
+### Contracts
+
+Contracts are obtained from the Tavern, the Battle Pass and from Mini-Events. They are required to hire mercenaries in the Pirate Ship. You can obtain 295 contracts per month via the active battle pass (milestone 31), the rest through the Tavern and the Mini Events.
+
+Since you need the contracts for mercenaries and the hero and guardian rarities, beginner should only get the first mercenary for 400 contracts and then use the contracts for the hero rarities
+
+The best choice here is to get Cirilo as the first mercenary. His good stats, gold bonus and abilities make him to one of the best mercenaries.
+
+### Pirate's prize
+
+The pirate's prize comes in two forms: the full pirate's prize and the free pirate's prize. The free pirate's prize can be claimed once you reach the corresponding character level milestone. The full pirate's prize additionally requires unlocking the corresponding prize tier with platform currency.
+
+Every 10 character levels (your level, not the level from the mercenary) you will unlock a pirate prize. There are currently the following 5 prize tiers:
+
+Jewels
+
+Game token
+
+Dragons blood
+
+Mystery boxes
+
+Chests
+
+There are currently the following 5 prize tiers:
+
+Tier I = Character level 1-200
+
+Tier II = Character level 201-400
+
+Tier III = Character level 401-600
+
+Tier IV = Character level 601-800
+
+Tier V = Character level 801-1000
+
+The prices depend on the respective platform
+
+A list of the pirate prices can be found here:
+
+https://firestone-idle-rpg.fandom.com/wiki/Pirate_Ship#Mercenaries
+
+## Chaos Rift
+
+The Chaos Rift is a server-wide event in which all players on the same game server fight against the dark gods. The Chaos Rift is located in the guild and will be unlocked at level 100.
+
+### Dark trial
+
+There are 3 dark gods that can be attacked with help from your guardians.
+
+Lendra
+
+Kramatak
+
+Yanamoth
+
+The dark gods are special bosses, if you defeat them you will gain their individual power books, which can be used for research in Forbidden Knowledge.
+
+### General infos
+
+Each god has his own toems of power and his own research tree (forbidden knowledge)
+
+All the dark gods can also be recruited as heroes, for this you need to bring their corresponding research tree to 2x5 (10) and another 50 tomes of power for the recruitment.
+
+As f2p or only with the event pass you won't be able to recruit the god in the first run, but that shouldn't worry you.
+
+The gods rotate in a monthly cycle, so if the recruitment didn't succeed in the first cycle, you just have to wait until it's that god's next turn.
+
+The recruited gods are then ‘’only‘’ normal heroes, so no drama if you only recruit them on the second or even third turn.
+
+The progress you made on the god research tree (forbidden knowledge) won't be reset, meaning that you can then continue to levelling in the next turn and it stays active, even if it is another god’s turn.
+
+All the guardian bonuses in the various research/experiments/exotics or guild/p-trees or talents, etc., do not increase guardian damage in chaos rift. Only: 1. Holy damage 2. Guardian evolution 3. Guardian rarity
+
+The damage that a player does in the chaos rift is tied to that player, if he leaves the guild (or he gets kicked) he will take the damage with him
+
+### End of month
+
+Reset:
+
+The orbs will be reset
+
+Holy damage of the guardians and the cost of holy damage will also be reset
+
+Unused runes will be automatically changed into tomes, if you have enough
+
+The cost of the tomes will also be reset
+
+All unclaimed rewards will be automatically sent to you by mail
+
+Will not be reset:
+
+Eclipse stones, you can collect them as long as you like, even beyond the end of the month
+
+The tomes (for example, if you want to recruit the god upon his return), you don't have to use them if you want
+
+The progress you made on the god research tree (forbidden knowledge) won't be reset, meaning that you can then continue to levelling in the next turn and it stays active, even if it is another god’s turn
+
+All guardians that you have unlocked are attacking at the same time. Each attack requires 1 Moonstone or 1 Eclipse Stone.
+
+Moonstone: The maximum amount of Moonstones you can have is 10, at the end of each day the Moonstones are restocked to 10. (similar mechanism as the Arena Tokens)
+
+Eclipse Stones: The eclipse stones can also be used to attack the dark gods, there is no limit to the amount of eclipse stones you can accumulate/collect.
+
+The multiplier option is unlocked after: 40 hits. When you unlock a multiplier option for a mechanism you unlock it for all your servers (it's account-wise unlock).
+
+When fighting the Dark Gods, each guardian's damage is calculated from its advanced chaos rift attributes. A guardian's basic damage is determined by its holy damage attribute. Critical hits can occur according to its precision hit chance attribute and the guardian's damage is then increased by its precision hit damage attribute. Double hits can occur with a chance according to the guardian's double strike attribute. Critical and double hits can also stack, so there are the following four possible cases:
+
+Basic hit = Holy damage
+
+critical hit = (1 + precision hit damage) × holy damage
+
+double hit = 2 × holy damage
+
+double critical hit = 2 × (1 + precision hit damage) × holy damage
+
+The health of a dark god starts at 5 million hit points and increases multiplicatively by 5% per level:
+
+health = 5,000,000 × (1 + 5%)god level-1
+
+For the Chaos Rift it is better to unlock all 4 Guardians as early as possible and level all guardians equally.
+
+Game progress + chaos rift mixed: Level the dragon and phoenix for the better guardian auras always some evolutions level higher than the fairy and the djinn, but don't neglect the other two guardians for the better chaos rift strategy and level them evenly, even if it's some evolution levels below the dragon/phoenix.
+
+To increase the damage of the guardians you have to upgrade the holy damage in the magic quarter with the light orbs, evolve the guardians and increase their rarity levels. All the guardian upgrades outside of the magic quarter, like the talent points, from the various research trees, artefacts or the tree of life etc., don't have any effect on the damage of the guardians in the chaos rift.
+
+When a dark god is killed, its level will automatically increase by one.
+
+### Rewards
+
+When a dark god is killed, all players who have hit the dark god at least once will receive rewards. There are two types of rewards: the damage rewards and the rank reward.
+
+### Damage rewards
+
+The damage rewards are proportional to the damage the player dealt on the dark god:
+
+- Dark runes: 30% of the damage = can be exchanged for the Tomes of Power.
+
+- Light Orbs 25% of the damage = are used to upgrade the guardian attributes for the Chaos Rift (in the magic quarter).
+
+Rank reward
+
+After each killing of one of the dark gods, the top 5 players with the highest proportional damage on the god will get an additional reward:
+
+Rank 1: 10 tomes of power
+
+Rank 2: 7 tomes of power
+
+Rank 3: 5 tomes of power
+
+Rank 4: 3 tomes of power
+
+Rank 5: 2 tomes of power
+
+### Server bonus
+
+When a dark god is killed, the whole server will get a 100% all attributes bonus ("Twilight of the gods") for 60 minutes.
+
+### Competitions
+
+There are two monthly competitions: the personal competition and the guild competition.
+
+Personal competition
+
+Players will receive rewards at the end of the month in proportion to the total amount of damage they have done, depending on their league and rank within their league.
+
+The rewards will be distributed via in-game mail at the end of the month.
+
+Guild competition
+
+Guilds who are in the top 10 of the total guild damage leaderboard at the end of the month will receive rewards.
+
+The rewards will be deposited in the Guild Treasury at the end of the month where the guild's treasurers can distribute them to the guild members.
+
+The damage that a player does in the chaos rift is tied to that player, if he leaves the guild (or he gets kicked) he will take the damage with him.
+
+The list of the rewards can be viewed here in the wiki: https://firestone-idle-rpg.fandom.com/wiki/Chaos_Rift
+
+### Forbidden Knowledge
+
+In Forbidden Knowledge, you can research in the domains of the three dark gods. As with the Oracle or the Tree of Life, all research has to be completed to level 5 before you can continue to research there. All upgrades are multiplicative.
+
+There are 3 dark gods that can be defeated with the help of your guardians.
+
+The Dark Gods are special bosses, defeating them will give you their individual Books of Power, which can be used for Forbidden Knowledge research. [Dark Gods can also be unlocked and become part of your heroes, for this you have to bring all their Forbidden Knowledge research to level 10 and then recruit them with 50 of their Books of Power.
+
+Each of the three gods has their own Book of Power which can be used in the Forbidden Knowledge mechanic.
+
+Secrets of the Oceans
+
+To explore the secrets of the ocean, you need Ledra's power books .
+
+- Lendra = Used to explore the secrets of the oceans
+
+Thunder Chronicles
+
+To research the thunder chronicles you need Kramatak's tomes of power.
+
+- Kramatak = Used to research thunder chronicles
+
+Chaos Lore
+
+To research the chaos teachings you need Yamamoth's tomes of power.
+
+- Yanamoth = Used to research the Chaos Lore
+
+## Alchemist
+
+You will unlock Alchemist when you reach level 120. Alchemist is a lot like Exotic Merchant with their upgrades but they are called Experiments in Alchemist and the bonus you get is randomly decided for you. You can run 3 experiments at once, each with their own resources. Dragon Blood, Strange Dust and Exotic Coins. The time to complete an experiment varies on the tree you are currently on. Since the bonus you get is random, it’s pretty difficult to say when to use each resource. It is suggested to Dragon Blood right from the start. I suggest using Strange Dust whenever you have enough saved for your next evolution of your guardian. Exotic Coins is tricky as there are multiple pages of upgrades inside Exotic Merchant now.
+
+At level 130, you will unlock Transmuting inside Alchemist. Transmuting allows you to convert chests to higher rarity chests. There are 3 tabs on the left side at the Alchemist -> Transmute: one for the transmutation of the hero chests, another one for the jewel chests and third tab for the soulstones, unlocked at Oracle level 149.
+
+### Transmutation of Hero Chests
+
+The only good thing here is mythic chest to titan chest. But it’s very pricey. It costs 800 dragon blood + 30 Dust and 1 mythic chest to get 1 titan chest. With 800 dragon blood you can do 16 experiments. So you have to choose if it’s worth it. Remember that at 140, you get Naval Missions. They’ll give you a Legendary Chest each day and at gear power 5b and later at 60b you will get 1 mythic and titan chest as well.
+
+I would say the best way to spend dragon blood is to use them in experiments. When you have collected another 1.000 gems, you can spend all remaining dragon blood on transmuting legendary/mythic chests, and then you use those 1.000 gems on restocking on Dragon Blood. And repeat this over and over. So collect another 1.000 gems, you might have 1.000 dragon blood left, that’s 2 transmutations, then buy dragon blood again. These values may differ depending on how much you play, so basically how many experiments you do per day. However, you should already have the most important amulets before even thinking to using dragon's blood for transmutation.
+
+### Transmutation of Jewel Chests
+
+The second tab for the transmutation of jewel chests is located directly below the tab for the normal chests. This tab will be unlocked when you reach 70 campaign stars in the WarFront campaign. Jewel chests are transformed with elixirs of life, which you get from the dungeon, and strange dust. Also here the costs are quite high, so only the last transmutation is worthwhile.
+
+I recommend that you collect the elixir of life until at least 145 campaign stars or even better/worthwhile up to 190 campaign stars and only use it to transmute for 650 elixirs of life and 25 dust from an opal chest into 1 emerald chest, before that the transmutation doesn't worth it.
+
+### Transmutation of Celestial Chests
+
+The third tab is at the bottom and will be unlocked at Oracle level 149. Celestial chests are transformed with star essence, which you get from via the Concentration Ritual, and strange dust.
+
+Like with the Gear and Jewel transmutation, the costs are very high, therefore only the last (two) transmutations are worthwhile.
+
+## Oracle
+
+The Orakle is a building in town that unlocks at character level 200. This is where you can do four rituals every 6 hours which give celestial chests, oracle's gifts, emblems of brotherhood and star essence. You can also buy blessings which give permanent attribute or gold bonuses as well as virtue. Virtue in turn is needed to increase your oracle level.
+
+The Orakle is organised into 3 (4) categories:
+
+1. Oracles
+
+2. Rituals
+
+3. Blessings
+
+(4.) Shop
+
+1. Oracle
+
+Your oracle's level is determined by your total virtue. By levelling up the individual blessings, you gain virtue, a kind of "xp" for the oracle, which is required for the oracle level. By levelling the Oracle, you will also unlock milestones that improve the rewards for the rituals and also increase the "virtue effect". You obtain virtue by buying blessings and by opening oracle's gifts.
+
+Oracle level 2 costs 1200 virtue. Each subsequent level then costs 60 virtue more than the previous one. At certain oracle level milestones, your virtue effect increases and one of your rituals gives more rewards. First of all, you should aim to reach oracle level 6 to unlock the 4th ritual. The next goal should be Oracle level 11 to unlock tier 2 of the soul stones. Like tier 2 and 3 of the hero equipment, tier 2 of the soul stones affects all heroes.
+
+Tier 2 Soulstones:
+
+Oracle's gifts can be received via the daily reward in the oracle shop and via the Concentration Ritual, , with various rewards:
+
+Gear and jewel and chests
+
+Virtue
+
+Tools
+
+Beer
+
+Elixir of Life (from campaign star 70)
+
+Golden keys
+
+Meteorites
+
+Dragon's blood
+
+[Inventory scrolls (random)
+
+Inventory items (random)
+
+A list of all rewards can be found here (oracle level): https://firestone-idle-rpg.fandom.com/wiki/Oracle
+
+Your total virtue together with the virtue effect determine the oracle's firestone finder bonus:
+
+firestone finder bonus = virtue × virtue effect
+
+2. Rituals
+
+Every 6 hours you can perform 4 rituals, each lasting 40 minutes, and can be done in succession. The first 3 rituals are unlocked from level 200, the fourth from oracle level 6. The Ritual rewards are Celestial Chests and Emblems of Brotherhood as well as an Oracle's Gift. The rewards (type and quantity) will increase with the oracle level/milestones.
+
+Do as many rituals as possible. You need the chests that you get as rewards for the blessing upgrades, and the blessing upgrades also increase the oracle level, which then brings higher rewards for the rituals. The same goes for the soul stones, which you need to equip your heroes and which you also get from the chests from the rituals.
+
+Harmony = Reward: Comet chests
+
+• At oracle level 101: 1 additionally Nebula Chest: with a guaranteed chance of 1 in 3 (33%)
+
+Serenity = Reward: Lunar chests
+
+• At oracle level 153: 1 additionally Cosmic Chests: with a guaranteed chance of 1 in 4 (25%)
+
+Obedience = Reward: At oracle level 6 Solar chests
+
+• At oracle level 201: 1 additionally Galaxy Chests: with a guaranteed chance of 1 in 4 (25%)
+
+Concentration = Reward: Emblems of Brotherhood + Oracle's Gift
+
+• At oracle level 149: 1 additionally: Star Essence
+
+3. Blessings
+
+There are two types of blessings: the twelve outer blessings and one inner blessing (Fate). All blessings require glyphs, which are obtained by opening celestial chests. Blessings will give you a permanent attribute or gold bonus as well as virtue. You need to level all outer blessings five times before you can level the inner blessing once.
+
+The Blessing Wheel works similar to the personal Tree of Life. With the glyphs and soulstones from the celestial chests (from the rituals), you can upgrade various blessings. In addition to the respective upgrade, each blessing upgrade you also gain virtues which increase your Oracle level, starting up to level 5. At level 5, you can level up your fate. The fate aura gives you benefits in your fellowship.
+
+- Leadership
+
+- Team bonus
+
+- All main attributes
+
+- Firestone effect
+
+All upgrades are multiplicative per level and with the other upgrades of the same type.
+
+## Map Missions
+
+This feature of the game is very important. Here you can collect a lot of resources which you need in the game. Strange Dust for your guardians. Scrolls, which can be used or sold at the exotic merchant. Chests for equipment, items and void crystals. Later additional missions are unlocked, giving you Epic Chests (level 70), Dragon Blood (level 120) and Legendary Chests (level 140). Later in the middle and end-game you will unlock 2 new missions. Every mission will reward you with some honor, and after level 65 you start earning emblems too. Honor raises your attributes, but more importantly it allows you to rank up. Giving you more squads and more missions to do. It is very important to do as many missions as you can possibly do.
+
+Some hints: When you are short on time, try to do the shorter missions first, and just before you leave, start the longer missions. Also for Monster Missions (level 70) and Naval Missions (level 140), they take 5-7 hours on average. Don’t do them right when you see them. Do normal missions first, complete most or all of them, then you probably have a few hours left. That’s when you start a Monster Mission. While the mission is in progress, it will carry over to the next map.
+
+Monster, Naval, Titan and the Shadow missions appear on a specific chance, Monster missions will show up 1 in every 3 cycles, meaning the longest you can go without one would be 4 cycles. Naval, Titan and Shadowmissions will show up 1 in every 4 cycles, this time meaning you could go a maximum of 6 cycles.
+
+Your map mission cycles do not “skip” while you are offline. Therefore if you close the game with 30 minutes until your missions refresh - those will be the missions that will appear. Meaning if you time things correctly, you will never “skip” a cycle with a Monster or Naval mission.
+
+Monstermission = 70 level
+
+Dragonmission = 120 level
+
+Navalmission = 140 level
+
+Titanmission = 5 billion gear power
+
+Shadowmission = 60 billion gear power
+
+### Silver Missions
+
+Silver missions appear randomly on the map once you reach rank 10. They are upgraded regular missions (including Monster, Dragon, Naval and Titan missions) and indicated by silver stars over the mission icon. Silver missions give double rewards, but also require twice the number of squads. Each rank above 9 increases the number of silver missions on the map by one until map rank 30. The next silver mission is available at map rank 35 and then at rank 40.
+
+### List of Missions
+
+Scout Missions
+
+These missions reward you with 1 honor, 5 emblems and 10 Strange Dust. The duration is 30 minutes on average and takes up 1 squad.
+
+Adventure Missions
+
+These missions reward you with 2 honor, 10 emblems and 2 random scrolls. The duration is 1 hour on average and takes up 1 squad.
+
+War Missions
+
+These missions reward you with 4 honor, 20 emblems and a random chest. 70% common, 20% uncommon and 10% rare chest. The duration is 2 hours on average and takes up 1 squad.
+
+Monster Missions (unlocks at level 70)
+
+These missions reward you with 28 honor, 140 emblems and an epic chest. The duration is 7 hours on average and takes up 2 squads. Has a 33% chance of spawning on the map.
+
+Dragon Missions (unlocks at level 120)
+
+These missions reward you with 16 honor, 80 emblems and 50 dragon blood. The duration is 4 hours on average and take up 2 squads.
+
+Naval Missions (unlocks at level 140)
+
+These missions reward you with 28 honor, 140 emblems and a legendary chest. The duration is 7 hours on average and takes up 2 squads. Has a 25% chance of spawning on the map.
+
+Titan Missions (unlocks at 5 billion gear power)
+
+A titan mission has a guaranteed 1 in 4 chance of appearing. It takes on average 7 hours to complete this mission. It requires 2 squads. It will reward you with a mythic chest, 28 honor and 140 emblems.
+
+Shadow Missions (unlocks at 60 billion gear power)
+
+A shadow mission has a guaranteed 1 in 4 chance of appearing. It takes on average 7 hours to complete this mission. It requires 2 squads. It will reward you with a mythic chest, 28 honor and 140 emblems.
+
+Mystery missions
+
+Mystery missions only appear during the World Domination mini-event. They take on average 3 minutes to complete and require 1 squad. They will reward you with 1 mystery box (3 mystery boxes if you purchased one of the event packs), 1 honor and 5 emblems.
+
+Silver Missions
+
+Silver missions appear randomly on the map once you reach rank 10. They are upgraded regular missions (including Monster, Dragon, Naval and Titan missions) and indicated by silver stars over the mission icon. Silver missions give double rewards, but also require twice the number of squads. Each rank above 9 increases the number of silver missions on the map by one.
+
+### List of Chests
+
+Gear chests
+
+Common Chest
+
+These chests give 1 piece of equipment ranging from common to rare. Also gives 1 item.
+
+Uncommon Chest
+
+These chests give 2 pieces of equipment. At least one is uncommon. The other can be anything from common to epic. Also gives 2 items
+
+Rare Chest
+
+These chests give 3 pieces of equipment. At least one is rare. The other 2 can be anything from common to epic. Also gives 3 items.
+
+Epic Chest (Level 65/70)
+
+These chests give 4 pieces of equipment. At least one is epic, and another one is rare. The other 2 can be anything from common to epic. It also has a 10% chance of giving a Legendary Seal for a specific equipment. It also gives 4 items.
+
+Legendary Chest (Level 130/140)
+
+These chests give 5 pieces of equipment. At least 3 is epic. Another one is rare. The last one can be anything from common to epic. It has a 1 in 10 chance to give a Legendary Seal, and another 1 in 15 chance to give Mythic Seal. It also gives 5 items.
+
+Mythic Chest (5 billion gear power)
+
+A mythic chest will give you 1 legendary gear item, 3 epic gear items and 2 random gear items. You also have a guaranteed 1 in 15 chance to get a mythic seal and guaranteed 1 in 15 chance to get a titan seal from this chest.
+
+Titan Chest (60 billion gear power)
+
+A titan chest will give you 1 mythic gear item, 3 legendary gear items and 3 random gear items. You will also get 7 random inventory items. You also have a guaranteed 1 in 15 chance to get a angel seal and guaranteed 1 in 15 chance to get a mythic seal from this chest.
+
+Jewel chests
+
+Wooden Chest
+
+A wooden chest will give you 1 random jewel of common, uncommon or rare rarity. You will also get 11 components and up to 1 arcane conduit.
+
+Iron Chest
+
+An iron chest will give you 1 guaranteed uncommon jewel and 1 random jewel of common, uncommon, rare or epic rarity. You will also get 22 components and up to 2 arcane conduits.
+
+Golden Chest
+
+A golden chest will give you 1 guaranteed rare jewel and 2 random jewels of common, uncommon, rare or epic rarity. You will also get 33 components and up to 3 arcane conduits.
+
+Diamond Chest (Campaign Stars 100/110)
+
+A diamond chest will give you 1 guaranteed epic jewel, 2 guaranteed rare jewels and 1 random jewel of common, uncommon, rare or epic rarity. You will also get 44 components and up to 4 arcane conduits. You can also get a legendary seal from this chest at a guaranteed 1 in 10 chance.
+
+Opal Chest (Campaign Stars 145/155)
+
+An opal chest will give you 3 guaranteed epic jewels, 1 guaranteed rare jewel and 1 random jewel of common, uncommon, rare or epic rarity. You will also get 55 components. You will also get 55 components and up to 5 arcane conduits. You also have a guaranteed 1 in 10 chance to get a legendary seal and a guaranteed 1 in 15 chance to get a mythic seal from this chest.
+
+Emerald Chest (Campaign Stars 190)
+
+An emerald chest will give you 1 legendary jewel and 3 epic jewels. You will also get 132 components. You will also get 132 components and up to 11 arcane conduits. You also have a guaranteed 1 in 15 chance to get a mythic seal and a guaranteed 1 in 15 chance to get a titan seal from this chest.
+
+Platinum Chest (Campaign Stars 319)
+
+A platinum chest will give you 1 mythic jewel, 3 legendary jewels and 3 random jewels. You will also get 264 components and up to 22 arcane conduits. You also have a guaranteed 1 in 15 chance to get an angel seal and a guaranteed 1 in 15 chance to get a mythic seal from this chest.
+
+Celestial chests
+
+Comet chest
+
+A comet chest give 50 glyphs and 1 soulstone
+
+Lunar chest
+
+A Lunar Chest give 100 glyphs, 1 uncommon soulstone and 1 random soulstone.
+
+Solar Chests
+
+A Solar Chest give 150 glyphs, 1 rare soulstone and 2 random soulstones.
+
+Nebula Chest (Oracle level 98/101)
+
+A nebula chest will give you 1 epic soulstone, 2 rare soulstones and 1 random soulstone of common, uncommon, rare or epic rarity. You will also get 300 glyphs. You can also get a legendary seal from this chest at a guaranteed 1 in 10 chance.
+
+Cosmic Chest (Oracle level 149/153)
+
+A cosmic chest will give you 3 epic soulstones, 1 rare soulstone and 1 random soulstone of common, uncommon, rare or epic rarity. You will also get 600 glyphs. You also have a guaranteed 1 in 10 chance to get a legendary seal and a guaranteed 1 in 15 chance to get a mythic seal from this chest.
+
+Galaxy Chest (Oracle level 201)
+
+A galaxy chest will give you 1 legendary soulstone, 3 epic soulstones and 3 random soulstones. You will also get 1200 glyphs. You also have a guaranteed 1 in 15 chance to get a mythic seal and a guaranteed 1 in 15 chance to get a titan seal from this chest.
+
+Stellar Chest (Oracle level 279)
+
+A stellar chest will give you 1 mythic soulstone, 3 legendary soulstones and 3 random soulstones. You will also get 2400 glyphs. You also have a guaranteed 1 in 15 chance to get an angel seal and a guaranteed 1 in 15 chance to get a mythic seal from this chest.
+
+### Oracle's Gifts
+
+Oracle's gifts can be claimed once per day in the Oracle Shop or can be obtained from conducting the Oracle's Concentration ritual.
+
+The Oracle's gifts offer different rewards that are randomly drawn from your current reward pool. A list of the rewards and the frequency can be seen here: https://firestone-idle-rpg.fandom.com/wiki/Oracle%27s_Gifts
+
+### Mystery Boxes
+
+Mystery boxes can be claimed once per day in the Shop. Additionally, you can also get mystery boxes during the mini-event "World Domination" through the rewards and mystery missions on the map.
+
+The Mystery Boxes offer different rewards that are randomly drawn from your current reward pool. A list of the rewards and the frequency can be seen here: https://firestone-idle-rpg.fandom.com/wiki/Mystery_Boxes
+
+### Seals
+
+You get Seals from epic, legendary, mythical or titan chests at a 1 in 10 chance for a legendary, and a 1 in 15 chance for mythical, titan and angel. There are 34 types of seals. Legendary seals, mythical seals, titan seals and angel seals. These seals allow you to upgrade equipment to legendary, mythical, titanium or engel rarity. To upgrade to Legendary rarity, you will need a level 6 epic equipment + Legendary Seal for that specific equipment. For Mythic, you need a level 9 legendary equipment + Mythic Seal for that specific equipment. For Titan, you need level 11+ mystic gear + a mystic seal. For Angel, you need level 13+ titanium gear + a titanium seal.
+
+Just because you get a seal, doesn’t mean you have to actually use it. Most of the time you get a seal for a tier 1 equipment. You can ignore them. Not only is there a good chance that the hero will be replaced one day, so you waste void crystals by making the equipment level 6. But also tier 2+ equipment is so much more important, you will have to raise all of them to level 6 before it’s more cost efficient to make a tier 1 equipment legendary.
+
+### Items & Scrolls
+
+You get items through chests and scrolls through missions. I classify them in 2 types, buff and speed up (aka gold) items. Buff items are those that will power up your heroes or guardian for just a few minutes. Speed up items are those gold items, like gold pouches, buckets, crates and piles.
+
+Buff items are only good when you come across a 3-star boss. With these items it will become easier to defeat the boss. However if defeating the boss is pointless, like you don’t unlock a new hero with it, then I suggest not using any buff item on that particular boss. Just gather enough strength naturally to beat him. Any excess buff items should be sold at the Exotic Merchant. After all, permanent upgrades are better than temporarily buffs.
+
+Speed up items can be good, often used for meteorites.They can also be used to obtain firestones more quickly, but it’s like a drug. Once you start using them, you have to keep using them to feel like you’re progressing further. Once you hit a empower wall, like it takes 12 hours of normal gameplay to get a 2x multiplier on your firestones, you can start using gold items to lower it down. But this does nothing to push that wall further. Which means next run you have to use these items again, or else it’s going to take 16 hours to get a 2x multiplier. Overall I think it’s best not to rely on gold items, and just sell them at the Exotic Merchant. This gives you permanent upgrades, which will push that ‘wall’ further, allowing you to get a 2x multiplier in a shorter amount of time.
+
+Speed up items are not affected by Midas Touch. However speed up items are affected by anything that increases your DPS. This is also why speed up items work very well on glass cannon builds. DPS counter does not take into account the survivability of the heroes, or even the state of heroes (dead or alive). All it means is their attack, and how fast they attack per second. So when you increase speed through a scroll, DPS goes up. Increase attack/damage, and DPS goes up.
+
+The visibility of active buff icons in the adventure screen can be turned on and off under Settings > Gameplay.
+
+## List of Researches / Upgrades
+
+Raining Gold
+
+The best research or upgrade. Improves the amount of gold you earn, which in turn allows you to get more upgrades or hero levels. With that you can farm higher stages, once again earning more gold. And in the end, earn more firestones.
+
+Firestone Finder
+
+In Exotic Merchant and Meteorite Research Tree 3, this upgrade is the best. In Exotic Merchant, it gives a decent bonus and it’s multiplicative. In Meteorite Research Tree 3, it gives a big bonus, but it’s linear like every meteorite research. Firestone Finder inside Firestone Research doesn’t do much.
+
+Firestone Effect
+
+Nice in the beginning, but all researches and upgrades are linear. Means the first level is the best, every level after that loses effectiveness.
+
+Attribute Damage
+
+Often cheaper to level up than All Main Attributes upgrade, and/or giving more bonus per level. Making it better than All Main Attributes, as attack is all that matters. Unless you go with a balanced build, then All Main Attributes might be better for you.
+
+Attribute Health
+
+Good for balanced build. Still wouldn’t advise it. Level it up at the very end, together with Attribute Armor.
+
+Attribute Armor
+
+Good for a balanced defence. Block up to to 100% of the incoming damage. However, level it with the Attribute Health at the very end.
+
+All Main Attributes
+
+It’s a good upgrade. Boosts your attack, but is often more expensive to level up, or doesn’t give as much of a bonus per level.
+
+Guardian Power
+
+Good for guardian build. It can help with farming back up to your farming stage after a empower.
+
+Critical Loot Bonus
+
+Bad. Currently only available in Firestone Research Tree 1. Maxed out it can give 20% crit chance and 300% bonus. Resulting in 60%
+
+Critical Loot Chance
+
+more gold on average. 50 firetokens are required for just 60% more gold? No.
+
+Weak Boss/ Weak Enemy
+
+Bad. You have to put many resources in it, and it only does so little. 2x 15 firetokens in Firestone Research Tree 1, just to reduce enemy HP by 15%. 1 level in Attribute Damage gives you the same result. That’s how bad it is.
+
+Powerless Boss/Powerless Enemy
+
+Bad. Same as above. It’s even worse when using a glass cannon build, as you get killed anyway. Even with a 15% reduction.
+
+Honor Effect/Medal of Honor
+
+Every research gives a linear boost and the amount is too small to make a big enough difference. You will get most honor effect from ranking up. I suppose only when you play very little and for that reason have a low rank, can honor effect research be good for you.
+
+Intense Training/Trainer Skills
+
+This upgrade/talent is okay. In the current version, you can reduce training time by 50%. This allows you to train the guardian once every 4 hours. Making it easier to complete the daily quest for those that do not play a lot.
+
+Mission Planning/Expeditioner
+
+A must have when you reach level 70. This allows you to do more missions in a shorter amount of time. At level 70, you get Monster Missions. Taking 7 hours on average and using 2 squads. Reducing that time by 30% means you can complete other missions.
+
+Wave Skip/Stage Skip
+
+It's a decent research. Takes less time to farm up. It gets better when you unlock Alchemist. You can get 84% wave skip in total, and 54% stage skip. You can go from 1 to 500 in less than 15 minutes.
+
+Scroll of Speed/Scroll of Attack/Scroll of Health/Ancient Knowledge
+
+Bad. Scrolls will be sold to the Exotic Merchant.
+
+Reduced Hero Level Up Cost
+
+Does very little.
+
+Meteorite Hunter
+
+It’s an average upgrade. Increases the chance of to get 100% meteorites from the miner, but all meteorite research gives a bonus that goes up linear. It takes months before you actually notice a big difference between someone who does not have this. Still it’s prefered as sometimes you get new heroes, and you want to get meteorites quickly to unlock tier 2 and tier 3 equipment.
+
+Coworkers
+
+Increases the chance for 2 miners to appear with meteorites.
+
+Twin dragons
+
+Increases the chance for 2 dragons to appear with beers.
+
+Next to Gold Rain, Research Time Reductions and Battle Cry, one of the most important researches in talents.
+
+Battlecry
+
+Increases your contribution to the fellowship effect.
+
+Through the upgrading the battle cry you increase the fellowship aura [see point fellowship] which makes this talent next to the gold rain to one of the most important.
+
+Mana Heroes/Rage Heroes/Energy Heroes
+
+These upgrades are decent. They increase all attributes of heroes using mana, rage or energy. Ideally you will want a team composition in the future composed of one attribute.
+
+Tank Specialization/Damage Specialization/Healer Specialization
+
+Same as above. Focus on what you have more of in your team composition first.
+
+Fist Fight/Projectiles/Precision/Magic Spells/Attribute Armor
+
+Same as above.
+
+Leadership
+
+Good to equal differences in attributes between heroes. Also some people use Blaze as the main source of damage. Level up Leadership to boost him. Fully rely on him for damage, melting through 3-star bosses with the first ability and killing a mass amount of enemies using third ability. It’s a more active build, or clicker is needed.
+
+Team Bonus
+
+Good to equal differences in attributes between heroes. This will give the best result for full idle.
+
+## Amulets
+
+There are 25 unique Amulets each giving a different permanent bonus.
+
+The amulets can be bought in the shop under “Amulet of the Day” where the amulets change daily, which unfortunately also means that you have to check the shop every day to see which amulet is available so you don’t miss it. There are 2 different types. Ones that can be purchased with golden keys, and ones that can be purchased using gems or money. Some of the Amulets can be essentially "useless" based on your playstyle and priority, as they just don't give you the advantage for your playstyle. Before you buy the amulets, you should consider what your priorities are and whether they give you enough advantage for your game style
+
+The effectiveness of some of the amulets also depends on how actively you play or how often you log in / are online during the day.
+
+As an Example; Amulet of Knowledge (10% shorter Firestone research) is one of the good amulets, but for a player who only logs in once or twice a day, it is less useful, as the Firestone research will be done anyway, whether with 10% shorter research times or not.
+
+Same for Amulet of Alchemy.
+
+The Amulet of War, which reduces the duration of all missions on the world map by +10 and the Amulet of Conquest, which increases the number of squads on the world map by 1 squad brings you many advantages. If your rank is low or you have limited time to play, these amulets are very helpful as they can help you to complete all map missions, especially at the beginning of the game but also later as completing the map missions is easier and faster with it.
+
+### Amulets for 2000 GEMS
+
+Amulet of Exploration: Increase the chance to get 100% more rewards on guild expeditions 5% = Active online play + not so active/online
+
+Amulet of Cartography: Increase the expedition tokens you receive from guild expeditions 5% = Active online play + not so active/online
+
+Amulet of Liberation: Increase the chance to get 100% more rewards on the daily missions with the war machines 5% = Active online play + not so active/online
+
+Amulet of Knowledge (Reduces the research time of all firestone researches +10% = ONLY Active/online play
+
+Amulet of Alchemy: Reduces the duration of all experiments of the alchemist 10% = ONLY Active/online play
+
+Amulet of insight: Increase the chance to get 100% more rewards from the oracle's rituals = Active online play + not so active/online
+
+Amulet of the Seven: Increase the chance to get 100% more rewards on the weekly quests 5% = Active online play + not so active/online
+
+Amulet of Astrology: Increase the chance to get 100% more rewards on the daily quests 5% = Active online play + not so active/online
+
+Amulet of tinkering: Increase the chance to get 100% more tools from the engineer 5% = Active online play + not so active/online
+
+Amulet of the Quartermaster: Increase the loot you receive from the campaign with the war machines 5% (every 6h "Next Loot" in Campaign) = Active online play + not so active/online
+
+Amulet of Production: Increase the chance to get 100% more free pickaxes 5% = Active online play + not so active/online
+
+Amulet of the Pioneers: Increase the chance to get 100% more loot on the campaign with the war machines 5% (every 6h "Next Loot" in Campaign) = Active online play + not so active/online
+
+Amulet of Conquest (Increases the number of squads on the world map = Active online play + not so active/online
+
+Amulet of War: Reduces the duration of all world map missions 10% = Active online play + not so active/online
+
+Amulet of Greed: Increase the guild coins you receive from guild expeditions 5% = Active online play + not so active/online
+
+Amulet of the Sky: Increases the chance of 2 meteorites hitting the ground instead of 10% = Active online play + not so active/online
+
+Amulet of Clarity: Increase the chance to get 100% more rewards when an arcane crystal breaks 5% = Active online play + not so active/online
+
+Amulet of Midas: Increases all gold earnings 300% = not worthwhile
+
+Amulet of Power: Increases all main attributes of all heroes and guardians 300% = not worthwhile
+
+Which one you choose first is up to you, but you should always consider that if you play less actively, some of the amulets will be less useful. If you're not sure, you can use the order above as a guide.
+
+Amulets for 20 golden keys:
+
+The first amulet, that people tend to purchase with golden keys is Amulet of Luck. This amulet gives you a 5% chance to get 2 beers instead of one, effectively giving you 5% more beers per day.
+
+Amulet of Luck (Increases the chance by 5% to get 100% more beers from the Dragon)
+
+These Amulets fall under the category: poor to poor
+
+Amulet of the King: Increases the chance to skip a wave that doesn't have a boss 5% = ONLY if you empower frequently
+
+Amulet of the King: Increases the chance to skip a stage 5% = ONLY if you empower frequently
+
+All other amulets that you can buy for 20 gold keys you should just ignore
+
+Another categorisation of amulets that can be bought with gems is this one, but it increases the risk of picking up the less useful amulets as they also fall into the 10% category, for example: Amulet of the Sky or Amulet of War. It just mentioned for completeness but less in practical use.
+
+Highest priority: Amulets with "Effect: 10%".
+
+Medium priority: Amulets with "Effect: 5%".
+
+Lowest priority: Amulets with "Effect: 300%".
+
+In the second tier, the priority of the amulets varies depending on the player's goals and playing style.
+
+A list of the amulets can be found here: https://firestone-idle-rpg.fandom.com/wiki/Shop?so=search
+
+## Achievements
+
+There are various achievements in the game, they all have multiple levels with their own bonus. All these bonuses are additive, not multiplicative. So only early game do you benefit from them. After you got a few thousand percent in All Attributes, then 100% extra isn’t going to do much for you anymore.
+
+## Gems
+
+Gems are the premium currency in the game. They can be bought with platform currency in the shop, in Extreme Value Bundles and in Special Offers. Free gems can also be obtained from daily rewards, from a weekly quest and from card draws. Gems can be used to buy gear chests in the Gear Chest Shop or inventory items and other currencies in the Item Shop.
+
+Each week you receive 210 gems via the weekly tasks
+
+At level 120, Dragon Blood will unlock in the store. From this point on it’s best to spend your gems on Dragon Blood. You can only get 200 Dragon Blood per day through missions. With 1000 gems you receive 3600 Dragon Blood. That’s 18 days worth of Dragon Blood. Keep buying it until you have maxed all experiments. Dragon's blood should only be purchased if it's needed, so that you always have enough dragon's blood for your alchemy experiments, but not in ‘stock’. At a certain point, you get enough dragon's blood via tavern/dragon missions/oracle gifts/mystery boxes so that you don't have to spend dragon's blood on gems.
+
+If you are F2P, focusing on Dragon Blood is going to be more beneficial as with your limited supply of gems and legendary chests, this is going to help you progress your gear optimally. If you spend money at times (value packs etc…), and have left over gems, you can choose to spend excess gems either in the Tavern or by Transmuting by your own choice, as distinguishing what’s best right now is difficult.
+
+Always use your dragon blood on experiments when you can, strange dust can be used, as long as you have kept enough saved for your next guardian evolution. I wouldn’t use exotic emblems until you have completed your full exotic upgrade trees.
+
+### So, for what should i spend my gems?
+
+As f2p you get at least 2600 gems/month. The best investment for your gems at this moment is the Battle Pass, as it gives you the most benefits
+
+1. Battle Pass (monthly)
+
+2. Dragon Blood: at level 120, so that you always have enough dragon blood for the alchemy experiments, but ONLY if necessary
+
+3. Amulet
+
+Use the first collected gems for the most important Amulet: (2000 gems)
+
+Amulet of Exploration
+
+Amulet of Cartography
+
+Amulet of Liberation
+
+Amulet of Knowledge
+
+Amulet of Conquest
+
+The he Amulet of Conquest, which increases the number of squads on the world map by 1 squad and the Amulet of War, which reduces the duration of all missions on the world map by +10 brings you many advantages. If your rank is low or you have limited time to play, these amulets are very helpful as they can help you to complete all map missions, especially at the beginning of the game but also later as completing the map missions is easier and faster with it. But this two are not must-have amulets.
+
+4. Scarab Game:
+
+You can use 1000 gems in Scarab's shop to buy 20 Pharaoh tokens, which reduces the strain on expedition tokens and is also a good opportunity to balance the soul embers with the keys
+
+5: Oracle
+
+You can use 1000 gems in Oracle-Shop to buy chests
+
+6. Tavern
+
+7. Reset map cooldown
+
+This allows you to complete more than the 4 map cycles per day
+
+More map missions: more dust for guardians / more chests for heroes / more inventory items to sell for the exotic tree
+
+## Firestone: Battle Pass
+
+1. What is Firestone: Battle Pass?
+
+2. Advantages?
+
+3. Disadvantages?
+
+4. How to spend the gems?
+
+1.0 What is Firestone: Battle Pass?
+
+The Battle Pass has been added with Version 6.3.0
+
+The battle pass is a series of daily and weekly challenges that give glory when completed. Once you have collected enough glory you can claim chests, currencies or temporary buffs as rewards.
+
+Items are permanent. Bonuses/Buffs are for the duration for one month.
+
+1.1 How does the Battle Pass work?
+
+There are daily and weekly challenges to complete. Daily challenges reset each day. There are four sets of weekly challenges. Week 1 challenges start on the first day of the month. After 7 days, week 2 challenges are added while the week 1 challenges remain active. Week 3 and week 4 challenges are added similarly. All weekly challenges reset at the end of the month.
+
+The daily and weekly challenges have different types of tasks, similar to the daily quests, but they are all designed to be completed easily and fairly fast within the time limit.
+
+Any challenges involving research auto-complete when you have finished all corresponding research trees already.
+
+1.2 What kind of rewards are available?
+
+Rewards can be fixed or variable. Variable rewards depend on your stats at the beginning of the month. Any rewards not claimed by the end of the month will be sent to you via game mail.
+
+### Free rewards
+
+Free rewards are various types of chests or currencies and can always be claimed.
+
+### Golden pass rewards
+
+Golden pass rewards can only be claimed once you have purchased the golden pass (1500 gems or ~ 5$). The golden pass in only valid for the current month and can be activated up to one day before the end of the month.
+
+Golden pass rewards can be chests, currencies or temporary buffs. Temporary buffs are only active in the current month. Two golden pass buffs of the same type are additive with each other (except for raining gold and all attributes which are multiplicative) and multiplicative with other buffs of the same type.
+
+2. Advantages?
+
+• For 1500 gems you get:
+
+1. The equivalent of 4 Amulets.
+
+Alone the value of the amulets corresponds to 6000 gems / 20 golden keys.
+
+2. Besides this, you have currencies like: chests/beer/golden keys/guild coins/expedition emblems/blueprints/pickaxes etc..
+
+The detailed list of rewards can be found here:
+
+https://firestone-idle-rpg.fandom.com/wiki/Battle_Pass
+
+It is impossible to get this amount of rewards outside the battel pass for 1500 gems in this game.
+
+Neither via the tavern nor via the other exchange possibilities gems = stuffs.
+
+From a cost-benefit point the Battle Pass is worth its weight in gold!
+
+• Is this a good investment for beginners who have not yet picked up the most important amulets or should they first collect the gems for the 3 most important amulets?
+
+As f2p you get at least 2500 gems/month in the game, which is the equivalent of one (1) amulet, that means you have to collect gems for at least 3 months for the 3 most important amulets.
+
+Amulet of Knowledge (Reduces the research time of all firestone researches +10%)
+
+Amulet of Conquest (Increases the number of squads on the world map)
+
+Amulet of War (Reduces the duration of all world map missions +10%)
+
+Although you can only get 1 amulet after the first month, the second after 2 months and so on.
+
+But this also implies that you don't receive the huge rewards/buffs of the golden battel pass in the first 4 months.
+
+For 1500 gems you already get the 10% firstone research on the first day which is one of the amulets you should buy first. Just like you unlock the 1 additional squad for the map missions on the first/second day, which is also one of the first amulets you should buy besides the firestone research for 2000 gems and also the equivalent of the amulet meteorite hunter is also unlocked almost immediately. Furthermore, the 5% Explorer alone, which you also unlock very early on, is not to be missed, just like the expeditioner and the second 10% firestone research. Additionally, there are also chests/golden keys/guild coins/expedition tokens/scrolls etc. as extra rewards.
+
+In addition to the battle pass, it is possible to collect at least 1000 gems per month. This seems low at first glance, but it isn't a comparison to the advantages of a battle pass. Collecting the gems for the most important permanent amulets, next to the ones for dragonblood, will takes longer. But with the same advantages as the amulets you have in the battle pass you don't have any disadvantage if you have to wait 3+ months the amulets instead of only 1 month to buy them.
+
+Gem gains from the tavern depends on a number of factors, such as number of rewards in the tavern and monthly beer gain, which in turn depends on the cheers and twin dragon perks and the luck amulet.
+
+The formula is:
+
+monthly gem gain = monthly beer gain * 5 / 1500 * 100 * 2 / number of rewards
+
+Number of rewards is at most 110 and monthly beer gain is at least 90000 (3000*32), so you get at least 545 monthly gems from the tavern. In practice the number is higher due to perks, for example i get almost 120000 beers per month, so 727 monthly gems from the tavern, even 1-2% more than that if you include the extra beer gains from the tavern as well.
+
+3. Disadvantages?
+
+Due to the costs of 1500 gems per month you can only save 1000+ per month for dragon blood or other amulets, so saving takes some time.
+
+4. How to spend the gems?
+
+There are several possibilities to spend gems in game.
+
+1. Golden Battle Pass
+
+2. Amulets (2000 gems = 1 Amulet)
+
+3. Exchange for currencies (scrolls/chests/dragon's blood/dust etc..)
+
+Here i recommend only using dragon blood if necessary, otherwise use the excess gems => tavern, don't spend gems on chests, scrolls or similar things!
+
+As already described in point 3. Advantages, there is nothing in games which has the same value as the rewards you get for 1500 gems via the golden battle pass.
+
+Apart from Dragonblood. Here you should start saving the 1000 gems early.
+
+At the end everyone decides for themselves whether they want to activate the golden battle pass or not. But even without activating it, the Battle Pass brings enough rewards for the f2p that they can benefit from the new Battle Pass too.
+
+## Events (Mini-Events | Seasonal Events | Decorated Heroes)
+
+### List of the 11 Mini-Events
+
+Stardust - players will gain 20% / 150% more meteorites from the miners
+
+- Challenge Rewards Day 1/2/3: Meteorites 500/600/700 | Exotic Coins 200/300/500 | Contracts 16/20/24
+
+Primordial elements - players will gain 20% / 120% more beer from the dragons
+
+- Challenge Rewards Day 1/2/3: Beer 1000/1200/1400 | Twilight Hourglass 2/3/5 | Contracts 16/20/24
+
+Ethereal miners - players will gain 20% / 150% more pickaxes from the guild
+
+- Challenge Rewards Day 1/2/3: Pickaxes 5/6/7 | Arcane Crystals 500/500/1000 | Contracts 16/20/24
+
+Team effort - Players will gain 20% / 100% more rewards from expeditions
+
+- Challenge Rewards Day 1/2/3: Guild Coins 2800/3400/3900 | Expedition Tokens 1650/2000/2300 | Contracts 16/20/24
+
+Mechanical superiority - Players will gain 20% / 150% more rewards from "Next Loot"
+
+- Challenge Rewards Day 1/2/3: Emblem of Valour 420/500/580 | Blueprints 160/190/220 | Contracts 16/20/24
+
+World domination - Players will have 1/4 mystery missions every time the map refreshes
+
+- Challenge Rewards Day 1/2/3: Honor 10/15/20 | Mystery Boxes 3/4/4 | Contracts 16/20/24
+
+Guardians of destiny - Guardian can be trained 20% / 150% faster and training xp is increased by 20%/100%
+
+- Challenge Rewards Day 1/2/3: Strange dust 60/75/85 | Guardian's Rune 4/8/10 | Contracts 16/20/24
+
+Blessing of the eternals - Enemies will drop 200% / 400% more gold and player will receive 150%/300% more firestones from a empower
+
+- Challenge Rewards Day 1/2/3: Gems 50/75/100 | Temple's token 1/1/2 | Contracts 16/20/24
+
+Champions of Alandria - Heroes and guardians have +300%/+1000% main attributes and player has +5%/+15% skip stage
+
+- Challenge Rewards Day 1/2/3: Gear Chests* 1/2/3 | Contracts 16/20/24
+
+Mass Production - Players will gain 20% / 120% more rewards from "Tools production"
+
+- Challenge Rewards Day 1/2/3: Tools 3500/4000/4500 | Jewel chest* 1/1/2 | Contracts 16/20/24
+
+Sigil of prophecy - Playing the Scarab's game with Noble's token will generate 20% / 120% Ancient coins.
+
+- Challenge Rewards Day 1/2/3: Pharao's Token 4/5/6 | Soul ember 4/6/10 | Contracts 16/20/24
+
+\* Type of chests depends like always on the character level or campaign stars
+
+The events go for 3 days and after these 3 days there is a 2 day interval (cooldown) before the next event start.
+
+### List of 6 seasonal Events
+
+Winter Festival Event = December, for 14 days
+
+Valentine's Event = February, for 14 days
+
+Spring Event = April, for 14 days
+
+Tropicana Event = June, for 14 days
+
+Astral Event = August, for 14 days
+
+Halloween Event = October, for 14 days
+
+### Decorated Heroes
+
+Decorated Heroes Event = January, for 14 days
+
+Decorated Heroes Event = March, for 14 days
+
+Decorated Heroes Event = May, for 14 days
+
+Decorated Heroes Event = July, for 14 days
+
+Decorated Heroes Event = September, for 14 days
+
+Decorated Heroes Event = November, for 14 days
+
+A detailed list of all events can also be found here: https://firestone-idle-rpg.fandom.com/wiki/Events
+
+## Unlocks (Level/Campaign Stars)
+
+### Unlocks (Level/Stages)
+
+Stages: 11 = Firestone Research
+
+Stages: 11 = Meteorite Research
+
+Level: 3 = Chat
+
+Level: 5 = Talents
+
+Level: 7 = Fellowship
+
+Level: 10 = Leaderboard
+
+Level: 10 = Guild
+
+Level: 10 = Server bonus from killing a dark god
+
+Level: 11 = All party members auto abilities
+
+Level: 15 = Tavern
+
+Level: 20 = Hero/Guardian rarity
+
+Level: 21 = Guardians auto attack!
+
+Level: 30 = Exotic Merchant
+
+Level: 30 = Mercenaries
+
+Level: 50 = Engineer
+
+Level: 50 = Battles
+
+Level: 50 = Awakening (also requires Guild level 5+)
+
+Level: 50 = Arcane Crystal (also requires Guild level 5+)
+
+Level: 60 = Jewels Tier 2
+
+Level: 60 = Scarab's game
+
+Level: 65 = Emblem of Courage
+
+Level: 65 = Emblem of Valor
+
+Level: 65 = Seals of Power
+
+Level: 70 = Monstermission
+
+Level: 80 = Arena
+
+Level: 100 = Chaos Rift
+
+Level: 100 = Forbidden Knwoledge
+
+Level: 120 = Alchemist
+
+Level: 120 = Dragonmission
+
+Level: 130 = Alchemist Transmute
+
+Level: 140 = Navalmission
+
+Level: 200 = Oracle
+
+Level: 200 = Hero equipment: Soulstones
+
+Level: 200 = Emblems of Brotherhood
+
+### Gear Power
+
+5 billion gear power = Titanmission with Mythic chest
+
+60 billion gear power = Shadow mission with Titan chest
+
+### Autoplay
+
+The Auto play button in the tavern becomes available after having 800 luck
+
+All party members Auto abilities unlock at Talent Level 11.
+
+Guardians Auto attack ability unlocks at Talent Level 21
+
+### Multiplier option
+
+Unlock requirement for each mechanism is this:
+
+Hero Upgrade Multiplier = Stage 25
+
+Tavern = 40 plays
+
+Scarab's Game = 150 plays
+
+Chest = 10 chests (of any type)
+
+Arcane Crystal = 60 hits
+
+Chaos Rift = 40 hits
+
+Campaign Stars: 1; ×1, x2 and x4 battle speed button
+
+When you unlock a multiplier option for a mechanism you unlock it for all your servers (it's account-wise unlock). However, this does not apply if you create a new account on a different platform.
+
+### Oracle
+
+Oracle level: 6 = Unlocking the 4th (3rd) ritual = Solar Chest
+
+Oracle level: 11 = Unlock tier 2 of the soul stones
+
+Oracle level: 98/101 = Nebula Chest
+
+Oracle level: 149 = Star Essence
+
+Oracle level:149 = Alchemist Transmute: Soulstones
+
+Oracle level: 149/153 = Cosmic Chest
+
+Oracle level 201 = Galaxy Chest
+
+Oracle level: 279 = Stellar Chest
+
+### WarFront (Campaign Stars)
+
+Campaign Stars: Unlocked
+
+Campaign Stars: 5: liberation missions
+
+Campaign Stars: 70: dungeon missions
+
+Campaign Stars: 100: diamond chests
+
+Campaign Stars: 145: opal chests
+
+Campaign Stars: 190: emerald chests + the 4-star insane difficulty missions
+
+Campaign Stars: 319: platinum chests + the 5-star nightmare difficulty missions
+
+### Daily Liberation missions
+
+Campaign Stars: 5 (Storm Rock) Reward: 1 wooden chest + 1 iron chest
+
+Campaign Stars: 10 (Mythshore) Reward: 2 wooden chests + 1 iron chest
+
+Campaign Stars: 20 (Moonglen) Reward: 2 wooden chests + 2 iron chests
+
+Campaign Stars: 40 (Maplemere) Reward: 2 iron chests + 1 golden chest
+
+Campaign Stars: 60 (Goldfell) Reward: 2 iron chests + 1 golden chest
+
+Campaign Stars: 80 (Xandor) Reward: 2 iron chests + 1 golden chest
+
+Campaign Stars: 110 (Talamer) Reward: 1 golden chest + 1 diamond chest
+
+Campaign Stars: 155 (Hombor) Reward: 1 golden chest + 1 opal chest
+
+Campaign Stars: 190 (Stormspire) Reward: 1 golden chest + 1 emerald chests
+
+Campaign Stars: 319 (Stormspire) Reward: 1 emerald chest + 1 platinum chests
+
+### Dungeon missions
+
+Campaign Stars: 70 (Ethereal Cavern) Reward: 50 elixirs of life
+
+Campaign Stars: 120 (Dragon's Lair) Reward: 50 elixirs of life
+
+### WM Squad
+
+4 members:
+
+5 members: engineer level 30
+
+6 members: engineer level 60
+
+In this order you will receive your first 5 war machines:
+
+Damage (single damage)
+
+Damage (single damage)
+
+Tank
+
+Damage (multi damage)
+
+Healer
+
+Which damage or which tank/healer you exactly get is random, the order isn't.
+
+From the 6th tank it's completely random
+
+### Background
+
+The background colour of the avatar depends on the level of the character as follows:
+
+Level 1-29 = Brown
+
+Level 30-64 = Green
+
+Level 65-119 = Blue
+
+Level 120-249 = Purple
+
+Level 250-399 = Bronze
+
+Level 400-549 = Turquoise
+
+Level 550-699 = Gold
+
+Level 700-849 = Red
+
+Level 850-999 = Celestial
+
+Level 1000-1149 = Immortal
+
+Level 1150- = Primordial
+
+## Steam Achievements
+
+There are 75 Steam achievements, including 6 hidden ones and one (1) achievement which can't be achieved via the normal gameplay.
+
+Play the game for a long enough time and the player will earn the remaining 68 achievements automatically through the normal gameplay.
+
+These (Steam) achievements do not provide any benefit to the game or affect the game in any way.
+
+Not to be mixed up with the in-game achievements!
