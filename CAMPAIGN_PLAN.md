@@ -293,6 +293,57 @@ sonda tolta. Domande a cui rispondere, ognuna con il path o il campo visto:
    armatura). Basta annotare path e testi: serve solo per la crew fine (sezione 7), non per questa
    versione.
 
+### 3.1 Risultati della sonda (03/10, Steam-0, 14:46 e 14:52)
+
+Due giri di una classe temporanea (tolta prima del commit), tutti gli altri task spenti. Battle power
+796.762 (Goliath salito al livello 24), 42 stelle.
+
+1. **Dati, senza UI.** `GameInitialize.HandlerLoader` (statico) dà `WFCampaignMissionHandler.missionsDict`
+   (90 missioni, chiave e `missionIndex` **da 0**: la missione 32 è l'indice 31),
+   `WFCampaignStarHandler.totalStars`, `WarMachineHandler.myFormationBattlePower` (uguale al testo
+   "Battle power" della squadra) e `warMachineData` (macchine, formazione attiva, squadre di riserva).
+   Per missione: `modesWon` (coincide con le stelle: Easy 1-31 e Normal 1-11, 42) e `modePowerReqDict`.
+   `modeState` invece è vecchio (Easy 32 "PowerRequired" con la potenza sopra la soglia): non si usa.
+2. **Soglie.** `modePowerReqDict` coincide con la formula della sezione 2.1 su tutte le 450 coppie
+   missione/difficoltà, quindi il task usa il dato del gioco e la formula non serve.
+3. **Sblocco.** Normal di m richiede solo Easy di m (Normal 13 mostra la potenza richiesta con Normal
+   12 non vinta). Sulla mappa è attivo solo il pin della missione successiva (32); il pin di una
+   missione più avanti è nascosto, ma il suo popup si apre lo stesso e mostra Easy cliccabile se la
+   potenza basta: l'ordine di sblocco lo controlla il task.
+4. **Pin e popup.** Pin: `menusRoot/mapRoot/mapElements/warfrontCampaignMissions/warfrontMission (i)`,
+   componente `WFCampaignMissionMapInteraction`; `OnPointerClick` apre il popup anche col pin fuori
+   schermo o nascosto. Popup `popups/WFCampaignMissionPreview`: `bg/closeButton`,
+   `bg/changeFormationButton` ("Battle formation"), `bg/battleSimulation/totalPower/powerNumberTMP`, e
+   `bg/modes/easyMode` … `hardMode` (`WFCampaignModeInteraction`, campo `mode`) con `fightButton`
+   cliccabile solo se sbloccata e con la potenza sufficiente. Stati: `wonObj`, `unlockedObj`,
+   `powerReqObj`, `lockedObj`. Nessun costo: sotto Easy 32 solo le ricompense (3 forzieri jewel,
+   1.680 Emblem of Valor, 420 blueprint).
+5. **Battaglia.** Il `fightButton` apre direttamente `menus/WFBattle` (niente `WFBattleSim`). Easy 32,
+   soglia 422.800, potenza 796.762 (1,88×): **persa** in 32 s, popup `popups/WFBattleDefeat` ("Do not
+   let this take you down", `bg/closeButton` "OK", lo stesso path di Daily Missions); dopo l'OK resta
+   solo `menus/WorldMap`, il popup della missione si chiude da solo. Stelle 42 → 42. C'è
+   `battleCanvas/bottomRightSideUI/changeSpeedButton`. Il popup di vittoria non si è ancora visto.
+6. **Squadra** (`menus/SelectWarMachines`, dal popup o dall'Ingegnere): 5 posti
+   `bg/formationSpots/warMachineFormationMenuSpot (0..4)` (`WarMachineFormationSettingSpot`, numeri 1-5;
+   su Steam-0 il tank è nel posto 0 e l'healer nel 4), il mazzo
+   `bg/warmachinesDeck/warMachinesScroll/Viewport/grid` (`WarMachineSelectInteraction`, `clickButton`),
+   `bg/formationData/formationStatusText` ("Battle power: 796.762"), `bg/formationData/saveChanges`
+   (non cliccabile senza modifiche), `closeButton`. Crew: `crew/editButton` di un posto apre
+   `popups/SelectWarMachineHeroes` (`bg/setCrewButton` "Save changes", `bg/closeButton`,
+   `bg/heroListScroll/Viewport/grid/heroSelect (i)`), che mostra solo gli eroi di quella crew e quelli
+   liberi. 4 posti crew per macchina (il 5° col lucchetto, ingegnere sotto il 30). Su Steam-0 la
+   formazione è già tank → damage → healer (Goliath, Cloudfist, Talos, Thunderclap, Hunter) e tutti e
+   10 gli eroi sono in una crew; fuori resta Aegis (potenza senza crew 4.079).
+7. **Squadre e Arena.** 3 squadre: la prima attiva, la seconda con solo Cloudfist, la terza vuota.
+   Campagna, Daily Missions e Arena usano tutte la squadra attiva (`warMachineData.formationList`; le
+   anteprime di campagna, Daily Missions e Arena la leggono con lo stesso
+   `SetPlayerUsingTheFormationList`, e `SelectWarMachinesMech.OpenOrigin` ha Engineer, WarfrontMission,
+   Tower e Arena per lo stesso menu). Cambiare la formazione cambia anche quella dell'Arena: è la
+   contraddizione con il piano, decisa dall'utente (sezione 8, punto 5).
+8. **Potenza con e senza crew.** `WarMachine.power` comprende la crew (Goliath 326.756 contro
+   `powerNoCrew` 10.285): per scegliere le macchine si confronta `powerNoCrew`, altrimenti una macchina
+   nuova, senza crew, non entrerebbe mai.
+
 ## 4. Il task
 
 ### 4.1 Struttura
@@ -420,3 +471,11 @@ aggiornato.
    che eroi (Steam-0: 10 eroi, 20 posti sbloccati) conta soprattutto che ogni eroe sia in una crew. Gli
    spostamenti fini costano molti click per ogni prova. Si potranno calcolare dai bonus crew (sezione
    7). La riga di log con la potenza di ogni macchina serve a decidere dopo coi numeri.
+5. **Formazione condivisa con l'Arena (utente, 03/10, dopo la sonda): il task la modifica lo
+   stesso.** La squadra attiva è una sola per campagna, Daily Missions e Arena; l'Arena combatte con
+   la stessa squadra più forte (su Steam-0 l'ordine delle macchine per potenza Arena è lo stesso di
+   quello senza crew).
+6. **Ritentativi (utente, 03/10, dopo la sconfitta di Easy 32 a 1,88×): la regola del punto 2, più
+   uno scarto.** Finché una sconfitta è in attesa (potenza sotto il +5% e meno di 24 h), non si tenta
+   nessun candidato con un margine (battle power / potenza richiesta) non più alto di quello della
+   sconfitta. Su Steam-0 oggi, persa Easy 32 a 1,88×, Normal 12 (1,04×) non si tenta.
