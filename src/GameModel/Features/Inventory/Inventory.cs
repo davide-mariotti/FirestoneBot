@@ -64,8 +64,15 @@ public static class ChestOpening
                 ? Paths.ChestOpenPreviewLoc.OpenX1Btn
                 : Paths.ChestOpeningLoc.OpenX1Btn);
 
-            yield return Poll.Until(() => openX10.IsClickable() || openX1.IsClickable() || NewItemShown(),
-                MaxChestTransitionPolls, ChestTransitionPollSeconds);
+            yield return Poll.Until(() => openX10.IsClickable() || openX1.IsClickable() || NewItemShown()
+                    || (onPreview && RequirementShown()), MaxChestTransitionPolls, ChestTransitionPollSeconds);
+
+            if (onPreview && RequirementShown() && !openX1.IsClickable())
+            {
+                var requirement = new GameText(Paths.ChestOpenPreviewLoc.RequirementText).GetParsedText();
+                Firebot.Core.Logger.Info($"[ChestOpening] '{slotPath}': can't be opened yet ('{requirement}').");
+                break;
+            }
 
             if (NewItemShown() && popupsClosed++ < MaxPopupCloses)
             {
@@ -128,6 +135,9 @@ public static class ChestOpening
     // Read silently: no popup is the normal case.
     private static bool NewItemShown() =>
         GameElement.FindTransform(Paths.NewItemLoc.CloseBtn)?.gameObject.activeInHierarchy == true;
+
+    private static bool RequirementShown() =>
+        GameElement.FindTransform(Paths.ChestOpenPreviewLoc.RequirementText)?.gameObject.activeInHierarchy == true;
 
     private static IEnumerator CloseNewItem(string slotPath)
     {

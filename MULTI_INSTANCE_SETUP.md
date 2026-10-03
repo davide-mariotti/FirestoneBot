@@ -69,7 +69,10 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    Il repo del 3/10 non aggiunge né cambia chiavi. Porta tre correzioni nel codice: Free Pickaxes
    aspetta che lo shop della gilda mostri la quantità (a 10 fps prima leggeva quasi sempre vuoto e
    non reclamava), Chaos Rift fa tutti i colpi in un giro invece di uno ogni 30 minuti, e Hall of
-   Heroes alza la rarità degli eroi con i contratti (punto 8).
+   Heroes alza la rarità degli eroi con i contratti (punto 8). Il 3/10 pomeriggio si aggiunge
+   l'apertura dei forzieri: un forziere che l'account non può ancora aprire (gli Iron sugli account a
+   livello 30-59) si salta subito con `can't be opened yet`, invece di 3 tentativi da 20 s che al
+   reset mandavano Collector in timeout. Applicato sul secondo PC alle 13:29.
 
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
