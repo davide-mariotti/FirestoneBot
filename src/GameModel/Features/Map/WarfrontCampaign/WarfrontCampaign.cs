@@ -55,6 +55,14 @@ public static class WarfrontCampaign
 
     public static double Required(int mission, int mode) => Missions[mission - 1].modePowerReqDict[(GameMode)mode];
 
+    /// <summary>
+    ///     A squad's power against the enemy's: the requirement is 30% of the enemy's power on Easy 1-10,
+    ///     50% on Easy 11-30 and 80% everywhere else (wiki formula, equal to the game's on all 450 pairs),
+    ///     so power / requirement alone doesn't compare across those groups.
+    /// </summary>
+    public static double VsEnemy(double power, int mission, int mode) =>
+        power * (mode == 0 && mission <= 10 ? 0.3 : mode == 0 && mission <= 30 ? 0.5 : 0.8) / Required(mission, mode);
+
     private static bool IsWon(WFCampaignMission mission, int mode) =>
         mission.modesWon.ContainsKey((GameMode)mode) && mission.modesWon[(GameMode)mode];
 

@@ -19,7 +19,7 @@ namespace Firebot.Tasks.Map;
 ///     Pushes the Warfront campaign on (CAMPAIGN_PLAN.md): every mission/difficulty the squad's battle
 ///     power reaches, lowest requirement first, until the first defeat. The game's requirement only
 ///     allows a fight - Easy 32 was lost at 1.88x on Steam-0 (03/10) - so a defeat is retried only
-///     at 5% more power or after 24 h, and meanwhile nothing with a lower margin is tried either.
+///     at 5% more power or after 24 h, and meanwhile nothing weaker against its enemy is tried either.
 ///     Each win is a star and a one-off reward; battles cost nothing.
 /// </summary>
 public class WarfrontCampaignTask : BotTask
@@ -68,16 +68,16 @@ public class WarfrontCampaignTask : BotTask
             defeats.RemoveAll(d => !unlocked.Any(b => Same(b, d))); // won since
 
             var waiting = defeats.Where(d => power < d.Power * RetryPowerGain && DateTime.Now < d.Time + RetryAfter).ToList();
-            var bar = waiting.Select(d => d.Power / WarfrontCampaign.Required(d.Mission, d.Mode)).DefaultIfEmpty(0).Max();
+            var bar = waiting.Select(d => WarfrontCampaign.VsEnemy(d.Power, d.Mission, d.Mode)).DefaultIfEmpty(0).Max();
             var candidates = unlocked
-                .Where(b => b.Required <= power && power / b.Required > bar &&
+                .Where(b => b.Required <= power && WarfrontCampaign.VsEnemy(power, b.Mission, b.Mode) > bar &&
                             !waiting.Any(d => Same(b, d)) && !tried.Contains((b.Mission, b.Mode)))
                 .OrderBy(b => b.Required).ToList();
 
             if (attempt == 0)
                 Debug($"[INFO] Campaign: stars {WarfrontCampaign.Stars}, battle power {power:0}, unlocked " +
                       string.Join(", ", unlocked.OrderBy(b => b.Required).Take(5).Select(b => $"{b} {b.Required:0}")) +
-                      $"; {waiting.Count} defeat(s) waiting (margin up to {bar:0.00}), {candidates.Count} to try.");
+                      $"; {waiting.Count} defeat(s) waiting (up to {bar:0.00}x the enemy), {candidates.Count} to try.");
 
             var next = candidates.FirstOrDefault();
             if (next == null)
@@ -93,6 +93,7 @@ public class WarfrontCampaignTask : BotTask
             if (won == null) continue; // couldn't start it: already logged
 
             Debug($"[INFO] Campaign mission {next}: required {next.Required:0}, power {power:0}, ratio {power / next.Required:0.00} " +
+                  $"({WarfrontCampaign.VsEnemy(power, next.Mission, next.Mode):0.00}x the enemy) " +
                   $"-> {(won.Value ? "won" : "lost")}, stars {stars} -> {WarfrontCampaign.Stars}.");
             if (won.Value) continue;
 

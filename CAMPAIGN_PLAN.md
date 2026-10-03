@@ -477,5 +477,8 @@ aggiornato.
    quello senza crew).
 6. **Ritentativi (utente, 03/10, dopo la sconfitta di Easy 32 a 1,88×): la regola del punto 2, più
    uno scarto.** Finché una sconfitta è in attesa (potenza sotto il +5% e meno di 24 h), non si tenta
-   nessun candidato con un margine (battle power / potenza richiesta) non più alto di quello della
-   sconfitta. Su Steam-0 oggi, persa Easy 32 a 1,88×, Normal 12 (1,04×) non si tenta.
+   nessun candidato con un margine non più alto di quello della sconfitta. Il margine è la battle
+   power contro la potenza nemica (la richiesta ne è il 30% su Easy 1-10, il 50% su Easy 11-30, l'80%
+   altrove; corretto il 3/10 dopo il primo giro della flotta, prima era battle power / richiesta, che
+   non confronta i tre gruppi). Su Steam-0 oggi, persa Easy 33 a 1,33× il nemico, Normal 12 (0,83×)
+   non si tenta.
