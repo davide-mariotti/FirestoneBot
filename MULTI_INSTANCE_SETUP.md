@@ -72,7 +72,10 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    Heroes alza la rarità degli eroi con i contratti (punto 8). Il 3/10 pomeriggio si aggiunge
    l'apertura dei forzieri: un forziere che l'account non può ancora aprire (gli Iron sugli account a
    livello 30-59) si salta subito con `can't be opened yet`, invece di 3 tentativi da 20 s che al
-   reset mandavano Collector in timeout. Applicato sul secondo PC alle 13:29.
+   reset mandavano Collector in timeout. Applicato sul secondo PC alle 13:29. Il 3/10 sera si
+   aggiunge il task della campagna (punto 13): la chiave `warfrontcampaigntask.enabled` manca finché
+   l'istanza non parte una volta con la DLL nuova, come per l'Emblem market. Applicato sul secondo PC
+   alle 16:12 (4d0e75b).
 
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
@@ -279,7 +282,12 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     battle power …, unlocked …; K defeat(s) waiting …, C to try.` e, per ogni battaglia, `Campaign
     mission 32 Easy: required …, power …, ratio … -> won/lost, stars A -> B.` (B = A + 1 a ogni
     `won`; dopo un `lost` il giro si ferma; dopo 10 battaglie riparte entro 30 minuti). `FAILED=0`.
-    Sotto il livello 50 il task non parte e le righe mancano (gli account di questo PC sono a 30-59).
+    Sotto il livello 50 il task non parte e le righe mancano. Sul secondo PC il 3/10 alle 16:18-16:25
+    (tutti e 18 a livello 50 o più): 18 squadre sistemate, quasi tutte da una macchina sola con la
+    crew vuota (`heroes in crews 0 -> 4`, battle power da ~1.150 a 1.600-6.700), Steam-17..19 con
+    tre macchine (13.290 -> 19.992); 143 battaglie, 133 vinte, `FAILED=0`. Le righe `[Watchdog]
+    Closing popup: .../WorldMap/closeButton` dopo ogni battaglia sono del task (`ForceClearAll`),
+    non un errore.
 
 ---
 
