@@ -593,6 +593,14 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 - **Eventi non ancora gestiti** (piano in `EVENTS_PLAN.md`, con date e procedura): eventi di calendario
   (Halloween dal 23/10, poi Winter Festival), Frostfire Festival (03/12), anniversario (aprile), tab
   Medals di Decorated Heroes (novembre). Si fanno quando se ne vede la schermata dal vivo.
+- **Reset alle 10:02 (dal 3/10, 3a38fc7, idea dell'utente)**: il giorno di gioco del bot parte alle
+  10:02 (`GameDay`), e ogni prossimo giro che cade fra le 09:59:30 e le 10:02 (un countdown del gioco
+  letto al secondo) slitta alle 10:02 (`BotTask.NextRunTime`). Alle 17:22 del 3/10 su tutte e 17 le
+  istanze quest, Daily Store Offers e Daily Missions sono a `10/04/2026 10:02:00`, nessuna alle 10:00.
+  Da verificare al reset del 4/10: nessun `right after the reset - read again later` e nessuna Daily
+  Missions a `fought 0/10` alle 10:02. **Ora legale (25-26/10):** `GameDay` usa le 10 ora locale; se
+  il reset del gioco è fisso in UTC (08:00), dal 26/10 arriverà alle 09:00 locali. Il 26/10 guardare
+  quando il timer delle Daily Missions arriva a zero.
 - **Campagna del Warfront, crew**: le dimensioni delle crew restano quelle che ci sono (gli eroi
   liberi vanno alla più piccola; a un cambio di macchine si ridistribuiscono); dentro, ogni macchina
   prende gli eroi della sua specializzazione. Crew bilanciate o piene davanti: domanda dell'utente del
