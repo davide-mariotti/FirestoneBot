@@ -90,6 +90,9 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    - Daily Store Offers non riprova più ogni 30 minuti dopo un check-in reclamato tra le 10:00 e le
      10:02.
 
+   Applicato sul secondo PC alle 14:49 (3e43d8c): il template ha cambiato solo `warmachinestask`,
+   tutte e 18 `Started. Enabled tasks: 39 of 42`, `-Check` a 0 differenze.
+
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
    del giorno (l'1/10 sul PC principale: Collector su 9 istanze su 17, tutte e quattro su 2). A
