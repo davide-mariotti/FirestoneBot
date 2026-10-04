@@ -51,7 +51,8 @@ public class DailyStoreOffersTask : BotTask
 
         // The countdown to the next check-in only reads when the Store really opened, right after the
         // claim above - so a valid one means today's check-in is done.
-        var checkInClaimed = Store.CheckInNextRunTime > DateTime.Now;
+        var nextCheckIn = Store.CheckInNextRunTime;
+        var checkInClaimed = nextCheckIn > DateTime.Now;
 
         yield return Store.OpenValueBundleDailyTab;
         yield return Store.ClaimFreeMysteryBox;
@@ -65,6 +66,9 @@ public class DailyStoreOffersTask : BotTask
         var today = GameDay.Today();
         if (checkInClaimed && _lastDoneDate != null) _lastDoneDate.Value = today;
 
-        NextRunTime = _lastDoneDate?.Value == today ? GameDay.NextReset() : DateTime.Now + RetryDelay;
+        // The countdown, not the date: the badges light at the game's 10:00 reset, and a claim before
+        // the bot's 10:02 still counts as yesterday's (04/10: 6 instances retried every 30 minutes).
+        NextRunTime = checkInClaimed ? nextCheckIn
+            : _lastDoneDate?.Value == today ? GameDay.NextReset() : DateTime.Now + RetryDelay;
     }
 }
