@@ -339,7 +339,10 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
       `Prestigious` è Firestone Finder) e, a gettoni finiti, una `... at N costs more tokens than are
       left.`: lì il giro si ferma, i gettoni restano per quel nodo. Sotto il livello 5 si comprano
       prima i cinque rami prioritari fino a 5, poi gli altri. Un giro senza nessuna delle due righe
-      vuol dire che ogni nodo è al tetto che il livello dell'albero permette.
+      vuol dire che ogni nodo è al tetto che il livello dell'albero permette. A fine giro c'è sempre
+      `Tree of Life: tokens A -> B, N bought.`, il saldo dei gettoni spedizione prima e dopo: da un
+      giro all'altro (ogni 6 ore) dice quanti gettoni entrano al giorno. `-1 -> -1` vuol dire che
+      l'albero non si è aperto (succede al primo giro dopo l'avvio, coi popup): riprova fra 6 ore.
     - Awakening (solo account a livello 50 o più, e solo con almeno 500 cristalli): `Awakening for
       1.000 (auto): crystals 4604 -> 104.`, cioè tutti i cristalli in un giro; sotto i 500 nessuna
       riga, ed è giusto.
