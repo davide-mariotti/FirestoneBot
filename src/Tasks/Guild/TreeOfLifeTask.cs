@@ -42,6 +42,7 @@ public class TreeOfLifeTask : BotTask
         yield return TreeOfLife.OpenPersonalTab;
 
         var bought = 0;
+        var tokensBefore = TreeOfLife.Tokens;
 
         for (var i = 0; i < MaxIterations && bought < purchases; i++)
         {
@@ -68,6 +69,8 @@ public class TreeOfLifeTask : BotTask
             break;
         }
 
+        // The balance on every run measures the daily token income (04/10, the user's question).
+        Logger.Debug($"[INFO] Tree of Life: tokens {tokensBefore} -> {TreeOfLife.Tokens}, {bought} bought.");
         onBought?.Invoke(bought);
 
         yield return TreeOfLife.Close;

@@ -14,6 +14,8 @@ public static partial class Paths
         // treeOfLifePersonalUpgrade (0)..(19); each carries its game data (ToLPersonalUpgradeInteraction).
         public const string PersonalNodeRoot = Root + "/submenus/personalTree/talentTree";
 
+        public const string TokenCountTxt = Root + "/submenus/personalTree/counters/currencyInteraction (ExpeditionToken)/quantity";
+
         // Clicking a node only opens this preview; the purchase happens in it.
         private const string PersonalUpgradePreviewRoot = MenusLoc.Root + "/popups/TOLPersonalUpgradePreview";
 
