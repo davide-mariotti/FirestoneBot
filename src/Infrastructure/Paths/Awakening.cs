@@ -9,8 +9,8 @@ public static partial class Paths
 
         public const string CloseBtn = Root + "/closeButton";
 
-        // One button per multiplier. x1 is always available; the rest unlock with hero awakening
-        // level and crystal balance, which each button's own clickable state reflects.
+        // One button per multiplier, hidden until the account unlocks it (04/10: x1/x2/x5 on Steam-0,
+        // x1/x2 on Steam-9). A shown one stays clickable without the crystals; AwakenBtn doesn't.
         private const string OptionsRoot = Root + "/awakeningOptions";
         public const string QuantityBtn1 = OptionsRoot + "/awakeningQuantityGrid/changeQuantityButton1";
         public const string QuantityBtn2 = OptionsRoot + "/awakeningQuantityGrid/changeQuantityButton2";
@@ -22,5 +22,10 @@ public static partial class Paths
         public const string QuantityBtn160 = OptionsRoot + "/awakeningQuantityGrid1/changeQuantityButton160";
 
         public const string AwakenBtn = OptionsRoot + "/awakenBg/awakenButton";
+        public const string CostTxt = AwakenBtn + "/costText";
+
+        // Shows 'Manual' or 'Auto'; hidden while the selected multiplier isn't covered.
+        public const string AutoToggleBtn = Root + "/autoAwakenToggle";
+        public const string BalanceTxt = Root + "/counters/currencyInteraction (ArcaneCrystal)/quantity";
     }
 }

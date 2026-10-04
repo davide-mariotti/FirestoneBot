@@ -35,9 +35,9 @@ public class AwakeningTask : BotTask
         for (var i = 0; i < MaxIterations; i++)
         {
             yield return Awakening.SelectBestMultiplier();
-
             if (!Awakening.AwakenBtn.IsClickable()) break;
 
+            yield return Awakening.TurnOnAuto();
             yield return Awakening.Awaken();
         }
 
