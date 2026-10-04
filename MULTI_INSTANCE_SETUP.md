@@ -78,6 +78,18 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    alle 16:12 (4d0e75b), poi alle 17:31 4680fcf (crew per specializzazione, giorno del bot dalle
    10:02), che non aggiunge chiavi.
 
+   Il repo del 4/10 cambia un valore su ogni file: `warmachinestask.enabled: true -> false`. Il
+   livello delle war machine costa gli stessi gettoni spedizione del Personal Tree (500 per 100 xp) e
+   il task le livellava a ogni badge, ogni 1-6 ore: i gettoni ora vanno solo all'albero (scelta
+   dell'utente). Porta anche tre correzioni nel codice, senza chiavi nuove (punto 14):
+   - Awakening usa il toggle `Auto` e scende da solo al moltiplicatore che i cristalli pagano (prima,
+     sotto il costo del moltiplicatore più alto, si fermava; sopra faceva un risveglio per giro);
+   - Tree of Life va oltre il livello 5 (prima era il tetto fisso del bot), a scaglioni di 5: rami
+     prioritari (Raining Gold, Firestone Finder, Firestone Effect, Battle Cry, Miner) fino al
+     prossimo multiplo di 5, poi tutti gli altri, poi lo scaglione dopo;
+   - Daily Store Offers non riprova più ogni 30 minuti dopo un check-in reclamato tra le 10:00 e le
+     10:02.
+
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
    del giorno (l'1/10 sul PC principale: Collector su 9 istanze su 17, tutte e quattro su 2). A
@@ -107,8 +119,8 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 40 of 42` (39 of 41 prima del task della campagna, 38 of 40 prima
-   dell'Emblem market) e nessun
+   `Started. Enabled tasks: 39 of 42` (dal 4/10, con War Machines spento; 40 of 42 prima, 39 of 41
+   prima del task della campagna, 38 of 40 prima dell'Emblem market) e nessun
    `timed out` o `threw:`.
 8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a
    4,5 minuti per istanza (legge tutti gli eroi, spende Void Crystal ed Ethereal Shards, sblocca i
@@ -289,6 +301,52 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     tre macchine (13.290 -> 19.992); 143 battaglie, 133 vinte, `FAILED=0`. Le righe `[Watchdog]
     Closing popup: .../WorldMap/closeButton` dopo ogni battaglia sono del task (`ForceClearAll`),
     non un errore.
+14. Tree of Life e Awakening (dal 4/10). Tree of Life gira ogni 6 ore e Awakening sul suo badge (al
+    più ogni 30 minuti); per vederli subito, **a giochi fermi**, prima del riavvio del punto 6:
+
+    ```powershell
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    foreach ($n in 17..34) {
+      $rel = "Program Files (x86)\Steam-$n\steamapps\common\Firestone\UserData\FirebotPreferences.cfg"
+      foreach ($f in "C:\$rel", "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\$rel") {
+        if (-not (Test-Path $f)) { continue }
+        $t = [IO.File]::ReadAllText($f)
+        foreach ($s in 'treeoflifetask', 'awakeningtask') {
+          $m = [regex]::Match($t, "(?s)\[$s\]\r?\n.*?(?=\r?\n\[|\z)")
+          if (-not $m.Success) { continue }
+          $new = $m.Value -replace '(?m)^next_run_time_internal = ".*"', 'next_run_time_internal = ""'
+          $t = $t.Remove($m.Index, $m.Length).Insert($m.Index, $new)
+        }
+        [IO.File]::WriteAllText($f, $t, $utf8)
+      }
+    }
+    ```
+
+    Poi, a giri fatti (5-10 minuti dopo l'avvio):
+
+    ```powershell
+    foreach ($n in 17..34) {
+      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $t = Get-Content $log
+      "{0}: albero={1} risvegli={2} warmachines={3} threw/timeout={4}" -f $n,
+        @($t -match 'Tree Of Life finished').Count, @($t -match '\[INFO\] Awakening for').Count,
+        @($t -match 'War Machines finished').Count, @($t -match 'threw|timed out').Count
+      $t -match '\[INFO\] (Tree of Life|Awakening)' -replace '.*\[INFO\] ', '    '
+    }
+    ```
+
+    - Tree of Life: righe `Tree of Life: RainingGold 5 -> 6.` (il nome è quello del gioco:
+      `Prestigious` è Firestone Finder) e, a gettoni finiti, una `... at N costs more tokens than are
+      left.`: lì il giro si ferma, i gettoni restano per quel nodo. Sotto il livello 5 si comprano
+      prima i cinque rami prioritari fino a 5, poi gli altri. Un giro senza nessuna delle due righe
+      vuol dire che ogni nodo è al tetto che il livello dell'albero permette.
+    - Awakening (solo account a livello 50 o più, e solo con almeno 500 cristalli): `Awakening for
+      1.000 (auto): crystals 4604 -> 104.`, cioè tutti i cristalli in un giro; sotto i 500 nessuna
+      riga, ed è giusto.
+    - `warmachines` deve essere 0: il task è spento.
+    - `threw/timeout` deve essere 0.
+
+    Sul PC principale il 4/10: vedi le righe Tree of Life e Awakening di `TESTING.md`.
 
 ---
 
