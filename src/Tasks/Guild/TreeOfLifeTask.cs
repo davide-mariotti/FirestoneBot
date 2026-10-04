@@ -3,16 +3,17 @@ using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Guild;
 using Firebot.GameModel.Features.Town;
+using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Logger = Firebot.Core.Logger;
 
 namespace Firebot.Tasks.Guild;
 
 /// <summary>
-///     Spends Expedition Tokens on the Personal Tree. Each purchase goes to a priority upgrade when
-///     one can be bought (TreeOfLife.PriorityUpgrades), else to the lowest-level upgrade - the
-///     cheapest, since cost only depends on an upgrade's own level. Picking again after every
-///     purchase spreads the tokens instead of maxing one upgrade while the rest sit at zero.
+///     Spends Expedition Tokens on the Personal Tree, in the order TreeOfLifePlanner gives: steps of 5
+///     levels, priority branches first (the user's rule, 04/10). Picking again after every purchase
+///     spreads the tokens instead of maxing one upgrade while the rest sit at zero. War Machines
+///     level with the same tokens and stay off (warmachinestask).
 /// </summary>
 public class TreeOfLifeTask : BotTask
 {
@@ -20,9 +21,6 @@ public class TreeOfLifeTask : BotTask
     protected override int MinimumCharacterLevel => 10;
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
-
-    // A maxed node still reports clickable (it opens the preview), so the level is checked instead.
-    private const int MaxUpgradeLevel = 5;
 
     private const int MaxIterations = 200;
 
@@ -34,7 +32,7 @@ public class TreeOfLifeTask : BotTask
     }
 
     /// <summary>
-    ///     Up to `purchases` upgrades, best first, while the tokens last. Also an event challenge's
+    ///     Up to `purchases` upgrades, in order, while the tokens last. Also an event challenge's
     ///     (EventChallengeActions). onBought gets how many were bought.
     /// </summary>
     public static IEnumerator Buy(int purchases, Action<int> onBought = null)
@@ -43,15 +41,11 @@ public class TreeOfLifeTask : BotTask
         yield return TownGuild.OpenTreeOfLife;
         yield return TreeOfLife.OpenPersonalTab;
 
-        // Cost only depends on the level, so once a node at level L is too expensive, every node at L
-        // or above is too: only lower ones are still worth a try. Trying them one by one cost 4 s
-        // each, 40-50 s a run with nothing left to buy (30/09).
-        var affordableBelow = MaxUpgradeLevel;
         var bought = 0;
 
         for (var i = 0; i < MaxIterations && bought < purchases; i++)
         {
-            var best = FindBestUpgrade(affordableBelow);
+            var best = TreeOfLifePlanner.Pick(TreeOfLife.PersonalNodes());
             if (best == null) break;
 
             var name = TreeOfLife.PersonalUpgradeName(best.Value);
@@ -61,51 +55,22 @@ public class TreeOfLifeTask : BotTask
 
             if (!CurrencyMissingPopup.IsShowing)
             {
+                // The next pick reads the level again: wait for the purchase to land in it.
+                yield return Poll.Until(() => TreeOfLife.PersonalNodeLevel(best.Value) != before);
                 Logger.Debug($"[INFO] Tree of Life: {name} {before} -> {TreeOfLife.PersonalNodeLevel(best.Value)}.");
                 bought++;
                 continue;
             }
 
+            // In order or not at all: the tokens wait for this node rather than go to a later one.
             Logger.Debug($"[INFO] Tree of Life: {name} at {before} costs more tokens than are left.");
-
             yield return CurrencyMissingPopup.Close;
-            affordableBelow = before;
+            break;
         }
 
         onBought?.Invoke(bought);
 
         yield return TreeOfLife.Close;
         yield return TownGuild.Close;
-    }
-
-    private static int? FindBestUpgrade(int affordableBelow)
-    {
-        int? bestPriority = null;
-        var bestPriorityLevel = int.MaxValue;
-        int? bestOther = null;
-        var bestOtherLevel = int.MaxValue;
-
-        for (var i = 0; i < TreeOfLife.PersonalUpgradeCount; i++)
-        {
-            if (!TreeOfLife.PersonalNode(i).IsClickable()) continue;
-
-            var level = TreeOfLife.PersonalNodeLevel(i);
-            if (level >= affordableBelow) continue;
-
-            if (TreeOfLife.IsPriority(i))
-            {
-                if (level >= bestPriorityLevel) continue;
-                bestPriorityLevel = level;
-                bestPriority = i;
-            }
-            else
-            {
-                if (level >= bestOtherLevel) continue;
-                bestOtherLevel = level;
-                bestOther = i;
-            }
-        }
-
-        return bestPriority ?? bestOther;
     }
 }

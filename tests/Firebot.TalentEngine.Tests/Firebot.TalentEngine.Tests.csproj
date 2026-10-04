@@ -19,5 +19,6 @@
         <Compile Include="..\..\src\Tasks\Character\EnchantPlanner.cs" Link="EnchantPlanner.cs" />
         <Compile Include="..\..\src\Tasks\Events\ChallengeParser.cs" Link="ChallengeParser.cs" />
         <Compile Include="..\..\src\Tasks\Map\CrewPlanner.cs" Link="CrewPlanner.cs" />
+        <Compile Include="..\..\src\Tasks\Guild\TreeOfLifePlanner.cs" Link="TreeOfLifePlanner.cs" />
     </ItemGroup>
 </Project>

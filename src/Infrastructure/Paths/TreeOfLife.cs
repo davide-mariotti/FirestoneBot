@@ -11,11 +11,8 @@ public static partial class Paths
 
         public const string PersonalTabBtn = Root + "/submenuButtons/personalTree";
 
-        // treeOfLifePersonalUpgrade (0)..(19), in the wiki table's order.
+        // treeOfLifePersonalUpgrade (0)..(19); each carries its game data (ToLPersonalUpgradeInteraction).
         public const string PersonalNodeRoot = Root + "/submenus/personalTree/talentTree";
-
-        // Relative to a node: its current level, shown right on the grid.
-        public const string NodeLevelTxt = "/levelBg/level";
 
         // Clicking a node only opens this preview; the purchase happens in it.
         private const string PersonalUpgradePreviewRoot = MenusLoc.Root + "/popups/TOLPersonalUpgradePreview";
