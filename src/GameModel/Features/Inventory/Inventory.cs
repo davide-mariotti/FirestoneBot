@@ -145,7 +145,6 @@ public static class ChestOpening
         yield return new GameButton(Paths.NewItemLoc.CloseBtn).Click();
     }
 
-    /// <summary>Opens every chest of the given slot.</summary>
     public static IEnumerator OpenAll(string slotPath, Action<int> onOpened = null) =>
         OpenDownTo(slotPath, 0, onOpened);
 }

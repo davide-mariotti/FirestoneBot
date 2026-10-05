@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Firebot.Core;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Features.Map;

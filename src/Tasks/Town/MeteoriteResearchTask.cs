@@ -119,15 +119,15 @@ public class MeteoriteResearchTask : BotTask
         return int.MaxValue;
     }
 
+    // A safety bound on one run's purchases, not a pacing choice: the reserve is what stops it.
+    private const int MaxLevelsPerRun = 30;
+
     /// <summary>
     ///     Researches one node: the best-ranked priority node, else the cheapest unlocked one showing a cost.
     ///     Ranking applies within a tree - a tree that offers a priority node ends the scan, since
     ///     chasing a better one into the next tree costs a full 13-node sweep. An unaffordable pick is
     ///     a no-op click.
     /// </summary>
-    // A safety bound on one run's purchases, not a pacing choice: the reserve is what stops it.
-    private const int MaxLevelsPerRun = 30;
-
     private static IEnumerator RunResearch(int minReserve, int maxLevels, Action<int> onResearched = null)
     {
         var node = new MeteoriteNode();

@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using Firebot.Core;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
