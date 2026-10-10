@@ -389,6 +389,13 @@ public static partial class Paths
 
             public const string CloseBtn = Root + "/closeButton";
 
+            // From the town the Oracle opens on its "oracle" tab, and ritualSubmenu doesn't exist until
+            // this tab is clicked (10/10, Steam-0); the OracleRituals badge opens it on this tab already.
+            public const string RitualsTabBtn = Root + "/submenuButtons/rituals";
+
+            // "Market": opens menus/OracleStore, on its Extreme Value Bundle tab.
+            public const string StoreTabBtn = Root + "/submenuButtons/store";
+
             public static class RitualLoc
             {
                 private const string Root = OracleLoc.Root + "/submenus/bg/ritualSubmenu";
@@ -536,14 +543,17 @@ public static partial class Paths
 
             public const string CloseBtn = Root + "/closeButton";
 
-            private const string OraclesGiftRoot =
-                Root + "/bg/submenus/valueBundles/Scroll View/Viewport/items/oraclesGift";
+            // The "Extreme Value Bundle" tab, the one the store opens on (10/10, Steam-0).
+            private const string OraclesGiftRoot = Root + "/bg/submenus/extremeValueBundles/items/oraclesGift";
 
             // The oraclesGift container has a Button of its own that swallows clicks; the free claim
             // is this nested one.
             public const string OraclesGiftBtn = OraclesGiftRoot + "/Graphics/purchaseButton";
 
+            // Shown only once the gift is claimed.
             public const string OraclesGiftRenewTxt = OraclesGiftRoot + "/Graphics/renewText";
+
+            public const string OraclesGiftCountTxt = Root + "/bg/counters/currencyInteraction (OraclesGift)/quantity";
         }
 
         /// <summary>Path of Glory (the battle pass).</summary>

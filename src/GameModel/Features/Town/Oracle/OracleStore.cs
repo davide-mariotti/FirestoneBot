@@ -11,6 +11,15 @@ public static class OracleStore
 
     public static IEnumerator ClaimGift => new GameButton(Paths.MenusLoc.OracleStoreLoc.OraclesGiftBtn).Click();
 
-    public static DateTime NextRunTime =>
-        new GameText(Paths.MenusLoc.OracleStoreLoc.OraclesGiftRenewTxt).Time;
+    // The Free button before the claim, the renew countdown after it.
+    public static bool IsGiftShown =>
+        new GameButton(Paths.MenusLoc.OracleStoreLoc.OraclesGiftBtn).IsVisible() || RenewTxt.IsVisible();
+
+    public static bool IsClaimed => RenewTxt.IsVisible();
+
+    public static int GiftCount => new GameText(Paths.MenusLoc.OracleStoreLoc.OraclesGiftCountTxt).GetParsedInt(-1);
+
+    public static DateTime NextRunTime => RenewTxt.Time;
+
+    private static GameText RenewTxt => new(Paths.MenusLoc.OracleStoreLoc.OraclesGiftRenewTxt);
 }

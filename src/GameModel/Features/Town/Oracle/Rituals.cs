@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
@@ -12,17 +13,34 @@ public class Rituals : GameElement
 {
     public Rituals() : base(Paths.MenusLoc.OracleLoc.RitualLoc.Rituals) { }
 
+    public int Claimed { get; private set; }
+
+    public int Started { get; private set; }
+
     public IEnumerator Claim()
     {
-        foreach (var child in GetChildren().Where(child => child.IsVisible()))
-            yield return new GameButton(Paths.MenusLoc.OracleLoc.RitualLoc.ClaimBtn, child).Click();
+        foreach (var button in ClickableButtons(Paths.MenusLoc.OracleLoc.RitualLoc.ClaimBtn))
+        {
+            yield return button.Click();
+            Claimed++;
+        }
     }
 
     public IEnumerator Start()
     {
-        foreach (var child in GetChildren().Where(child => child.IsVisible()))
-            yield return new GameButton(Paths.MenusLoc.OracleLoc.RitualLoc.StartBtn, child).Click();
+        foreach (var button in ClickableButtons(Paths.MenusLoc.OracleLoc.RitualLoc.StartBtn))
+        {
+            yield return button.Click();
+            Started++;
+        }
     }
+
+    // Lazy, so each button is checked after the click before it: starting one ritual disables the
+    // others' start (10/10, Steam-0).
+    private IEnumerable<GameButton> ClickableButtons(string path) => GetChildren()
+        .Where(child => child.IsVisible())
+        .Select(child => new GameButton(path, child))
+        .Where(button => button.IsClickable());
 
     public DateTime CurrentRunTime()
     {
