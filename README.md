@@ -57,7 +57,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Empower** (Temple of Eternals): resets once this adventure's Firestones match the ones already banked, a +100% gain (`min_reset_ratio`).
 - **Arena of Kings**: spends the daily tokens on the weakest opponent it can find.
 - **Pirate's Prize**: claims the free track.
-- **Oracle Rituals** and **Oracle's Gift** (character level 200).
+- **Oracle Rituals** (character level 200): claims the finished ritual and starts the next one - one runs at a time, 40 minutes each - which also covers the level-200 daily quest for 2 rituals. **Oracle's Gift**: claims the free daily gift in the Oracle's store.
 - **System Mail**: claims every mailbox reward; never deletes mail.
 - **War Machines** (off by default): levels every owned war machine. It spends the same Expedition Tokens as the Personal Tree, which the guide puts first.
 - **War Machine Rarity**: raises war machine rarity with Tools, in grid order, whenever one is affordable.
@@ -242,7 +242,7 @@ the game.
 ## Open Points
 
 - **In-game configuration UI**: settings are edited in `FirebotPreferences.cfg` only.
-- **Soul stones** (Hall of Heroes, character level 200) aren't handled.
+- **Soul stones** (Hall of Heroes, character level 200) aren't handled, and the Oracle's gifts pile up unopened.
 - **War Machines** level with single clicks; the bulk multiplier isn't wired up.
 - The full list of known issues and deferred work is in [TESTING.md](TESTING.md).
 

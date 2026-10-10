@@ -1,6 +1,6 @@
 # Piano: gli eventi del gioco
 
-> Aggiornato il 2026-09-30 sera. Le **sfide** di Decorated Heroes e dei mini-eventi sono fatte e girano
+> Aggiornato il 2026-10-10 (Primordial elements sulla flotta, carte dei prossimi mini-eventi), prima il 2026-09-30 sera. Le **sfide** di Decorated Heroes e dei mini-eventi sono fatte e girano
 > su Steam-0..16 (sezione 1). Questo piano ora prepara gli **eventi che il bot non gestisce ancora**
 > (sezioni 2-6): per ognuno c'è cosa fa l'evento secondo il wiki, cosa dovrà fare il bot e quando se ne
 > vedrà la schermata. Niente codice prima di allora: i path si scrivono solo dopo averli visti dal vivo
@@ -11,7 +11,7 @@
 Da incollare in una sessione nuova di Claude Code (cartella `C:\Repos\FirestoneBot`), avviata con i
 permessi che le evitano di chiedere conferma a ogni comando.
 
-**Controllo di un mini-evento** (Stardust dal 04/10, Primordial elements dal 09/10):
+**Controllo di un mini-evento** (Stardust dal 04/10, Primordial elements dal 09/10, Ethereal miners da ~14/10):
 
 ```text
 Leggi EVENTS_PLAN.md e fai la sezione 9 sul mini-evento in corso, con la skill ponytail attiva:
@@ -69,7 +69,7 @@ il 30/09.
 | Evento | Tipo | Quando | Prossimo | Cosa c'è | Bot |
 |---|---|---|---|---|---|
 | Decorated Heroes | ricorrente | mesi dispari, 2 settimane, livello 50 | novembre | 8 sfide al giorno, stelle, medaglia Fate | ✅ sfide, claim, scambio (sezione 6 per le medaglie) |
-| Mini-eventi (11) | ricorrente | ogni 5 giorni, per 3 giorni | Stardust 04/10, Primordial elements 09/10 | una sfida al giorno | ✅ `MiniEventTask` |
+| Mini-eventi (11) | ricorrente | ogni 5 giorni, per 3 giorni | Stardust 04/10, Primordial elements 09/10; Ethereal miners ~14/10 e Team effort ~19/10 (carte già in elenco il 10/10) | una sfida al giorno | ✅ `MiniEventTask` |
 | Halloween ("Trick or treat") | calendario | ottobre, 2 settimane, livello 10 | **23/10 verso le 10:00** (carta già in elenco) | zucche → scambio | ❌ sezione 3 |
 | Winter Festival | calendario | dicembre | ~19/12 | caramelle → scambio | ❌ sezione 3 |
 | Valentine ("Love is in the air") | calendario | febbraio | ~feb 2027 | cioccolatini → scambio | ❌ sezione 3 |
@@ -184,7 +184,8 @@ schermata aperta dopo un click: `Watchdog.DumpActiveScreens()`. La carta dell'ev
 | 01/10, dopo le 10:30 | controlli del reset (TESTING.md e memoria del reset): DH dopo le quest, Collector e Merchant coi passi condivisi |
 | 02/10, 10:00 | fine di Decorated Heroes e di Sigils of Prophecy |
 | 04/10, 10:00 | Stardust: primo mini-evento nuovo per `MiniEventTask`, prime azioni dei mini-eventi (sezione 1) |
-| 09/10 | Primordial elements |
+| 09/10 | Primordial elements: aperto su tutte e 17, sfida del giorno reclamata dove era fatta (TESTING.md, riga Mini Event, 10/10) |
+| ~14/10, ~19/10 | Ethereal miners, Team effort (mini-eventi, già tra i nomi di `MiniEventTask`) |
 | 23/10, 10:00 | Halloween: sonda e task (sezione 3) |
 | novembre | Decorated Heroes: medaglie (sezione 6) |
 | 03/12, 10:00 | Frostfire Festival (sezione 4) |

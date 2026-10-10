@@ -93,6 +93,12 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    Applicato sul secondo PC alle 14:49 (3e43d8c): il template ha cambiato solo `warmachinestask`,
    tutte e 18 `Started. Enabled tasks: 39 of 42`, `-Check` a 0 differenze.
 
+   Il repo del 10/10 cambia due valori su ogni file: `oracleritualstask.enabled` e
+   `oraclesgifttask.enabled`, `false -> true` (Steam-0 è arrivata al livello 200). Sotto il livello
+   200 i due task non partono, quindi sugli account più bassi non cambia niente. Porta anche la
+   correzione dei due task (punto 15): prima, senza il badge, non aprivano il tab giusto
+   dell'Oracolo, e il regalo aveva un path vecchio. Nessuna chiave nuova.
+
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
    del giorno (l'1/10 sul PC principale: Collector su 9 istanze su 17, tutte e quattro su 2). A
@@ -122,7 +128,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 39 of 42` (dal 4/10, con War Machines spento; 40 of 42 prima, 39 of 41
+   `Started. Enabled tasks: 41 of 42` (dal 10/10, coi task Oracle accesi; 39 of 42 dal 4/10, con War Machines spento; 40 of 42 prima, 39 of 41
    prima del task della campagna, 38 of 40 prima dell'Emblem market) e nessun
    `timed out` o `threw:`.
 8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a
@@ -353,6 +359,26 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     - `threw/timeout` deve essere 0.
 
     Sul PC principale il 4/10: vedi le righe Tree of Life e Awakening di `TESTING.md`.
+15. Oracolo (dal 10/10, solo account a livello 200): Oracle Rituals reclama il rituale finito e
+    avvia il successivo (uno alla volta, 40 minuti l'uno), Oracle's Gift reclama il regalo gratuito
+    del giorno nello store dell'Oracolo. A giri fatti, da PowerShell:
+
+    ```powershell
+    foreach ($n in 17..34) {
+      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+      $t = Get-Content $log
+      "{0}: threw/timeout={1}" -f $n, @($t -match 'Oracle.*(threw|timed out)').Count
+      $t -match "\[INFO\] Oracle( rituals|'s gift)" -replace '.*\[INFO\] ', '    '
+    }
+    ```
+
+    Sugli account a livello 200: `Oracle rituals: claimed C, started S, next run <ora>.` con S = 1
+    finché ci sono rituali da fare nella finestra di 6 ore, e `next run` alla fine del rituale in
+    corso; `Oracle's gift: gifts A -> B, renews <domani 10:02>.` con B = A + 1 al primo giro del
+    giorno. Un `renews 01/01/0001` o un `next run 01/01/0001` vuol dire che la schermata non si è
+    letta: riprova dopo 2 minuti. Sotto il livello 200 le righe mancano. La nona quest giornaliera
+    del livello 200 ("completa 2 rituali") la reclama Quests dopo il secondo rituale. Sul PC
+    principale il 10/10: vedi le righe Oracle di `TESTING.md`.
 
 ---
 
