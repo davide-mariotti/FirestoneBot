@@ -25,3 +25,6 @@ Reports/
 
 # MelonLoader logs copied in for analysis
 sample-log/
+
+# Local machine details (remote PC address and account)
+.env

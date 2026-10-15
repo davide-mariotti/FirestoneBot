@@ -576,6 +576,82 @@ ambiente non interattivo (es. un tool automatico), stampa un errore cosmetico
 `pause` finale - l'errore è innocuo, gli avvii effettivi vanno comunque a buon fine. Se generi
 uno script "tutte insieme" per 17-34, verifica che il range nel banner di testo sia corretto.
 
+### 3.1 Riavvio del PC principale da PC-Guesly (da remoto)
+
+Configurato il 15/10; il riavvio qui sotto non è ancora stato provato dal vivo. Il PC principale
+(`DESKTOP-ADMIN`, Steam-0..16) si raggiunge da PC-Guesly (Steam-17..34) con PowerShell remoto,
+collegandosi come un amministratore locale creato apposta. Indirizzo e utente stanno nel `.env`
+alla radice del repo, che è in `.gitignore` e va creato a mano su PC-Guesly:
+
+```
+FIREBOT_REMOTE_HOST=<IP del PC principale>
+FIREBOT_REMOTE_USER=DESKTOP-ADMIN\<utente remoto>
+```
+
+Usa l'IP e non il nome, perché da PC-Guesly `Desktop-Admin` risolve a 127.0.0.1. Prima dei
+comandi qui sotto, carica il `.env` nella sessione:
+
+```powershell
+Get-Content C:\Repos\FirestoneBot\.env | ? { $_ -match '^\w+=' } | % { $k, $v = $_ -split '=', 2; Set-Item "env:$k" $v }
+```
+
+Un processo avviato con `Invoke-Command` non ha desktop: lanciato così, il bat aprirebbe i giochi
+in una sessione invisibile. Per questo sul PC principale ci sono due attività pianificate, senza
+trigger, che girano come `Admin` nella sua sessione (`LogonType Interactive`, quindi solo con
+`Admin` connesso): `Firestone_AvviaTutte` e `Firestone_FermaTutte`, che lanciano i due bat "tutte
+insieme" qui sopra. Partono in una console vera, quindi le pause di 20 s tra un avvio e l'altro
+funzionano.
+
+Da PowerShell normale su PC-Guesly:
+
+```powershell
+$c = Import-Clixml $HOME\desktop-admin.cred
+Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock {
+    # Il bat di arresto finisce con pause: chiudi l'esecuzione precedente prima di rilanciarlo.
+    'Firestone_FermaTutte', 'Firestone_AvviaTutte' | % { Stop-ScheduledTask -TaskName $_ }
+    Start-ScheduledTask -TaskName Firestone_FermaTutte
+    Start-Sleep 30
+    Stop-ScheduledTask -TaskName Firestone_FermaTutte
+    Start-ScheduledTask -TaskName Firestone_AvviaTutte
+}
+# Controllo: in circa 6 minuti (17 istanze x 20 s) devono esserci 17 Firestone.
+Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock { (Get-Process Firestone).Count }
+```
+
+Per leggere un `Latest.log` mentre il gioco gira, aprilo in modalità condivisa, altrimenti
+`ReadAllLines` dà "file in uso": `[IO.File]::Open($path, 'Open', 'Read', 'ReadWrite')`. I log sono
+in `C:\Sandbox\Admin\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\`
+(per Steam-0, che non è in sandbox, in `C:\Program Files (x86)\Steam-0\...`).
+
+**Configurazione una tantum (già fatta il 15/10, da rifare solo su un PC reinstallato):**
+
+Sul PC principale, PowerShell come Amministratore, con `$u` uguale all'`<utente remoto>` del `.env`:
+```powershell
+$u = '<utente remoto>'
+Set-NetConnectionProfile -NetworkCategory Private
+Enable-PSRemoting -Force
+Enable-NetFirewallRule -Name FPS-SMB-In-TCP
+Set-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System LocalAccountTokenFilterPolicy 1 -Type DWord
+$pw = Read-Host -AsSecureString 'Password'
+New-LocalUser $u -Password $pw -PasswordNeverExpires
+Add-LocalGroupMember -SID S-1-5-32-544 -Member $u
+$dir = 'C:\Users\Admin\Desktop\Firestone Bots'
+$p = New-ScheduledTaskPrincipal -UserId 'DESKTOP-ADMIN\admin' -LogonType Interactive
+$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
+foreach ($t in @('Avvia','Ferma')) {
+  $a = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument "/c `"$dir\${t}_Tutte_Istanze_Firestone.bat`"" -WorkingDirectory $dir
+  Register-ScheduledTask -TaskName "Firestone_${t}Tutte" -Action $a -Principal $p -Settings $s -Force
+}
+```
+
+Su PC-Guesly, dopo aver caricato il `.env`: le prime due righe da Amministratore, l'ultima da
+PowerShell normale, perché il file lo può decifrare solo l'utente che l'ha creato:
+```powershell
+Start-Service WinRM
+Set-Item WSMan:\localhost\Client\TrustedHosts -Value $env:FIREBOT_REMOTE_HOST -Force
+Get-Credential -UserName $env:FIREBOT_REMOTE_USER -Message 'Desktop Admin' | Export-Clixml $HOME\desktop-admin.cred
+```
+
 ---
 
 ## 4. Repo Firebot: build e compilazione
