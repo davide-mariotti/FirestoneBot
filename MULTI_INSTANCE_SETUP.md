@@ -578,7 +578,8 @@ uno script "tutte insieme" per 17-34, verifica che il range nel banner di testo 
 
 ### 3.1 Riavvio del PC principale da PC-Guesly (da remoto)
 
-Configurato il 15/10; il riavvio qui sotto non è ancora stato provato dal vivo. Il PC principale
+Configurato il 15/10. Provato il 16/10 alle 09:10: 15 istanze ferme in meno di 30 s e tutte e 17
+di nuovo su in 6 min 47 s, con il bot che scrive su tutti i log. Il PC principale
 (`DESKTOP-ADMIN`, Steam-0..16) si raggiunge da PC-Guesly (Steam-17..34) con PowerShell remoto,
 collegandosi come un amministratore locale creato apposta. Indirizzo e utente stanno nel `.env`
 alla radice del repo, che è in `.gitignore` e va creato a mano su PC-Guesly:
