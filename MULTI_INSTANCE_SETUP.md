@@ -805,6 +805,33 @@ Anche con il pagefile risolto, avvia le istanze **una alla volta con una pausa**
 tra una e l'altra), mai tutte in un colpo solo - riduce il picco di CPU/disco durante il boot di
 ognuna. Gli script "tutte insieme" (punto 3) lo fanno già di default.
 
+### 6.4 Riavvio automatico ogni 6 ore
+
+Firestone.exe cresce di continuo: da ~1,25 GB appena avviato a 4,2-4,4 GB dopo ~36 h. Con 17
+istanze si arriva al commit limit da 88 GB: compaiono gli eventi 2004 ogni 5 minuti e i processi
+muoiono senza report di crash. Visto sul PC principale il 10/10, il 14/10 tra le 06:41 e le 07:50
+(tutte le sessioni chiuse tra le 06:47 e le 07:48) e il 16/10 tra le 08:20 e le 09:04 (2 istanze su
+17); sul secondo PC il 9/10 alle 12:16-12:20 (18 istanze a ~3 GB). Per questo, su tutti e due i PC
+dal 16/10, l'attività `Firestone_Riavvio` ferma e riavvia tutte le istanze alle 00, 06, 12 e 18. Il
+bot salva il cfg a ogni modifica (`BotTask.PersistNextRunTime`), quindi la chiusura forzata non
+perde né i timer né i contatori. Da PowerShell, con l'utente che ha la sessione dei giochi:
+
+```powershell
+$dir = "$HOME\Desktop\Firestone Bots"
+$arg = "/c `"`"$dir\Ferma_Tutte_Istanze_Firestone.bat`" <nul & timeout /t 30 /nobreak >nul & `"$dir\Avvia_Tutte_Istanze_Firestone.bat`"`""
+$a = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument $arg -WorkingDirectory $dir
+$t = 0, 6, 12, 18 | % { New-ScheduledTaskTrigger -Daily -At ('{0:00}:00' -f $_) }
+$p = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
+$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
+$s.CimInstanceProperties.Item('MultipleInstances').Value = 3   # StopExisting: il cmdlet non lo accetta
+Register-ScheduledTask -TaskName Firestone_Riavvio -Action $a -Trigger $t -Principal $p -Settings $s -Force
+```
+
+Il `<nul` fa saltare la `pause` finale del bat di arresto. Il bat di avvio invece resta su una
+console vera, perché `timeout` non funziona con l'input rediretto; la sua `pause` finale tiene
+aperta l'esecuzione, e la chiude `StopExisting` al giro dopo (con il default `IgnoreNew` il
+riavvio successivo verrebbe saltato). Per riavviare subito: `Start-ScheduledTask Firestone_Riavvio`.
+
 ---
 
 ## 7. Trim di steamwebhelper (pianificato, solo a RAM piena)
