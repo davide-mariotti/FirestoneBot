@@ -876,6 +876,31 @@ $t = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-Time
 Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument "$cmd -Watch") -Trigger $t -Principal $p -Settings $s -Force
 ```
 
+### 6.5 Resoconto giornaliero via mail
+
+`tools\Report\daily_report.ps1`, su PC-Guesly ogni giorno alle 09:50 (prima del reset delle 10:00),
+manda una mail "Firestone BOT gg/mm/aaaa" con una tabella: una riga per istanza (0-16 lette dal PC
+principale con PowerShell remoto, 17-30 da qui) con stato, livello, stage max, potenza delle war
+machine, stelle della campagna, gemme, Strange Dust, Dragon Blood, quest giornaliere/settimanali
+riscattate, combattimenti in Arena, battaglie della campagna vinte/perse, task falliti e riavvii del
+watchdog nelle ultime 24 ore. Sopra la tabella, i problemi (istanze ferme, riavviate, livello fermo
+da ieri, senza snapshot). Livello, stage, potenza e valute vengono dalla riga
+`[INFO] Snapshot: level L, stage S, power P, stars N, gems G, dust D, blood B.` che il bot scrive
+all'avvio e poi ogni ora (`BotManager.LogSnapshot`, dal 16/10); il resto dalle righe `[INFO]` dei
+task. Ogni report salva i suoi numeri in `%LOCALAPPDATA%\FirebotReport\<data>.json` (con l'HTML
+accanto), e il successivo mostra le differenze in verde/rosso. `-NoSend` scrive solo l'HTML.
+
+Il destinatario sta nel `.env` (`FIREBOT_REPORT_TO=...`). La mail parte da Gmail con una password per
+le app (https://myaccount.google.com/apppasswords, serve la verifica in due passaggi), salvata una
+volta sola, da PowerShell normale su PC-Guesly:
+
+```powershell
+Get-Content C:\Repos\FirestoneBot\.env | ? { $_ -match '^\w+=' } | % { $k, $v = $_ -split '=', 2; Set-Item "env:$k" $v }
+Get-Credential -UserName $env:FIREBOT_REPORT_TO -Message 'Password per le app di Gmail' | Export-Clixml $HOME\gmail.cred
+$a = New-ScheduledTaskAction -Execute powershell.exe -Argument '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\Repos\FirestoneBot\tools\Report\daily_report.ps1'
+Register-ScheduledTask -TaskName Firestone_Report -Action $a -Trigger (New-ScheduledTaskTrigger -Daily -At 09:50) -Force
+```
+
 ---
 
 ## 7. Trim di steamwebhelper (pianificato, solo a RAM piena)
