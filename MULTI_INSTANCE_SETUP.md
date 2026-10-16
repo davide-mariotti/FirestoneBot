@@ -98,6 +98,8 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    200 i due task non partono, quindi sugli account più bassi non cambia niente. Porta anche la
    correzione dei due task (punto 15): prima, senza il badge, non aprivano il tab giusto
    dell'Oracolo, e il regalo aveva un path vecchio. Nessuna chiave nuova.
+   Applicato sul secondo PC il 16/10 (build di dbaa131, istanze ferme dal 9/10): esattamente quei due
+   valori su tutti e 36 i file, 0 chiavi mancanti; backup in `2026-10-16-fleet`.
 
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
