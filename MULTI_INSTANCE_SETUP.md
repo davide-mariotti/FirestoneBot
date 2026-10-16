@@ -834,6 +834,29 @@ console vera, perché `timeout` non funziona con l'input rediretto; la sua `paus
 aperta l'esecuzione, e la chiude `StopExisting` al giro dopo (con il default `IgnoreNew` il
 riavvio successivo verrebbe saltato). Per riavviare subito: `Start-ScheduledTask Firestone_Riavvio`.
 
+**Sul secondo PC l'attività lancia `tools\Restart\restart_fleet.ps1` invece dei bat** (dal 16/10).
+Il 16/10 alle 09:55, primo avvio dopo una settimana di fermo, il bat ha portato su solo 4 giochi su
+18. Ogni Steam a ogni avvio prova l'aggiornamento del client 1791918634, uscito dopo il 9/10 (quel
+giorno nessun tentativo nel `bootstrap_log.txt`). Dentro il sandbox fallisce
+(`BCommitUpdatedFiles: failed to rename ./steam.exe -> ./steam.exe.old`, errore 32 qui, 5 sul PC
+principale) e viene annullato; 14 Steam lanciati a 20 s l'uno dall'altro sono poi rimasti appesi
+senza mai ricevere `-applaunch`, nemmeno rimandato. Rilanciati da soli, chiudendo prima il box,
+sono partiti tutti al primo tentativo, in ~70 s. Lo script riavvia un'istanza alla volta, dalla più
+bassa, e aspetta che il gioco parta (se non parte entro 150 s, riavvia il box una seconda volta).
+Prima di ognuna fa il trim di Steam e legge la RAM disponibile: sotto 1,5 GB lascia spente quella e
+tutte le più alte, fino al giro dopo. Ogni passo finisce in `%TEMP%\restart_fleet.log`.
+
+RAM sul secondo PC (16/10, con VS Code e una sessione di Claude Code aperti): 14 istanze, 17-30,
+con 0,8 GB disponibili. Ogni istanza in più costa ~1,7 GB tra gioco (1,4) e Steam dopo il trim
+(~0,35). I processi che non sono né gioco né Steam occupano 11,3 GB, contro i 3,6 del PC principale
+(Windows 11 build 26300 contro Windows 10 19045, VS Code e Claude ~2,3 GB, Razer, NZXT CAM, RustDesk).
+Senza VS Code dovrebbero starci anche 31 e 32. Per aggiornare l'attività già creata:
+
+```powershell
+$a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From 17 -To 34'
+Set-ScheduledTask -TaskName Firestone_Riavvio -Action $a
+```
+
 ---
 
 ## 7. Trim di steamwebhelper (pianificato, solo a RAM piena)
