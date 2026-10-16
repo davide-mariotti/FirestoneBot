@@ -850,11 +850,30 @@ RAM sul secondo PC (16/10, con VS Code e una sessione di Claude Code aperti): 14
 con 0,8 GB disponibili. Ogni istanza in più costa ~1,7 GB tra gioco (1,4) e Steam dopo il trim
 (~0,35). I processi che non sono né gioco né Steam occupano 11,3 GB, contro i 3,6 del PC principale
 (Windows 11 build 26300 contro Windows 10 19045, VS Code e Claude ~2,3 GB, Razer, NZXT CAM, RustDesk).
-Senza VS Code dovrebbero starci anche 31 e 32. Per aggiornare l'attività già creata:
+Senza VS Code dovrebbero starci anche 31 e 32.
+
+**Watchdog (dal 16/10, su tutti e due i PC).** `Firestone_Watchdog` lancia lo stesso script con `-Watch`
+ogni 5 minuti e riavvia, una per una, le istanze dove `Firestone.exe` non gira o il `Latest.log` è
+fermo da più di 15 minuti (il bot non sta mai 8 minuti senza scrivere: pausa massima 7 min su ~2.900
+righe di Steam-22). Controlla solo fino alla più alta avviata dall'ultimo riavvio
+(`%TEMP%\restart_fleet.top`), quindi non riaccende quelle lasciate spente per la RAM, e non fa niente
+mentre è in corso un riavvio (mutex `Global\FirebotRestartFleet`). Provato sul secondo PC il 16/10
+alle 10:54: gioco di Steam-30 chiuso a forza, di nuovo su in 66 s. Per tenere spenta a mano
+un'istanza, abbassa `-To` nelle due attività. Il riavvio e il watchdog lavorano anche sulle istanze
+fuori dal sandbox (Steam-0).
+
+Per creare le due attività su un PC (PowerShell normale, con l'utente che ha la sessione dei giochi;
+sul PC principale `$from = 0; $to = 16`):
 
 ```powershell
-$a = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From 17 -To 34'
-Set-ScheduledTask -TaskName Firestone_Riavvio -Action $a
+$from = 17; $to = 34
+git -C C:\Repos\FirestoneBot pull
+$cmd = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From $from -To $to"
+Set-ScheduledTask -TaskName Firestone_Riavvio -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument $cmd)
+$p = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
+$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+$t = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5)
+Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument "$cmd -Watch") -Trigger $t -Principal $p -Settings $s -Force
 ```
 
 ---
