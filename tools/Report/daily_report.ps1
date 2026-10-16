@@ -14,8 +14,8 @@
     %LOCALAPPDATA%\FirebotReport\<date>.json, and the next one shows the change against them.
 
     Mail goes through Gmail (smtp.gmail.com:587) with an app password saved in $HOME\gmail.cred, to
-    $env:FIREBOT_REPORT_TO. Both env values come from the repo's .env. -NoSend only writes the HTML
-    next to the json.
+    $env:FIREBOT_REPORT_TO. Both env values come from the repo's .env. -NoSend only writes the HTML,
+    and doesn't save the numbers, so it doesn't move the baseline.
 
 .EXAMPLE
     powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Report\daily_report.ps1
@@ -88,11 +88,20 @@ $collect = {
             guild    = if ($last) { $last.guild } else { $null }
             dust     = if ($last) { $last.dust } else { $null }
             blood    = if ($last) { $last.blood } else { $null }
-            empowers = $stats['PrestigeNumber']
-            dailies  = $stats['CompletedAllDailies']
-            missions = $stats['MapMissionsWon']
-            arena    = $stats['AOKFightsParticipated']
-            donated  = $stats['GuildCoinsDonated']
+            heroPower  = $stats['TotalHeroPowerLevel']
+            research   = $stats['FirestoneResearchesCompleted']
+            meteorite  = $stats['MeteoriteResearchesCompleted']
+            guardian   = if ($null -ne $stats['GuardianTrainingCompleted']) { $stats['GuardianTrainingCompleted'] + $stats['GuardianEnlighenmentsCompleted'] } else { $null }
+            awakenings = $stats['TotalAwakenings']
+            empowers   = $stats['PrestigeNumber']
+            rituals    = $stats['RitualsPerformed']
+            dailies    = $stats['CompletedAllDailies']
+            allMissions    = $stats['CompletedAllMissions']
+            allExpeditions = $stats['CompletedAllExpeditions']
+            missions   = $stats['MapMissionsWon']
+            arena      = $stats['AOKFightsParticipated']
+            arenaWins  = $stats['DefeatedAOKPlayers']
+            donated    = $stats['GuildCoinsDonated']
             failed   = @($lines | Where-Object { $_ -match '\[Firebot\] \[FAILED\]' }).Count
             restarts = @($fleetLog | Where-Object { $_ -match "Watchdog: Steam-$n " }).Count
             sessions = $sessions.Count
@@ -110,10 +119,15 @@ $rows = @($rows | Sort-Object n)
 $store = Join-Path $env:LOCALAPPDATA 'FirebotReport'
 New-Item -ItemType Directory -Force $store | Out-Null
 $today = Get-Date
-$previousFile = Get-ChildItem "$store\*.json" | Where-Object { $_.BaseName -lt $today.ToString('yyyy-MM-dd') } | Sort-Object Name | Select-Object -Last 1
+# Each run is compared with the last one before it, same day included (a manual test moves the baseline).
+$previousFile = Get-ChildItem "$store\*.json" | Sort-Object Name | Select-Object -Last 1
 $before = @{}
-if ($previousFile) { (Get-Content $previousFile.FullName -Raw | ConvertFrom-Json) | ForEach-Object { $before[[int]$_.n] = $_ } }
-$rows | ConvertTo-Json | Set-Content "$store\$($today.ToString('yyyy-MM-dd')).json" -Encoding UTF8
+$previousTime = $null
+if ($previousFile) {
+    (Get-Content $previousFile.FullName -Raw | ConvertFrom-Json) | ForEach-Object { $before[[int]$_.n] = $_ }
+    $previousTime = [datetime]::ParseExact($previousFile.BaseName, 'yyyy-MM-dd_HHmm', $null)
+}
+$stamp = $today.ToString('yyyy-MM-dd_HHmm')
 
 # --- HTML ---
 $it = [Globalization.CultureInfo]::GetCultureInfo('it-IT')
@@ -135,14 +149,16 @@ function Cell($row, [string]$key, [switch]$Abbreviate) {
     $text
 }
 
-$td = 'padding:5px 8px;border-bottom:1px solid #eaeef2;text-align:right;white-space:nowrap'
-$th = 'padding:6px 8px;border-bottom:2px solid #d0d7de;text-align:right;font-weight:600;color:#57606a;white-space:nowrap'
-$headers = 'Instance', 'Status', 'Level', 'Max stage', 'Power', 'Gems', 'Guild coins', 'Dust', 'Blood', 'Empowers', 'All dailies', 'Map missions', 'Arena fights', 'Guild donated', 'Errors', 'Restarts'
+$td = 'padding:4px 6px;border-bottom:1px solid #eaeef2;text-align:right;white-space:nowrap'
+$th = 'padding:5px 6px;border-bottom:2px solid #d0d7de;text-align:right;font-weight:600;color:#57606a;white-space:nowrap'
+$headers = 'Instance', 'Status', 'Level', 'Max stage', 'Hero power', 'WM power', 'Research', 'Meteorite', 'Guardian', 'Awakenings', 'Empowers', 'Rituals', 'Gems', 'Guild coins', 'Dust', 'Blood', 'All dailies', 'All missions', 'All expeditions', 'Map missions', 'Arena fights', 'Arena wins', 'Guild donated', 'Errors', 'Restarts'
 $body = foreach ($r in $rows) {
     $state = if ($r.online) { '<span style="color:#1a7f37">&#9679; online</span>' } else { '<span style="color:#cf222e">&#9679; offline</span>' }
     $restartCell = if ($r.restarts) { "<b style=`"color:#cf222e`">$($r.restarts)</b>" } else { '0' }
-    $cells = "Steam-$($r.n)", $state, (Cell $r level), (Cell $r stage), (Cell $r power -Abbreviate), (Cell $r gems), (Cell $r guild), (Cell $r dust), (Cell $r blood),
-        (Cell $r empowers), (Cell $r dailies), (Cell $r missions), (Cell $r arena), (Cell $r donated -Abbreviate), $r.failed, $restartCell
+    $cells = "Steam-$($r.n)", $state, (Cell $r level), (Cell $r stage), (Cell $r heroPower -Abbreviate), (Cell $r power -Abbreviate),
+        (Cell $r research), (Cell $r meteorite), (Cell $r guardian), (Cell $r awakenings), (Cell $r empowers), (Cell $r rituals),
+        (Cell $r gems), (Cell $r guild), (Cell $r dust), (Cell $r blood), (Cell $r dailies), (Cell $r allMissions), (Cell $r allExpeditions),
+        (Cell $r missions), (Cell $r arena), (Cell $r arenaWins), (Cell $r donated -Abbreviate), $r.failed, $restartCell
     '<tr>' + (($cells | ForEach-Object { "<td style=`"$td`">$_</td>" }) -join '') + '</tr>'
 }
 
@@ -154,28 +170,30 @@ function Problem([string]$label, $matching, [scriptblock]$detail = { "$($_.n)" }
 $problems = @(
     Problem 'Ferme' ($rows | Where-Object { -not $_.online })
     Problem 'Riavviate dal watchdog' ($rows | Where-Object { $_.restarts }) { "$($_.n) (x$($_.restarts))" }
-    Problem 'Livello fermo da ieri' ($rows | Where-Object { $old = $before[[int]$_.n]; $old -and $null -ne $_.level -and $_.level -eq $old.level })
+    Problem 'Livello fermo dal report precedente' ($rows | Where-Object { $old = $before[[int]$_.n]; $previousTime -and ($today - $previousTime).TotalHours -ge 20 -and $old -and $null -ne $_.level -and $_.level -eq $old.level })
     Problem 'Senza snapshot nelle ultime 24 ore' ($rows | Where-Object { $_.online -and $null -eq $_.level })
 )
 $levels = ($rows | Where-Object { $old = $before[[int]$_.n]; $old -and $null -ne $_.level -and $null -ne $old.level } | ForEach-Object { $_.level - $old.level } | Measure-Object -Sum).Sum
-$compared = if ($previousFile) { "Differenze rispetto al report del $([datetime]::ParseExact($previousFile.BaseName, 'yyyy-MM-dd', $null).ToString('dd/MM'))." } else { 'Primo report: le differenze compariranno da domani.' }
+$compared = if ($previousFile) { "Differenze rispetto al report del $($previousTime.ToString('dd/MM')) alle $($previousTime.ToString('HH:mm'))." } else { 'Primo report: le differenze compariranno da domani.' }
 
 $html = @"
 <div style="font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;color:#1f2328">
-<p style="font-size:15px;margin:0 0 4px"><b>$online/$($rows.Count) istanze attive</b>$(if ($previousFile) { " &middot; $levels livelli guadagnati in tutto" })</p>
+<p style="font-size:15px;margin:0 0 4px"><b>$online/$($rows.Count) istanze attive</b>$(if ($previousFile) { " &middot; $levels $(if ($levels -eq 1) { 'livello guadagnato' } else { 'livelli guadagnati' }) in tutto" })</p>
 <p style="margin:0 0 12px;color:#57606a">Ultime 24 ore, fino alle $($today.ToString('HH:mm')). $compared</p>
 $(if ($problems) { '<p style="margin:0 0 12px;color:#cf222e">' + ($problems -join '<br>') + '</p>' } else { '<p style="margin:0 0 12px;color:#1a7f37">Nessun problema.</p>' })
 <table style="border-collapse:collapse;font-size:12px">
 <tr>$(($headers | ForEach-Object { "<th style=`"$th`">$_</th>" }) -join '')</tr>
 $($body -join "`n")
 </table>
-<p style="margin:12px 0 0;color:#8c959f;font-size:11px">Valori all'ultimo snapshot del bot (ogni ora); il numero piccolo &egrave; la differenza dal report precedente. Power = potenza della squadra di war machine. Max stage, Empowers, All dailies, Map missions, Arena fights e Guild donated sono i totali del profilo (Statistics): Max Stage Reached, Temple's empowerments, giorni con tutte le giornaliere completate, missioni della mappa vinte, combattimenti nell'Arena of Kings, Guild Coin donate in tutto. Errors = task falliti nelle ultime 24 ore. Restarts = interventi del watchdog nelle ultime 24 ore.</p>
+<p style="margin:12px 0 0;color:#8c959f;font-size:11px">Valori all'ultimo snapshot del bot (ogni ora); il numero piccolo &egrave; la differenza dal report precedente. WM power = potenza della squadra di war machine. Dal profilo (Statistics), come totali: Max stage = Max Stage Reached; Hero power = potenza totale degli eroi; Research e Meteorite = ricerche Firestone e Meteorite completate; Guardian = addestramenti + illuminazioni del guardiano; Awakenings; Empowers = empower al Temple; Rituals = rituali dell'Oracolo; All dailies / All missions / All expeditions = giorni con tutte le giornaliere / missioni della mappa / spedizioni completate (+1 al giorno = tutto fatto); Map missions = missioni vinte; Arena fights / Arena wins = combattimenti / vittorie nell'Arena of Kings; Guild donated = Guild Coin donate. Errors = task falliti nelle ultime 24 ore. Restarts = interventi del watchdog nelle ultime 24 ore.</p>
 </div>
 "@
-$html | Set-Content "$store\$($today.ToString('yyyy-MM-dd')).html" -Encoding UTF8
+$html | Set-Content "$store\$stamp.html" -Encoding UTF8
 
 if ($NoSend) { "Report scritto in $store\$($today.ToString('yyyy-MM-dd')).html"; return }
 Send-MailMessage -SmtpServer smtp.gmail.com -Port 587 -UseSsl -Credential (Import-Clixml "$HOME\gmail.cred") `
     -From $env:FIREBOT_REPORT_TO -To $env:FIREBOT_REPORT_TO -Subject "Firestone BOT $($today.ToString('dd/MM/yyyy'))" `
     -Body $html -BodyAsHtml -Encoding UTF8 -WarningAction SilentlyContinue
+# Saved only once the mail is out: the next report compares with what was actually sent.
+$rows | ConvertTo-Json | Set-Content "$store\$stamp.json" -Encoding UTF8
 "Report inviato a $env:FIREBOT_REPORT_TO"

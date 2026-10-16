@@ -887,19 +887,26 @@ Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAc
 
 `tools\Report\daily_report.ps1`, su PC-Guesly ogni giorno alle 09:50 (prima del reset delle 10:00),
 manda una mail "Firestone BOT gg/mm/aaaa" con una tabella, colonne in inglese, una riga per istanza
-(0-16 lette dal PC principale con PowerShell remoto, 17-30 da qui): Status, Level, Max stage, Power
-(squadra di war machine), Gems, Guild coins (per sapere quando donare alla gilda o comprare un
-amuleto), Dust, Blood, Empowers, All dailies, Map missions, Arena fights, Guild donated, Errors (task
-falliti nelle 24 ore) e Restarts (interventi del watchdog nelle 24 ore). Sopra la tabella, i problemi
-(istanze ferme, riavviate, livello fermo da ieri, senza snapshot). Level, Power e valute vengono dalla
+(0-16 lette dal PC principale con PowerShell remoto, 17-30 da qui): Status, Level, Max stage, Hero
+power, WM power (squadra di war machine), Research, Meteorite, Guardian (addestramenti +
+illuminazioni), Awakenings, Empowers, Rituals, Gems, Guild coins (per sapere quando donare alla gilda
+o comprare un amuleto), Dust, Blood, All dailies / All missions / All expeditions (giorni con tutte le
+giornaliere / missioni della mappa / spedizioni completate: +1 al giorno vuol dire tutto fatto), Map
+missions, Arena fights, Arena wins, Guild donated, Errors (task falliti nelle 24 ore) e Restarts
+(interventi del watchdog nelle 24 ore). Sopra la tabella, i problemi
+(istanze ferme, riavviate, livello fermo da almeno 20 ore, senza snapshot). Level, Power e valute vengono dalla
 riga `[INFO] Snapshot: level L, stage S, power P, stars N, gems G, dust D, blood B, guild C.`; Max
 stage, Empowers, All dailies (giorni con tutte le giornaliere completate), Map missions, Arena fights e
 Guild donated dai totali del profilo (Profilo > Statistics), che il bot scrive subito dopo nella riga
 `[INFO] Statistics: MaxStageReached=917; PrestigeNumber=403; ...` con tutte e 51 le statistiche del
 gioco (`StatisticHandler.statistics`, valore come testo del gioco). Le due righe escono all'avvio e
 poi ogni ora (`BotManager.LogSnapshot`, dal 16/10). Prima del 16/10 alle 13:00 Max stage era lo stage
-in corso nello snapshot, che dopo un empower riparte basso: ora è il record del profilo. Ogni report salva i suoi numeri in `%LOCALAPPDATA%\FirebotReport\<data>.json` (con l'HTML
-accanto), e il successivo mostra le differenze in verde/rosso. `-NoSend` scrive solo l'HTML.
+in corso nello snapshot, che dopo un empower riparte basso: ora è il record del profilo.
+
+Ogni mail inviata salva i suoi numeri in `%LOCALAPPDATA%\FirebotReport\<data>_<ora>.json` (con
+l'HTML accanto), e la successiva mostra le differenze in verde/rosso rispetto a quella, anche se è
+dello stesso giorno: un invio a mano sposta la base del confronto. `-NoSend` scrive solo l'HTML e non
+salva niente. Il "livello fermo" si segnala solo se l'invio precedente ha almeno 20 ore.
 Primo invio il 16/10 alle 12:46, a mano, con tutte e 31 le istanze (0-30) e lo snapshot con le Guild
 Coin, dopo il riavvio delle 12:00 e il ricaricamento di Steam-0, -1, -17 e -18, che avevano ancora la
 DLL senza Guild Coin. Rimandato lo stesso giorno, dopo un altro riavvio, con le statistiche del
