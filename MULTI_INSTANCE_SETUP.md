@@ -28,6 +28,13 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    altro file: MelonLoader e il resto non cambiano. Se il `Mods` del sandbox non esiste (così su
    tutte le 18 istanze del secondo PC l'1/10) il gioco legge quello reale: basta quella copia, non
    va creato.
+
+   **Senza fermare le istanze (dal 16/10, se non cambiano i cfg):** una DLL caricata non si può
+   sovrascrivere né cancellare, ma si può rinominare. Rinomina ogni DLL in `<nome>.old<data-ora>`
+   (un nome nuovo ogni volta: il `.old` precedente può essere ancora caricato e bloccato), copia la
+   nuova accanto, e cancella i `.old*` che non sono più bloccati. MelonLoader carica solo i `*.dll`,
+   quindi ogni istanza prende la nuova al riavvio successivo (`Firestone_Riavvio`, o
+   `Start-ScheduledTask Firestone_Riavvio` per farlo subito). Fatto così il 16/10 su 0-34.
 5. Allinea i cfg a Steam-0 (punto 8.1):
    `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`
    (da PowerShell, nella cartella del repo). Se segnala chiavi mancanti non è un
@@ -881,14 +888,20 @@ Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAc
 `tools\Report\daily_report.ps1`, su PC-Guesly ogni giorno alle 09:50 (prima del reset delle 10:00),
 manda una mail "Firestone BOT gg/mm/aaaa" con una tabella: una riga per istanza (0-16 lette dal PC
 principale con PowerShell remoto, 17-30 da qui) con stato, livello, stage max, potenza delle war
-machine, stelle della campagna, gemme, Strange Dust, Dragon Blood, quest giornaliere/settimanali
+machine, stelle della campagna, gemme, Guild Coin (per sapere quando donare alla gilda o comprare un
+amuleto), Strange Dust, Dragon Blood, quest giornaliere/settimanali
 riscattate, combattimenti in Arena, battaglie della campagna vinte/perse, task falliti e riavvii del
 watchdog nelle ultime 24 ore. Sopra la tabella, i problemi (istanze ferme, riavviate, livello fermo
 da ieri, senza snapshot). Livello, stage, potenza e valute vengono dalla riga
-`[INFO] Snapshot: level L, stage S, power P, stars N, gems G, dust D, blood B.` che il bot scrive
+`[INFO] Snapshot: level L, stage S, power P, stars N, gems G, dust D, blood B, guild C.` che il bot scrive
 all'avvio e poi ogni ora (`BotManager.LogSnapshot`, dal 16/10); il resto dalle righe `[INFO]` dei
 task. Ogni report salva i suoi numeri in `%LOCALAPPDATA%\FirebotReport\<data>.json` (con l'HTML
 accanto), e il successivo mostra le differenze in verde/rosso. `-NoSend` scrive solo l'HTML.
+Primo invio il 16/10 alle 12:46, a mano, con tutte e 31 le istanze (0-30) e lo snapshot con le Guild
+Coin, dopo il riavvio delle 12:00 e il ricaricamento di Steam-0, -1, -17 e -18, che avevano ancora la
+DLL senza Guild Coin. È la base per le differenze del report del 17/10. Lo stage è quello in corso
+quando viene scritto lo snapshot: dopo un empower riparte basso. "Stage max" è il più alto dei
+24 snapshot della giornata, quindi è affidabile solo dal secondo giorno.
 
 Il destinatario sta nel `.env` (`FIREBOT_REPORT_TO=...`). La mail parte da Gmail con una password per
 le app (https://myaccount.google.com/apppasswords, serve la verifica in due passaggi), salvata una
