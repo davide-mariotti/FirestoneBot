@@ -7,8 +7,10 @@
 .DESCRIPTION
     Runs on PC-Guesly (MULTI_INSTANCE_SETUP.md, 6.5). Reads the MelonLoader logs of -Local here and
     of -Remote on the main PC over PowerShell remoting ($env:FIREBOT_REMOTE_HOST, credential in
-    $HOME\desktop-admin.cred). Level, stage, power and currencies come from the bot's hourly
-    "[INFO] Snapshot:" line; the rest from its other [INFO] lines. Each report's numbers are kept in
+    $HOME\desktop-admin.cred). Level, power and currencies come from the bot's hourly
+    "[INFO] Snapshot:" line; max stage, empowers, dailies, map missions, Arena fights and guild
+    donations from the profile statistics in its "[INFO] Statistics:" line; failed tasks from its
+    [FAILED] lines and restarts from the watchdog's log. Each report's numbers are kept in
     %LOCALAPPDATA%\FirebotReport\<date>.json, and the next one shows the change against them.
 
     Mail goes through Gmail (smtp.gmail.com:587) with an app password saved in $HOME\gmail.cred, to
@@ -65,25 +67,32 @@ $collect = {
         $snapshots = @($lines | Where-Object { $_ -match 'Snapshot: level (\d+), stage (-?\d+), power (\d+), stars (\d+), gems (\d+), dust (\d+), blood (\d+)(?:, guild (\d+))?' } |
             ForEach-Object { [pscustomobject]@{ level = [int]$Matches[1]; stage = [int]$Matches[2]; power = [double]$Matches[3]; stars = [int]$Matches[4]; gems = [double]$Matches[5]; dust = [double]$Matches[6]; blood = [double]$Matches[7]; guild = if ($Matches[8]) { [double]$Matches[8] } else { $null } } })
         $last = $snapshots | Select-Object -Last 1
-        $daily = 0; $weekly = 0
-        $lines | Where-Object { $_ -match 'Quests: claimed (\d+) daily, (\d+) weekly' } | ForEach-Object { $daily += [int]$Matches[1]; $weekly += [int]$Matches[2] }
+
+        # The profile's Statistics tab: "Name=text; ..." as the game shows it ("1.875"; "27,0gc" isn't a plain number).
+        $stats = @{}
+        $statsLine = $lines | Where-Object { $_ -match '\[INFO\] Statistics: (.*)\.$' } | Select-Object -Last 1
+        if ($statsLine -and $statsLine -match '\[INFO\] Statistics: (.*)\.$') {
+            foreach ($pair in $Matches[1] -split '; ') {
+                $name, $text = $pair -split '=', 2
+                if ($text -match '^[\d.]+$') { $stats[$name] = [double]($text -replace '\.', '') }
+            }
+        }
 
         [pscustomobject]@{
             n        = $n
             online   = $online
             level    = if ($last) { $last.level } else { $null }
-            stage    = ($snapshots | Where-Object { $_.stage -ge 0 } | Measure-Object stage -Maximum).Maximum
+            stage    = $stats['MaxStageReached']
             power    = if ($last) { $last.power } else { $null }
-            stars    = if ($last) { $last.stars } else { $null }
             gems     = if ($last) { $last.gems } else { $null }
+            guild    = if ($last) { $last.guild } else { $null }
             dust     = if ($last) { $last.dust } else { $null }
             blood    = if ($last) { $last.blood } else { $null }
-            guild    = if ($last) { $last.guild } else { $null }
-            daily    = $daily
-            weekly   = $weekly
-            arena    = @($lines | Where-Object { $_ -match 'Arena: .*-> slot' }).Count
-            won      = @($lines | Where-Object { $_ -match 'Campaign mission .*-> won' }).Count
-            lost     = @($lines | Where-Object { $_ -match 'Campaign mission .*-> lost' }).Count
+            empowers = $stats['PrestigeNumber']
+            dailies  = $stats['CompletedAllDailies']
+            missions = $stats['MapMissionsWon']
+            arena    = $stats['AOKFightsParticipated']
+            donated  = $stats['GuildCoinsDonated']
             failed   = @($lines | Where-Object { $_ -match '\[Firebot\] \[FAILED\]' }).Count
             restarts = @($fleetLog | Where-Object { $_ -match "Watchdog: Steam-$n " }).Count
             sessions = $sessions.Count
@@ -128,12 +137,12 @@ function Cell($row, [string]$key, [switch]$Abbreviate) {
 
 $td = 'padding:5px 8px;border-bottom:1px solid #eaeef2;text-align:right;white-space:nowrap'
 $th = 'padding:6px 8px;border-bottom:2px solid #d0d7de;text-align:right;font-weight:600;color:#57606a;white-space:nowrap'
-$headers = 'Istanza', 'Stato', 'Livello', 'Stage max', 'Potenza', 'Stelle', 'Gemme', 'Guild coin', 'Polvere', 'Sangue', 'Quest g/s', 'Arena', 'Campagna v/p', 'Errori', 'Riavvii'
+$headers = 'Instance', 'Status', 'Level', 'Max stage', 'Power', 'Gems', 'Guild coins', 'Dust', 'Blood', 'Empowers', 'All dailies', 'Map missions', 'Arena fights', 'Guild donated', 'Errors', 'Restarts'
 $body = foreach ($r in $rows) {
-    $state = if ($r.online) { '<span style="color:#1a7f37">&#9679; attiva</span>' } else { '<span style="color:#cf222e">&#9679; ferma</span>' }
+    $state = if ($r.online) { '<span style="color:#1a7f37">&#9679; online</span>' } else { '<span style="color:#cf222e">&#9679; offline</span>' }
     $restartCell = if ($r.restarts) { "<b style=`"color:#cf222e`">$($r.restarts)</b>" } else { '0' }
-    $cells = "Steam-$($r.n)", $state, (Cell $r level), (Cell $r stage), (Cell $r power -Abbreviate), (Cell $r stars), (Cell $r gems), (Cell $r guild), (Cell $r dust), (Cell $r blood),
-        "$($r.daily)/$($r.weekly)", $r.arena, "$($r.won)/$($r.lost)", $r.failed, $restartCell
+    $cells = "Steam-$($r.n)", $state, (Cell $r level), (Cell $r stage), (Cell $r power -Abbreviate), (Cell $r gems), (Cell $r guild), (Cell $r dust), (Cell $r blood),
+        (Cell $r empowers), (Cell $r dailies), (Cell $r missions), (Cell $r arena), (Cell $r donated -Abbreviate), $r.failed, $restartCell
     '<tr>' + (($cells | ForEach-Object { "<td style=`"$td`">$_</td>" }) -join '') + '</tr>'
 }
 
@@ -160,7 +169,7 @@ $(if ($problems) { '<p style="margin:0 0 12px;color:#cf222e">' + ($problems -joi
 <tr>$(($headers | ForEach-Object { "<th style=`"$th`">$_</th>" }) -join '')</tr>
 $($body -join "`n")
 </table>
-<p style="margin:12px 0 0;color:#8c959f;font-size:11px">Livello, stage, potenza (war machine) e valute dall'ultimo snapshot del bot (ogni ora); stage max = il pi&ugrave; alto visto negli snapshot. Quest g/s = giornaliere/settimanali riscattate. Arena = combattimenti. Campagna = battaglie vinte/perse. Errori = task falliti. Riavvii = interventi del watchdog.</p>
+<p style="margin:12px 0 0;color:#8c959f;font-size:11px">Valori all'ultimo snapshot del bot (ogni ora); il numero piccolo &egrave; la differenza dal report precedente. Power = potenza della squadra di war machine. Max stage, Empowers, All dailies, Map missions, Arena fights e Guild donated sono i totali del profilo (Statistics): Max Stage Reached, Temple's empowerments, giorni con tutte le giornaliere completate, missioni della mappa vinte, combattimenti nell'Arena of Kings, Guild Coin donate in tutto. Errors = task falliti nelle ultime 24 ore. Restarts = interventi del watchdog nelle ultime 24 ore.</p>
 </div>
 "@
 $html | Set-Content "$store\$($today.ToString('yyyy-MM-dd')).html" -Encoding UTF8

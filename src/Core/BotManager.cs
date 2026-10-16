@@ -196,6 +196,20 @@ public static class BotManager
         {
             Logger.Info($"[FAILED] Snapshot: {e.GetType().Name} - {e.Message}");
         }
+
+        // The profile's Statistics tab (Max Stage Reached, empowerments, ...), as the game writes them.
+        // Values are "; "-separated because some have a decimal comma ("190,6bj").
+        try
+        {
+            var stats = new System.Collections.Generic.List<string>();
+            foreach (var stat in GameInitialize.HandlerLoader.StatisticHandler.statistics)
+                stats.Add($"{stat.Key}={stat.Value.GetValueInText()}");
+            Logger.Info($"[INFO] Statistics: {string.Join("; ", stats)}.");
+        }
+        catch (Exception e)
+        {
+            Logger.Info($"[FAILED] Statistics: {e.GetType().Name} - {e.Message}");
+        }
     }
 
     private static void PrintTasksStatusTable()
