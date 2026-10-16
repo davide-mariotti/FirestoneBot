@@ -5,7 +5,10 @@ using System.Linq;
 using System.Reflection;
 using Firebot.BotActions;
 using Firebot.Core.Tasks;
+using Firebot.GameModel.Features.Battle;
+using Firebot.GameModel.Features.Map.WarfrontCampaign;
 using Firebot.GameModel.Shared;
+using Il2Cpp;
 using Firebot.Utilities;
 using MelonLoader;
 using UnityEngine;
@@ -93,6 +96,7 @@ public static class BotManager
         {
             // Every task's readiness check reads the level - read it once per tick.
             PlayerAvatar.RefreshCachedLevel();
+            if (DateTime.Now >= _nextSnapshot) LogSnapshot();
 
             var notificationVisible = new bool[Tasks.Count];
             for (var i = 0; i < Tasks.Count; i++) notificationVisible[i] = Tasks[i].IsNotificationVisible();
@@ -170,6 +174,30 @@ public static class BotManager
     }
 
     /// <summary>In the fixed task order, so each task's row stays put between prints.</summary>
+    private static DateTime _nextSnapshot;
+
+    /// <summary>
+    ///     One line an hour with the account's numbers, read by tools/Report/daily_report.ps1. Logged
+    ///     between tasks, when the battle screen is back; stage is -1 if its bar isn't showing.
+    /// </summary>
+    private static void LogSnapshot()
+    {
+        _nextSnapshot = DateTime.Now.AddHours(1);
+        try
+        {
+            var currencies = GameInitialize.HandlerLoader.CurrencyHandler;
+            double Amount(CurrencyCode code) => currencies.GetCurrency(code).Amount;
+            Logger.Info($"[INFO] Snapshot: level {PlayerAvatar.CharacterLevel}, stage {StageProgress.Current}, " +
+                        $"power {WarfrontCampaign.BattlePower:0}, stars {WarfrontCampaign.Stars}, " +
+                        $"gems {Amount(CurrencyCode.Gem):0}, dust {Amount(CurrencyCode.StrangeDust):0}, " +
+                        $"blood {Amount(CurrencyCode.DragonBlood):0}.");
+        }
+        catch (Exception e)
+        {
+            Logger.Info($"[FAILED] Snapshot: {e.GetType().Name} - {e.Message}");
+        }
+    }
+
     private static void PrintTasksStatusTable()
     {
         var now = DateTime.Now;
