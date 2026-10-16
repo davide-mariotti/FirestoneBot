@@ -62,8 +62,8 @@ $collect = {
             }
         }
 
-        $snapshots = @($lines | Where-Object { $_ -match 'Snapshot: level (\d+), stage (-?\d+), power (\d+), stars (\d+), gems (\d+), dust (\d+), blood (\d+)' } |
-            ForEach-Object { [pscustomobject]@{ level = [int]$Matches[1]; stage = [int]$Matches[2]; power = [double]$Matches[3]; stars = [int]$Matches[4]; gems = [double]$Matches[5]; dust = [double]$Matches[6]; blood = [double]$Matches[7] } })
+        $snapshots = @($lines | Where-Object { $_ -match 'Snapshot: level (\d+), stage (-?\d+), power (\d+), stars (\d+), gems (\d+), dust (\d+), blood (\d+)(?:, guild (\d+))?' } |
+            ForEach-Object { [pscustomobject]@{ level = [int]$Matches[1]; stage = [int]$Matches[2]; power = [double]$Matches[3]; stars = [int]$Matches[4]; gems = [double]$Matches[5]; dust = [double]$Matches[6]; blood = [double]$Matches[7]; guild = if ($Matches[8]) { [double]$Matches[8] } else { $null } } })
         $last = $snapshots | Select-Object -Last 1
         $daily = 0; $weekly = 0
         $lines | Where-Object { $_ -match 'Quests: claimed (\d+) daily, (\d+) weekly' } | ForEach-Object { $daily += [int]$Matches[1]; $weekly += [int]$Matches[2] }
@@ -78,6 +78,7 @@ $collect = {
             gems     = if ($last) { $last.gems } else { $null }
             dust     = if ($last) { $last.dust } else { $null }
             blood    = if ($last) { $last.blood } else { $null }
+            guild    = if ($last) { $last.guild } else { $null }
             daily    = $daily
             weekly   = $weekly
             arena    = @($lines | Where-Object { $_ -match 'Arena: .*-> slot' }).Count
@@ -127,11 +128,11 @@ function Cell($row, [string]$key, [switch]$Abbreviate) {
 
 $td = 'padding:5px 8px;border-bottom:1px solid #eaeef2;text-align:right;white-space:nowrap'
 $th = 'padding:6px 8px;border-bottom:2px solid #d0d7de;text-align:right;font-weight:600;color:#57606a;white-space:nowrap'
-$headers = 'Istanza', 'Stato', 'Livello', 'Stage max', 'Potenza', 'Stelle', 'Gemme', 'Polvere', 'Sangue', 'Quest g/s', 'Arena', 'Campagna v/p', 'Errori', 'Riavvii'
+$headers = 'Istanza', 'Stato', 'Livello', 'Stage max', 'Potenza', 'Stelle', 'Gemme', 'Guild coin', 'Polvere', 'Sangue', 'Quest g/s', 'Arena', 'Campagna v/p', 'Errori', 'Riavvii'
 $body = foreach ($r in $rows) {
     $state = if ($r.online) { '<span style="color:#1a7f37">&#9679; attiva</span>' } else { '<span style="color:#cf222e">&#9679; ferma</span>' }
     $restartCell = if ($r.restarts) { "<b style=`"color:#cf222e`">$($r.restarts)</b>" } else { '0' }
-    $cells = "Steam-$($r.n)", $state, (Cell $r level), (Cell $r stage), (Cell $r power -Abbreviate), (Cell $r stars), (Cell $r gems), (Cell $r dust), (Cell $r blood),
+    $cells = "Steam-$($r.n)", $state, (Cell $r level), (Cell $r stage), (Cell $r power -Abbreviate), (Cell $r stars), (Cell $r gems), (Cell $r guild), (Cell $r dust), (Cell $r blood),
         "$($r.daily)/$($r.weekly)", $r.arena, "$($r.won)/$($r.lost)", $r.failed, $restartCell
     '<tr>' + (($cells | ForEach-Object { "<td style=`"$td`">$_</td>" }) -join '') + '</tr>'
 }

@@ -190,7 +190,7 @@ public static class BotManager
             Logger.Info($"[INFO] Snapshot: level {PlayerAvatar.CharacterLevel}, stage {StageProgress.Current}, " +
                         $"power {WarfrontCampaign.BattlePower:0}, stars {WarfrontCampaign.Stars}, " +
                         $"gems {Amount(CurrencyCode.Gem):0}, dust {Amount(CurrencyCode.StrangeDust):0}, " +
-                        $"blood {Amount(CurrencyCode.DragonBlood):0}.");
+                        $"blood {Amount(CurrencyCode.DragonBlood):0}, guild {Amount(CurrencyCode.GuildCoin):0}.");
         }
         catch (Exception e)
         {
