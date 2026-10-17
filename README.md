@@ -40,7 +40,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Quests**: claims every completed daily and weekly quest.
 - Collector, Gamer, Merchant and Miner read their quest's real progress on the Quests screen, do exactly what's missing, one step at a time, and claim it; a quest still short (no tokens, pickaxes, chests or items yet) is retried an hour later.
-- **Collector**: opens the missing chests cheapest first (Wooden, Iron, Common, then rarer ones only if nothing cheaper is left), plus 6 extra cheap ones a day - never Common below `min_common_chest_reserve` - so the Merchant has items to sell. Jewel and celestial chests are always opened.
+- **Collector**: opens the missing chests cheapest first (Wooden, Iron, Common, then rarer ones only if nothing cheaper is left), then every gear chest above `gear_chest_reserve` per rarity (the backlog would only wait, and its items feed the Merchant). Jewel and celestial chests are always opened.
 - **Gamer**: Tavern draws at x1 with game tokens. **Beer Exchange** turns beer into those tokens.
 - **Merchant**: sells the missing items at the Exotic Merchant by name - Midas' Touch, then Scrolls of Health and Damage; never Scrolls of Speed, instant gold or meteorite items - and buys an Exotic upgrade.
 - **Miner**: single hits on the Guild's Arcane Crystal.

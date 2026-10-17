@@ -13,16 +13,14 @@ namespace Firebot.Tasks.Inventory;
 
 /// <summary>
 ///     The daily "Collector" quest (open 4 chests) comes first: the missing chests are opened cheapest
-///     rarity first, up to Legendary if nothing cheaper is left. The same run then opens ExtraChests
-///     more, cheap rarities only and never Common below min_common_chest_reserve, so MerchantQuestTask
-///     has items to sell. Jewel and celestial chests don't count for the quest and are always opened.
+///     rarity first, up to Legendary if nothing cheaper is left. The same run then opens every gear
+///     chest above gear_chest_reserve per rarity: the contents don't grow with level and the items feed
+///     MerchantQuestTask, so a stock past that only waits. Jewel and celestial chests don't count for
+///     the quest and are always opened.
 /// </summary>
 public class CollectorQuestTask : DailyQuestTask
 {
     protected override string QuestName => "Collector";
-
-    // With the quest's 4, 10 chests a day.
-    private const int ExtraChests = 6;
 
     private static readonly HashSet<string> NonGearChestSlots = new() { "jewelChest", "celestialChest" };
 
@@ -34,24 +32,20 @@ public class CollectorQuestTask : DailyQuestTask
         Paths.InventoryLoc.LegendaryChestSlot
     };
 
-    private static readonly string[] ExtraChestSlots =
-    {
-        Paths.InventoryLoc.WoodenChestSlot, Paths.InventoryLoc.IronChestSlot, Paths.InventoryLoc.CommonChestSlot
-    };
-
     // The gear chest slots are created a moment after the tab opens, later than the interaction delay.
     private static readonly WaitForSeconds ChestListPopulateDelay = new(1.5f);
 
-    private MelonPreferences_Entry<int> _minCommonReserve;
+    private MelonPreferences_Entry<int> _reserve;
 
     protected override void OnConfigureQuest(MelonPreferences_Category category)
     {
-        _minCommonReserve = category.CreateEntry(
-            "min_common_chest_reserve",
+        _reserve = category.CreateEntry(
+            "gear_chest_reserve",
             10,
-            "Minimum Common Chest Reserve",
-            "The extra chests opened for the Merchant quest never take Common chests below this count. The " +
-            "Collector quest itself opens whatever it needs. Default: 10."
+            "Gear Chest Reserve",
+            "Gear chests kept per rarity (Wooden to Legendary) for the next Collector quests, event " +
+            "challenges and a new hero's gear; every one above it is opened. The Collector quest itself " +
+            "opens whatever it needs. Default: 10."
         );
     }
 
@@ -67,14 +61,10 @@ public class CollectorQuestTask : DailyQuestTask
         yield return OpenCheapestFirst(missing, n => questOpened = n);
 
         var extraOpened = 0;
-        foreach (var slot in ExtraChestSlots)
-        {
-            if (extraOpened >= ExtraChests) break;
-            var reserve = slot == Paths.InventoryLoc.CommonChestSlot ? _minCommonReserve?.Value ?? 10 : 0;
-            yield return ChestOpening.OpenDownTo(slot, reserve, n => extraOpened += n, ExtraChests - extraOpened);
-        }
+        foreach (var slot in QuestChestSlots)
+            yield return ChestOpening.OpenDownTo(slot, _reserve?.Value ?? 10, n => extraOpened += n);
 
-        Debug($"[INFO] Collector: {questOpened}/{missing} chest(s) for the quest, {extraOpened}/{ExtraChests} extra.");
+        Debug($"[INFO] Collector: {questOpened}/{missing} chest(s) for the quest, {extraOpened} above the reserve.");
 
         yield return InventoryScreen.Close;
     }
