@@ -33,7 +33,10 @@ public static class AutoRetreat
     // After one retreat, stay put until the next Empower instead of retreating further on every poll.
     private static bool _suppressedUntilReset;
 
-    private static bool IsEnabled => _isEnabled?.Value ?? false;
+    public static bool IsEnabled => _isEnabled?.Value ?? false;
+
+    /// <summary>Whether this adventure has reached its wall: a stall made it step back (EmpowerTask waits for it).</summary>
+    public static bool HitWall => _suppressedUntilReset;
     private static float StallMinutes => Mathf.Clamp(_stallMinutes?.Value ?? 3f, 1f, 180f);
     private static int RetreatStages => Mathf.Clamp(_retreatStages?.Value ?? 5, 1, 50);
 

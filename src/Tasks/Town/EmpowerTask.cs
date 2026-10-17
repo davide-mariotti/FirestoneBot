@@ -15,8 +15,8 @@ namespace Firebot.Tasks.Town;
 /// <summary>
 ///     The Temple of Eternals prestige ("Empower"): banks the Firestones found this adventure, which
 ///     raises the Firestone multiplier, and restarts from stage 1. Free - it's gated on the Firestones
-///     found compared to those already banked (min_reset_ratio), plus optional adventure-time limits
-///     that are off by default.
+///     found compared to those already banked (min_reset_ratio) and on the adventure having reached its
+///     wall (AutoRetreat), plus optional adventure-time limits that are off by default.
 /// </summary>
 public class EmpowerTask : BotTask
 {
@@ -91,19 +91,25 @@ public class EmpowerTask : BotTask
         var maxMinutes = _maxAdventureMinutes?.Value ?? 0;
         var maxDuration = maxMinutes > 0 ? TimeSpan.FromMinutes(maxMinutes) : TimeSpan.MaxValue;
 
+        // The Firestones found grow with the run's top stage, about x100 every 5 minutes near it: on
+        // Steam-0 (17/10) the ratio went 0.12 -> 29 in one check and the empower came while still
+        // climbing, short of the 917 record. So the ratio only counts once the climb has stopped.
+        var atWall = AutoRetreat.HitWall || !AutoRetreat.IsEnabled;
+
         var foundText = TempleOfEternals.FirestonesFoundText;
         var ownedText = TempleOfEternals.FirestonesYouOwnText;
 
         Debug($"[INFO] Adventure time: {timePlayed}, Firestones found: {found} ('{foundText}'), " +
               $"Temple's Firestones: {owned} ('{ownedText}'), " +
-              $"Ratio: {ratio:0.##} (need {minRatio:0.##} after {minDuration}, or force empower after {maxDuration}).");
+              $"Ratio: {ratio:0.##} (need {minRatio:0.##} after {minDuration} at the wall, or force empower after {maxDuration}), " +
+              $"at the wall: {atWall}.");
 
         // Only a brand-new account has nothing banked: a 0 here means the text didn't parse, and then
         // the ratio can never trigger an empower.
         if (owned <= 0)
             Debug($"[FAILED] Temple's Firestones read as 0 from '{ownedText}' - no ratio-based empower until fixed.");
 
-        if ((timePlayed >= minDuration && ratio >= minRatio) || timePlayed >= maxDuration)
+        if ((timePlayed >= minDuration && ratio >= minRatio && atWall) || timePlayed >= maxDuration)
         {
             yield return TempleOfEternals.OpenEmpowerPopup;
             yield return new GameButton(Paths.MenusLoc.EmpowerPopupLoc.EmpowerBtn).Click();
