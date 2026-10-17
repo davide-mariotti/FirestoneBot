@@ -30,7 +30,9 @@ param(
     [int]$From = 17,
     [int]$To = 34,
     [double]$MinAvailableGB = 1.5,
-    [switch]$Watch
+    [switch]$Watch,
+    # Restarts just this instance, leaving the watchdog's range as it is.
+    [int]$Instance = -1
 )
 
 $sandboxie = 'C:\Program Files\Sandboxie-Plus\Start.exe'
@@ -55,9 +57,26 @@ function Get-GameLog([int]$n) {
 }
 
 function Stop-Instance([int]$n) {
-    if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" /terminate }
-    else { Get-Process | Where-Object { $_.Path -like "C:\Program Files (x86)\Steam-$n\*" } | Stop-Process -Force -ErrorAction SilentlyContinue }
-    Start-Sleep 5
+    # The game first, then a pause so Steam sees it exit and closes its Steam Cloud session: killing
+    # both at once left Steam-2 asking about "pending cloud sessions" at every launch (16/10, 10 hours).
+    $game = Get-Process Firestone -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "*\Steam-$n\*" }
+    if ($game) { $game | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep 15 }
+
+    if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" /terminate; Start-Sleep 5; return }
+
+    # Outside the sandbox. Found through WMI: Get-Process can't read some processes' path, and an
+    # orphaned UnityCrashHandler64 it missed made Steam-0 fail every launch as "already running"
+    # (AppError_16, 16/10 18:00 to the reboot).
+    $folder = "C:\Program Files (x86)\Steam-$n\*"
+    foreach ($try in 1..3) {
+        $left = @(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -like $folder })
+        if (-not $left) { break }
+        $left | ForEach-Object { taskkill /F /T /PID $_.ProcessId 2>&1 | Out-Null }
+        Start-Sleep 3
+    }
+    $left = @(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -like $folder })
+    if ($left) { Log ("Steam-${n}: still running after stop: " + (($left | ForEach-Object { "$($_.Name) ($($_.ProcessId))" }) -join ', ')) }
+    Start-Sleep 2
 }
 
 # Starts the instance and waits for the game; a Steam that hangs gets one more try from scratch.
@@ -81,6 +100,12 @@ catch [System.Threading.AbandonedMutexException] { $owned = $true }   # the last
 if (-not $owned) { return }
 
 try {
+    if ($Instance -ge 0) {
+        Log "Restart of Steam-$Instance alone"
+        Stop-Instance $Instance
+        Log ("Steam-{0}: {1}" -f $Instance, $(if (Start-Instance $Instance) { 'up' } else { 'FAILED, game not started' }))
+        return
+    }
     if ($Watch) {
         $top = if (Test-Path $topFile) { [int](Get-Content $topFile) } else { $To }
         foreach ($n in $From..[Math]::Min($top, $To)) {
