@@ -20,6 +20,9 @@ public class CollectorQuestTask : DailyQuestTask
 {
     protected override string QuestName => "Collector";
 
+    // The chests above the reserve are opened even when an event challenge has already done the quest.
+    protected override bool WorksWhenComplete => true;
+
     // Cheapest first.
     private static readonly string[] QuestChestSlots =
     {

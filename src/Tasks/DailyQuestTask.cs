@@ -28,6 +28,9 @@ public abstract class DailyQuestTask : BotTask
     /// <summary>Up to `missing` steps of the quest, ending with its own screens closed.</summary>
     protected abstract IEnumerator Work(int missing);
 
+    /// <summary>Whether Work also runs, with 0 missing, on a quest already complete when first read.</summary>
+    protected virtual bool WorksWhenComplete => false;
+
     /// <summary>For a task's own settings; called before last_done_date is created.</summary>
     protected virtual void OnConfigureQuest(MelonPreferences_Category category) { }
 
@@ -83,9 +86,9 @@ public abstract class DailyQuestTask : BotTask
         }
 
         var after = before;
-        if (before.Listed && before.Target > 0 && before.Done < before.Target)
+        if (before.Listed && before.Target > 0 && (before.Done < before.Target || WorksWhenComplete))
         {
-            yield return Work(before.Target - Math.Max(before.Done, 0));
+            yield return Work(Math.Max(before.Target - Math.Max(before.Done, 0), 0));
             yield return CharacterScreen.CheckDailyQuest(QuestName, r => after = r);
         }
 
