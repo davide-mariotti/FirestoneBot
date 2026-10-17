@@ -40,7 +40,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Quests**: claims every completed daily and weekly quest.
 - Collector, Gamer, Merchant and Miner read their quest's real progress on the Quests screen, do exactly what's missing, one step at a time, and claim it; a quest still short (no tokens, pickaxes, chests or items yet) is retried an hour later.
-- **Collector**: opens the missing chests cheapest first (Wooden, Iron, Common, then rarer ones only if nothing cheaper is left), then every gear chest above `gear_chest_reserve` per rarity (the backlog would only wait, and its items feed the Merchant). Jewel and celestial chests are always opened.
+- **Collector**: opens the missing chests cheapest first (Wooden, Iron, Common, then rarer ones only if nothing cheaper is left), then every other chest in the bag: those rarities down to `gear_chest_reserve`, everything else (Golden, Diamond, celestials) in full. Chest contents don't grow with level, so a backlog only waits.
 - **Gamer**: Tavern draws at x1 with game tokens. **Beer Exchange** turns beer into those tokens.
 - **Merchant**: sells the missing items at the Exotic Merchant by name - Midas' Touch, then Scrolls of Health and Damage; never Scrolls of Speed, instant gold or meteorite items - and buys an Exotic upgrade.
 - **Miner**: single hits on the Guild's Arcane Crystal.
@@ -54,7 +54,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Guardian Evolution**: evolves every guardian whose evolution is available, paid in Strange Dust.
 - **Experiments**: collects finished experiments and starts new ones - Dragon blood only by default (`resource_type`).
 - **Firestone Research** keeps every slot busy and buys new slots when affordable; **Meteorite Research** researches whenever the balance stays above `min_meteorite_reserve`. Both prefer Raining Gold, Firestone Finder and Firestone Effect.
-- **Empower** (Temple of Eternals): resets once this adventure's Firestones match the ones already banked, a +100% gain (`min_reset_ratio`).
+- **Empower** (Temple of Eternals): resets once this adventure's Firestones match the ones already banked, a +100% gain (`min_reset_ratio`), and the run has hit its wall (AutoRetreat saw the stall): near the top the Firestones found grow about x100 every 5 minutes, so a run that still climbs is worth waiting for.
 - **Arena of Kings**: spends the daily tokens on the weakest opponent it can find.
 - **Pirate's Prize**: claims the free track.
 - **Oracle Rituals** (character level 200): claims the finished ritual and starts the next one - one runs at a time, 40 minutes each - which also covers the level-200 daily quest for 2 rituals. **Oracle's Gift**: claims the free daily gift in the Oracle's store.

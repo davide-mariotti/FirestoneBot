@@ -112,6 +112,18 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    Applicato sul secondo PC il 16/10 (build di dbaa131, istanze ferme dal 9/10): esattamente quei due
    valori su tutti e 36 i file, 0 chiavi mancanti; backup in `2026-10-16-fleet`.
 
+   Il repo del 17/10 cambia un valore e una chiave:
+   - `empowertask.max_adventure_minutes: 360 -> 0`: niente più empower forzato a 6 h; l'empower si
+     fa a +100% e solo quando la run ha raggiunto il muro (TESTING.md, riga Empower);
+   - chiave mancante `collectorquesttask.gear_chest_reserve` (10), che sostituisce
+     `min_common_chest_reserve`: la crea la DLL al primo avvio, col valore del template. La vecchia
+     resta nel cfg senza effetto.
+   Sul PC principale lo script ha trovato anche `oracleritualstask.enabled` e
+   `oraclesgifttask.enabled` ancora a `false` su Steam-1..16 (il giro del 10/10 lì non era stato
+   applicato): ora `true`, come nel template. Applicato il 17/10 alle 10:50-10:57 su 0-34 (giochi
+   fermi con `restart_fleet.ps1 -Stop`, sul principale da remoto), poi `Firestone_Riavvio` su
+   entrambi.
+
    **Solo se aggiorni dopo le 10:00 di un giorno in cui le istanze giravano con la versione
    vecchia:** al reset la versione vecchia leggeva le quest di ieri (già complete) e saltava quelle
    del giorno (l'1/10 sul PC principale: Collector su 9 istanze su 17, tutte e quattro su 2). A
@@ -523,15 +535,16 @@ ricopiali). Usano lo stesso `tools\Restart\restart_fleet.ps1` del riavvio ogni 6
 (punto 6.4), quindi non si scontrano con loro:
 
 - `Avvia_Tutte_Istanze_Firestone.bat`: toglie la pausa (vedi sotto) e lancia l'attività
-  `Firestone_Riavvio`, che riavvia tutte le istanze del PC una alla volta, aspettando che ogni gioco
-  parta (~1,5 min l'una). Le istanze già accese vengono riavviate anche loro.
+  `Firestone_Riavvio`, che riavvia tutte le istanze del PC 5 alla volta, aspettando che ogni gioco
+  parta (~1-1,5 min a gruppo; dal 17/10, prima una alla volta). Le istanze già accese vengono
+  riavviate anche loro.
 - `Ferma_Tutte_Istanze_Firestone.bat`: ferma ogni istanza accesa (prima il gioco, poi Steam) e mette
   in pausa watchdog e riavvio ogni 6 ore (`%TEMP%\restart_fleet.paused`), che altrimenti le
   riaccenderebbero entro 5 minuti. La pausa resta finché non si lancia `Avvia_Tutte`.
 - `Riavvia_Istanza_Firestone.bat`: chiede il numero e riavvia solo quell'istanza.
 
 **Dopo un riavvio del PC non serve lanciare niente**: entro 5 minuti dall'accesso il watchdog trova
-le istanze ferme e le avvia una alla volta (tutte in ~25 minuti); `Avvia_Tutte` fa lo stesso subito.
+le istanze ferme e le avvia 5 alla volta (dal 17/10; prima una alla volta, ~25 minuti); `Avvia_Tutte` fa lo stesso subito.
 
 Fino al 16/10 c'erano un `Avvia_Steam-<N>.bat` e un `Ferma_Steam-<N>.bat` per istanza (generati da
 `tools\InstanceProvisioning\generate_instance_scripts.ps1`, tolto dal repo) e due "tutte insieme" che
@@ -568,10 +581,28 @@ PowerShell normale su PC-Guesly:
 
 ```powershell
 $c = Import-Clixml $HOME\desktop-admin.cred
-# Riavvio di tutte le istanze, una alla volta (17 in ~40 minuti), come Avvia_Tutte_Istanze_Firestone.bat:
+# Riavvio di tutte le istanze, 5 alla volta (dal 17/10; prima una alla volta, 17 in ~40 minuti), come Avvia_Tutte_Istanze_Firestone.bat:
 Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock { Start-ScheduledTask Firestone_Riavvio }
 # Avanzamento:
 Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock { Get-Content C:\Users\Admin\AppData\Local\Temp\restart_fleet.log -Tail 5 }
+```
+
+Per fermare tutto (per esempio prima di `apply_template.ps1`), `-Stop` va lanciato con `TEMP` e
+`USERNAME` di `Admin`: altrimenti la pausa finisce nella `%TEMP%` dell'utente remoto, il watchdog
+(che gira come `Admin`) non la vede e riaccende i giochi, e i box cercati sono `C:\Sandbox\<utente
+remoto>`. Provato il 17/10: 17 giochi fermi in 6 minuti. Gli Steam nei box restano aperti (il
+`/terminate` di Sandboxie dall'utente remoto non li chiude), ma il riavvio li ferma uno per uno.
+Per ripartire: togliere la pausa e lanciare l'attività.
+
+```powershell
+Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock {
+  $env:TEMP = 'C:\Users\Admin\AppData\Local\Temp'; $env:USERNAME = 'Admin'
+  & powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From 0 -To 16 -Stop
+}
+Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock {
+  Remove-Item C:\Users\Admin\AppData\Local\Temp\restart_fleet.paused -ErrorAction SilentlyContinue
+  Start-ScheduledTask Firestone_Riavvio
+}
 ```
 
 Fino al 17/10 c'erano anche due attività `Firestone_AvviaTutte` e `Firestone_FermaTutte` che
@@ -749,11 +780,13 @@ Verifica dopo il riavvio:
 Get-CimInstance Win32_PageFileSetting | Select-Object Name, InitialSize, MaximumSize
 ```
 
-### 6.3 Avvio: sempre in sequenza, mai tutto insieme
+### 6.3 Avvio: a gruppi, mai tutto insieme
 
-Anche con il pagefile risolto, avvia le istanze **una alla volta con una pausa** (5-20 secondi
-tra una e l'altra), mai tutte in un colpo solo - riduce il picco di CPU/disco durante il boot di
-ognuna. Lo fa estart_fleet.ps1 (punto 6.4), che aspetta che ogni gioco parta prima del successivo.
+Anche con il pagefile risolto, non avviare mai tutte le istanze in un colpo solo: il picco di
+CPU/disco e di RAM dei primi minuti di ogni gioco si somma. Dal 17/10 `restart_fleet.ps1` (punto
+6.4) le avvia 5 alla volta, contando la RAM che ognuna prende, e aspetta che i giochi del gruppo
+partano prima del successivo. Prima del `steam.cfg` (punto 6.4) andavano avviate una alla volta: lo
+faceva `restart_fleet.ps1` (punto 6.4), che aspetta che ogni gioco parta prima del successivo.
 
 ### 6.4 Riavvio automatico ogni 6 ore
 
@@ -778,6 +811,23 @@ sono partiti tutti al primo tentativo, in ~70 s. Lo script riavvia un'istanza al
 bassa, e aspetta che il gioco parta (se non parte entro 150 s, riavvia il box una seconda volta).
 Prima di ognuna fa il trim di Steam e legge la RAM disponibile: sotto 1,5 GB lascia spente quella e
 tutte le più alte, fino al giro dopo. Ogni passo finisce in `%TEMP%\restart_fleet.log`.
+
+**Dal 17/10 il riavvio va a gruppi di 5 (`-Batch`): 15 istanze in ~7 minuti invece di 35.** Ogni
+istanza costava 2:17: ~65 s per l'avvio, di cui ~12 per il tentativo di aggiornamento di Steam, e
+un minuto fisso di attesa per misurare la RAM prima della successiva. Ora:
+- prima di ogni avvio lo script scrive `steam.cfg` con `BootStrapperInhibitAll=enable` nella
+  cartella di Steam (se manca). Il `bootstrap_log.txt` scrive `Suppressing Steam update` e Steam
+  resta alla versione installata, la stessa di prima perché l'aggiornamento falliva comunque. Senza
+  quel tentativo, gli Steam lanciati insieme non si bloccano più: provati 3 (gioco su in 49-53 s) e
+  5 (48-87 s) insieme su Steam-18..25;
+- il gruppo si ferma in una volta sola (un'unica attesa di 15 s dopo i giochi), si fa il trim, poi
+  partono le istanze che stanno nella RAM a `-GameGB` (1,5 GB) l'una sopra `-MinAvailableGB`. Le
+  altre passano al gruppo dopo, misurato un minuto più tardi; sotto 1,5 GB disponibili le restanti
+  restano spente, come prima;
+- il minuto di attesa c'è solo quando la RAM è vicina al limite (meno di 1,5 + 1,5 × 5 GB).
+Provato su Steam-26..31 alle 11:35: 5 su in 77 s, un minuto di attesa (3,3 GB disponibili), poi
+Steam-31, in tutto 199 s. Anche il watchdog avvia le istanze ferme a gruppi di 5 (dopo un riavvio del
+PC sono tutte): Steam-31 chiusa a forza, di nuovo su in 57 s.
 
 RAM sul secondo PC (16/10, con VS Code e una sessione di Claude Code aperti): 14 istanze, 17-30,
 con 0,8 GB disponibili. Ogni istanza in più costa ~1,7 GB tra gioco (1,4) e Steam dopo il trim

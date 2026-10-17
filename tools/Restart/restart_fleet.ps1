@@ -1,19 +1,21 @@
 <#
 .SYNOPSIS
-    Restarts the instances Steam-<From>..<To> one at a time, lowest number first, leaving the highest
+    Restarts the instances Steam-<From>..<To> a few at a time, lowest number first, leaving the highest
     ones off when memory runs out. With -Watch, restarts only the instances that crashed or hung.
 
 .DESCRIPTION
     Run by two scheduled tasks on each PC (MULTI_INSTANCE_SETUP.md, 6.4): Firestone_Riavvio every 6
     hours, and Firestone_Watchdog every 5 minutes with -Watch.
 
-    Restart: since Steam's October client update, every Steam start downloads and extracts it, fails
-    to replace steam.exe inside the sandbox and rolls back; on 16/10, with 18 Steams launched 20 s
-    apart, 14 hung without ever starting the game. Launched alone, waiting for Firestone.exe, each
-    one came up in ~70 s. Each instance is stopped and started again in turn, so it is down for only
-    ~1-2 minutes. Before starting one, Steam is trimmed and the available RAM is read: under
-    -MinAvailableGB, that instance and every higher one are stopped and stay off until the next
-    restart. The highest instance started is saved for the watchdog.
+    Restart: since Steam's October client update, every Steam start downloaded and extracted it,
+    failed to replace steam.exe inside the sandbox and rolled back; on 16/10, with 18 Steams launched
+    20 s apart, 14 hung without ever starting the game. A steam.cfg with BootStrapperInhibitAll
+    (written before each start) skips that: 5 Steams launched together all had their game in 48-87 s
+    (17/10). The instances are stopped and started -Batch at a time, so each one is down for ~2
+    minutes. Before a group starts, Steam is trimmed and the available RAM is read: only the
+    instances that keep it over -MinAvailableGB, at -GameGB a game, are started, the others with the
+    next group; under -MinAvailableGB the rest stay off until the next restart. The highest started is saved
+    for the watchdog.
 
     Watch: an instance up to that highest one is restarted when Firestone.exe isn't running, or its
     MelonLoader log hasn't changed for 15 minutes (the bot never goes 8 minutes without a line). It
@@ -34,6 +36,9 @@ param(
     [int]$From = 17,
     [int]$To = 34,
     [double]$MinAvailableGB = 1.5,
+    # Instances a restart starts together, and the RAM each new game is counted for.
+    [int]$Batch = 5,
+    [double]$GameGB = 1.5,
     [switch]$Watch,
     # Restarts just this instance, leaving the watchdog's range as it is.
     [int]$Instance = -1,
@@ -66,13 +71,18 @@ function Get-GameLog([int]$n) {
     if (Test-Boxed $n) { Join-Path (Get-Box $n) "drive\C\$relative" } else { "C:\$relative" }
 }
 
-function Stop-Instance([int]$n) {
-    # The game first, then a pause so Steam sees it exit and closes its Steam Cloud session: killing
+function Stop-Instance([int[]]$ns) {
+    # The games first, then a pause so Steam sees them exit and closes its Steam Cloud session: killing
     # both at once left Steam-2 asking about "pending cloud sessions" at every launch (16/10, 10 hours).
-    $game = Get-Process Firestone -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "*\Steam-$n\*" }
-    if ($game) { $game | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep 15 }
+    $games = Get-Process Firestone -ErrorAction SilentlyContinue | Where-Object { $p = $_.Path; $ns | Where-Object { $p -like "*\Steam-$_\*" } }
+    if ($games) { $games | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep 15 }
 
-    if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" /terminate; Start-Sleep 5; return }
+    foreach ($n in $ns) { Stop-Steam $n }
+    Start-Sleep 5
+}
+
+function Stop-Steam([int]$n) {
+    if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" /terminate; return }
 
     # Outside the sandbox. Found through WMI: Get-Process can't read some processes' path, and an
     # orphaned UnityCrashHandler64 it missed made Steam-0 fail every launch as "already running"
@@ -86,18 +96,39 @@ function Stop-Instance([int]$n) {
     }
     $left = @(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -like $folder })
     if ($left) { Log ("Steam-${n}: still running after stop: " + (($left | ForEach-Object { "$($_.Name) ($($_.ProcessId))" }) -join ', ')) }
-    Start-Sleep 2
+}
+
+# steam.cfg stops the client update every start tried and rolled back (see above): without it, Steams
+# launched together hung; with it each one starts ~15 s sooner and 5 at once all came up (17/10).
+function Send-Start([int]$n) {
+    $folder = "C:\Program Files (x86)\Steam-$n"
+    if (-not (Test-Path "$folder\steam.cfg")) { Set-Content "$folder\steam.cfg" 'BootStrapperInhibitAll=enable' -ErrorAction SilentlyContinue }
+    if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" "$folder\steam.exe" -silent -applaunch 1013320 }
+    else { Start-Process "$folder\steam.exe" -ArgumentList '-silent', '-applaunch', '1013320' }
+}
+
+function Wait-Game([int[]]$ns) {
+    $start = Get-Date
+    while (@($ns | Where-Object { -not (Test-Game $_) }).Count -and ((Get-Date) - $start).TotalSeconds -lt 150) { Start-Sleep 2 }
+}
+
+# Starts stopped instances together; a Steam that hung gets the single-instance start, from scratch.
+function Start-Group([int[]]$ns, [string]$label) {
+    $ns | ForEach-Object { Send-Start $_ }
+    Wait-Game $ns
+    foreach ($n in $ns) {
+        $up = Test-Game $n
+        if (-not $up) { Stop-Instance $n; $up = Start-Instance $n }
+        Log ("{0}-{1}: {2}" -f $label, $n, $(if ($up) { 'up' } else { 'FAILED, game not started' }))
+    }
 }
 
 # Starts the instance and waits for the game; a Steam that hangs gets one more try from scratch.
 function Start-Instance([int]$n) {
     foreach ($try in 1, 2) {
         if ($try -eq 2) { Stop-Instance $n }
-        $steam = "C:\Program Files (x86)\Steam-$n\steam.exe"
-        if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" $steam -silent -applaunch 1013320 }
-        else { Start-Process $steam -ArgumentList '-silent', '-applaunch', '1013320' }
-        $start = Get-Date
-        while (-not (Test-Game $n) -and ((Get-Date) - $start).TotalSeconds -lt 150) { Start-Sleep 10 }
+        Send-Start $n
+        Wait-Game $n
         if (Test-Game $n) { return $true }
     }
     $false
@@ -114,7 +145,7 @@ try {
         Set-Content $pauseFile (Get-Date)
         $running = @(Get-CimInstance Win32_Process | ForEach-Object { if ($_.ExecutablePath -match '\\Steam-(\d+)\\') { [int]$Matches[1] } } | Sort-Object -Unique)
         Log ("Stop of all instances ({0}); restart and watchdog paused" -f ($running -join ','))
-        foreach ($n in $running) { Stop-Instance $n }
+        if ($running) { Stop-Instance $running }
         Log 'Stopped'
         return
     }
@@ -130,34 +161,47 @@ try {
     }
     if ($Watch) {
         $top = if (Test-Path $topFile) { [int](Get-Content $topFile) } else { $To }
-        foreach ($n in $From..[Math]::Min($top, $To)) {
+        $dead = @(foreach ($n in $From..[Math]::Min($top, $To)) {
             $file = Get-GameLog $n
             $reason = if (-not (Test-Game $n)) { 'game not running' }
                       elseif ((Test-Path $file) -and ((Get-Date) - (Get-Item $file).LastWriteTime).TotalMinutes -gt $staleMinutes) { "log unchanged for over $staleMinutes min" }
             if (-not $reason) { continue }
-            Log "Watchdog: Steam-$n $reason, restarting it"
-            Stop-Instance $n
-            Log ("Watchdog: Steam-{0} {1}" -f $n, $(if (Start-Instance $n) { 'up' } else { 'FAILED, game not started' }))
+            Log "Watchdog: Steam-$n $reason, restarting it" | Out-Host
+            $n
+        })
+        # After a PC reboot that's every instance: a group at a time, like the restart.
+        for ($i = 0; $i -lt $dead.Count; $i += $Batch) {
+            $group = @($dead[$i..([Math]::Min($i + $Batch, $dead.Count) - 1)])
+            Stop-Instance $group
+            Start-Group $group 'Watchdog: Steam'
         }
         return
     }
 
-    Log "Restart of Steam-$From..$To"
+    Log "Restart of Steam-$From..$To, $Batch at a time"
     $top = $To
-    foreach ($n in $From..$To) {
-        Stop-Instance $n
+    $n = $From
+    while ($n -le $To) {
+        $group = @($n..[Math]::Min($n + $Batch - 1, $To))
+        Stop-Instance $group
         & powershell -NoProfile -ExecutionPolicy Bypass -File $trim -MinRamPercent 0 *> $null
+        # Each new game takes ~1.3 GB in its first minute (17/10): only the ones that fit start now, the
+        # rest go to the next group, measured once these have grown.
         $available = Get-AvailableGB
-        if ($available -lt $MinAvailableGB) {
-            $n..$To | ForEach-Object { Stop-Instance $_ }
+        $fit = [int][Math]::Min($group.Count, [Math]::Floor(($available - $MinAvailableGB) / $GameGB) + 1)
+        if ($fit -le 0) {
+            Stop-Instance ($n..$To)
             $top = $n - 1
             Log ("Steam-$n..$To left off: {0:N1} GB available, under $MinAvailableGB" -f $available)
             break
         }
-        $up = Start-Instance $n
-        # A new game's memory grows for about a minute: measure the next one only after that.
-        Start-Sleep 60
-        Log ("Steam-{0}: {1}, {2:N1} GB available" -f $n, $(if ($up) { 'up' } else { 'FAILED, game not started' }), (Get-AvailableGB))
+        $group = @($group | Select-Object -First $fit)
+        $n += $fit
+        Start-Group $group 'Steam'
+        # The games' memory grows for about a minute: the next group is measured after that, but only
+        # when the RAM is close enough to the limit for it to matter.
+        if ($n -le $To -and (Get-AvailableGB) -lt $MinAvailableGB + $GameGB * $Batch) { Start-Sleep 60 }
+        Log ("{0:N1} GB available" -f (Get-AvailableGB))
     }
     Set-Content $topFile $top
     Log "Done, watchdog covers Steam-$From..$top"
