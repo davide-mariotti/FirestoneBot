@@ -857,7 +857,10 @@ RAM sul secondo PC (16/10, con VS Code e una sessione di Claude Code aperti): 14
 con 0,8 GB disponibili. Ogni istanza in più costa ~1,7 GB tra gioco (1,4) e Steam dopo il trim
 (~0,35). I processi che non sono né gioco né Steam occupano 11,3 GB, contro i 3,6 del PC principale
 (Windows 11 build 26300 contro Windows 10 19045, VS Code e Claude ~2,3 GB, Razer, NZXT CAM, RustDesk).
-Senza VS Code dovrebbero starci anche 31 e 32.
+Senza VS Code dovrebbero starci anche 31 e 32. **Dal 17/10 (scelta dell'utente) il secondo PC tiene
+accese 17-31**, sacrificando 32-34 per lasciare RAM a VS Code e al server Tailscale: le due attività
+hanno `-To 31` e il report `-Local 17..31`. Steam-31 avviata alle 03:47 con 2,9 GB disponibili dopo
+(3,8 prima, con 14 istanze); se a un riavvio la RAM non basta, lo script la lascia spenta da solo.
 
 **Watchdog (dal 16/10, su tutti e due i PC).** `Firestone_Watchdog` lancia lo stesso script con `-Watch`
 ogni 5 minuti e riavvia, una per una, le istanze dove `Firestone.exe` non gira o il `Latest.log` è
@@ -887,7 +890,7 @@ Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAc
 
 `tools\Report\daily_report.ps1`, su PC-Guesly ogni giorno alle 09:50 (prima del reset delle 10:00),
 manda una mail "Firestone BOT gg/mm/aaaa" con una tabella, colonne in inglese, una riga per istanza
-(0-16 lette dal PC principale con PowerShell remoto, 17-30 da qui): Status, Level, Max stage, Hero
+(0-16 lette dal PC principale con PowerShell remoto, 17-31 da qui, dal 17/10; prima 17-30): Status, Level, Max stage, Hero
 power, WM power (squadra di war machine), Research, Meteorite, Guardian (addestramenti +
 illuminazioni), Awakenings, Empowers, Rituals, Gems, Guild coins (per sapere quando donare alla gilda
 o comprare un amuleto), Dust, Blood, All dailies / All missions / All expeditions (giorni con tutte le

@@ -21,7 +21,7 @@
     powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Report\daily_report.ps1
 #>
 param(
-    [int[]]$Local = 17..30,
+    [int[]]$Local = 17..31,
     [int[]]$Remote = 0..16,
     [switch]$NoSend
 )
