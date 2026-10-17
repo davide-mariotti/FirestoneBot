@@ -23,6 +23,9 @@ public class CollectorQuestTask : DailyQuestTask
     // The chests above the reserve are opened even when an event challenge has already done the quest.
     protected override bool WorksWhenComplete => true;
 
+    // A first run on a backlog opened 104 chests in ~4 min (Steam-17, 17/10), past the 120 s default.
+    internal override float? MaxRuntimeSeconds => 900f;
+
     // Cheapest first.
     private static readonly string[] QuestChestSlots =
     {
