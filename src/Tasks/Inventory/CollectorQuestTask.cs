@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Firebot.Infrastructure;
 using MelonLoader;
@@ -13,16 +12,13 @@ namespace Firebot.Tasks.Inventory;
 
 /// <summary>
 ///     The daily "Collector" quest (open 4 chests) comes first: the missing chests are opened cheapest
-///     rarity first, up to Legendary if nothing cheaper is left. The same run then opens every gear
-///     chest above gear_chest_reserve per rarity: the contents don't grow with level and the items feed
-///     MerchantQuestTask, so a stock past that only waits. Jewel and celestial chests don't count for
-///     the quest and are always opened.
+///     rarity first, up to Legendary if nothing cheaper is left. The same run then opens every other
+///     chest in the bag: those rarities down to gear_chest_reserve, any other slot (Golden, Diamond, the
+///     celestials) all of it. Chest contents don't grow with level, so a stock past that only waits.
 /// </summary>
 public class CollectorQuestTask : DailyQuestTask
 {
     protected override string QuestName => "Collector";
-
-    private static readonly HashSet<string> NonGearChestSlots = new() { "jewelChest", "celestialChest" };
 
     // Cheapest first.
     private static readonly string[] QuestChestSlots =
@@ -43,9 +39,9 @@ public class CollectorQuestTask : DailyQuestTask
             "gear_chest_reserve",
             10,
             "Gear Chest Reserve",
-            "Gear chests kept per rarity (Wooden to Legendary) for the next Collector quests, event " +
-            "challenges and a new hero's gear; every one above it is opened. The Collector quest itself " +
-            "opens whatever it needs. Default: 10."
+            "Chests kept per rarity the Collector quest uses (Wooden to Legendary) for the next quests, " +
+            "event challenges and a new hero's gear; every one above it, and every other chest, is opened. " +
+            "The Collector quest itself opens whatever it needs. Default: 10."
         );
     }
 
@@ -53,16 +49,16 @@ public class CollectorQuestTask : DailyQuestTask
     {
         yield return OpenChestsTab();
 
-        foreach (var name in InventoryScreen.Content.GetChildren().Select(c => c.Name).ToList())
-            if (NonGearChestSlots.Contains(name))
-                yield return ChestOpening.OpenAll("/" + name);
-
         var questOpened = 0;
         yield return OpenCheapestFirst(missing, n => questOpened = n);
 
+        // A slot is named after its chest; the jewelChest and celestialChest children are hidden
+        // templates (Steam-0, 17/10), so Golden and the celestials only show up in this list.
+        var reserve = _reserve?.Value ?? 10;
         var extraOpened = 0;
-        foreach (var slot in QuestChestSlots)
-            yield return ChestOpening.OpenDownTo(slot, _reserve?.Value ?? 10, n => extraOpened += n);
+        foreach (var slot in InventoryScreen.Content.GetChildren().Select(c => "/" + c.Name).ToList())
+            yield return ChestOpening.OpenDownTo(slot, QuestChestSlots.Contains(slot) ? reserve : 0,
+                n => extraOpened += n);
 
         Debug($"[INFO] Collector: {questOpened}/{missing} chest(s) for the quest, {extraOpened} above the reserve.");
 
