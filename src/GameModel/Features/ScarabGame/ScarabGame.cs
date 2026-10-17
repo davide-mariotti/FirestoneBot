@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Firebot.Core;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
@@ -133,15 +134,17 @@ public static class ScarabGameMilestones
 {
     public static bool IsVisible => new GameElement(Paths.ScarabGameMilestonesLoc.Root).IsVisible();
 
-    // The milestones list also holds 3 decorative siblings that aren't tiers.
+    // The 20 tiers, then "Ending": the reward that repeats past tier 20 (5000 Ancient Coins per new
+    // milestone), with the same rewardRoot/claimButton. The other two siblings are decorative.
     private static IEnumerable<GameElement> Tiers =>
         new GameElement(Paths.ScarabGameMilestonesLoc.MilestonesRoot).GetChildren()
-            .Where(t => t.Name.StartsWith("ScarabMilestone"));
+            .Where(t => t.Name.StartsWith("ScarabMilestone") || t.Name == "Ending");
 
     /// <summary>Claims every ready tier, passing over the list again in case a claim readies the next.</summary>
     public static IEnumerator ClaimUntilExhausted()
     {
         const int maxPasses = 3;
+        var claimed = new List<string>();
 
         for (var pass = 0; pass < maxPasses; pass++)
         {
@@ -153,11 +156,14 @@ public static class ScarabGameMilestones
                 if (!claimBtn.IsClickable()) continue;
 
                 yield return claimBtn.Click();
+                claimed.Add(tier.Name);
                 claimedAny = true;
             }
 
-            if (!claimedAny) yield break;
+            if (!claimedAny) break;
         }
+
+        Logger.Debug($"[INFO] Scarab milestones: claimed {claimed.Count}{(claimed.Count > 0 ? $" ({string.Join(", ", claimed)})" : "")}.");
     }
 
     public static IEnumerator Close => new GameButton(Paths.ScarabGameMilestonesLoc.CloseBtn).Click();

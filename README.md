@@ -216,6 +216,19 @@ instances to it (both copies of a sandboxed one), keeping each account's own sta
 Steam installs, Sandboxie boxes, start/stop scripts, the window grid, deploying to sandboxed
 instances and the fixed pagefile that many instances need.
 
+Running a fleet unattended, `tools/` also has:
+
+- `Restart/restart_fleet.ps1`: restarts the instances one at a time, waiting for each game, and
+  leaves the highest ones off when RAM runs out. Run every 6 hours by a scheduled task, because
+  `Firestone.exe` keeps growing (~1.25 GB at start, 4+ GB after a day and a half) until the
+  commit limit kills instances. With `-Watch`, every 5 minutes, it restarts any instance whose game
+  isn't running or whose log has stopped for 15 minutes. `Restart/desktop/` has the three desktop
+  bats built on it (start all, stop all, restart one).
+- `Report/daily_report.ps1`: a daily email with one table row per instance (level, max stage, hero
+  and war machine power, research, currencies, daily completion, Arena, errors, watchdog restarts),
+  each with the change since the previous mail. It reads the `[INFO] Snapshot:` and
+  `[INFO] Statistics:` lines (the profile's Statistics tab) the bot logs at start and every hour.
+
 ---
 
 ## How it works

@@ -35,6 +35,10 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    nuova accanto, e cancella i `.old*` che non sono più bloccati. MelonLoader carica solo i `*.dll`,
    quindi ogni istanza prende la nuova al riavvio successivo (`Firestone_Riavvio`, o
    `Start-ScheduledTask Firestone_Riavvio` per farlo subito). Fatto così il 16/10 su 0-34.
+   Sul PC principale i box hanno un `Mods` proprio, ed è quello che il gioco carica: va aggiornato
+   anche quello (in PowerShell `Get-Item "C:\Sandbox\*\SteamB<N>\drive\C\...\Mods"`, non
+   `Get-ChildItem ... -Directory`, che elenca le sottocartelle). Il 17/10 un deploy solo nel `Mods`
+   reale ha lasciato Steam-1 con la DLL vecchia.
 5. Allinea i cfg a Steam-0 (punto 8.1):
    `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`
    (da PowerShell, nella cartella del repo). Se segnala chiavi mancanti non è un

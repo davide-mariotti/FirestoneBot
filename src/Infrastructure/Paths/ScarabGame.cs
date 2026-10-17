@@ -70,7 +70,9 @@ public static partial class Paths
 
         private const string RewardsListRoot = Root + "/bg/rewardsList";
 
-        // 20 tiers "ScarabMilestone", "ScarabMilestone (1)".."(19)" plus 3 decorative siblings.
+        // 20 tiers "ScarabMilestone", "ScarabMilestone (1)".."(19)", then "Ending" (the repeating
+        // reward past tier 20, same rewardRoot/claimButton), plus "MilestoneProgressBarBg" and
+        // "Starting", which are decorative (asset dump, 17/10).
         public const string MilestonesRoot = RewardsListRoot + "/Scroll View/Viewport/Content/milestones";
 
         // Per tier, exactly one of claimedOverlay / locked / claimButton is active.
