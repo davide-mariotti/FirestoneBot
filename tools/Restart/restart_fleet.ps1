@@ -19,6 +19,10 @@
     MelonLoader log hasn't changed for 15 minutes (the bot never goes 8 minutes without a line). It
     does nothing while a restart is running.
 
+    Stop: stops every instance that is running and pauses the restart and the watchdog
+    (%TEMP%\restart_fleet.paused) until a restart is started by hand. The three bats on the desktop
+    (tools\Restart\desktop) wrap -Stop, -Instance and the Firestone_Riavvio task.
+
     An instance without a Sandboxie box folder (Steam-0 on the main PC) is run outside the sandbox.
     Every step is logged to %TEMP%\restart_fleet.log.
 
@@ -32,13 +36,19 @@ param(
     [double]$MinAvailableGB = 1.5,
     [switch]$Watch,
     # Restarts just this instance, leaving the watchdog's range as it is.
-    [int]$Instance = -1
+    [int]$Instance = -1,
+    # Stops every running instance and pauses the scheduled restart and the watchdog.
+    [switch]$Stop,
+    # Lifts the pause set by -Stop (used by the start-all bat before the restart).
+    [switch]$Resume
 )
 
 $sandboxie = 'C:\Program Files\Sandboxie-Plus\Start.exe'
 $trim = Join-Path $PSScriptRoot '..\SteamTrim\trim_steam.ps1'
 $log = Join-Path $env:TEMP 'restart_fleet.log'
 $topFile = Join-Path $env:TEMP 'restart_fleet.top'
+$pauseFile = Join-Path $env:TEMP 'restart_fleet.paused'
+if ($Resume) { Remove-Item $pauseFile -ErrorAction SilentlyContinue; return }
 $staleMinutes = 15
 
 function Log([string]$text) {
@@ -100,10 +110,22 @@ catch [System.Threading.AbandonedMutexException] { $owned = $true }   # the last
 if (-not $owned) { return }
 
 try {
+    if ($Stop) {
+        Set-Content $pauseFile (Get-Date)
+        $running = @(Get-CimInstance Win32_Process | ForEach-Object { if ($_.ExecutablePath -match '\\Steam-(\d+)\\') { [int]$Matches[1] } } | Sort-Object -Unique)
+        Log ("Stop of all instances ({0}); restart and watchdog paused" -f ($running -join ','))
+        foreach ($n in $running) { Stop-Instance $n }
+        Log 'Stopped'
+        return
+    }
     if ($Instance -ge 0) {
         Log "Restart of Steam-$Instance alone"
         Stop-Instance $Instance
         Log ("Steam-{0}: {1}" -f $Instance, $(if (Start-Instance $Instance) { 'up' } else { 'FAILED, game not started' }))
+        return
+    }
+    if (Test-Path $pauseFile) {
+        if (-not $Watch) { Log "Restart skipped: paused by the stop-all bat since $(Get-Content $pauseFile)" }
         return
     }
     if ($Watch) {

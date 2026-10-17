@@ -100,5 +100,5 @@ if ($added -eq 0) {
     [System.IO.File]::WriteAllLines($IniPath, $out, [System.Text.Encoding]::Unicode)
     Write-Host ""
     Write-Host "Fatto: $added box aggiunti. Apri SandMan.exe per confermare che siano visibili,"
-    Write-Host "poi genera gli script Avvia/Ferma corrispondenti con generate_instance_scripts.ps1."
+    Write-Host "poi allarga -To delle attivita' Firestone_Riavvio e Firestone_Watchdog (MULTI_INSTANCE_SETUP.md, 6.4)."
 }

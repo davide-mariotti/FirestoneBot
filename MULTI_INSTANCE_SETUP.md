@@ -131,9 +131,8 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
      }
    }
    ```
-6. Riavvia in sequenza (`Avvia_Tutte_Istanze_Firestone.bat`, punto 6.3). Se un'istanza resta con
-   la cella vuota (il client Steam gira ma `Firestone.exe` no, visto su Steam-14 il 30/09),
-   rilanciare il gioco non basta: `Start.exe /box:SteamB<N> /terminate`, poi `Avvia_Steam-<N>.bat`.
+6. Riavvia (`Avvia_Tutte_Istanze_Firestone.bat`, punto 3): una istanza alla volta, aspettando che ogni gioco
+   parta. Un'istanza che resta senza gioco la riavvia il watchdog, o a mano `Riavvia_Istanza_Firestone.bat`.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
@@ -512,79 +511,32 @@ ciascuna sezione in `Sandboxie.ini`.
 
 ---
 
-## 3. Script di avvio/arresto (uno per istanza + versione "tutte insieme")
+## 3. Bat sul desktop: avvio, arresto, riavvio di un'istanza
 
-Sul PC principale vivono in:
+Dal 17/10, in `C:\Users\<utente>\Desktop\Firestone Bots\` di ogni PC ci sono solo tre bat, copiati da
+`tools\Restart\desktop\` (la cartella del desktop non è nel repo: dopo un `git pull` che li cambia,
+ricopiali). Usano lo stesso `tools\Restart\restart_fleet.ps1` del riavvio ogni 6 ore e del watchdog
+(punto 6.4), quindi non si scontrano con loro:
 
-```
-C:\Users\Admin\Desktop\Firestone Bots\
-```
+- `Avvia_Tutte_Istanze_Firestone.bat`: toglie la pausa (vedi sotto) e lancia l'attività
+  `Firestone_Riavvio`, che riavvia tutte le istanze del PC una alla volta, aspettando che ogni gioco
+  parta (~1,5 min l'una). Le istanze già accese vengono riavviate anche loro.
+- `Ferma_Tutte_Istanze_Firestone.bat`: ferma ogni istanza accesa (prima il gioco, poi Steam) e mette
+  in pausa watchdog e riavvio ogni 6 ore (`%TEMP%\restart_fleet.paused`), che altrimenti le
+  riaccenderebbero entro 5 minuti. La pausa resta finché non si lancia `Avvia_Tutte`.
+- `Riavvia_Istanza_Firestone.bat`: chiede il numero e riavvia solo quell'istanza.
 
-Questa cartella **non fa parte del repo git** (è locale al PC) - va ricreata sul secondo PC.
-Ogni istanza ha due file, `Avvia_Steam-<N>.bat` e `Ferma_Steam-<N>.bat`.
+**Dopo un riavvio del PC non serve lanciare niente**: entro 5 minuti dall'accesso il watchdog trova
+le istanze ferme e le avvia una alla volta (tutte in ~25 minuti); `Avvia_Tutte` fa lo stesso subito.
 
-**Istanza sandboxata** (es. Steam-1 / SteamB1):
-
-```bat
-@echo off
-setlocal
-set APPID=1013320
-set SANDBOXIE="C:\Program Files\Sandboxie-Plus\Start.exe"
-echo Avvio istanza Firestone - Steam-1 (sandbox SteamB1)
-%SANDBOXIE% /box:SteamB1 "C:\Program Files (x86)\Steam-1\steam.exe" -silent -applaunch %APPID%
-pause
-```
-
-```bat
-@echo off
-setlocal
-set SANDBOXIE="C:\Program Files\Sandboxie-Plus\Start.exe"
-echo Arresto istanza Firestone - Steam-1 (sandbox SteamB1)
-%SANDBOXIE% /box:SteamB1 /terminate
-pause
-```
-
-**Istanza nativa** (es. Steam-0, se ne vuoi una senza sandbox anche nel nuovo range):
-
-```bat
-@echo off
-setlocal
-set APPID=1013320
-echo Avvio istanza Firestone - Steam-0 (nativa)
-start "" "C:\Program Files (x86)\Steam-0\steam.exe" -silent -applaunch %APPID%
-pause
-```
-
-```bat
-@echo off
-setlocal
-echo Arresto istanza Firestone - Steam-0 (nativa)
-powershell -NoProfile -Command "Get-Process | Where-Object { $_.Path -like 'C:\Program Files (x86)\Steam-0\*' } | Stop-Process -Force -ErrorAction SilentlyContinue"
-pause
-```
-
-Esiste anche una coppia "tutte insieme" (`Avvia_Tutte_Istanze_Firestone.bat` /
-`Ferma_Tutte_Istanze_Firestone.bat`) che lancia ogni istanza in sequenza con una pausa tra una e
-l'altra (20s nella versione attuale) invece che tutte insieme - importante per non saturare la
-CPU/il commit di memoria in un colpo solo all'avvio (vedi punto 6).
-
-**Genera tutto questo automaticamente** invece di copiare a mano 36 file, con:
-
-```powershell
-cd C:\Repos\FirestoneBot
-.\tools\InstanceProvisioning\generate_instance_scripts.ps1 -Start 17 -End 34 -OutDir "C:\Users\Admin\Desktop\Firestone Bots"
-```
-
-(Aggiungi `-NativeInstances 17` se vuoi che una specifica istanza sia nativa invece che
-sandboxata - per default lo script genera lo schema sandboxato per tutte.)
-
-**Attenzione nota**: sul PC principale lo script "tutte insieme" ha un bug cosmetico - il
-banner di testo dice "0-15" ma il codice in realtà copre 0-16; inoltre, se lanciato da un
-ambiente non interattivo (es. un tool automatico), stampa un errore cosmetico
-"ERRORE: il reindirizzamento dell'input non è supportato" per ogni istanza per via del comando
-`pause` finale - l'errore è innocuo, gli avvii effettivi vanno comunque a buon fine. Se generi
-uno script "tutte insieme" per 17-34, verifica che il range nel banner di testo sia corretto.
-
+Fino al 16/10 c'erano un `Avvia_Steam-<N>.bat` e un `Ferma_Steam-<N>.bat` per istanza (generati da
+`tools\InstanceProvisioning\generate_instance_scripts.ps1`, tolto dal repo) e due "tutte insieme" che
+lanciavano le istanze a 20 s l'una dall'altra. Sono stati tolti il 17/10: dopo l'aggiornamento di
+Steam di ottobre l'avvio in massa lascia appesi molti Steam (il 16/10 sul secondo PC 14 su 18; il 17/10
+sul PC principale Steam-14 con "steamwebhelper non risponde"), e lanciati a mano dopo un riavvio del
+PC si scontravano col watchdog (il 17/10 un suo giro è rimasto bloccato 15 minuti, e lo Scheduler
+ha saltato quelli dopo). Una copia dei bat vecchi è in
+`C:\Repos\FirestoneBot-test-backup\2026-10-17-bats-vecchi.zip` su ciascun PC.
 ### 3.1 Riavvio del PC principale da PC-Guesly (da remoto)
 
 Configurato il 15/10. Provato il 16/10 alle 09:10: 15 istanze ferme in meno di 30 s e tutte e 17
@@ -605,29 +557,21 @@ comandi qui sotto, carica il `.env` nella sessione:
 Get-Content C:\Repos\FirestoneBot\.env | ? { $_ -match '^\w+=' } | % { $k, $v = $_ -split '=', 2; Set-Item "env:$k" $v }
 ```
 
-Un processo avviato con `Invoke-Command` non ha desktop: lanciato così, il bat aprirebbe i giochi
-in una sessione invisibile. Per questo sul PC principale ci sono due attività pianificate, senza
-trigger, che girano come `Admin` nella sua sessione (`LogonType Interactive`, quindi solo con
-`Admin` connesso): `Firestone_AvviaTutte` e `Firestone_FermaTutte`, che lanciano i due bat "tutte
-insieme" qui sopra. Partono in una console vera, quindi le pause di 20 s tra un avvio e l'altro
-funzionano.
-
-Da PowerShell normale su PC-Guesly:
+Un processo avviato con `Invoke-Command` non ha desktop: lanciato così, Steam aprirebbe i giochi in
+una sessione invisibile. Per questo il riavvio passa dalle attività pianificate, che girano come
+`Admin` nella sua sessione (`LogonType Interactive`, quindi solo con `Admin` connesso). Da
+PowerShell normale su PC-Guesly:
 
 ```powershell
 $c = Import-Clixml $HOME\desktop-admin.cred
-Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock {
-    # Il bat di arresto finisce con pause: chiudi l'esecuzione precedente prima di rilanciarlo.
-    'Firestone_FermaTutte', 'Firestone_AvviaTutte' | % { Stop-ScheduledTask -TaskName $_ }
-    Start-ScheduledTask -TaskName Firestone_FermaTutte
-    Start-Sleep 30
-    Stop-ScheduledTask -TaskName Firestone_FermaTutte
-    Start-ScheduledTask -TaskName Firestone_AvviaTutte
-}
-# Controllo: in circa 6 minuti (17 istanze x 20 s) devono esserci 17 Firestone.
-Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock { (Get-Process Firestone).Count }
+# Riavvio di tutte le istanze, una alla volta (17 in ~40 minuti), come Avvia_Tutte_Istanze_Firestone.bat:
+Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock { Start-ScheduledTask Firestone_Riavvio }
+# Avanzamento:
+Invoke-Command -ComputerName $env:FIREBOT_REMOTE_HOST -Credential $c -ScriptBlock { Get-Content C:\Users\Admin\AppData\Local\Temp\restart_fleet.log -Tail 5 }
 ```
 
+Fino al 17/10 c'erano anche due attività `Firestone_AvviaTutte` e `Firestone_FermaTutte` che
+lanciavano i bat "tutte insieme": tolte con quei bat.
 Per leggere un `Latest.log` mentre il gioco gira, aprilo in modalità condivisa, altrimenti
 `ReadAllLines` dà "file in uso": `[IO.File]::Open($path, 'Open', 'Read', 'ReadWrite')`. I log sono
 in `C:\Sandbox\Admin\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\`
@@ -645,13 +589,6 @@ Set-ItemProperty HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
 $pw = Read-Host -AsSecureString 'Password'
 New-LocalUser $u -Password $pw -PasswordNeverExpires
 Add-LocalGroupMember -SID S-1-5-32-544 -Member $u
-$dir = 'C:\Users\Admin\Desktop\Firestone Bots'
-$p = New-ScheduledTaskPrincipal -UserId 'DESKTOP-ADMIN\admin' -LogonType Interactive
-$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
-foreach ($t in @('Avvia','Ferma')) {
-  $a = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument "/c `"$dir\${t}_Tutte_Istanze_Firestone.bat`"" -WorkingDirectory $dir
-  Register-ScheduledTask -TaskName "Firestone_${t}Tutte" -Action $a -Principal $p -Settings $s -Force
-}
 ```
 
 Su PC-Guesly, dopo aver caricato il `.env`: le prime due righe da Amministratore, l'ultima da
@@ -743,7 +680,7 @@ C:\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\Mods\Firebot.TalentE
 ```
 
 **Prima di copiare, ferma sempre l'istanza** (il dll è bloccato in memoria mentre il processo
-gira - `Ferma_Steam-<N>.bat`), copia, poi riavvia (`Avvia_Steam-<N>.bat`).
+gira; oppure rinominala, vedi "Senza fermare le istanze" in cima), copia, poi riavvia (`Riavvia_Istanza_Firestone.bat`).
 
 Esempio via PowerShell/bash per un'istanza sandboxata:
 
@@ -812,7 +749,7 @@ Get-CimInstance Win32_PageFileSetting | Select-Object Name, InitialSize, Maximum
 
 Anche con il pagefile risolto, avvia le istanze **una alla volta con una pausa** (5-20 secondi
 tra una e l'altra), mai tutte in un colpo solo - riduce il picco di CPU/disco durante il boot di
-ognuna. Gli script "tutte insieme" (punto 3) lo fanno già di default.
+ognuna. Lo fa estart_fleet.ps1 (punto 6.4), che aspetta che ogni gioco parta prima del successivo.
 
 ### 6.4 Riavvio automatico ogni 6 ore
 
@@ -823,25 +760,10 @@ muoiono senza report di crash. Visto sul PC principale il 10/10, il 14/10 tra le
 17); sul secondo PC il 9/10 alle 12:16-12:20 (18 istanze a ~3 GB). Per questo, su tutti e due i PC
 dal 16/10, l'attività `Firestone_Riavvio` ferma e riavvia tutte le istanze alle 00, 06, 12 e 18. Il
 bot salva il cfg a ogni modifica (`BotTask.PersistNextRunTime`), quindi la chiusura forzata non
-perde né i timer né i contatori. Da PowerShell, con l'utente che ha la sessione dei giochi:
-
-```powershell
-$dir = "$HOME\Desktop\Firestone Bots"
-$arg = "/c `"`"$dir\Ferma_Tutte_Istanze_Firestone.bat`" <nul & timeout /t 30 /nobreak >nul & `"$dir\Avvia_Tutte_Istanze_Firestone.bat`"`""
-$a = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument $arg -WorkingDirectory $dir
-$t = 0, 6, 12, 18 | % { New-ScheduledTaskTrigger -Daily -At ('{0:00}:00' -f $_) }
-$p = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
-$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
-$s.CimInstanceProperties.Item('MultipleInstances').Value = 3   # StopExisting: il cmdlet non lo accetta
-Register-ScheduledTask -TaskName Firestone_Riavvio -Action $a -Trigger $t -Principal $p -Settings $s -Force
-```
-
-Il `<nul` fa saltare la `pause` finale del bat di arresto. Il bat di avvio invece resta su una
-console vera, perché `timeout` non funziona con l'input rediretto; la sua `pause` finale tiene
-aperta l'esecuzione, e la chiude `StopExisting` al giro dopo (con il default `IgnoreNew` il
-riavvio successivo verrebbe saltato). Per riavviare subito: `Start-ScheduledTask Firestone_Riavvio`.
-
-**Sul secondo PC l'attività lancia `tools\Restart\restart_fleet.ps1` invece dei bat** (dal 16/10).
+perde né i timer né i contatori. Le due attività (riavvio e watchdog) si creano col blocco in fondo a
+questo punto. Per riavviare subito: `Avvia_Tutte_Istanze_Firestone.bat` (punto 3) o
+`Start-ScheduledTask Firestone_Riavvio`.
+**L'attività lancia `tools\Restart\restart_fleet.ps1`** (dal 16/10 sul secondo PC, dal 16/10 alle 11 anche sul principale; prima i bat "tutte insieme").
 Il 16/10 alle 09:55, primo avvio dopo una settimana di fermo, il bat ha portato su solo 4 giochi su
 18. Ogni Steam a ogni avvio prova l'aggiornamento del client 1791918634, uscito dopo il 9/10 (quel
 giorno nessun tentativo nel `bootstrap_log.txt`). Dentro il sandbox fallisce
@@ -872,20 +794,32 @@ alle 10:54: gioco di Steam-30 chiuso a forza, di nuovo su in 66 s. Per tenere sp
 un'istanza, abbassa `-To` nelle due attività. Il riavvio e il watchdog lavorano anche sulle istanze
 fuori dal sandbox (Steam-0).
 
-Per creare le due attività su un PC (PowerShell normale, con l'utente che ha la sessione dei giochi;
-sul PC principale `$from = 0; $to = 16`):
+Il watchdog ha un tempo massimo di 20 minuti per giro: il 17/10 sul PC principale un giro è rimasto
+appeso 15 minuti (con lo script di prima, mentre i bat vecchi lanciavano le istanze) e lo Scheduler
+ha saltato tutti quelli dopo; col limite il giro appeso viene chiuso e il successivo riparte. Lo
+stesso giorno, la chiusura delle istanze è passata a due tempi (prima il gioco, 15 s dopo il resto):
+uccidere tutto insieme aveva lasciato Steam-0 bloccato su "gioco già in esecuzione" (AppError_16, per
+un UnityCrashHandler64 rimasto, ora cercato via WMI) e Steam-2 in attesa di un clic su "sessioni cloud
+in sospeso", entrambi dalla sera del 16/10 fino al riavvio del PC.
+
+Per creare le due attività su un PC (PowerShell come Amministratore, connesso con l'utente che ha la
+sessione dei giochi; sul PC principale `$from = 0; $to = 16`, sul secondo PC `$to = 31`):
 
 ```powershell
-$from = 17; $to = 34
+$from = 17; $to = 31
 git -C C:\Repos\FirestoneBot pull
 $cmd = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From $from -To $to"
-Set-ScheduledTask -TaskName Firestone_Riavvio -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument $cmd)
 $p = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
 $s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+$s.CimInstanceProperties.Item('MultipleInstances').Value = 3   # StopExisting: il cmdlet non lo accetta
+$t = 0, 6, 12, 18 | % { New-ScheduledTaskTrigger -Daily -At ('{0:00}:00' -f $_) }
+Register-ScheduledTask -TaskName Firestone_Riavvio -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument $cmd) -Trigger $t -Principal $p -Settings $s -Force
+$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 20)
 $t = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5)
 Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument "$cmd -Watch") -Trigger $t -Principal $p -Settings $s -Force
+New-Item -ItemType Directory -Force "$HOME\Desktop\Firestone Bots" | Out-Null
+Copy-Item C:\Repos\FirestoneBot\tools\Restart\desktop\*.bat "$HOME\Desktop\Firestone Bots" -Force
 ```
-
 ### 6.5 Resoconto giornaliero via mail
 
 `tools\Report\daily_report.ps1`, su PC-Guesly ogni giorno alle 09:50 (prima del reset delle 10:00),
@@ -1083,7 +1017,7 @@ Per OGNI istanza 17-34, in ordine:
 - [ ] MelonLoader installato nel gioco, avviato almeno una volta (genera `Il2CppAssemblies`).
 - [ ] Box Sandboxie `SteamB<N>` esistente e abilitato (se sandboxata), con `BoxNameTitle=y` e
       `BoxAlias=Steam-<N>` impostati.
-- [ ] `Avvia_Steam-<N>.bat` / `Ferma_Steam-<N>.bat` presenti e funzionanti.
+- [ ] I tre bat del punto 3 sul desktop, e le attività `Firestone_Riavvio` e `Firestone_Watchdog` (punto 6.4).
 - [ ] `firebot.dll` + `Firebot.TalentEngine.dll` presenti in **entrambi** i percorsi (reale +
       sandbox) di `Mods\`.
 - [ ] Log più recente: nessun `FileNotFoundException`, presente `Started. Enabled tasks:`.
