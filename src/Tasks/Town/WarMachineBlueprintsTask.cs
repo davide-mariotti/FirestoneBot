@@ -30,12 +30,14 @@ public class WarMachineBlueprintsTask : BotTask
 
     private const int MaxUpgrades = 300;
 
+    // Cost from the wiki (100, +5 a level), as the game showed it everywhere on 19/10. upgradeCostSingle
+    // is only right once the tab has shown the machine: Steam-0 read it as affordable at 155 for a 170 level.
     private static List<BlueprintOption> Options()
     {
         var squad = WarfrontCampaign.Squad().Select(m => m.Code).ToHashSet();
         return WarMachines.OpenBlueprintUpgrades().Select(u => new BlueprintOption(
             u.machineRef.code, u.machineRef.name, (int)u.machineRef.specialization, (int)u.code,
-            u.level, u.upgradeCostSingle, squad.Contains(u.machineRef.code))).ToList();
+            u.level, 100 + 5 * u.level, squad.Contains(u.machineRef.code))).ToList();
     }
 
     public override IEnumerator Execute()
@@ -71,6 +73,19 @@ public class WarMachineBlueprintsTask : BotTask
 
             WMBlueprintUpgradeInteraction row = null;
             yield return Poll.Until(() => (row = WarMachines.BlueprintRow(next.Code, next.Attribute)) != null);
+            if (row == null)
+            {
+                // Steam-0 (19/10): the click left the tab on another machine.
+                var squares = WarMachines.Squares;
+                var target = squares.FirstOrDefault(s => s.warMachine != null && s.warMachine.code == next.Code);
+                Debug($"[INFO] {next.Name} not shown: tab on {WarMachines.BlueprintTabMachine}, " +
+                      $"{squares.Length} squares ({squares.Count(s => s.gameObject.activeInHierarchy)} active), " +
+                      $"target {(target == null ? "missing" : target.gameObject.activeInHierarchy ? "active" : "inactive")}. Invoking it.");
+                WarMachines.InvokeSquare(next.Code);
+                yield return WarMachines.OpenBlueprintTab;
+                yield return Poll.Until(() => (row = WarMachines.BlueprintRow(next.Code, next.Attribute)) != null);
+            }
+
             var button = row?.upgradeButton == null ? null : new GameButton(transform: row.upgradeButton.transform);
             if (button == null || !button.IsClickable())
             {

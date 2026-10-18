@@ -19,15 +19,27 @@ public static class WarMachines
 
     public static IEnumerator SelectMachine(GameElement machine) => new GameButton(parent: machine).Click();
 
+    public static WarMachineInteractionSquare[] Squares =>
+        GameElement.FindTransform(Paths.WarMachinesLoc.MachineGridRoot)?.GetComponentsInChildren<WarMachineInteractionSquare>(true)
+        ?? new WarMachineInteractionSquare[0];
+
     /// <summary>Selects a machine by its code, through its grid square.</summary>
     public static IEnumerator SelectMachine(string code)
     {
-        var square = GameElement.FindTransform(Paths.WarMachinesLoc.MachineGridRoot)?
-            .GetComponentsInChildren<WarMachineInteractionSquare>()
-            .FirstOrDefault(s => s.warMachine != null && s.warMachine.code == code);
+        var square = Squares.FirstOrDefault(s => s.warMachine != null && s.warMachine.code == code);
         if (square?.button == null) yield break;
         yield return new GameButton(transform: square.button.transform).Click();
     }
+
+    /// <summary>The game's own handler behind a square's click, for a square the click didn't select.</summary>
+    public static void InvokeSquare(string code) =>
+        Squares.FirstOrDefault(s => s.warMachine != null && s.warMachine.code == code)?.InvokeAction();
+
+    /// <summary>Which machine the blueprint tab shows, for the logs.</summary>
+    public static string BlueprintTabMachine =>
+        GameElement.FindTransform(Paths.WarMachinesLoc.BlueprintSubmenu)?
+            .GetComponentsInChildren<WMBlueprintUpgradeInteraction>()
+            .Select(r => r.upgrade?.machineRef?.name).FirstOrDefault(n => n != null) ?? "none";
 
     public static IEnumerator OpenWorkshopTab => new GameButton(Paths.WarMachinesLoc.WorkshopTabBtn).Click();
 
