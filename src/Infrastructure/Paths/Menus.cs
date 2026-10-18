@@ -226,6 +226,11 @@ public static partial class Paths
 
             // The real counter. A sibling "counterInteraction" exists too but always reads empty here.
             public const string GameTokenCountTxt = Root + "/helpCanvas/counters/currencyInteraction (GameToken)/quantity";
+
+            // Creates an Ancient Artifact from the 5 elements; its bell lights when one can be made.
+            public const string CreateArtifactBtn = Root + "/helpCanvas/createArtifactButton";
+
+            public const string CreateArtifactNotification = CreateArtifactBtn + "/notification";
         }
 
         public static class TempleOfEternalsLoc

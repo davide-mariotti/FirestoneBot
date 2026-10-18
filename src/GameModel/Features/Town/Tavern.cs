@@ -52,5 +52,11 @@ public static class Tavern
         new GameButton(Paths.MenusLoc.TavernLoc.ChangeQuantityBtn), PlayQuantityTxt,
         text => ParseQuantity(text) == quantity);
 
+    public static GameButton CreateArtifactBtn => new(Paths.MenusLoc.TavernLoc.CreateArtifactBtn);
+
+    public static bool CanCreateArtifact =>
+        GameElement.FindTransform(Paths.MenusLoc.TavernLoc.CreateArtifactNotification) is { } t &&
+        t.gameObject.activeInHierarchy;
+
     public static IEnumerator Close => new GameButton(Paths.MenusLoc.TavernLoc.CloseBtn).Click();
 }

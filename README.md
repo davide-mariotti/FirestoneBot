@@ -33,7 +33,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 **In battle** (continuous, not scheduled)
 
 - **Hero Upgrade**: levels the leader and every hero slot.
-- **AutoRetreat**: when the stage stops advancing (a wall), steps back a few stages to keep farming until the next Empower.
+- **AutoRetreat**: when the stage stops advancing (a wall), steps back a few stages to keep farming, and every `retry_minutes` (30) climbs back with the forward arrow to retry the wall.
 - **Flying Bonus Hunter**: taps the flying beer dragons and meteorite hunters as they cross the screen.
 
 **Daily quests**
@@ -41,7 +41,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Quests**: claims every completed daily and weekly quest.
 - Collector, Gamer, Merchant and Miner read their quest's real progress on the Quests screen, do exactly what's missing, one step at a time, and claim it; a quest still short (no tokens, pickaxes, chests or items yet) is retried an hour later.
 - **Collector**: opens the missing chests cheapest first (Wooden, Iron, Common, then rarer ones only if nothing cheaper is left), then every other chest in the bag: those rarities down to `gear_chest_reserve`, everything else (Golden, Diamond, celestials) in full. Chest contents don't grow with level, so a backlog only waits.
-- **Gamer**: Tavern draws at x1 with game tokens. **Beer Exchange** turns beer into those tokens.
+- **Gamer**: Tavern draws at x1 with game tokens. **Beer Exchange** turns beer into those tokens. **Ancient Artifact** creates an artifact in the Tavern once its 5 elements are collected.
 - **Merchant**: sells the missing items at the Exotic Merchant by name - Midas' Touch, then Scrolls of Health and Damage; never Scrolls of Speed, instant gold or meteorite items - and buys an Exotic upgrade.
 - **Miner**: single hits on the Guild's Arcane Crystal.
 - **Liberator** is completed by Warfront Daily Missions, below.

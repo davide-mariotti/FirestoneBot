@@ -11,7 +11,8 @@ namespace Firebot.BotActions;
 
 /// <summary>
 ///     When the stage stops advancing for stall_minutes (a wall the team can't clear), steps back
-///     retreat_stages stages to farm one that clears quickly, and stays there until the next Empower.
+///     retreat_stages stages to farm one that clears quickly, and climbs back to retry the wall every
+///     retry_minutes until the next Empower.
 /// </summary>
 public static class AutoRetreat
 {
@@ -50,6 +51,13 @@ public static class AutoRetreat
     public static bool HitWall => _suppressedUntilReset;
     private static float StallMinutes => Mathf.Clamp(_stallMinutes?.Value ?? 3f, 1f, 180f);
     private static int RetreatStages => Mathf.Clamp(_retreatStages?.Value ?? 5, 1, 50);
+    private static float RetryMinutes => Mathf.Clamp(_retryMinutes?.Value ?? 30f, 0f, 1440f);
+
+    private static MelonPreferences_Entry<float> _retryMinutes;
+    private static DateTime _retreatTime = DateTime.MinValue;
+
+    // Covers stages lost to retreats from before the flag was saved (Steam-17: 21 under its wall).
+    private const int MaxClimbClicks = 60;
 
     public static void Initialize()
     {
@@ -74,7 +82,7 @@ public static class AutoRetreat
             "Stall Threshold (minutes)",
             "When the current stage stops advancing for this long (a difficulty wall), clicks the in-battle " +
             "'go back stage' arrow retreat_stages times to drop to an easier stage that clears quickly, then " +
-            "stays put until the next Empower. Clamped between 1 and 180 minutes. Default: 3."
+            "retries the wall every retry_minutes. Clamped between 1 and 180 minutes. Default: 3."
         );
 
         _retreatStages = section.CreateEntry(
@@ -82,6 +90,16 @@ public static class AutoRetreat
             5,
             "Retreat Stages",
             "How many stages to step back (one click each) once a wall is detected. Clamped between 1 and 50. Default: 5."
+        );
+
+        _retryMinutes = section.CreateEntry(
+            "retry_minutes",
+            30f,
+            "Retry Wall (minutes)",
+            "After a retreat, climbs back with the 'go forth stage' arrow every this many minutes to retry " +
+            "the wall: the team keeps getting stronger while it farms, and the game doesn't climb back by " +
+            "itself. A wall that still holds is retreated from again. 0 = stay until the next Empower. " +
+            "Clamped between 0 and 1440. Default: 30."
         );
 
         _wallHit = section.CreateEntry("wall_hit_internal", false, "Wall Hit (internal)",
@@ -99,6 +117,7 @@ public static class AutoRetreat
         _isRunning = true;
         _lastSeenStage = -1;
         _lastProgressTime = DateTime.MinValue;
+        _retreatTime = DateTime.Now;
         _routineHandle = MelonCoroutines.Start(RetreatLoop());
         Logger.Info("AutoRetreat started.");
     }
@@ -127,13 +146,22 @@ public static class AutoRetreat
     {
         while (_isRunning)
         {
-            if (BotManager.ShouldPauseBackgroundTasks() || _suppressedUntilReset)
+            if (BotManager.ShouldPauseBackgroundTasks())
             {
                 yield return PollWait;
                 continue;
             }
 
             var stage = StageProgress.Current;
+
+            if (_suppressedUntilReset)
+            {
+                if (stage >= 0 && RetryMinutes > 0 && DateTime.Now - _retreatTime >= TimeSpan.FromMinutes(RetryMinutes))
+                    yield return ClimbBack(stage);
+
+                yield return PollWait;
+                continue;
+            }
 
             // Not on the battle screen (a Town errand is running): not a stage change.
             if (stage < 0)
@@ -159,9 +187,30 @@ public static class AutoRetreat
                 }
 
                 _suppressedUntilReset = true;
+                _retreatTime = DateTime.Now;
             }
 
             yield return PollWait;
         }
+    }
+
+    // Forward until the stage stops changing (the furthest stage reached), then stall detection
+    // decides again whether it's still a wall.
+    private static IEnumerator ClimbBack(int from)
+    {
+        var stage = from;
+        for (var i = 0; i < MaxClimbClicks && StageProgress.GoForthBtn.IsClickable(); i++)
+        {
+            yield return StageProgress.GoForthBtn.Click();
+            yield return RetreatClickDelayWait;
+
+            var now = StageProgress.Current;
+            if (now <= stage) break;
+            stage = now;
+        }
+
+        Logger.Info($"[AutoRetreat] Retrying the wall after {RetryMinutes:0.#} min: stage {from} -> {stage}.");
+        _suppressedUntilReset = false;
+        _lastSeenStage = -1;
     }
 }

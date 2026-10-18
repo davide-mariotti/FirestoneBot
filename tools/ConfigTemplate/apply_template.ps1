@@ -32,7 +32,7 @@ $ErrorActionPreference = 'Stop'
 
 $autoManaged = 'next_run_time_internal', 'last_done_date', 'gear_chests_opened_today', 'gear_chests_date',
     'reserve_override_used_date', 'plays_done_today', 'plays_done_date', 'known_maxed_nodes', 'hero_snapshot',
-    'hero_snapshot_time', 'defeats'
+    'hero_snapshot_time', 'defeats', 'wall_hit_internal'
 $perAccount = @('talentstask.guide_start_index')
 
 # "section.key" -> value, for every line of a cfg that is a setting to copy.

@@ -10,4 +10,6 @@ public static class StageProgress
     public static int Current => new GameText(Paths.BattleLoc.StageProgressionLoc.CurrentStageNumTxt).GetParsedInt(-1);
 
     public static IEnumerator GoBack => new GameButton(Paths.BattleLoc.StageProgressionLoc.GoBackBtn).Click();
+
+    public static GameButton GoForthBtn => new(Paths.BattleLoc.StageProgressionLoc.GoForthBtn);
 }

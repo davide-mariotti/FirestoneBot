@@ -115,6 +115,9 @@ public static partial class Paths
             public const string WarMachinesRarity = "WarMachinesRarity";
 
             public const string ScarabGameBeastRelease = "ScarabGameBeastRelease";
+
+            // Lit with the bell on Tavern's createArtifactButton (Steam-9, 18/10).
+            public const string AncientArtifact = "AncientArtifact";
         }
 
         public static class RightSideUILoc
@@ -156,6 +159,8 @@ public static partial class Paths
             public const string CurrentStageNumTxt = Root + "/currentStage/stageNum";
 
             public const string GoBackBtn = Root + "/goBackStage";
+
+            public const string GoForthBtn = Root + "/goForthStage";
         }
 
         public static class BottomSideUIDesktopLoc
