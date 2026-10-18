@@ -98,11 +98,33 @@ function Stop-Steam([int]$n) {
     if ($left) { Log ("Steam-${n}: still running after stop: " + (($left | ForEach-Object { "$($_.Name) ($($_.ProcessId))" }) -join ', ')) }
 }
 
+# Steam Cloud off for Firestone, whose progress lives on the game's servers: a Steam stopped mid-upload
+# left a pending cloud operation, and every later launch waited on "Cloud out of date" for a click on
+# "Play anyway" (Steam-17, 18/10 00:00-12:32). The switch is apps\1013320\cloudenabled in the
+# account's sharedconfig.vdf (in localconfig.vdf Steam ignores it); with it the launch logs "AC Launch,
+# Sync Disabled" and Steam uploads the file to the account. Written while Steam is off. A boxed
+# instance reads the real file until Steam writes its own copy in the box, so both are edited.
+function Disable-Cloud([int]$n) {
+    $userdata = "Program Files (x86)\Steam-$n\userdata"
+    $roots = @("C:\$userdata") + @(if (Test-Boxed $n) { Join-Path (Get-Box $n) "drive\C\$userdata" })
+    foreach ($file in Get-ChildItem ($roots | ForEach-Object { "$_\*\7\remote\sharedconfig.vdf" }) -ErrorAction SilentlyContinue) {
+        $text = [IO.File]::ReadAllText($file.FullName)
+        if ($text -match '"1013320"\s*\{[^{}]*"cloudenabled"') { continue }
+        if ($text -notmatch '"1013320"\s*\{') {
+            if ($text -notmatch '"apps"\s*\{') { $text = ([regex]'"Steam"\s*\{').Replace($text, "`$0`n`"apps`"`n{`n}", 1) }
+            $text = ([regex]'"apps"\s*\{').Replace($text, "`$0`n`"1013320`"`n{`n}", 1)
+        }
+        $text = ([regex]'"1013320"\s*\{').Replace($text, "`$0`n`"cloudenabled`"`t`"0`"", 1)
+        [IO.File]::WriteAllText($file.FullName, $text, (New-Object Text.UTF8Encoding $false))
+    }
+}
+
 # steam.cfg stops the client update every start tried and rolled back (see above): without it, Steams
 # launched together hung; with it each one starts ~15 s sooner and 5 at once all came up (17/10).
 function Send-Start([int]$n) {
     $folder = "C:\Program Files (x86)\Steam-$n"
     if (-not (Test-Path "$folder\steam.cfg")) { Set-Content "$folder\steam.cfg" 'BootStrapperInhibitAll=enable' -ErrorAction SilentlyContinue }
+    Disable-Cloud $n
     if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" "$folder\steam.exe" -silent -applaunch 1013320 }
     else { Start-Process "$folder\steam.exe" -ArgumentList '-silent', '-applaunch', '1013320' }
 }

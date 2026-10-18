@@ -387,6 +387,15 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   sessione cloud, ogni avvio aspettava un clic su "pending cloud sessions" (57 volte). Entrambe fino
   al riavvio del PC del 17/10 alle 03:52. Dal 17/10 lo script chiude prima il gioco, aspetta 15 s e
   poi il resto, e fuori sandbox cerca i processi rimasti via WMI.
+- **Steam-17 fermo su "cloud non sincronizzato" (18/10, 00:08-12:32, PC-Guesly).** Il riavvio delle
+  00:00 ha chiuso Steam 10 s dopo l'inizio dell'upload del salvataggio sul cloud, che non era ancora
+  finito (`Upload batch initiated ... ChangeNumber: 50` senza `Upload complete`). Da lì ogni avvio si
+  fermava su `BYieldingAppLaunchIntent returned 1 pending remote operations` e aspettava "Gioca
+  comunque" (74 avvii falliti, fino al clic dell'utente). Dal 18/10 `restart_fleet.ps1`
+  spegne Steam Cloud per Firestone prima di ogni avvio (`apps\1013320\cloudenabled "0"` in
+  `userdata\<id>\7\remote\sharedconfig.vdf`; in `localconfig.vdf` Steam la ignora): provato su
+  Steam-17 alle 12:48, l'avvio scrive `AC Launch,Sync Disabled` e non controlla più le operazioni
+  pendenti. I progressi stanno sui server del gioco, il cloud teneva solo due `.dat` locali.
 - **Memoria che cresce (smentita la nota del 3/10 nelle azioni di background).** `Firestone.exe`
   arriva a 4,2-4,4 GB dopo ~36 h e la flotta raggiunge il commit limit; dal 16/10 riavvio ogni 6 ore.
 
