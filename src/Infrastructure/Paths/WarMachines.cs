@@ -19,6 +19,12 @@ public static partial class Paths
         // Costs Expedition Tokens plus components; the button's own clickable state reflects both.
         public const string LevelUpBtn = WorkshopRoot + "/upgradeButton";
 
+        // From the asset dump, beside the live-verified workshop and rarity tabs.
+        public const string BlueprintTabBtn = Root + "/submenus/submenuButtons/blueprintUpgrades";
+
+        // Holds three WMBlueprintUpgradeInteraction rows (damage, health, armor) for the selected machine.
+        public const string BlueprintSubmenu = Root + "/submenus/bg/blueprintUpgradesSubmenu";
+
         public const string RarityTabBtn = Root + "/submenus/submenuButtons/rarityUpgrades";
 
         // Seen live on Steam-0 (30/09): "Increase rarity", 51.000 Tools (icon toolsIcon64) for
