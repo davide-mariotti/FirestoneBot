@@ -31,7 +31,18 @@ public static class AutoRetreat
     private static DateTime _lastProgressTime = DateTime.MinValue;
 
     // After one retreat, stay put until the next Empower instead of retreating further on every poll.
-    private static bool _suppressedUntilReset;
+    // Saved, or every restart stepped back 5 more: Steam-17 went 285 -> 264 over 17-18/10.
+    private static MelonPreferences_Entry<bool> _wallHit;
+
+    private static bool _suppressedUntilReset
+    {
+        get => _wallHit?.Value ?? false;
+        set
+        {
+            _wallHit.Value = value;
+            _wallHit.Category.SaveToFile();
+        }
+    }
 
     public static bool IsEnabled => _isEnabled?.Value ?? false;
 
@@ -72,6 +83,9 @@ public static class AutoRetreat
             "Retreat Stages",
             "How many stages to step back (one click each) once a wall is detected. Clamped between 1 and 50. Default: 5."
         );
+
+        _wallHit = section.CreateEntry("wall_hit_internal", false, "Wall Hit (internal)",
+            "(auto-managed, don't edit) - set once this adventure has retreated from its wall, cleared by the Empower.");
 
         section.SaveToFile();
         _isInitialized = true;

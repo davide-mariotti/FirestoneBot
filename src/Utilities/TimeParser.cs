@@ -17,13 +17,35 @@ public static class TimeParser
         if (string.IsNullOrWhiteSpace(raw)) return TimeSpan.Zero;
 
         var match = TimeRegex.Match(raw);
-        if (!match.Success) return TimeSpan.Zero;
+        if (!match.Success) return ParseUnits(raw);
 
         int Group(string name) => match.Groups[name].Success ? int.Parse(match.Groups[name].Value) : 0;
 
         return match.Groups["h"].Success
             ? new TimeSpan(Group("days"), Group("h"), Group("m"), Group("s"))
             : new TimeSpan(Group("days"), 0, Group("m_only"), Group("s_only"));
+    }
+
+    // "2d 5h", "10h 3m", "3 days": the Temple's adventure time on Steam-17..31 never matched the colon
+    // form (always 00:00:00 from 17/10), so the 60-min minimum blocked every Empower there.
+    private static readonly Regex UnitRegex = new(@"(?<n>\d+)\s*(?<u>[dhms])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static TimeSpan ParseUnits(string raw)
+    {
+        var total = TimeSpan.Zero;
+        foreach (Match m in UnitRegex.Matches(raw))
+        {
+            var n = int.Parse(m.Groups["n"].Value);
+            total += char.ToLowerInvariant(m.Groups["u"].Value[0]) switch
+            {
+                'd' => TimeSpan.FromDays(n),
+                'h' => TimeSpan.FromHours(n),
+                'm' => TimeSpan.FromMinutes(n),
+                _ => TimeSpan.FromSeconds(n)
+            };
+        }
+
+        return total;
     }
 
     /// <summary>Now + the countdown the text shows, or DateTime.MinValue when it shows none.</summary>

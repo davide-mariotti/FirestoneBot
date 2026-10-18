@@ -12,6 +12,9 @@ public class TimeParserTests
     [InlineData("Time played: 1:02:03", 0, 1, 2, 3)]
     [InlineData("Ends in 12:30", 0, 0, 12, 30)]
     [InlineData("2D 00:00:05", 2, 0, 0, 5)]
+    [InlineData("2d 5h", 2, 5, 0, 0)]
+    [InlineData("10h 3m 7s", 0, 10, 3, 7)]
+    [InlineData("3 days", 3, 0, 0, 0)]
     public void ParseFrom_FindsTheCountdownInText(string text, int days, int hours, int minutes, int seconds)
     {
         Assert.Equal(new TimeSpan(days, hours, minutes, seconds), TimeParser.ParseFrom(text));

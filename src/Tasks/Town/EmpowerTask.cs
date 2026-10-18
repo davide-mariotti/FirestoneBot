@@ -81,7 +81,8 @@ public class EmpowerTask : BotTask
             yield break;
         }
 
-        var timePlayed = TimeParser.ParseFrom(TempleOfEternals.AdventureTimePlayedText);
+        var timeText = TempleOfEternals.AdventureTimePlayedText;
+        var timePlayed = TimeParser.ParseFrom(timeText);
         var found = TempleOfEternals.FirestonesFound;
         var owned = TempleOfEternals.FirestonesYouOwn;
 
@@ -99,7 +100,7 @@ public class EmpowerTask : BotTask
         var foundText = TempleOfEternals.FirestonesFoundText;
         var ownedText = TempleOfEternals.FirestonesYouOwnText;
 
-        Debug($"[INFO] Adventure time: {timePlayed}, Firestones found: {found} ('{foundText}'), " +
+        Debug($"[INFO] Adventure time: {timePlayed} ('{timeText}'), Firestones found: {found} ('{foundText}'), " +
               $"Temple's Firestones: {owned} ('{ownedText}'), " +
               $"Ratio: {ratio:0.##} (need {minRatio:0.##} after {minDuration} at the wall, or force empower after {maxDuration}), " +
               $"at the wall: {atWall}.");
@@ -109,7 +110,13 @@ public class EmpowerTask : BotTask
         if (owned <= 0)
             Debug($"[FAILED] Temple's Firestones read as 0 from '{ownedText}' - no ratio-based empower until fixed.");
 
-        if ((timePlayed >= minDuration && ratio >= minRatio && atWall) || timePlayed >= maxDuration)
+        // An unreadable time must not hold the empower back: on Steam-17..31 it read 0 for days while
+        // the ratio passed 400 and the bot sat 5 stages under its wall (17-18/10).
+        var timeKnown = timePlayed > TimeSpan.Zero;
+        if (!timeKnown)
+            Debug($"[FAILED] Adventure time read as 0 from '{timeText}' - ignoring the minimum adventure time.");
+
+        if (((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall) || timePlayed >= maxDuration)
         {
             yield return TempleOfEternals.OpenEmpowerPopup;
             yield return new GameButton(Paths.MenusLoc.EmpowerPopupLoc.EmpowerBtn).Click();
