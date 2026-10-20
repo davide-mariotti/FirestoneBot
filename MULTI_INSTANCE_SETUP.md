@@ -443,6 +443,14 @@ Per ciascuna, prima di qualunque cosa legata a Firebot:
    di quell'istanza (`Steam-<N>\steamapps\common\Firestone\`). Avvia il gioco una volta con
    MelonLoader per fargli generare `MelonLoader\Il2CppAssemblies\` (servono per compilare il
    mod - vedi punto 4).
+
+   **Poi sostituisci Il2CppInterop con la 1.5.3** (da nuget.org: `Il2CppInterop.Runtime`,
+   `.Common`, `.HarmonySupport`, versione 1.5.3) in `MelonLoader\net6`. La 1.5.1-ci.845 inclusa in
+   MelonLoader 0.7.4 (anche la ci.2623) con Firestone 3.61 (build 26078174, 20/10) non trova
+   `Class::GetDefaultFieldValue` con le firme, la ricerca di riserva la aggancia a metà di un'altra
+   funzione e il gioco crasha ~3 s dopo l'avvio (`coreclr.dll` c0000005, log fermo a
+   `Firebot System Initialized.`). La 1.5.3 ha la firma corretta (commit `2d06bea2`). Messa il
+   20/10 su 0-34, rinominando le vecchie come per le DLL del bot (punto 4 sopra).
 5. **Decidi se l'istanza sarà nativa o sandboxata.** Sul PC principale solo Steam-0 è nativa
    (probabilmente per comodità di test/debug); tutte le altre sono sandboxate. Per il nuovo
    intervallo 17-34 puoi tenerle **tutte sandboxate** (non c'è un vincolo tecnico che richieda
