@@ -21,6 +21,9 @@ public static class BotManager
     // How long an idle task (nothing to do this cycle) waits before checking again.
     private static readonly TimeSpan IdleRetryDelay = TimeSpan.FromMinutes(2);
 
+    // A normal start leaves the splash in about a minute.
+    private const float StuckLoadingSeconds = 300;
+
     private static readonly System.Collections.Generic.List<BotTask> Tasks = new();
 
     // Where PickEligibleTask's round-robin resumes.
@@ -94,6 +97,17 @@ public static class BotManager
 
         while (IsRunning)
         {
+            // A failed Steam login leaves the game on its splash for good ("There was an issue with
+            // authenticating the user", 19 instances at the 21/10 midnight restart) while the bot
+            // keeps clicking at nothing. Only a restart clears it: ending the process hands the game
+            // to restart_fleet.ps1's watchdog.
+            if (Time.realtimeSinceStartup > StuckLoadingSeconds &&
+                new GameModel.Base.GameElement(Infrastructure.Paths.WatchdogLoc.LoadingScreen).IsVisible())
+            {
+                Logger.Info($"Still on the loading screen {Time.realtimeSinceStartup / 60:0} min after start - closing the game.");
+                Process.GetCurrentProcess().Kill();
+            }
+
             // Every task's readiness check reads the level - read it once per tick.
             PlayerAvatar.RefreshCachedLevel();
             if (DateTime.Now >= _nextSnapshot) LogSnapshot();

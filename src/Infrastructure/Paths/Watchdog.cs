@@ -16,5 +16,8 @@ public static partial class Paths
         public const string CollectSuffix = "/bg/collectButton";
 
         public const string MenuCloseSuffix = "/closeButton";
+
+        // The startup splash (logo, "Fetching data from Server"); hidden once the game is in.
+        public const string LoadingScreen = "loadingScreenCanvas/splashScreen";
     }
 }
