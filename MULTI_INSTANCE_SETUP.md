@@ -867,6 +867,9 @@ in sospeso", entrambi dalla sera del 16/10 fino al riavvio del PC.
 Per creare le due attività su un PC (PowerShell come Amministratore, connesso con l'utente che ha la
 sessione dei giochi; sul PC principale `$from = 0; $to = 16`, sul secondo PC `$to = 31`):
 
+`conhost.exe --headless` evita la finestra che `-WindowStyle Hidden` da solo fa comparire per un
+attimo a ogni avvio (dal 21/10).
+
 ```powershell
 $from = 17; $to = 31
 git -C C:\Repos\FirestoneBot pull
@@ -875,10 +878,10 @@ $p = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonTy
 $s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Hours 2)
 $s.CimInstanceProperties.Item('MultipleInstances').Value = 3   # StopExisting: il cmdlet non lo accetta
 $t = 0, 6, 12, 18 | % { New-ScheduledTaskTrigger -Daily -At ('{0:00}:00' -f $_) }
-Register-ScheduledTask -TaskName Firestone_Riavvio -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument $cmd) -Trigger $t -Principal $p -Settings $s -Force
+Register-ScheduledTask -TaskName Firestone_Riavvio -Action (New-ScheduledTaskAction -Execute conhost.exe -Argument "--headless powershell.exe $cmd") -Trigger $t -Principal $p -Settings $s -Force
 $s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 20)
 $t = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5)
-Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAction -Execute powershell.exe -Argument "$cmd -Watch") -Trigger $t -Principal $p -Settings $s -Force
+Register-ScheduledTask -TaskName Firestone_Watchdog -Action (New-ScheduledTaskAction -Execute conhost.exe -Argument "--headless powershell.exe $cmd -Watch") -Trigger $t -Principal $p -Settings $s -Force
 New-Item -ItemType Directory -Force "$HOME\Desktop\Firestone Bots" | Out-Null
 Copy-Item C:\Repos\FirestoneBot\tools\Restart\desktop\*.bat "$HOME\Desktop\Firestone Bots" -Force
 ```
@@ -918,7 +921,7 @@ volta sola, da PowerShell normale su PC-Guesly:
 ```powershell
 Get-Content C:\Repos\FirestoneBot\.env | ? { $_ -match '^\w+=' } | % { $k, $v = $_ -split '=', 2; Set-Item "env:$k" $v }
 Get-Credential -UserName $env:FIREBOT_REPORT_TO -Message 'Password per le app di Gmail' | Export-Clixml $HOME\gmail.cred
-$a = New-ScheduledTaskAction -Execute powershell.exe -Argument '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\Repos\FirestoneBot\tools\Report\daily_report.ps1'
+$a = New-ScheduledTaskAction -Execute conhost.exe -Argument '--headless powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\Repos\FirestoneBot\tools\Report\daily_report.ps1'
 Register-ScheduledTask -TaskName Firestone_Report -Action $a -Trigger (New-ScheduledTaskTrigger -Daily -At 09:50) -Force
 ```
 
