@@ -9,10 +9,10 @@
 # Administrators/SYSTEM). Fa un backup automatico prima di modificare.
 #
 # Uso:
-#   .\add_sandbox_boxes.ps1 -Start 17 -End 34
+#   .\add_sandbox_boxes.ps1 -Start 17 -End 31
 #
 # Dopo l'esecuzione, riavvia Sandboxie (o semplicemente avvia la prima istanza nuova - Sandboxie
-# rilegge Sandboxie.ini automaticamente) e verifica con SandMan.exe che i box SteamB17..SteamB34
+# rilegge Sandboxie.ini automaticamente) e verifica con SandMan.exe che i box SteamB17..SteamB31
 # siano visibili e abilitati.
 
 param(

@@ -29,12 +29,12 @@
     Every step is logged to %TEMP%\restart_fleet.log.
 
 .EXAMPLE
-    powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From 17 -To 34
-    powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From 17 -To 34 -Watch
+    powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From 17 -To 31
+    powershell -NoProfile -ExecutionPolicy Bypass -File C:\Repos\FirestoneBot\tools\Restart\restart_fleet.ps1 -From 17 -To 31 -Watch
 #>
 param(
     [int]$From = 17,
-    [int]$To = 34,
+    [int]$To = 31,
     [double]$MinAvailableGB = 1.5,
     # Instances a restart starts together, and the RAM each new game is counted for.
     [int]$Batch = 5,

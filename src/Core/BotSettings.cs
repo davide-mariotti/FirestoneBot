@@ -135,7 +135,7 @@ public static class BotSettings
             "The 'Steam-N' number that takes the top-left grid cell when window_grid_enabled is on; " +
             "higher numbers fill the following cells. Default: 0 (Steam-0 is top-left). Set it to the " +
             "lowest instance number on this machine when a PC hosts a range that doesn't start at 0 " +
-            "(e.g. 17 for Steam-17..34) - otherwise the grid starts from an empty row far off-screen.");
+            "(e.g. 17 for Steam-17..31) - otherwise the grid starts from an empty row far off-screen.");
 
         _category.SaveToFile();
         Logger.Info($"System Initialized. Configuration: {ConfigPath}");

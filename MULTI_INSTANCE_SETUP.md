@@ -1,8 +1,8 @@
-# Setup multi-istanza — guida di replica per un secondo PC (istanze 17-34)
+# Setup multi-istanza — guida di replica per un secondo PC (istanze 17-31)
 
 Questo file documenta **ogni singola configurazione** presente sul PC "principale" (che fa
 girare le istanze Steam-0..Steam-16) necessaria per far girare Firebot su un secondo PC con le
-istanze Steam-17..Steam-34, con lo stesso comportamento e la stessa stabilità. Non è un readme
+istanze Steam-17..Steam-31, con lo stesso comportamento e la stessa stabilità. Non è un readme
 di progetto (per quello vedi README.md/TESTING.md) - è un **elenco di verifica** pensato per
 essere letto dopo un `git pull`, punto per punto, per controllare cosa manca o cosa va rifatto
 sul nuovo PC.
@@ -15,7 +15,7 @@ una fotografia di un momento preciso).
 ## Aggiornare il bot su istanze già in funzione
 
 Se il PC è già configurato e le istanze girano con una versione vecchia del bot, basta questo (il
-resto della guida serve per un setup da zero). Esempio per Steam-17..34; per un altro intervallo
+resto della guida serve per un setup da zero). Esempio per Steam-17..31; per un altro intervallo
 cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
 1. `git pull` nella cartella del repo.
@@ -40,7 +40,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    `Get-ChildItem ... -Directory`, che elenca le sottocartelle). Il 17/10 un deploy solo nel `Mods`
    reale ha lasciato Steam-1 con la DLL vecchia.
 5. Allinea i cfg a Steam-0 (punto 8.1):
-   `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34`
+   `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 31`
    (da PowerShell, nella cartella del repo). Se segnala chiavi mancanti non è un
    problema: sono sezioni nuove che la DLL crea al primo avvio, col valore di Steam-0. Col repo del
    30/09 sera, su istanze ferme a prima del 30/09, ogni file mostra:
@@ -132,7 +132,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
    ```powershell
    $utf8 = New-Object System.Text.UTF8Encoding($false)
-   foreach ($n in 17..34) {
+   foreach ($n in 17..31) {
      $rel = "Program Files (x86)\Steam-$n\steamapps\common\Firestone\UserData\FirebotPreferences.cfg"
      foreach ($f in "C:\$rel", "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\$rel") {
        if (-not (Test-Path $f)) { continue }
@@ -149,7 +149,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    ```
 6. Riavvia (`Avvia_Tutte_Istanze_Firestone.bat`, punto 3): una istanza alla volta, aspettando che ogni gioco
    parta. Un'istanza che resta senza gioco la riavvia il watchdog, o a mano `Riavvia_Istanza_Firestone.bat`.
-7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 34 -Check` deve dire "0 valori da
+7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 31 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
    `Started. Enabled tasks: 41 of 42` (dal 10/10, coi task Oracle accesi; 39 of 42 dal 4/10, con War Machines spento; 40 of 42 prima, 39 of 41
@@ -160,7 +160,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    tier pagando in meteoriti). A giri finiti, da PowerShell:
 
    ```powershell
-   foreach ($n in 17..34) {
+   foreach ($n in 17..31) {
      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
      $t = Get-Content $log
      "{0}: giri={1} sbloccati={2} FAILED={3} threw/timeout={4}" -f $n,
@@ -186,7 +186,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    `[hallofheroestask]`, `hero_snapshot_time = ""` e `next_run_time_internal = ""`.
 
    ```powershell
-   foreach ($n in 17..34) {
+   foreach ($n in 17..31) {
      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
      "{0}:" -f $n
      (Get-Content $log) -match 'Hero rarity' -replace '.*\[(INFO|FAILED)\] ', '    '
@@ -200,7 +200,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
    l'uno, e spendono solo Soul Embers, Strange Dust e Tools. A giri finiti, da PowerShell:
 
    ```powershell
-   foreach ($n in 17..34) {
+   foreach ($n in 17..31) {
      $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
      $t = Get-Content $log
      "{0}: {1} | {2} | evoluzioni={3} rarita={4} | FAILED={5}" -f $n,
@@ -223,7 +223,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     PowerShell:
 
     ```powershell
-    foreach ($n in 17..34) {
+    foreach ($n in 17..31) {
       $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       "{0}: DH={1} Mini={2} azioni={3} claim={4} attese-quest={5} FAILED={6} threw/timeout={7}" -f $n,
@@ -249,7 +249,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     PowerShell:
 
     ```powershell
-    foreach ($n in 17..34) {
+    foreach ($n in 17..31) {
       $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       $q = foreach ($name in 'Collector', 'Gamer', 'Merchant', 'Miner') {
@@ -284,7 +284,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     A giro fatto, da PowerShell:
 
     ```powershell
-    foreach ($n in 17..34) {
+    foreach ($n in 17..31) {
       $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       "{0}: giri={1} FAILED={2} threw/timeout={3}" -f $n, @($t -match 'Emblem Market finished').Count,
@@ -309,7 +309,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     serve: è la stessa squadra dell'Arena. A giro fatto, da PowerShell:
 
     ```powershell
-    foreach ($n in 17..34) {
+    foreach ($n in 17..31) {
       $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       "{0}: giri={1} FAILED={2} threw/timeout={3}" -f $n, @($t -match 'Warfront - Campaign finished').Count,
@@ -339,7 +339,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 
     ```powershell
     $utf8 = New-Object System.Text.UTF8Encoding($false)
-    foreach ($n in 17..34) {
+    foreach ($n in 17..31) {
       $rel = "Program Files (x86)\Steam-$n\steamapps\common\Firestone\UserData\FirebotPreferences.cfg"
       foreach ($f in "C:\$rel", "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\$rel") {
         if (-not (Test-Path $f)) { continue }
@@ -358,7 +358,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     Poi, a giri fatti (5-10 minuti dopo l'avvio):
 
     ```powershell
-    foreach ($n in 17..34) {
+    foreach ($n in 17..31) {
       $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       "{0}: albero={1} risvegli={2} warmachines={3} threw/timeout={4}" -f $n,
@@ -388,7 +388,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     del giorno nello store dell'Oracolo. A giri fatti, da PowerShell:
 
     ```powershell
-    foreach ($n in 17..34) {
+    foreach ($n in 17..31) {
       $log = "C:\Sandbox\$env:USERNAME\SteamB$n\drive\C\Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
       $t = Get-Content $log
       "{0}: threw/timeout={1}" -f $n, @($t -match 'Oracle.*(threw|timed out)').Count
@@ -424,7 +424,7 @@ insieme più servono RAM/disco - vedi punto 6 (pagefile) per la formula.
 
 ---
 
-## 1. Prerequisiti per OGNI istanza (17-34)
+## 1. Prerequisiti per OGNI istanza (17-31)
 
 Ogni istanza è un'installazione Steam **completamente separata**, in una cartella dedicata:
 
@@ -453,7 +453,7 @@ Per ciascuna, prima di qualunque cosa legata a Firebot:
    20/10 su 0-34, rinominando le vecchie come per le DLL del bot (punto 4 sopra).
 5. **Decidi se l'istanza sarà nativa o sandboxata.** Sul PC principale solo Steam-0 è nativa
    (probabilmente per comodità di test/debug); tutte le altre sono sandboxate. Per il nuovo
-   intervallo 17-34 puoi tenerle **tutte sandboxate** (non c'è un vincolo tecnico che richieda
+   intervallo 17-31 puoi tenerle **tutte sandboxate** (non c'è un vincolo tecnico che richieda
    un'istanza nativa) - scegli tu, ma sii coerente e documentalo.
 
 ---
@@ -508,7 +508,7 @@ documentate esplicitamente altrove ma confermate funzionanti dal vivo.
 `BorderColor` deve essere **diverso per ogni box** (puramente cosmetico, per distinguere le
 finestre a colpo d'occhio) - qualunque colore esadecimale va bene, basta non ripeterlo.
 
-### 2.3 Come crearli per il range 17-34
+### 2.3 Come crearli per il range 17-31
 
 **Opzione automatica** (consigliata): usa lo script incluso in questo repo,
 `tools/InstanceProvisioning/add_sandbox_boxes.ps1`. Clona le impostazioni di un box esistente
@@ -523,11 +523,11 @@ aggiungi nella sua sezione di `Sandboxie.ini` le due righe `BoxNameTitle=y` e `B
 ```powershell
 # Da PowerShell come Amministratore, con il repo già clonato/aggiornato:
 cd C:\Repos\FirestoneBot
-.\tools\InstanceProvisioning\add_sandbox_boxes.ps1 -TemplateBox SteamB17 -Start 18 -End 34
+.\tools\InstanceProvisioning\add_sandbox_boxes.ps1 -TemplateBox SteamB17 -Start 18 -End 31
 ```
 
 Dopo l'esecuzione, apri `SandMan.exe` (l'interfaccia di Sandboxie-Plus) e verifica che i box
-`SteamB17`..`SteamB34` compaiano nell'elenco, abilitati.
+`SteamB17`..`SteamB31` compaiano nell'elenco, abilitati.
 
 **Opzione manuale**: crea ogni box dalla GUI di Sandboxie-Plus (tasto destro -> "Crea nuovo box"
 o duplicando un box esistente), poi aggiungi a mano `BoxNameTitle=y` e `BoxAlias=Steam-<N>` a
@@ -566,7 +566,7 @@ ha saltato quelli dopo). Una copia dei bat vecchi è in
 
 Configurato il 15/10. Provato il 16/10 alle 09:10: 15 istanze ferme in meno di 30 s e tutte e 17
 di nuovo su in 6 min 47 s, con il bot che scrive su tutti i log. Il PC principale
-(`DESKTOP-ADMIN`, Steam-0..16) si raggiunge da PC-Guesly (Steam-17..34) con PowerShell remoto,
+(`DESKTOP-ADMIN`, Steam-0..16) si raggiunge da PC-Guesly (Steam-17..31) con PowerShell remoto,
 collegandosi come un amministratore locale creato apposta. Indirizzo e utente stanno nel `.env`
 alla radice del repo, che è in `.gitignore` e va creato a mano su PC-Guesly:
 
@@ -674,7 +674,7 @@ manuale (vedi punto 5).
 ### 4.3 Comando di build
 
 Serve **un'istanza di riferimento già avviata almeno una volta con MelonLoader** (per avere
-`Il2CppAssemblies` generato) - va bene una qualsiasi tra le 17-34, es. Steam-17:
+`Il2CppAssemblies` generato) - va bene una qualsiasi tra le 17-31, es. Steam-17:
 
 ```powershell
 $env:COMMON_DIR = "C:\Program Files (x86)\Steam-17\steamapps\common"
@@ -844,7 +844,7 @@ con 0,8 GB disponibili. Ogni istanza in più costa ~1,7 GB tra gioco (1,4) e Ste
 Senza VS Code dovrebbero starci anche 31 e 32. **Dal 17/10 (scelta dell'utente) il secondo PC tiene
 accese 17-31**, sacrificando 32-34 per lasciare RAM a VS Code e al server Tailscale: le due attività
 hanno `-To 31` e il report `-Local 17..31`. Steam-31 avviata alle 03:47 con 2,9 GB disponibili dopo
-(3,8 prima, con 14 istanze); se a un riavvio la RAM non basta, lo script la lascia spenta da solo.
+(3,8 prima, con 14 istanze); se a un riavvio la RAM non basta, lo script la lascia spenta da solo. Il 21/10 le istanze 32-34 sono state dismesse: cancellati i box `SteamB32..34` e le loro sezioni in `Sandboxie.ini`.
 
 **Watchdog (dal 16/10, su tutti e due i PC).** `Firestone_Watchdog` lancia lo stesso script con `-Watch`
 ogni 5 minuti e riavvia, una per una, le istanze dove `Firestone.exe` non gira o il `Latest.log` è
@@ -993,9 +993,9 @@ dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
 3. Da PowerShell, nella cartella del repo:
 
    ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check  # solo confronto
-   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34         # allinea
-   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34 -Check  # "0 valori da cambiare"
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 31 -Check  # solo confronto
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 31         # allinea
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 31 -Check  # "0 valori da cambiare"
    ```
 
    `-ExecutionPolicy Bypass` serve perché di norma Windows non esegue script `.ps1` scaricati.
@@ -1018,7 +1018,7 @@ Da impostare in `[firebot_settings]` di **ogni** istanza, a gioco chiuso (il gio
 file quando si chiude) e, per le istanze sandboxate, sia nel file reale sia in quello dentro il
 box:
 
-| Chiave | PC principale (Steam-0..16) | Secondo PC (Steam-17..34) |
+| Chiave | PC principale (Steam-0..16) | Secondo PC (Steam-17..31) |
 |---|---|---|
 | `low_resource_mode` | `true` | `true` |
 | `window_grid_enabled` | `true` | `true` |
@@ -1073,7 +1073,7 @@ ricompilando, elencati qui solo per completezza/consapevolezza:
 
 ## 10. Checklist finale di verifica (dopo aver seguito tutti i punti sopra)
 
-Per OGNI istanza 17-34, in ordine:
+Per OGNI istanza 17-31, in ordine:
 
 - [ ] Steam installato in `Steam-<N>\`, login effettuato, Firestone installato.
 - [ ] MelonLoader installato nel gioco, avviato almeno una volta (genera `Il2CppAssemblies`).
@@ -1084,7 +1084,7 @@ Per OGNI istanza 17-34, in ordine:
       sandbox) di `Mods\`.
 - [ ] Log più recente: nessun `FileNotFoundException`, presente `Started. Enabled tasks:`.
 - [ ] Titolo finestra mostra `[Steam-<N>]` (conferma che Sandboxie applica la config).
-- [ ] `FirebotPreferences.cfg` allineato a Steam-0: `apply_template.ps1 -From 17 -To 34 -Check`
+- [ ] `FirebotPreferences.cfg` allineato a Steam-0: `apply_template.ps1 -From 17 -To 31 -Check`
       dice "0 valori da cambiare", e il log dice `Started. Enabled tasks: 40 of 42`.
 
 A livello di sistema (una tantum, non per-istanza):

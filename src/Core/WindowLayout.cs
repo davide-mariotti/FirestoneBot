@@ -27,7 +27,7 @@ public static class WindowLayout
             return;
         }
 
-        // Cell 0 belongs to window_grid_first_instance, so a PC hosting Steam-17..34 starts top-left.
+        // Cell 0 belongs to window_grid_first_instance, so a PC hosting Steam-17..31 starts top-left.
         var index = instance.Value - firstInstance;
         if (index < 0)
         {

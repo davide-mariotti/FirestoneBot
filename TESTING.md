@@ -35,7 +35,7 @@ nel punto 3 della Fase 2 (acceso solo lui) e la Fase 3; si ricontrollano solo i 
 
 Firebot è una mod MelonLoader per Firestone Idle RPG: automatizza il gioco cliccando la sua UI
 Unity da dentro il processo. Codice in `src/` (C#, net6.0), task in `src/Tasks`, path della UI in
-`src/Infrastructure/Paths` (un file per schermata). Il bot gira su 34 istanze in produzione; qui si
+`src/Infrastructure/Paths` (un file per schermata). Il bot gira su 32 istanze in produzione; qui si
 testa solo **Steam-0**, un'istanza nativa (senza Sandboxie):
 
 | Cosa | Dove |
@@ -47,7 +47,7 @@ testa solo **Steam-0**, un'istanza nativa (senza Sandboxie):
 | Log | `<gioco>\MelonLoader\Latest.log` (riscritto a ogni avvio; i precedenti in `MelonLoader\Logs`) |
 
 Controlla con `Test-Path` che questi percorsi esistano prima di iniziare. Se Steam-0 non c'è, fermati
-e chiedi. Non toccare **mai** le altre istanze (Steam-1..34): né i loro processi né i loro file.
+e chiedi. Non toccare **mai** le altre istanze (Steam-1..31): né i loro processi né i loro file.
 
 ### Regole
 
@@ -215,13 +215,13 @@ script.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 0 -To 16 -Check  # questo PC
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 34        # secondo PC
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\ConfigTemplate\apply_template.ps1 -From 17 -To 31        # secondo PC
 ```
 
 Due eccezioni, che dipendono dalla macchina o dall'account e non vanno copiate da Steam-0:
 
 - `window_grid_first_instance`: il numero più basso delle istanze del PC (0 qui, 17 sul PC con
-  Steam-17..34).
+  Steam-17..31).
 - `talentstask.guide_start_index`: la calibrazione del singolo account. Lasciare quello che c'è; su
   un account nuovo `-1`, che si calibra da solo al primo giro.
 
@@ -624,7 +624,7 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   `C:\Repos\FirestoneBot-test-backup\2026-10-03-chaosrift`). Steam-1..16 e il secondo PC restano
   sulle build di prima fino al prossimo aggiornamento (procedura di `MULTI_INSTANCE_SETUP.md`, nessuna
   chiave nuova nei cfg).
-- **Secondo PC (istanze 17-34)**: basta la procedura "Aggiornare il bot su istanze già in
+- **Secondo PC (istanze 17-31)**: basta la procedura "Aggiornare il bot su istanze già in
   funzione" di `MULTI_INSTANCE_SETUP.md`, aggiornata l'1/10. Porta tutto quello del 30/09 (Hall of
   Heroes, i tre task nuovi, avvio a 60 s, sfide degli eventi) e dell'1/10 (quest rilette dopo il
   reset, uscita da Arena, riserva del Merchant). Nessuna chiave nuova nei cfg; c'è lo script per
