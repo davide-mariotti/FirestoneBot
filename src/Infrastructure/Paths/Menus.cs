@@ -515,13 +515,13 @@ public static partial class Paths
 
             public const string CloseBtn = Root + "/bg/closeButton";
 
-            public const string NameTxt = Root + "/bg/innerBg/researchName";
+            public const string NameTxt = Root + "/bg/researchName";
 
-            public const string LevelTxt = Root + "/bg/innerBg/researchLevelText";
+            public const string LevelTxt = Root + "/bg/researchLevelText";
 
-            public const string UnlockedTxt = Root + "/bg/innerBg/unlocked";
+            public const string UnlockedTxt = Root + "/bg/unlocked";
 
-            public const string MaxedTxt = Root + "/bg/innerBg/maxed";
+            public const string MaxedTxt = Root + "/bg/maxed";
 
             public const string ActivateBtn = UnlockedTxt + "/buttonHolder/researchActivateButton";
         }
@@ -532,10 +532,10 @@ public static partial class Paths
 
             public const string CloseBtn = Root + "/bg/closeButton";
 
-            public const string NameTxt = Root + "/bg/innerBg/researchName";
+            public const string NameTxt = Root + "/bg/researchName";
 
             // Shown only when the node's prerequisites are met (its sibling "locked" otherwise).
-            public const string UnlockedRoot = Root + "/bg/innerBg/unlocked";
+            public const string UnlockedRoot = Root + "/bg/unlocked";
 
             public const string ResearchBtn = UnlockedRoot + "/researchButton";
 
