@@ -12,7 +12,9 @@ Usage:
     python unity_ui_mapper.py <RootGameObjectName> [<AnotherRoot> ...] > out.json
 
 Reads the default Steam install; for another one set FIRESTONE_DATA to its Firestone_Data folder,
-e.g. C:/Program Files (x86)/Steam-0/steamapps/common/Firestone/Firestone_Data.
+e.g. C:/Program Files (x86)/Steam-0/steamapps/common/Firestone/Firestone_Data. A boxed instance
+updates inside its Sandboxie box, so point it there (C:/Sandbox/<user>/SteamB<N>/drive/C/Program
+Files (x86)/Steam-<N>/...): the real install keeps the version from before the box (3.60 vs 3.61 on 21/10).
 
 Find candidate root names first by grepping resources.assets object names (e.g. via a
 quick UnityPy scan), or by cross-referencing existing paths in src/Infrastructure/Paths/.
