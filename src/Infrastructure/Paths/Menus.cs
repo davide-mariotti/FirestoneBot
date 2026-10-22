@@ -419,8 +419,8 @@ public static partial class Paths
 
             public const string BlessingsTabBtn = Root + "/submenuButtons/blessings";
 
-            // From the 3.61 asset dump (22/10), not seen live yet: like ritualSubmenu, it only exists
-            // once its tab is clicked.
+            // From the 3.61 asset dump, confirmed live on Steam-0 (22/10): like ritualSubmenu, it only
+            // exists once its tab is clicked.
             public static class BlessingLoc
             {
                 public const string Blessings = OracleLoc.Root + "/submenus/bg/blessingsSubmenu/blessings";
