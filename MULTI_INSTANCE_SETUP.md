@@ -152,7 +152,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
 7. Verifica, a istanze avviate: `apply_template.ps1 -From 17 -To 31 -Check` deve dire "0 valori da
    cambiare" senza chiavi mancanti (se trova differenze: ferma, rilancia il punto 5, riavvia), e il
    log di ogni istanza (`MelonLoader\Latest.log`, quello nel sandbox) deve contenere
-   `Started. Enabled tasks: 44 of 45` (dal 22/10, con Oracle Blessings; 41 of 42 dal 10/10, coi task Oracle accesi; 39 of 42 dal 4/10, con War Machines spento; 40 of 42 prima, 39 of 41
+   `Started. Enabled tasks: 45 of 46` (dal 22/10 sera, con Amulet Shop in dry run; 44 of 45 dal 22/10, con Oracle Blessings; 41 of 42 dal 10/10, coi task Oracle accesi; 39 of 42 dal 4/10, con War Machines spento; 40 of 42 prima, 39 of 41
    prima del task della campagna, 38 of 40 prima dell'Emblem market) e nessun
    `timed out` o `threw:`.
 8. Hall of Heroes (dal 30/09): parte nei primi minuti dopo l'avvio e il primo giro dura da 1,5 a

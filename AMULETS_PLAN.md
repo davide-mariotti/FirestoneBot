@@ -1,6 +1,12 @@
 # Piano: l'amuleto del giorno
 
-> Scritto il 2026-10-22, solo analisi: niente codice ancora. Ogni giorno lo Store offre un amuleto
+> Scritto il 2026-10-22. **Stato:** fasi 1 e 2 fatte lo stesso giorno. `AmuletShopTask` gira in dry run
+> su Steam-0..31: ogni ora legge e scrive la decisione, e non compra. Gli acquisti veri si accendono
+> per istanza con `dry_run = false`, dopo l'ok dell'utente (fase 3). Scelte dell'utente del 22/10:
+> Cartography in testa al tier 2 e Sky subito dopo, `gem_reserve` 0, Luck fuori, gemme solo per gli
+> amuleti (niente Taverna).
+>
+> Ogni giorno lo Store offre un amuleto
 > permanente ("Amulet of the Day"); quelli in gemme costano 2.000 gemme. Questo piano dice quali
 > comprare sui nostri account, quando, e come costruire il task in modo che non sprechi mai gemme.
 > Le gemme si accumulano lentamente o si pagano con soldi veri, quindi ogni scelta qui è a favore della sicurezza.
@@ -94,9 +100,9 @@ l'amuleto potenzia. Sotto quel livello l'amuleto non si compra e non conta tra i
 
 | Amuleto | Effetto | Liv. utile | Perché |
 | --- | --- | --- | --- |
+| Cartography | +5% expedition token | 10 | Token per Tree of Life e War Machines. In testa al tier 2 per scelta dell'utente |
 | Sky | +10% probabilità di 2 meteoriti invece di 1 | 1 | Meteoriti per research e tier del gear. L'unico 10% fuori dal tier 1 |
 | Exploration | 5% ricompense doppie dalle spedizioni | 10 | Spedizioni sempre in corso (ExpeditionTask) |
-| Cartography | +5% expedition token | 10 | Token per Tree of Life e War Machines |
 | Liberation | 5% ricompense doppie dalle missioni giornaliere War Machine | 50 | WarfrontDailyMissionsTask ogni giorno |
 | Pioneers | 5% loot doppio dalla campagna | 50 | WarfrontCampaignLootTask ogni 6 ore |
 | Quartermaster | +5% loot dalla campagna | 50 | Come sopra |
@@ -118,8 +124,11 @@ l'amuleto potenzia. Sotto quel livello l'amuleto non si compra e non conta tra i
 - **Midas** (+300% oro) e **Power** (+300% attributi): +300% su moltiplicatori che sono già enormi
   non cambia niente. Tutte e due le guide li danno per "not worthwhile".
 - **Amuleti in golden key** (Luck, King, Queen, Speed, Damage, Health): fuori da questo piano. Le golden
-  key servono agli artifact. Luck (+5% birra) è l'unico consigliato: se lo vuoi, è un'aggiunta a parte
-  con una sua riserva di key.
+  key servono agli artifact. Luck (+5% birra) è l'unico consigliato, ma per ora resta fuori (scelta
+  dell'utente, 22/10).
+
+Dentro un tier l'ordine dice solo come leggere la tabella: esce un amuleto al giorno, quindi la regola
+non sceglie mai tra due amuleti dello stesso tier.
 
 ## 3. La regola d'acquisto
 
@@ -159,40 +168,36 @@ Paletti che valgono sempre:
    - le gemme lette dal gioco coprono la regola.
 4. Dopo il click si verifica che `HaveAmulet()` sia vero e che le gemme siano scese di 2.000. Si scrive
    tutto nel log. Se una delle due non torna, il task si spegne per la giornata e scrive `[FAILED]`.
-5. `gem_reserve` (default 0) è la soglia sotto cui il bot non scende mai, per l'utente che vuole
-   gemme per altro (battle pass, token della Taverna).
+5. `gem_reserve` (default 0, confermato dall'utente) è la soglia sotto cui il bot non scende mai. Le gemme
+   servono solo agli amuleti: niente Taverna, niente battle pass.
 
-## 4. Implementazione
+## 4. Implementazione (fatta il 22/10)
 
-Lo schema è quello dei planner esistenti (`BlueprintPlanner`, `EnchantPlanner`): la decisione è una
-funzione pura testata, il task fa solo lettura e click.
+Lo schema è quello dei planner esistenti: la decisione è una funzione pura testata, il task fa solo
+lettura e click.
 
-1. **`src/Tasks/Town/AmuletPlanner.cs`**, puro, senza tipi del gioco. Usa i nomi del codice come
-   stringhe ("AmuletOfConquest"):
-   - una tabella `codice -> (tier, livello utile)` con i tier della sezione 2;
-   - `Decide(string today, IReadOnlySet<string> owned, int level, double gems, double reserve)`, che
-     restituisce `(bool buy, string reason)`. La reason finisce nel log: "tier 2, needs 4000 (Conquest
-     missing)", "never", "owned", "below level 120", "not in table".
-   - Va aggiunto a `tests/Firebot.TalentEngine.Tests/*.csproj` (`<Compile Include ...>`), con
-     `AmuletPlannerTests.cs`: le righe della tabella esempi della sezione 3, più owned, never, sotto
-     livello, codice sconosciuto o `None`.
-2. **`src/GameModel/Shared/Amulets.cs`**: lettura dal gioco. `Today` (con `TryGetDailyAmuletCode`;
-   in Il2CppInterop l'`out` può diventare `ref`, va verificato in compilazione), `Owned` (da
-   `AmuletHandler.amulets` filtrando `HaveAmulet()`), `Gems`. Ogni lettura è in un try/catch che
-   restituisce "sconosciuto": se non si legge, non si compra.
-3. **Paths** (`Menus.cs`, `StoreLoc`): `AmuletsTabBtn`, `DailyAmuletRoot`, `PurchaseGemsBtn`,
-   `ClaimedObj`, e `TownIrongardLoc.StoreBtn`. Il commento dice da dove vengono (dump o dal vivo, con la data).
-4. **`src/Tasks/Town/AmuletShopTask.cs`**:
-   - `DefaultEnabled => false`: spende valuta che si paga, si accende solo a mano;
-   - config: `dry_run = true`, `gem_reserve = 0`, `last_purchase_date` (gestito dal bot);
-   - una volta per giorno di gioco, dopo il reset (`GameDay`). Legge oggi, posseduti, livello e gemme,
-     chiama il planner e scrive sempre una riga:
-     `[INFO] Amulet of the day: AmuletOfSky (tier 2), gems 2150, owned 3/19, skip: needs 4000 (AmuletOfConquest missing).`
-   - solo se `buy` e non `dry_run`: Città → `store` → tab amuleti, poi i controlli del punto 3.3,
-     click su `purchaseButtonGems`, verifica del punto 3.4;
-   - `NextRunTime = GameDay.NextReset()`.
-5. README (elenco dei task), template dei cfg (`[amuletshoptask]`, enabled false), TESTING.md (riga del
-   task), questo piano (stato).
+- **`src/Tasks/Town/AmuletPlanner.cs`**, puro, senza tipi del gioco: la tabella dei tier e
+  `Decide(today, owned, level, gems, reserve)`, che restituisce `AmuletDecision(Buy, Tier, Reason)`.
+  I test sono in `tests/Firebot.TalentEngine.Tests/AmuletPlannerTests.cs` (gli esempi della sezione 3,
+  più posseduti, mai, golden key, `None`, sotto livello, riserva).
+- **`src/GameModel/Shared/Amulets.cs`**: `TryRead`, `Owns`, `ReadCard`. `AmuletHandler.amulets` è un
+  dizionario `AmuletCode -> Amulet`. `TryGetDailyAmuletCode(out ...)` compila così com'è. Se una lettura
+  fallisce, il task non compra.
+- **Paths** (`Menus.cs`): `StoreLoc.TabsLoc.AmuletsBtn`, `StoreLoc.AmuletsLoc.DailyCard` e
+  `PurchaseGemsBtn`, `TownIrongardLoc.StoreBtn` (`Town.OpenStore`). Vengono dal dump 3.61: la carta e
+  il pulsante della Città si vedranno dal vivo al primo "buy".
+- **`src/Tasks/Town/AmuletShopTask.cs`**, acceso di default ma con `dry_run = true`:
+  - ogni ora legge i dati e scrive sempre una riga. Le gemme delle quest arrivano durante il giorno,
+    quindi la soglia si può superare anche a metà giornata:
+    `[INFO] Amulet of the day: AmuletOfPower (tier 0), gems 29, owned 7 [Conquest Knowledge ...], skip: never bought.`
+  - se la decisione è "buy", una volta per giorno di gioco (`last_done_date`, segnato *prima* del
+    tentativo, così un errore non porta mai a un secondo acquisto) apre Città → `store` → tab amuleti e
+    scrive `Amulet card: <codice>, gem price '<testo>', gem button clickable <bool>`;
+  - se il codice della carta non è quello di oggi, il prezzo non è 2.000 o il pulsante non è
+    cliccabile, scrive `[FAILED] ... nothing bought`;
+  - in dry run scrive `dry run, would buy <codice> now`. Altrimenti clicca `purchaseButtonGems`,
+    aspetta `Owns(codice)` e scrive `Amulet bought: <codice> owned <bool>, gems A -> B`.
+- Template dei cfg: `[amuletshoptask]` con `enabled = true`, `dry_run = true`, `gem_reserve = 0`.
 
 ## 5. Fasi e verifiche
 
@@ -214,10 +219,11 @@ funzione pura testata, il task fa solo lettura e click.
    distribuzione della DLL come sempre. Nei giorni dopo si controllano le righe `Amulet of the day`
    e gli acquisti.
 
-## 6. Domande aperte per l'utente
+## 6. Decisioni dell'utente (22/10)
 
-- I tier della sezione 2 vanno bene? Soprattutto: War nel tier 1 e Sky in testa al tier 2.
-- Quanto `gem_reserve`? Il default proposto è 0: oggi il bot non spende gemme per nient'altro.
-- Gli amuleti in golden key (Luck) entrano qui o restano fuori?
-- I token della Taverna (1.000 gemme per 20) devono competere con gli amuleti? Per ora no: le gemme
-  vanno solo agli amuleti, come dicono entrambe le guide.
+- Tier come nella sezione 2, con Cartography in testa al tier 2 e Sky subito dopo.
+- `gem_reserve` = 0.
+- Luck e gli altri amuleti in golden key restano fuori per ora.
+- Le gemme vanno solo agli amuleti, niente Taverna.
+- Il primo acquisto vero lo autorizza l'utente per un'istanza alla volta, mentre guarda cosa fa il bot
+  (fase 3): `dry_run = false` solo nel cfg di quell'istanza.

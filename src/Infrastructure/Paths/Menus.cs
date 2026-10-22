@@ -28,6 +28,19 @@ public static partial class Paths
 
                 // "Special packs" - a separate tab with its own free mystery box (ExtremeValueBundlesLoc).
                 public const string ValueBundleBtn = Root + "/valueBundleButton";
+
+                public const string AmuletsBtn = Root + "/amuletsButton";
+            }
+
+            // From the 3.61 asset dump (22/10), not seen live yet.
+            public static class AmuletsLoc
+            {
+                // Its AmuletStoreInteraction holds the amulet and the gem price.
+                public const string DailyCard = StoreLoc.Root + "/bg/submenus/amulets/dailyAmuletStore";
+
+                // purchaseButtonMoney and purchaseButtonKeys sit beside it: real money and golden keys,
+                // never click those.
+                public const string PurchaseGemsBtn = DailyCard + "/purchaseButtonGems";
             }
 
             public static class DailyRewardsLoc
@@ -190,6 +203,9 @@ public static partial class Paths
 
             // "ship", not "pirateShip". A separate "merchantShip" icon is a different feature.
             public const string PirateShipBtn = Root + "/townBg/parent/ship";
+
+            // From the 3.61 asset dump (22/10): the HUD's storeButton opens nothing, this may.
+            public const string StoreBtn = Root + "/townBg/parent/store";
         }
 
         // The tavern building opens this choice between the card game and Scarab's Game.
