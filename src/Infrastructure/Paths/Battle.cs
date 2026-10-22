@@ -65,6 +65,9 @@ public static partial class Paths
 
             public const string OracleRituals = "OracleRituals";
 
+            // In the 3.61 rail prefab (22/10), lit with the Oracle's blessings tab.
+            public const string OracleBlessings = "OracleBlessings";
+
             public const string Experiments = "Experiments";
 
             public const string WarfrontCampaign = "WarfrontCampaign";

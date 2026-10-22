@@ -33,6 +33,8 @@ public static class Notifications
 
     public static IEnumerator OracleRituals => Click(Paths.BattleLoc.NotificationsLoc.OracleRituals);
 
+    public static IEnumerator OracleBlessings => Click(Paths.BattleLoc.NotificationsLoc.OracleBlessings);
+
     public static IEnumerator Experiments => Click(Paths.BattleLoc.NotificationsLoc.Experiments);
 
     public static IEnumerator WarfrontCampaign => Click(Paths.BattleLoc.NotificationsLoc.WarfrontCampaign);

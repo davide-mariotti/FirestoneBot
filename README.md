@@ -57,7 +57,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Empower** (Temple of Eternals): resets once this adventure's Firestones match the ones already banked, a +100% gain (`min_reset_ratio`), and the run has hit its wall (AutoRetreat saw the stall): near the top the Firestones found grow about x100 every 5 minutes, so a run that still climbs is worth waiting for.
 - **Arena of Kings**: spends the daily tokens on the weakest opponent it can find.
 - **Pirate's Prize**: claims the free track.
-- **Oracle Rituals** (character level 200): claims the finished ritual and starts the next one - one runs at a time, 40 minutes each - which also covers the level-200 daily quest for 2 rituals. **Oracle's Gift**: claims the free daily gift in the Oracle's store.
+- **Oracle Rituals** (character level 200): claims the finished ritual and starts the next one - one runs at a time, 40 minutes each - which also covers the level-200 daily quest for 2 rituals. **Oracle's Gift**: claims the free daily gift in the Oracle's store. **Oracle Blessings**: spends glyphs on every blessing the game marks as affordable, one level per run while its badge stays lit.
 - **System Mail**: claims every mailbox reward; never deletes mail.
 - **War Machines** (off by default): levels every owned war machine. It spends the same Expedition Tokens as the Personal Tree, which the guide puts first.
 - **War Machine Rarity**: raises war machine rarity with Tools, in grid order, whenever one is affordable.

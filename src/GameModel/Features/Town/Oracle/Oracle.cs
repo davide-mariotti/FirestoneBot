@@ -12,6 +12,8 @@ public static class Oracle
 
     public static IEnumerator OpenStore => OpenTab(Paths.MenusLoc.OracleLoc.StoreTabBtn);
 
+    public static IEnumerator OpenBlessings => OpenTab(Paths.MenusLoc.OracleLoc.BlessingsTabBtn);
+
     // At 10 fps the Oracle shows up 1-2 s after the town click: the tab clicked at once was still hidden
     // (10/10, Steam-0).
     private static IEnumerator OpenTab(string path)

@@ -416,6 +416,25 @@ public static partial class Paths
 
                 public const string NextRunTimeTxt = Root + "/timeBg/timeLeft";
             }
+
+            public const string BlessingsTabBtn = Root + "/submenuButtons/blessings";
+
+            // From the 3.61 asset dump (22/10), not seen live yet: like ritualSubmenu, it only exists
+            // once its tab is clicked.
+            public static class BlessingLoc
+            {
+                public const string Blessings = OracleLoc.Root + "/submenus/bg/blessingsSubmenu/blessings";
+
+                // Relative to a blessing (N) child of Blessings: lit while its glyphs are on hand.
+                public const string NotificationImg = "/notification";
+
+                // The preview a blessing click opens, which holds the actual buy button.
+                private const string PreviewRoot = MenusLoc.Root + "/popups/OracleBlessingPreview/bg";
+
+                public const string PreviewUpgradeBtn = PreviewRoot + "/darkBlueFrame/buttonRect/buyUpgradeButton";
+
+                public const string PreviewCloseBtn = PreviewRoot + "/closeButton";
+            }
         }
 
         public static class AlchemistLoc
