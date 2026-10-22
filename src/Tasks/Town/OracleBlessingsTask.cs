@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town.Oracle;
@@ -19,6 +20,9 @@ public class OracleBlessingsTask : BotTask
 
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.OracleBlessings;
 
+    // Without it the scheduler's 2-minute retry ran the task with the badge off (22/10, Steam-0).
+    private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
+
     public override IEnumerator Execute()
     {
         yield return Notifications.OracleBlessings;
@@ -31,6 +35,7 @@ public class OracleBlessingsTask : BotTask
         yield return Poll.Until(blessings.IsVisible);
         yield return blessings.UpgradeLit();
         Debug($"[INFO] Oracle blessings: upgraded {blessings.Upgraded}.");
+        NextRunTime = DateTime.Now + RecheckDelay;
 
         yield return Oracle.Close;
         yield return TownScreen.Close;

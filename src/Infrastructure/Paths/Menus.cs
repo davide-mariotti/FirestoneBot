@@ -578,6 +578,25 @@ public static partial class Paths
             public const string OraclesGiftRenewTxt = OraclesGiftRoot + "/Graphics/renewText";
 
             public const string OraclesGiftCountTxt = Root + "/bg/counters/currencyInteraction (OraclesGift)/quantity";
+
+            // A lit OraclesGift badge opens the store on the tab with the dot, not necessarily this one
+            // (22/10, Steam-0: 11 of 13 reads found no gift).
+            public const string GiftTabBtn = Root + "/bg/submenuButtons/valueBundles/button";
+
+            public const string DailyTabBtn = Root + "/bg/submenuButtons/valueBundlesDaily/button";
+
+            // Children are the tabs; relative to one, its dot.
+            public const string TabButtons = Root + "/bg/submenuButtons";
+
+            public const string TabNotificationImg = "/button/text/notification";
+
+            // The daily tab's own oraclesGift, from the static dump (not seen live yet).
+            private const string DailyGiftRoot =
+                Root + "/bg/submenus/valueBundlesDaily/Scroll View/Viewport/items/oraclesGift/Graphics";
+
+            public const string DailyGiftBtn = DailyGiftRoot + "/purchaseButton";
+
+            public const string DailyGiftRenewTxt = DailyGiftRoot + "/renewText";
         }
 
         /// <summary>Path of Glory (the battle pass).</summary>
