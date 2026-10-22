@@ -402,7 +402,7 @@ cambia i numeri, e `-From` è anche la cella in alto a sinistra della griglia.
     finché ci sono rituali da fare nella finestra di 6 ore, e `next run` alla fine del rituale in
     corso; `Oracle's gift: gifts A -> B, renews <domani 10:02>.` con B = A + 1 al primo giro del
     giorno; `Oracle blessings: upgraded N.` con N > 0 finché ci sono glifi. Un `renews 01/01/0001` o un `next run 01/01/0001` vuol dire che la schermata non si è
-    letta: riprova dopo 2 minuti. Sotto il livello 200 le righe mancano. La nona quest giornaliera
+    letta: riprova dopo 2 minuti. `Oracle's store: lit tabs [...]` dice quali tab dello store hanno il pallino (dal 22/10, per capire perché il badge resta acceso dopo il regalo). Sotto il livello 200 le righe mancano. La nona quest giornaliera
     del livello 200 ("completa 2 rituali") la reclama Quests dopo il secondo rituale. Sul PC
     principale il 10/10: vedi le righe Oracle di `TESTING.md`.
 
