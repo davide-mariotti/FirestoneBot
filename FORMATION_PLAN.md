@@ -35,8 +35,15 @@ Fasi 0-2 fatte su Steam-0, solo in dry run. `FormationTask` legge e scrive, non 
     danno di Cirilo, e il consiglio del 22/10 (Cirilo leader) veniva dalla power.
   - L'obiettivo di Steam-0 è rage ed energy: i suoi bonus per rage (10^10,45) ed energy (10^10,26)
     battono il mana (10^8,36) di 100 volte. Le guide puntano sul mana, ma questo account no.
-- **Prossimo passo (fase 3):** cambiare davvero formazione e leader dall'interfaccia, con l'utente che
-  guarda. Poi gli investimenti sull'obiettivo (5.2) e la flotta.
+- **Cambio del leader (fase 3, primo pezzo), 23/10 15:23, con l'utente che guardava.** Con
+  `dry_run = false` e gli stessi 5 eroi il bot apre Party e tocca il `battleFormationMover` dello slot
+  dell'eroe (Talia era in `heroSlot1`). Il pannello del leader mostra allora "Talia | Choose leader |
+  ...", e il bot preme `setLeader` solo se il pannello mostra il nome giusto. Poi chiude: niente popup di
+  salvataggio, e la rilettura dal gioco dà `leader now Talia`. Il pannello si trova per nome sotto
+  `menus/Party` (`Party.SetLeader`).
+- **Prossimo passo:** cambiare gli eroi in formazione (aggiungere e togliere dal mazzo), che oggi il task
+  scrive come `a different five - not applied yet`. Poi gli investimenti sull'obiettivo (5.2) e la
+  flotta.
 
 ## 0. Come partire
 

@@ -5,7 +5,7 @@ public static partial class Paths
 {
     public static class PartyLoc
     {
-        private const string Root = MenusLoc.Root + "/menus/Party";
+        public const string Root = MenusLoc.Root + "/menus/Party";
 
         public const string CloseBtn = Root + "/closeButton";
 
