@@ -53,9 +53,7 @@ public static class WindowLayout
         var x = col * pitchX - frame.InvisibleLeft;
         var y = row * pitchY - frame.InvisibleTop;
 
-        // Async: a synchronous move waits on the window's thread, and Steam-2..4 hung there at every start
-        // from 23/10 15:30 (grid cells 2-4 of the top row, after the desktop changed), before the bot began.
-        SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpAsyncWindowPos);
+        SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, SwpNoSize | SwpNoZOrder | SwpNoActivate);
 
         Logger.Info(
             $"[WindowLayout] Steam-{instance}: grid cell ({col},{row}) of {columns} columns, pitch {pitchX}x{pitchY} -> moved to ({x},{y}).");
@@ -150,5 +148,4 @@ public static class WindowLayout
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
-    private const uint SwpAsyncWindowPos = 0x4000;
 }
