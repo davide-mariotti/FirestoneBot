@@ -55,6 +55,22 @@ public class FormationPlannerTests
     }
 
     [Fact]
+    public void MatchPortrait_HandlesSkinsAndTheGamesMisspelling()
+    {
+        // Steam-1's deck on 23/10.
+        var deck = new[]
+        {
+            "avatarLeo164(Clone)", "avatarBoris164(Clone)", "avatarValerious164(Clone)",
+            "murielTheNurseOfDeathAvatar164(Clone)", "avatarCirilo164(Clone)"
+        };
+
+        Assert.Equal(2, FormationPlanner.MatchPortrait("Valerius", deck));
+        Assert.Equal(3, FormationPlanner.MatchPortrait("Muriel", deck));
+        Assert.Equal(0, FormationPlanner.MatchPortrait("Leo", deck));
+        Assert.Null(FormationPlanner.MatchPortrait("Talia", deck));
+    }
+
+    [Fact]
     public void Beats_NeedsTheMinimumGain()
     {
         Assert.False(FormationPlanner.Beats(100.03, 100, 0.10)); // +7%

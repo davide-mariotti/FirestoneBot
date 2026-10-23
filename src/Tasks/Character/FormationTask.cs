@@ -66,6 +66,8 @@ public class FormationTask : BotTask
 
         yield return Party.Open;
         yield return Poll.Until(() => Party.FormationNames().Count >= Party.FormationSize, 16);
+        // The deck fills in after the slots (Steam-15, 23/10: read empty right after them).
+        yield return Poll.Until(() => Party.DeckSlots().Count >= Party.FormationSize, 16);
         var deck = Party.DeckSlots();
         Debug($"[INFO] Formation deck: {string.Join(", ", deck.Select(d => d.Portrait + (d.Deployed ? "*" : "")))}.");
 
@@ -87,10 +89,11 @@ public class FormationTask : BotTask
 
     private IEnumerator Apply(Heroes.Snapshot read, Formation best, List<(UnityEngine.Transform Cell, string Portrait, bool Deployed)> deck)
     {
-        // ponytail: deck cells are matched by a portrait sprite that names the hero; a roster whose sprites
-        // don't would need the cell -> hero map from PartyMech instead.
-        UnityEngine.Transform CellOf(string name) =>
-            deck.FirstOrDefault(d => d.Portrait.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0).Cell;
+        // ponytail: deck cells are matched by their portrait sprite; a roster whose sprites don't name the
+        // hero would need the cell -> hero map from PartyMech instead.
+        UnityEngine.Transform CellOf(string name) => FormationPlanner.MatchPortrait(name, deck.Select(d => d.Portrait).ToList()) is { } i
+            ? deck[i].Cell
+            : null;
 
         var outs = read.InBattle.Except(best.Slots).ToList();
         var ins = best.Slots.Except(read.InBattle).ToList();

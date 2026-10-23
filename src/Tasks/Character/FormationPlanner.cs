@@ -51,6 +51,33 @@ public static class FormationPlanner
     public static bool Beats(double score, double current, double minGain) =>
         double.IsNegativeInfinity(current) || score - current >= Math.Log10(1 + minGain);
 
+    /// <summary>
+    ///     The deck cell whose portrait sprite is this hero's: "avatarBurt164(Clone)", a skin like
+    ///     "murielTheNurseOfDeathAvatar164(Clone)", or the game's own misspelling "avatarValerious164". A
+    ///     portrait containing the name wins; otherwise the only one within 2 letters of it. Null if none.
+    /// </summary>
+    public static int? MatchPortrait(string name, IReadOnlyList<string> portraits)
+    {
+        var key = name.ToLowerInvariant();
+        for (var i = 0; i < portraits.Count; i++)
+            if (portraits[i].ToLowerInvariant().Contains(key)) return i;
+
+        static string Token(string p) => new(p.ToLowerInvariant().Replace("avatar", "").TakeWhile(char.IsLetter).ToArray());
+        var near = Enumerable.Range(0, portraits.Count).Where(i => Distance(Token(portraits[i]), key) <= 2).ToList();
+        return near.Count == 1 ? near[0] : null;
+    }
+
+    private static int Distance(string a, string b)
+    {
+        var d = new int[a.Length + 1, b.Length + 1];
+        for (var i = 0; i <= a.Length; i++) d[i, 0] = i;
+        for (var j = 0; j <= b.Length; j++) d[0, j] = j;
+        for (var i = 1; i <= a.Length; i++)
+        for (var j = 1; j <= b.Length; j++)
+            d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1));
+        return d[a.Length, b.Length];
+    }
+
     // log10(Σ 10^x), shifted by the largest term so it never overflows.
     private static double LogSum(IEnumerable<double> logs)
     {
