@@ -1,7 +1,8 @@
 # Piano: la squadra del momento e la squadra obiettivo
 
 > Scritto il 2026-10-22, rivisto il 2026-10-23 su indicazione dell'utente: niente controlli sul muro,
-> un solo controllo al giorno, e una squadra obiettivo presa dalle guide. Solo analisi: niente codice
+> un solo controllo al giorno, e una squadra obiettivo presa dalle guide (con Cirilo, dopo una
+> ricerca online). Solo analisi: niente codice
 > ancora. Oggi il bot legge la formazione ma non la cambia mai.
 
 ## 0. Come partire
@@ -22,8 +23,8 @@ Ogni account ha due squadre:
 
 - **La squadra del momento.** È la migliore che l'account può schierare oggi, calcolata dai numeri veri
   dei suoi eroi. È quella in battaglia.
-- **La squadra obiettivo.** È la squadra consigliata dalle guide: eroi a mana, con un tank, tre
-  spellcaster e un healer. Ogni account la risolve con gli eroi che ha già sbloccato (sezione 3). Il
+- **La squadra obiettivo.** È la squadra consigliata dalle guide: un tank, Solaine, Blaze, Cirilo e un
+  healer. Ogni account la risolve con gli eroi che ha già sbloccato (sezione 3). Il
   bot non la schiera finché non è la migliore. Però ci **investe sopra**: enchant di tier 1 e rarità
   vanno prima ai suoi eroi.
 
@@ -79,40 +80,57 @@ schivata), che il gioco calcola già con gear, rarità, ricerche e moltiplicator
 
 ## 3. La squadra obiettivo
 
-### 3.1 Cosa dicono le guide
+### 3.1 Cosa dicono le guide (ricerca del 23/10)
 
-- **Il meta sono gli eroi a mana.** Albero di gilda, albero personale, artefatti e Scarabs hanno bonus
-  specifici per il mana. Gli spellcaster puliscono le ondate più in fretta (guida F2P, "Risorse
-  degli eroi"; Ashstronox, V5).
-- **"Preparati per una squadra di spellcaster a mana"** e porta "Magic Spells" negli Exotic upgrade
-  (guida Steam, "Exotic upgrades"). L'autore della guida gioca con 4 spellcaster a mana.
-- **Blaze come fonte principale di danno**, con Leadership alzata (guida Steam, Talents, riga "Team
-  Bonus").
-- **Ashstronox** a 9 mesi usava tank a mana come damage dealer, per i suoi moltiplicatori.
-- **Un giocatore allo stage 700+** (forum Steam): Talia, Burt, Muriel, Luana (healer), Solaine leader.
-- **I talenti del bot vanno già in questa direzione**: "Mana Heroes" ha priorità 40, "Magic Spells" 35
+Due nomi tornano in tutte le fonti: **Solaine e Blaze**. Il terzo è **Cirilo**, il mercenario.
+
+| Fonte | Cosa dice |
+| --- | --- |
+| Guida ufficiale R2 Games, "Party" | "La strategia migliore è una squadra di spellcaster a mana": Solaine, Benedictus, Blaze, Luana. Solaine e Blaze sono "i leader più favorevoli del gioco" |
+| Guida Steam completa (aggiornata a settembre 2026, `docs/guida_steam_completa.md`, "Pirate ship") | "Al momento Cirilo è la scelta migliore" tra i mercenari: buone statistiche, Raining Gold, abilità ad area. Un mercenario si sceglie per Raining Gold, Firestone Finder e danno ad area, più che per la specializzazione |
+| Moderatrice del forum Steam, maggio 2024 | Cirilo, "uno dei migliori mercenari" per statistiche, Raining Gold e abilità |
+| Moderatore del forum Steam, aprile 2025 | Per pulire le ondate dopo un prestige: Blaze, Iseris, Belien, Molly, e "sostituirei Vilon con Cirilo" |
+| Guida giapponese (note.com) | Consigliati Solaine, Burt, Muriel, Blaze, Cirilo. Cirilo è "un personaggio rotto", "top tier se ha l'arma per uccidere con un colpo" (arma viola o più). I melee davanti servono "solo da scudo", con poca arma |
+| Ashstronox (guida F2P, V5) | Primo mercenario: Cirilo. "Ottimo con Blaze": le sue bombe colpiscono tutti i nemici al 60% |
+| Guida Steam "fast levelling" | Solaine e Blaze, poi Burt, Muriel, Ina e Astrid, poi Luana, Boris e Valerius |
+| Forum Steam, 2020 (stage 1.136 e 1.750+) | Blaze leader, perché ha il danno base più alto del gioco. Ma chi aveva artefatti per energy o tank faceva meglio con Muriel o con i tank: gli artefatti decidono |
+
+In sintesi:
+
+- **Il nucleo è Solaine e Blaze**, entrambi spellcaster a mana. Sono i leader migliori, e i talenti del
+  bot vanno già in questa direzione: "Mana Heroes" ha priorità 40, "Magic Spells" 35
   (`TalentBuildConfig.cs`).
+- **Cirilo è il terzo damage dealer.** È a energy, non a mana, ma ha due cose che le guide mettono
+  prima della specializzazione: danno ad area su tutti i nemici e Raining Gold. Su Steam-0 è già l'eroe
+  più forte.
+- **Il tank davanti serve da scudo:** poca arma, tanta vita. Meglio a mana (Leo, poi Valerius) per i
+  moltiplicatori in comune con il resto della squadra.
+- **Un healer** è nella squadra della guida ufficiale (Benedictus, Luana) e in quella del 2025 (Belien).
+- **Non esiste un tier fisso:** tutte le fonti dicono che artefatti, gear e carte cambiano la
+  classifica. Per questo l'obiettivo serve solo a indirizzare gli investimenti. Chi combatte lo decide
+  il calcolo sui numeri veri (sezione 4).
 
-### 3.2 La squadra tipo: 1 tank, 3 spellcaster e 1 healer, tutti a mana
+### 3.2 La squadra tipo: tank, Solaine, Blaze, Cirilo e healer
 
 Ogni ruolo ha una scala: l'eroe più a destra che l'account ha sbloccato è quello dell'obiettivo.
 
 | Ruolo | Scala (stage di sblocco dal wiki) | Perché |
 | --- | --- | --- |
-| Tank (slot 1) | Boris (2) → **Leo** (150) → **Valerius** (700) | Leo e Valerius sono tank a mana. Valerius dà alla squadra +25% danno e +45% armatura per 20 s. Boris (rage) solo finché manca Leo |
-| Spellcaster 1 | **Solaine** (7) | Freeze (+80% danni sul boss), Ice Barrage per le ondate |
-| Spellcaster 2 | **Blaze** (400) | Fire Blast (+40% danni subiti), Dragon Breath, critico |
-| Spellcaster 3 | Vilon (mercenario a mana, se c'è) → **Iseris** (1.800) | Vilon: Sigil of Flame (+65% danno a un eroe). Iseris: Agony ad area |
+| Tank (slot 1) | Boris (2) → **Leo** (150) → **Valerius** (700) | Scudo a mana. Valerius dà alla squadra +25% danno e +45% armatura. Boris (rage) solo finché manca Leo |
+| Damage 1 | **Solaine** (7) | Freeze (+80% danni sul boss), Ice Barrage per le ondate. Leader consigliato |
+| Damage 2 | **Blaze** (400) | Danno base più alto del gioco, Dragon Breath, Fire Blast (+40% danni subiti). Leader consigliato |
+| Damage 3 | **Cirilo** (mercenario) → se manca: Vilon (mercenario a mana) → Iseris (1.800) | Bombe su tutti i nemici, Unholy Grenade (-15% danno nemico), Raining Gold |
 | Healer | **Benedictus** (50) → **Luana** (550) → **Belien** (2.050) → **Layla** (3.050) | Tutti a mana. Luana +40% armatura alla squadra, Belien stordisce tutti 6 s, Layla immunità a tutti 5 s ogni 20 s |
 
-- **Leader dell'obiettivo:** Blaze o Solaine, chi dei due ha più danno. Con L < T (sezione 4.4) vale la regola del team bonus anche qui.
-- **Posto vuoto:** finché un ruolo non ha nessun eroe sbloccato della sua scala (per esempio lo
-  spellcaster 3 prima di Vilon o Iseris), quel posto non è nell'obiettivo. La squadra del momento lo
-  riempie con chi rende di più.
-- **Mercenari e dark god:** stanno nella scala solo dove indicato (Vilon). Tutti gli altri restano
-  candidati per la squadra del momento.
-- La tabella va in codice come dati (`FormationPlanner.Target`). Cambiarla è cambiare una riga, se un
-  giorno le guide cambiano idea.
+- **Leader dell'obiettivo:** tra Solaine, Blaze e Cirilo, quello col danno più alto. Cirilo solo se il
+  gioco permette un mercenario leader, da verificare in fase 0. Con L < T (sezione 4.4) vale la regola
+  del team bonus anche qui.
+- **Posto vuoto:** finché un ruolo non ha nessun eroe della sua scala, quel posto non è nell'obiettivo,
+  e la squadra del momento lo riempie con chi rende di più.
+- **Cirilo serve 400 contratti** (il primo mercenario). Sugli account che non l'hanno, comprarlo è un
+  investimento a parte, che oggi il bot non fa. La guida Steam e i forum dicono: primo mercenario sì,
+  poi i contratti vanno alla rarità degli eroi. È una domanda aperta (sezione 11).
+- La tabella va in codice come dati (`FormationPlanner.Target`). Cambiarla è cambiare una riga.
 
 ### 3.3 Come si investe sulla squadra obiettivo
 
@@ -132,11 +150,13 @@ l'obiettivo è la modifica più piccola: `HeroState.InTarget` accanto a `InForma
 Eroi sbloccati: Boris, Burt, Solaine, Talia, Benedictus, Leo, Muriel, Blaze, Luana, Valerius, Astrid,
 Ina, Fini, Cirilo.
 
-- **Obiettivo risolto:** Valerius (tank), Solaine, Blaze, posto vuoto (niente Vilon né Iseris), Luana.
-- **Oggi in battaglia:** l'obiettivo è lontano. Power: Valerius 192k, Blaze 406k e Luana 144k, contro
-  Boris 2,35M e Cirilo 3,33M. La squadra del momento resta quella dei numeri (Boris, Cirilo, Solaine...).
-- **Investimenti:** gli enchant di tier 1 e i contratti vanno prima a Valerius, Blaze, Luana e Solaine.
-  Oggi invece vanno a chi è in formazione, o al più economico (l'ultimo piano spendeva su Fini).
+- **Obiettivo risolto:** Valerius (tank), Solaine, Blaze, Cirilo, Luana.
+- **Oggi in battaglia:** Cirilo (3,33M) e Solaine (2,89M) sono già pronti. Valerius (192k), Blaze
+  (406k) e Luana (144k) sono lontani. La squadra del momento resta quella dei numeri: Boris, Cirilo,
+  Solaine e altri.
+- **Investimenti:** gli enchant di tier 1 e i contratti vanno prima a Valerius, Blaze e Luana (Cirilo e
+  Solaine sono già nell'obiettivo e in formazione). Oggi invece vanno a chi è in formazione, o al più
+  economico.
 
 ## 4. La squadra del momento: il calcolo
 
@@ -240,7 +260,7 @@ dell'obiettivo. A parità di forza, così, la squadra si avvicina all'obiettivo,
    ```text
    [INFO] Formation: now Cirilo, Talia, Solaine, Boris, Muriel (leader Solaine, 1.00);
    best Boris, Leo, Muriel, Solaine, Cirilo (leader Cirilo, 1.27, +27%) - changed;
-   target Valerius, Solaine, Blaze, -, Luana (3 of 4 in place: none).
+   target Valerius, Solaine, Blaze, Cirilo, Luana (in battle: Solaine, Cirilo).
    ```
 
 ## 6. Applicare la formazione nel gioco
@@ -330,8 +350,10 @@ Dai metadati degli assembly Il2Cpp della 3.61 (`Il2CppCoreASM.dll`). **Tutto da 
 
 ## 11. Domande aperte
 
-- La squadra tipo della 3.2 (tank a mana, 3 spellcaster, healer) va bene, o preferisci 4 damage
+- La squadra tipo della 3.2 (tank, Solaine, Blaze, Cirilo, healer) va bene, o preferisci 4 damage
   dealer senza healer, come l'autore della guida Steam?
+- Sugli account senza Cirilo, il bot deve comprarlo alla Pirate Ship con i primi 400 contratti, prima
+  della rarità?
 - `min_gain` al 10% va bene?
 - Il Guardian resta fuori?
 
@@ -345,6 +367,13 @@ Dai metadati degli assembly Il2Cpp della 3.61 (`Il2CppCoreASM.dll`). **Tutto da 
   "Leader o team bonus?".
 - Forum Steam: [lancio manuale e automatico delle abilità del leader](https://steamcommunity.com/app/1013320/discussions/0/3380536561722803665),
   [leader cambiato sull'eroe col danno più basso](https://steamcommunity.com/app/1013320/discussions/0/1639801448914297514),
-  [squadra allo stage 700+, nessun tier fisso](https://steamcommunity.com/app/1013320/discussions/0/1639801448929451852/).
+  [squadra allo stage 700+, nessun tier fisso](https://steamcommunity.com/app/1013320/discussions/0/1639801448929451852/),
+  [Blaze leader per il finale, gli artefatti decidono](https://steamcommunity.com/app/1013320/discussions/0/1868371326837727158/),
+  [mercenari: Cirilo il migliore (2024)](https://steamcommunity.com/app/1013320/discussions/0/4333103880864272947/),
+  [squadra dopo il prestige, Cirilo al posto di Vilon (2025)](https://steamcommunity.com/app/1013320/discussions/0/595146751510328450/).
+- [Guida ufficiale R2 Games, "Party"](https://fs.r2games.com/content/party_10257.html).
+- [Guida giapponese su note.com](https://note.com/note_7xyz/n/nff01db1f1e34?hl=en).
+- [Wiki, Cirilo](https://firestone-idle-rpg.fandom.com/wiki/Cirilo) e
+  [Pirate Ship](https://firestone-idle-rpg.fandom.com/wiki/Pirate_Ship).
 - Assembly Il2Cpp della 3.61 (`Il2CppCoreASM.dll`): `Hero`, `HeroDeck`, `BattleHero`,
   `BattleHeroManager`, `PartyMech`.
