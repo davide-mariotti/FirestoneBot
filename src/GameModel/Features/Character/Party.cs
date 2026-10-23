@@ -48,6 +48,55 @@ public static class Party
 
     public const int FormationSize = 5;
 
+    /// <summary>The deck's hero cells, by portrait sprite name, and whether each is ticked as deployed.</summary>
+    public static List<(Transform Cell, string Portrait, bool Deployed)> DeckSlots()
+    {
+        var cells = new List<(Transform, string, bool)>();
+        var grid = FindDeep(GameElement.FindTransform(Paths.PartyLoc.Root), "heroGrid");
+        if (grid == null) return cells;
+        for (var i = 0; i < grid.childCount; i++)
+        {
+            var cell = grid.GetChild(i);
+            if (!cell.gameObject.activeInHierarchy || !cell.TryGetComponent(out Il2Cpp.PartyDeckSlotViewController view)) continue;
+            cells.Add((cell, view.heroPortrait?.sprite?.name ?? "", view.activeIcon != null && view.activeIcon.activeSelf));
+        }
+
+        return cells;
+    }
+
+    /// <summary>
+    ///     Swaps one deployed hero for one from the deck: a tap on a deck cell toggles that hero in or
+    ///     out of the formation (PartyMech.ToggleHeroOnBattleFormation). If the new one doesn't get in,
+    ///     the old one is put back. True only when the formation then holds the new hero and not the old.
+    /// </summary>
+    public static IEnumerator Swap(string outName, string inName, Transform outCell, Transform inCell,
+        Action<string> log, Action<bool> done)
+    {
+        GameButton.DispatchPointerClick(outCell.gameObject);
+        yield return new WaitForSeconds(2f);
+        var afterOut = FormationNames();
+        if (afterOut.Contains(outName))
+        {
+            log($"[FAILED] Swap {outName} -> {inName}: the deck tap didn't take {outName} out ({string.Join(", ", afterOut)}).");
+            done(false);
+            yield break;
+        }
+
+        GameButton.DispatchPointerClick(inCell.gameObject);
+        yield return new WaitForSeconds(2f);
+        var afterIn = FormationNames();
+        if (afterIn.Contains(inName))
+        {
+            done(true);
+            yield break;
+        }
+
+        log($"[FAILED] Swap {outName} -> {inName}: {inName} didn't get in ({string.Join(", ", afterIn)}) - putting {outName} back.");
+        GameButton.DispatchPointerClick(outCell.gameObject);
+        yield return new WaitForSeconds(2f);
+        done(false);
+    }
+
     /// <summary>
     ///     Makes a deployed hero the leader: a tap on it in its slot shows it in the leader panel, whose
     ///     setLeader button then assigns it - only once the panel shows that hero. Assumed from the

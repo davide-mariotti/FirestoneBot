@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Firebot.Core;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Character;
 using Firebot.GameModel.Primitives;
-using Firebot.Utilities;
 using MelonLoader;
 
 namespace Firebot.Tasks.Character;
@@ -13,13 +13,15 @@ namespace Firebot.Tasks.Character;
 /// <summary>
 ///     The daily formation check (FORMATION_PLAN.md): the strongest five the account can field now, and
 ///     the target its own multipliers favor. Logs both against the formation in battle; without
-///     dry_run it also switches the leader when the five are already the right ones.
+///     dry_run it swaps heroes from the deck and sets the leader. Runs at 11:02, out of the 10:00 rush.
 /// </summary>
 public class FormationTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Character;
 
     private const double MinGain = 0.10;
+
+    private static readonly TimeSpan RunAt = new(11, 2, 0);
 
     private MelonPreferences_Entry<bool> _dryRun;
 
@@ -28,12 +30,18 @@ public class FormationTask : BotTask
         if (_dryRun != null) return;
 
         _dryRun = category.CreateEntry("dry_run", true, "Dry Run",
-            "Only logs the best formation and the target. Set false to let the bot change the leader. Default: true.");
+            "Only logs the best formation and the target. Set false to let the bot change heroes and leader. Default: true.");
+    }
+
+    private static DateTime NextRun()
+    {
+        var at = DateTime.Today + RunAt;
+        return DateTime.Now < at ? at : at.AddDays(1);
     }
 
     public override IEnumerator Execute()
     {
-        NextRunTime = GameDay.NextReset();
+        NextRunTime = NextRun();
 
         var read = Heroes.Read();
         if (read == null)
@@ -43,31 +51,64 @@ public class FormationTask : BotTask
             yield break;
         }
 
-        var best = FormationPlanner.Best(read.Heroes, h => h.Offense, read.LeaderRatio);
-        var now = FormationPlanner.Score(read.Heroes, read.InBattle, read.Leader, h => h.Offense, read.LeaderRatio);
+        double Value(HeroStats h) => h.Offense;
+        var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio);
+        var now = FormationPlanner.Score(read.Heroes, read.InBattle, read.Leader, Value, read.LeaderRatio);
         var target = FormationPlanner.Best(read.Heroes, h => h.Potential, read.LeaderRatio);
         var change = FormationPlanner.Beats(best.Score, now, MinGain);
-        var sameFive = best.Slots.ToHashSet().SetEquals(read.InBattle);
 
-        Debug($"[INFO] Formation: now {string.Join(", ", read.InBattle)} (leader {read.Leader}); " +
-              $"best {string.Join(", ", best.Slots)} (leader {best.Leader}, x{Math.Pow(10, best.Score - now):0.00}); " +
+        Debug($"[INFO] Formation: now {string.Join(", ", read.InBattle)} (leader {read.Leader}, score {now:0.00}); " +
+              $"best {string.Join(", ", best.Slots)} (leader {best.Leader}, score {best.Score:0.00}, x{Math.Pow(10, best.Score - now):0.00}); " +
               $"target {string.Join(", ", target.Slots)} (leader {target.Leader}); leader ratio {read.LeaderRatio:0.00}; " +
-              (!change ? "keep." : _dryRun.Value ? "would change (dry run)." : sameFive ? "changing the leader." :
-                  "a different five - not applied yet (FORMATION_PLAN.md, phase 3)."));
+              (!change ? "keep." : _dryRun.Value ? "would change (dry run)." : "changing."));
         Debug("[INFO] Formation heroes (log10 offense/potential): " + string.Join(", ",
-            read.Heroes.OrderByDescending(h => h.Offense).Select(h => $"{h.Name} {h.Offense:0.00}/{h.Potential:0.00}")));
-
-        if (!change || _dryRun.Value || !sameFive || best.Leader == read.Leader) yield break;
+            read.Heroes.OrderByDescending(Value).Select(h => $"{h.Name} {h.Offense:0.00}/{h.Potential:0.00}")));
 
         yield return Party.Open;
-        yield return Poll.Until(() => Party.FormationNames().Contains(best.Leader), 16);
-        yield return Party.SetLeader(best.Leader, line => Debug(line));
-        yield return Party.Close;
-        Debug($"[INFO] Formation: screens after closing the Party: {Watchdog.DumpActiveScreens()}.");
+        yield return Poll.Until(() => Party.FormationNames().Count >= Party.FormationSize, 16);
+        var deck = Party.DeckSlots();
+        Debug($"[INFO] Formation deck: {string.Join(", ", deck.Select(d => d.Portrait + (d.Deployed ? "*" : "")))}.");
 
+        if (change && !_dryRun.Value) yield return Apply(read, best, deck);
+
+        yield return Party.Close;
+        if (!change || _dryRun.Value) yield break;
+
+        Debug($"[INFO] Formation: screens after closing the Party: {Watchdog.DumpActiveScreens()}.");
         var after = Heroes.Read();
-        Debug(after?.Leader == best.Leader
-            ? $"[INFO] Formation: leader now {after.Leader}."
-            : $"[FAILED] Formation: leader still {after?.Leader ?? "unread"}, wanted {best.Leader}.");
+        var score = after == null ? double.NaN
+            : FormationPlanner.Score(after.Heroes, after.InBattle, after.Leader, Value, after.LeaderRatio);
+        Debug(after == null
+            ? "[FAILED] Formation: the heroes didn't read after the change."
+            : $"[INFO] Formation: after {string.Join(", ", after.InBattle)} (leader {after.Leader}, score {score:0.00}, " +
+              $"x{Math.Pow(10, score - now):0.00} on before); " +
+              (after.InBattle.ToHashSet().SetEquals(best.Slots) && after.Leader == best.Leader ? "as planned." : "[FAILED] not as planned."));
+    }
+
+    private IEnumerator Apply(Heroes.Snapshot read, Formation best, List<(UnityEngine.Transform Cell, string Portrait, bool Deployed)> deck)
+    {
+        // ponytail: deck cells are matched by a portrait sprite that names the hero; a roster whose sprites
+        // don't would need the cell -> hero map from PartyMech instead.
+        UnityEngine.Transform CellOf(string name) =>
+            deck.FirstOrDefault(d => d.Portrait.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0).Cell;
+
+        var outs = read.InBattle.Except(best.Slots).ToList();
+        var ins = best.Slots.Except(read.InBattle).ToList();
+        for (var i = 0; i < Math.Min(outs.Count, ins.Count); i++)
+        {
+            var (outCell, inCell) = (CellOf(outs[i]), CellOf(ins[i]));
+            if (outCell == null || inCell == null)
+            {
+                Debug($"[FAILED] Formation: no deck cell for {(outCell == null ? outs[i] : ins[i])} - stopping the swaps.");
+                yield break;
+            }
+
+            var ok = false;
+            yield return Party.Swap(outs[i], ins[i], outCell, inCell, line => Debug(line), result => ok = result);
+            if (!ok) yield break;
+            Debug($"[INFO] Formation: swapped {outs[i]} -> {ins[i]}.");
+        }
+
+        if (Heroes.Read()?.Leader != best.Leader) yield return Party.SetLeader(best.Leader, line => Debug(line));
     }
 }
