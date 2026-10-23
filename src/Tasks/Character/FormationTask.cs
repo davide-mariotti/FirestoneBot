@@ -61,6 +61,7 @@ public class FormationTask : BotTask
               $"best {string.Join(", ", best.Slots)} (leader {best.Leader}, score {best.Score:0.00}, x{Math.Pow(10, best.Score - now):0.00}); " +
               $"target {string.Join(", ", target.Slots)} (leader {target.Leader}); leader ratio {read.LeaderRatio:0.00}; " +
               (!change ? "keep." : _dryRun.Value ? "would change (dry run)." : "changing."));
+        Debug("[INFO] Formation dps check: " + Heroes.DpsCheck());
         Debug("[INFO] Formation heroes (log10 offense/potential): " + string.Join(", ",
             read.Heroes.OrderByDescending(Value).Select(h => $"{h.Name} {h.Offense:0.00}/{h.Potential:0.00}")));
 

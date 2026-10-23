@@ -51,6 +51,18 @@ Fasi 0-2 fatte su Steam-0, solo in dry run. `FormationTask` legge e scrive, non 
   hanno cambiato squadra o leader, tutte "as planned"; 9 sono rimaste com'erano perché il guadagno era
   sotto il 10%. Il controllo giornaliero è alle 11:02, non alle 10:00 (scelta dell'utente, per non
   sommarsi al reset).
+- **Verifica del DPS, 23/10 17:49, su Steam-2, -5, -11, -13, -24 e -28** (`Formation dps check` nel log,
+  ogni giorno).
+  - **Eroi schierati non leader:** allo stesso livello d'oro, `DPS del gioco - offense` è la stessa
+    costante al centesimo, anche per gli eroi appena entrati in squadra. Quindi gli attributi degli eroi
+    in panchina non sono vecchi.
+  - **Leader:** la sua differenza sopra gli altri è esattamente `leadership - team bonus`, anche quando è
+    negativa (Steam-2 -0,73, Steam-24 -0,62).
+  - **Unica eccezione:** Muriel su Steam-28 ha +0,39 fuori dal modello, un effetto che `damageBasic` non
+    contiene.
+  - **Livelli d'oro:** 100 livelli d'oro valgono circa 10^1,4, quindi un eroe appena scambiato rende meno
+    finché `HeroUpgrade` non lo porta al livello degli altri. Un'ora dopo gli scambi i livelli erano
+    allineati entro 100.
 - **Prossimo passo:** gli investimenti sull'obiettivo (5.2).
 
 ## 0. Come partire
