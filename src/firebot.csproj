@@ -71,5 +71,9 @@
         <Reference Include="Il2CppSharedASM">
             <HintPath>$(Il2CppAssembliesDir)\Il2CppSharedASM.dll</HintPath>
         </Reference>
+        <!-- ObscuredBigDouble, the type of the heroes' attributes. -->
+        <Reference Include="Il2CppUtilitiesASM">
+            <HintPath>$(Il2CppAssembliesDir)\Il2CppUtilitiesASM.dll</HintPath>
+        </Reference>
     </ItemGroup>
 </Project>

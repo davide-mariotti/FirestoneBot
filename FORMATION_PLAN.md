@@ -9,6 +9,35 @@
 > Solo analisi: niente codice ancora. Oggi il bot legge la formazione ma non la cambia mai. Cirilo lo
 > compra l'utente a mano sugli account che non l'hanno.
 
+## Stato (23/10, Steam-0)
+
+Fasi 0-2 fatte su Steam-0, solo in dry run. `FormationTask` legge e scrive, non cambia niente.
+
+- **Sonda (fase 0).** Gli attributi sono `ObscuredBigDouble` e superano un `double` (danno circa
+  10^186), quindi tutto è in log10 (`BigDouble.AbsLog10`). Mercenari e dark god sono nella stessa lista
+  `HeroDeck.heroes`. `BattleHeroManager` si raggiunge da `FindObjectOfType<HeroBattleLogic>()`.
+- **Formula del danno verificata.** `danno / velocità × (1 + critico × danno critico)` più una costante
+  uguale per tutti (291,76) dà esattamente il `BattleHero.DPS` del gioco per gli eroi schierati.
+  `damageBasic` non comprende i livelli d'oro, che stanno nella costante. Le abilità non sono nel modello.
+- **Fattore del leader:** è `leadershipMultiplier / teamBonusMultiplier`, senza l'1,5 della sezione 4.3.
+  Su Steam-0 è 10^(3,36 - 2,18) ≈ 15, e torna col DPS totale.
+- **Potenziale:** `damageInitial` × i tre moltiplicatori (`GetSpecializationMultiplier`,
+  `GetAttackStyleMultiplier`, `GetResourceMultiplier`). Quello che resta di `damageBasic` (circa 10^160)
+  è comune a tutti più l'investimento del singolo eroe, che va da 0 a 4 ordini di grandezza.
+- **Planner (fase 1).** `FormationPlanner`: i 5 col valore più alto. Leader il più forte se il fattore
+  supera 1, altrimenti il più debole. Melee davanti, il più prezioso in fondo a ogni zona. Non serve una
+  ricerca esaustiva finché le abilità non sono nel modello. Test in `FormationPlannerTests`, coi numeri
+  veri di Steam-0.
+- **Dry run (fase 2) su Steam-0, 23/10 15:08:**
+  `now Boris, Talia, Muriel, Solaine, Cirilo (leader Cirilo); best Boris, Muriel, Talia, Solaine, Cirilo
+  (leader Talia, x7.01); target Muriel, Talia, Burt, Cirilo, Astrid (leader Talia)`.
+  - La squadra schierata era già quella giusta, ma col leader sbagliato: Talia fa circa 10 volte il
+    danno di Cirilo, e il consiglio del 22/10 (Cirilo leader) veniva dalla power.
+  - L'obiettivo di Steam-0 è rage ed energy: i suoi bonus per rage (10^10,45) ed energy (10^10,26)
+    battono il mana (10^8,36) di 100 volte. Le guide puntano sul mana, ma questo account no.
+- **Prossimo passo (fase 3):** cambiare davvero formazione e leader dall'interfaccia, con l'utente che
+  guarda. Poi gli investimenti sull'obiettivo (5.2) e la flotta.
+
 ## 0. Come partire
 
 Da incollare in una sessione nuova di Claude Code (cartella `C:\Repos\FirestoneBot`):
