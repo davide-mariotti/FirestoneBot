@@ -41,9 +41,17 @@ Fasi 0-2 fatte su Steam-0, solo in dry run. `FormationTask` legge e scrive, non 
   ...", e il bot preme `setLeader` solo se il pannello mostra il nome giusto. Poi chiude: niente popup di
   salvataggio, e la rilettura dal gioco dà `leader now Talia`. Il pannello si trova per nome sotto
   `menus/Party` (`Party.SetLeader`).
-- **Prossimo passo:** cambiare gli eroi in formazione (aggiungere e togliere dal mazzo), che oggi il task
-  scrive come `a different five - not applied yet`. Poi gli investimenti sull'obiettivo (5.2) e la
-  flotta.
+- **Scambio degli eroi, 23/10 16:01, Steam-28.** Un tocco su una cella del mazzo (`heroGrid`, celle
+  `PartyDeckSlotViewController`) toglie o mette quell'eroe. Le celle si riconoscono dal nome dello sprite
+  del ritratto: `avatarBurt164(Clone)`, ma anche le skin (`murielTheNurseOfDeathAvatar164`) e il refuso
+  del gioco `avatarValerious164`. Il nome contenuto nel ritratto vince, altrimenti si prende l'unico
+  ritratto entro 2 lettere (`FormationPlanner.MatchPortrait`). Il mazzo si riempie dopo gli slot, quindi
+  va aspettato.
+- **Flotta, 23/10 16:06-17:38.** `dry_run = false` su Steam-0..31 (anche nel template). Su 32 istanze, 23
+  hanno cambiato squadra o leader, tutte "as planned"; 9 sono rimaste com'erano perché il guadagno era
+  sotto il 10%. Il controllo giornaliero è alle 11:02, non alle 10:00 (scelta dell'utente, per non
+  sommarsi al reset).
+- **Prossimo passo:** gli investimenti sull'obiettivo (5.2).
 
 ## 0. Come partire
 
