@@ -78,8 +78,17 @@ $collect = {
             }
         }
 
+        # The formation check (FormationTask, 11:02): its last "now" line and the "after" that followed it.
+        $formNow = $null; $formAfter = $null
+        foreach ($line in $lines) {
+            if ($line -match '\[INFO\] Formation: now (.*)$') { $formNow = $Matches[1]; $formAfter = $null }
+            elseif ($line -match '\[INFO\] Formation: after (.*)$') { $formAfter = $Matches[1] }
+        }
+
         [pscustomobject]@{
             n        = $n
+            formNow   = $formNow
+            formAfter = $formAfter
             online   = $online
             level    = if ($last) { $last.level } else { $null }
             stage    = $stats['MaxStageReached']
@@ -162,6 +171,27 @@ $body = foreach ($r in $rows) {
     '<tr>' + (($cells | ForEach-Object { "<td style=`"$td`">$_</td>" }) -join '') + '</tr>'
 }
 
+# --- Formation ---
+# "Boris, Talia, ... (leader Solaine, score 63.54); best ... (leader Boris, score 63.61, x1.17); target ... (leader Talia); leader ratio 0.07; changing."
+function Team([string]$names, [string]$leader) {
+    (($names -split ', ') | ForEach-Object { if ($_ -eq $leader) { "<b>$_</b>&#9733;" } else { $_ } }) -join ', '
+}
+$formation = foreach ($r in $rows) {
+    $now = if ($r.formNow -match '^(.+?) \(leader (\w+), score [\d.]+\); best (.+?) \(leader (\w+), score [\d.]+, x([\d.]+)\); target (.+?) \(leader (\w+)\)') { $Matches } else { $null }
+    $cells = if (-not $now) { 'nessun controllo nelle ultime 24 ore', '', '' }
+    else {
+        $after = if ($r.formAfter -match '^(.+?) \(leader (\w+), score [\d.]+, x([\d.]+) on before\); (.+)\.$') { $Matches } else { $null }
+        if ($after -and $after[4] -eq 'as planned') {
+            (Team $after[1] $after[2]), ("<span style=`"color:#1a7f37`">cambiata, x$($after[3])</span> &middot; prima: " + (Team $now[1] $now[2]))
+        }
+        elseif ($after) { (Team $now[1] $now[2]), '<span style="color:#cf222e">cambio non riuscito</span>' }
+        else { (Team $now[1] $now[2]), "<span style=`"color:#57606a`">tenuta (la migliore rendeva x$($now[5]))</span>" }
+        Team $now[6] $now[7]
+    }
+    $cells = @($cells)
+    "<tr><td style=`"$td`">Steam-$($r.n)</td>" + (($cells | ForEach-Object { "<td style=`"$td;text-align:left`">$_</td>" }) -join '') + '</tr>'
+}
+
 $online = @($rows | Where-Object online).Count
 function Problem([string]$label, $matching, [scriptblock]$detail = { "$($_.n)" }) {
     $list = @($matching | ForEach-Object $detail)
@@ -172,6 +202,7 @@ $problems = @(
     Problem 'Riavviate dal watchdog' ($rows | Where-Object { $_.restarts }) { "$($_.n) (x$($_.restarts))" }
     Problem 'Livello fermo dal report precedente' ($rows | Where-Object { $old = $before[[int]$_.n]; $previousTime -and ($today - $previousTime).TotalHours -ge 20 -and $old -and $null -ne $_.level -and $_.level -eq $old.level })
     Problem 'Senza snapshot nelle ultime 24 ore' ($rows | Where-Object { $_.online -and $null -eq $_.level })
+    Problem 'Cambio di formazione non riuscito' ($rows | Where-Object { $_.formAfter -and $_.formAfter -notmatch 'as planned\.$' })
 )
 $levels = ($rows | Where-Object { $old = $before[[int]$_.n]; $old -and $null -ne $_.level -and $null -ne $old.level } | ForEach-Object { $_.level - $old.level } | Measure-Object -Sum).Sum
 $compared = if ($previousFile) { "Differenze rispetto al report del $($previousTime.ToString('dd/MM')) alle $($previousTime.ToString('HH:mm'))." } else { 'Primo report: le differenze compariranno da domani.' }
@@ -186,6 +217,12 @@ $(if ($problems) { '<p style="margin:0 0 12px;color:#cf222e">' + ($problems -joi
 $($body -join "`n")
 </table>
 <p style="margin:12px 0 0;color:#8c959f;font-size:11px">Valori all'ultimo snapshot del bot (ogni ora); il numero piccolo &egrave; la differenza dal report precedente. WM power = potenza della squadra di war machine. Dal profilo (Statistics), come totali: Max stage = Max Stage Reached; Hero power = potenza totale degli eroi; Research e Meteorite = ricerche Firestone e Meteorite completate; Guardian = addestramenti + illuminazioni del guardiano; Awakenings; Empowers = empower al Temple; Rituals = rituali dell'Oracolo; All dailies / All missions / All expeditions = giorni con tutte le giornaliere / missioni della mappa / spedizioni completate (+1 al giorno = tutto fatto); Map missions = missioni vinte; Arena fights / Arena wins = combattimenti / vittorie nell'Arena of Kings; Guild donated = Guild Coin donate. Errors = task falliti nelle ultime 24 ore. Restarts = interventi del watchdog nelle ultime 24 ore.</p>
+<p style="font-size:15px;margin:20px 0 4px"><b>Formazione</b></p>
+<p style="margin:0 0 8px;color:#57606a">Dal controllo giornaliero delle 11:02 (FORMATION_PLAN.md). &#9733; = leader. La squadra cambia solo se rende almeno il 10% in pi&ugrave;; x = danno di squadra dopo / prima. Obiettivo = la squadra che i bonus dell'account (artefatti, beast, alberi) favoriscono a parit&agrave; di investimento.</p>
+<table style="border-collapse:collapse;font-size:12px">
+<tr>$((('Instance', 'Squadra in battaglia', 'Ultimo controllo', 'Obiettivo') | ForEach-Object { "<th style=`"$th;text-align:left`">$_</th>" }) -join '')</tr>
+$($formation -join "`n")
+</table>
 </div>
 "@
 $html | Set-Content "$store\$stamp.html" -Encoding UTF8
