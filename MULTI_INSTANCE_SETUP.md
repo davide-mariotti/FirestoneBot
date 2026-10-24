@@ -897,7 +897,10 @@ illuminazioni), Awakenings, Empowers, Rituals, Gems, Guild coins (per sapere qua
 o comprare un amuleto), Dust, Blood, All dailies / All missions / All expeditions (giorni con tutte le
 giornaliere / missioni della mappa / spedizioni completate: +1 al giorno vuol dire tutto fatto), Map
 missions, Arena fights, Arena wins, Guild donated, Errors (task falliti nelle 24 ore) e Restarts
-(interventi del watchdog nelle 24 ore). Sopra la tabella, i problemi
+(interventi del watchdog nelle 24 ore). Dal 24/10, sotto, una seconda tabella "Formazione": per ogni
+istanza la squadra in battaglia (★ = leader), l'esito dell'ultimo controllo delle 11:02 (cambiata con
+il guadagno e la squadra di prima, tenuta, o non riuscita) e la squadra obiettivo; alle 09:50 è il
+controllo del giorno prima. Sopra la tabella, i problemi
 (istanze ferme, riavviate, livello fermo da almeno 20 ore, senza snapshot). Level, Power e valute vengono dalla
 riga `[INFO] Snapshot: level L, stage S, power P, stars N, gems G, dust D, blood B, guild C.`; Max
 stage, Empowers, All dailies (giorni con tutte le giornaliere completate), Map missions, Arena fights e
