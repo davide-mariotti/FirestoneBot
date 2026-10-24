@@ -70,7 +70,7 @@ il 30/09.
 |---|---|---|---|---|---|
 | Decorated Heroes | ricorrente | mesi dispari, 2 settimane, livello 50 | novembre | 8 sfide al giorno, stelle, medaglia Fate | ✅ sfide, claim, scambio (sezione 6 per le medaglie) |
 | Mini-eventi (11) | ricorrente | ogni 5 giorni, per 3 giorni | Stardust 04/10, Primordial elements 09/10; Ethereal miners ~14/10 e Team effort ~19/10 (carte già in elenco il 10/10) | una sfida al giorno | ✅ `MiniEventTask` |
-| Halloween ("Trick or treat") | calendario | ottobre, 2 settimane, livello 10 | **23/10 verso le 10:00** (carta già in elenco) | zucche → scambio | ❌ sezione 3 |
+| Halloween ("Trick or treat") | calendario | ottobre, 2 settimane, livello 10 | in corso dal 23/10 | zucche → scambio | ✅ `TrickOrTreatEventTask` (sezione 3) |
 | Winter Festival | calendario | dicembre | ~19/12 | caramelle → scambio | ❌ sezione 3 |
 | Valentine ("Love is in the air") | calendario | febbraio | ~feb 2027 | cioccolatini → scambio | ❌ sezione 3 |
 | Spring ("Nature's Dance") | calendario | aprile | ~apr 2027 | fiori → scambio | ❌ sezione 3 |
@@ -97,14 +97,22 @@ acquisti), avatar (21.000 l'uno) e uno shop a pagamento. **A fine evento la valu
 piccone 375; 20 Strange Dust 500; 5 honor 1.500; 500 birre 1.250; **150 meteoriti 1.500 (limite
 50)**; golden key, cobra key 3.000; twilight hourglass 1.820; soul ember 1.500.
 
-**Cosa comprare**: la guida F2P (`docs/firestone_guida_F2P.md`, "Eventi e shop evento") dice
-meteoriti, Dragon Blood e forzieri leggendari; da evitare birra, golden key e forzieri comuni. In
-14 giorni arrivano 42.000 di valuta e i meteoriti da soli ne assorbono 75.000, quindi la priorità di
-oggi di `ExchangeTab` (Dragon blood, che qui non c'è, poi Meteorite, poi Beer) mette tutto in
-meteoriti, circa 4.200 a evento. **Da confermare con l'utente** prima di scrivere il task: tutto in
-meteoriti, o anche i forzieri gear dove sono leggendari.
+**Cosa comprare** (scelta dell'utente, 24/10): forzieri leggendari, poi meteoriti; niente birra
+(a 1.250 si mangerebbe le zucche che aspettano il pacco di meteoriti da 1.500). Il forziere gear è
+"Legendary chest" solo dal livello 130: sotto ("Epic chest", Steam-17..31 il 24/10) il bot va dritto
+ai meteoriti. In 14 giorni arrivano 42.000 zucche; i leggendari (25 × 2.500) e i meteoriti (50 ×
+1.500) ne assorbono di più, quindi non avanza niente. Gli altri eventi tengono l'ordine di
+`ExchangeTab` (Dragon blood, Meteorite, Beer).
 
-**Da fare quando parte** (ogni evento di calendario è una carta diversa nell'elenco eventi):
+**Fatto il 24/10** (`TrickOrTreatEventTask`): la carta "Trick or treat" apre `events/TrickOrTreatShop`,
+mappato dagli asset 3.61 senza sonda (`unity_ui_mapper.py`); il tab `pumpkinExchange` ha la stessa
+struttura dello scambio di `AnniversaryShop`. Su Steam-17 il primo giro ha letto le 13 offerte (la
+terza, il forziere dell'Oracolo, nascosta su quell'account) e comprato 2 meteoriti. Lo scambio ora
+compra a x1 per tutti gli shop: a x10 un acquisto di meteoriti costava 15.000 zucche, 5 giorni di
+raccolta, e a fine evento ne restavano fino a ~12.000. Il Winter Festival usa un prefab diverso
+(`XmasShop`, tab `candyExchange`): avrà il suo task.
+
+**Come si era preparato** (ogni evento di calendario è una carta diversa nell'elenco eventi):
 
 1. Sonda (sezione 7) sulla carta e sulla schermata che apre: nome del prefab (sotto `events/` o
    `menus/`), tab, elenco dello scambio (nome oggetto, bottone d'acquisto, moltiplicatore), come si
@@ -186,7 +194,7 @@ schermata aperta dopo un click: `Watchdog.DumpActiveScreens()`. La carta dell'ev
 | 04/10, 10:00 | Stardust: primo mini-evento nuovo per `MiniEventTask`, prime azioni dei mini-eventi (sezione 1) |
 | 09/10 | Primordial elements: aperto su tutte e 17, sfida del giorno reclamata dove era fatta (TESTING.md, riga Mini Event, 10/10) |
 | ~14/10, ~19/10 | Ethereal miners, Team effort (mini-eventi, già tra i nomi di `MiniEventTask`) |
-| 23/10, 10:00 | Halloween: sonda e task (sezione 3) |
+| 23/10, 10:00 | Halloween: task fatto il 24/10 (sezione 3) |
 | novembre | Decorated Heroes: medaglie (sezione 6) |
 | 03/12, 10:00 | Frostfire Festival (sezione 4) |
 | ~19/12 | Winter Festival: conferma del task di calendario (sezione 3) |

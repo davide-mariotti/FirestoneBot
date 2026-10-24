@@ -17,7 +17,7 @@ public sealed class ExchangeTab
     ///     with the event. A shop that doesn't sell a name just skips it. Buying stops at each item's
     ///     cap or when the currency runs out, so leftovers roll down to the next name.
     /// </summary>
-    private static readonly string[] PriorityItems = { "Dragon blood", "Meteorite", "Beer" };
+    private static readonly string[] DefaultPriorityItems = { "Dragon blood", "Meteorite", "Beer" };
 
     // A ceiling only: the button goes unclickable at the item's cap.
     private const int MaxBuysPerItem = 100;
@@ -28,10 +28,12 @@ public sealed class ExchangeTab
     private readonly string _itemsRoot;
     private readonly string _itemNameTxt;
     private readonly string _itemBuyBtn;
+    private readonly string[] _priorityItems;
 
     public ExchangeTab(string logTag, string quantityBtn, string quantityTxt, string itemsRoot, string itemNameTxt,
-        string itemBuyBtn)
+        string itemBuyBtn, string[] priorityItems = null)
     {
+        _priorityItems = priorityItems ?? DefaultPriorityItems;
         _logTag = logTag;
         _quantityBtn = quantityBtn;
         _quantityTxt = quantityTxt;
@@ -40,17 +42,19 @@ public sealed class ExchangeTab
         _itemBuyBtn = itemBuyBtn;
     }
 
-    /// <summary>Selects a bulk multiplier (x10 or x5) when the tab has one, then buys PriorityItems in order.</summary>
+    /// <summary>
+    ///     Selects x1, then buys PriorityItems in order. Not x10: currency trickles in, and a bulk buy
+    ///     waits for 10 prices' worth - 15,000 pumpkins for Halloween's meteorites, 5 days of drops,
+    ///     so up to that much would expire with the event.
+    /// </summary>
     public IEnumerator BuyPriorityItems()
     {
-        yield return TrySetBestQuantity();
+        yield return QuantityToggle.CycleUntil(new GameButton(_quantityBtn), new GameText(_quantityTxt),
+            QuantityToggle.IsOne);
 
-        foreach (var item in PriorityItems)
+        foreach (var item in _priorityItems)
             yield return BuyItem(item);
     }
-
-    private IEnumerator TrySetBestQuantity() =>
-        QuantityToggle.CycleUntil(new GameButton(_quantityBtn), new GameText(_quantityTxt), QuantityToggle.IsBulk);
 
     /// <summary>
     ///     Buys the first item whose name contains itemName (case-insensitive) until it's capped or

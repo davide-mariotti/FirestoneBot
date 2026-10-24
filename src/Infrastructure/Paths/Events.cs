@@ -114,6 +114,35 @@ public static partial class Paths
         }
     }
 
+    /// <summary>
+    ///     Halloween ("Trick or treat" card, the witch's hut in town). Mapped from the 3.61 assets
+    ///     (24/10): the exchange is laid out like AnniversaryShop's. "pumpkinShop" is real money.
+    /// </summary>
+    public static class TrickOrTreatShopLoc
+    {
+        public const string Root = MenusLoc.Root + "/events/TrickOrTreatShop";
+
+        public const string CloseBtn = Root + "/bg/closeButton";
+
+        public const string ExchangeTabBtn = Root + "/bg/submenuButtons/pumpkinExchange";
+
+        public static class ExchangeLoc
+        {
+            private const string Root = TrickOrTreatShopLoc.Root + "/bg/submenus/pumpkinExchange";
+
+            public const string ChangeQuantityBtn = Root + "/changeQuantityButton";
+
+            public const string ChangeQuantityTxt = ChangeQuantityBtn + "/text";
+
+            public const string ItemsRoot = Root + "/scrollView/viewport/content";
+
+            // Relative to an "item (N)" in ItemsRoot.
+            public const string ItemNameTxt = "/itemName";
+
+            public const string ItemBuyBtn = "/purchaseButton";
+        }
+    }
+
     /// <summary>Every mini-event. Its default tab ("offers") is real-money packs.</summary>
     public static class MiniEventsLoc
     {

@@ -20,6 +20,8 @@ public static class QuantityToggle
     /// </summary>
     public static bool IsBulk(string text) => text.Contains("10") || text.Contains("5");
 
+    public static bool IsOne(string text) => text.Trim() == "x1";
+
     /// <summary>
     ///     Clicks the toggle until the label satisfies isWanted. If the cycle wraps back to the
     ///     starting value (or MaxClicks pass) without a match, it keeps clicking until the original

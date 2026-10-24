@@ -49,9 +49,8 @@ public static class ArcaneCrystal
 
     private static GameText QuantityTxt => new(Paths.ArcaneCrystalLoc.QuantityTxt);
 
-    private static bool IsOne(string quantityText) => quantityText.Trim() == "x1";
-
     /// <summary>Selects x1 hits where the multiplier exists; a no-op where it's hidden.</summary>
     public static IEnumerator TrySetQuantityTo1() =>
-        QuantityToggle.CycleUntil(new GameButton(Paths.ArcaneCrystalLoc.ChangeQuantityBtn), QuantityTxt, IsOne);
+        QuantityToggle.CycleUntil(new GameButton(Paths.ArcaneCrystalLoc.ChangeQuantityBtn), QuantityTxt,
+            QuantityToggle.IsOne);
 }
