@@ -63,7 +63,17 @@ Fasi 0-2 fatte su Steam-0, solo in dry run. `FormationTask` legge e scrive, non 
   - **Livelli d'oro:** 100 livelli d'oro valgono circa 10^1,4, quindi un eroe appena scambiato rende meno
     finché `HeroUpgrade` non lo porta al livello degli altri. Un'ora dopo gli scambi i livelli erano
     allineati entro 100.
-- **Prossimo passo:** gli investimenti sull'obiettivo (5.2).
+- **Investimenti sull'obiettivo (5.1 e 5.2), 24/10, Steam-0.**
+  - **Obiettivo nel cfg.** `FormationTask` lo salva in `[formationtask] target` ("nomi | leader") e lo
+    sostituisce solo con uno migliore del 20% sul potenziale; la riga del log dice `target new` o
+    `target kept`.
+  - **Tier 1.** `HallOfHeroesTask` aggiunge gli eroi dell'obiettivo a quelli in formazione (`Invested
+    in (formation + target)`), quindi gli enchant di tier 1 vanno a entrambi. Il '*' dello snapshot
+    vuol dire "formazione o obiettivo".
+  - **Rarità.** L'ordine è obiettivo, poi resto della formazione, poi gli altri.
+  - **Primo giro su Steam-0 alle 16:33.** Obiettivo Talia, Ina, Burt, Cirilo, Astrid. Il piano del gear
+    spende subito sui tier 1 di Ina e Astrid. Nessuna rarità comprata: mancano i requisiti del gear,
+    non i contratti (646).
 
 ## 0. Come partire
 

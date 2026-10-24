@@ -83,8 +83,8 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Talents**: spends talent points to reach as deep into the tree as possible, by configurable priority (`priority_overrides`).
 - **Path of Glory**: claims the free track and, if owned, the Golden one. Never buys the pass.
-- **Hall of Heroes**: spends Void Crystals on gear enchants and Ethereal Shards on jewel enchants, planned in advance from a snapshot of every hero (re-read every 24 h): gear tier unlocks first, then the lowest levels, with the Ring ahead and tier 1 only for the formation. Unlocks gear tiers, paid in Meteorites, once the gear power allows.
-- **Formation**: every day at 11:02 reads every hero's attributes from the game and fields the five with the most damage, the strongest as leader when leadership beats the team bonus (the weakest otherwise); swaps heroes from the Party deck and sets the leader when that's 10% better. Also logs the account's target team, the one its own specialization, style and resource multipliers favor (FORMATION_PLAN.md).
+- **Hall of Heroes**: spends Void Crystals on gear enchants and Ethereal Shards on jewel enchants, planned in advance from a snapshot of every hero (re-read every 24 h): gear tier unlocks first, then the lowest levels, with the Ring ahead and tier 1 only for the formation and the account's target team (Formation). Unlocks gear tiers, paid in Meteorites, once the gear power allows.
+- **Formation**: every day at 11:02 reads every hero's attributes from the game and fields the five with the most damage, the strongest as leader when leadership beats the team bonus (the weakest otherwise); swaps heroes from the Party deck and sets the leader when that's 10% better. Also keeps the account's target team, the one its own specialization, style and resource multipliers favor, changed only for a 20% better one: Hall of Heroes invests in it first (FORMATION_PLAN.md).
 
 **Scarab's Game**
 

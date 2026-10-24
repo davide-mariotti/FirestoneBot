@@ -54,7 +54,7 @@ public static class EnchantPlanner
     // Subtracted from a gear slot's level to rank it: the Ring is worth a level more than the Wrist,
     // Shoulder/Belt three less. Tiers 2 and 3 boost every hero and stack across heroes, and each level
     // roughly doubles both effect and cost, so the level is what counts, not who wears the piece; the
-    // hero only matters for tier 1, which boosts its wearer alone (formation only). These are the
+    // hero only matters for tier 1, which boosts its wearer alone (formation and target only). These are the
     // knobs to tune. Jewels get no advantages and no crew filter, on every hero, by choice.
     private static readonly int[] GearAdvantage = { -1, -2, -2, 0, -3, -3, 1, -1 };
 

@@ -93,6 +93,15 @@ public class HallOfHeroesTask : BotTask
         else
             Debug($"[INFO] Formation: {string.Join(", ", formation)}.");
 
+        // Tier 1 enchants go to the target team too, so the account grows into it (FORMATION_PLAN.md, 5.2):
+        // from here "formation" is who gets invested in, the '*' of the snapshot.
+        var target = FormationTask.Target;
+        if (target.Count > 0)
+        {
+            formation.UnionWith(target);
+            Debug($"[INFO] Invested in (formation + target): {string.Join(", ", formation)}.");
+        }
+
         yield return Notifications.HallOfHeroes;
         yield return TownScreen.Open;
         yield return TownScreen.OpenHallOfHeroes;
@@ -167,7 +176,7 @@ public class HallOfHeroesTask : BotTask
         }
 
         _heroSnapshotTime.Value = DateTime.Now.ToString("O");
-        Debug($"[INFO] Hall of Heroes, {_heroes.Count} heroes ('*' = formation; level('badge'/'cost'), " +
+        Debug($"[INFO] Hall of Heroes, {_heroes.Count} heroes ('*' = formation or target; level('badge'/'cost'), " +
               "M = empty or needs a higher rarity, L = tier locked):\n" + string.Join("\n", table));
     }
 
@@ -487,15 +496,17 @@ public class HallOfHeroesTask : BotTask
     }
 
     /// <summary>
-    ///     Hero rarity, paid in Contracts: the formation first, then every other hero, in grid order
-    ///     (user's rule, 03/10: Cirilo, in the formation, before Boris). Every step the game offers
+    ///     Hero rarity, paid in Contracts: the target team first, then the rest of the formation, then
+    ///     every other hero, in grid order (user's rule, 03/10: Cirilo, in the formation, before Boris;
+    ///     the target ahead since 24/10). Every step the game offers
     ///     while the contracts last, each counted only when the counter drops by exactly the cost.
     /// </summary>
     private IEnumerator IncreaseRarity()
     {
         const int maxSteps = 6; // Common to Angel
 
-        foreach (var hero in _heroes.OrderBy(h => h.InFormation ? 0 : 1).ToList())
+        var target = FormationTask.Target;
+        foreach (var hero in _heroes.OrderBy(h => target.Contains(h.Name) ? 0 : h.InFormation ? 1 : 2).ToList())
         {
             yield return SelectHero(hero);
             if (_stop) yield break;
