@@ -50,7 +50,7 @@ Fasi 0-2 fatte su Steam-0, solo in dry run. `FormationTask` legge e scrive, non 
 - **Flotta, 23/10 16:06-17:38.** `dry_run = false` su Steam-0..31 (anche nel template). Su 32 istanze, 23
   hanno cambiato squadra o leader, tutte "as planned"; 9 sono rimaste com'erano perché il guadagno era
   sotto il 10%. Il controllo giornaliero è alle 11:02, non alle 10:00 (scelta dell'utente, per non
-  sommarsi al reset).
+  sommarsi al reset). Dal 25/10 è alle 09:02 UTC, un'ora dopo il reset: 10:02 con l'ora solare.
 - **Verifica del DPS, 23/10 17:49, su Steam-2, -5, -11, -13, -24 e -28** (`Formation dps check` nel log,
   ogni giorno).
   - **Eroi schierati non leader:** allo stesso livello d'oro, `DPS del gioco - offense` è la stessa

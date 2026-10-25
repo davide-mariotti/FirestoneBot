@@ -78,7 +78,7 @@ $collect = {
             }
         }
 
-        # The formation check (FormationTask, 11:02): its last "now" line and the "after" that followed it.
+        # The formation check (FormationTask, an hour after the 08:00 UTC reset): its last "now" line and the "after" that followed it.
         $formNow = $null; $formAfter = $null
         foreach ($line in $lines) {
             if ($line -match '\[INFO\] Formation: now (.*)$') { $formNow = $Matches[1]; $formAfter = $null }
@@ -218,7 +218,7 @@ $($body -join "`n")
 </table>
 <p style="margin:12px 0 0;color:#8c959f;font-size:11px">Valori all'ultimo snapshot del bot (ogni ora); il numero piccolo &egrave; la differenza dal report precedente. WM power = potenza della squadra di war machine. Dal profilo (Statistics), come totali: Max stage = Max Stage Reached; Hero power = potenza totale degli eroi; Research e Meteorite = ricerche Firestone e Meteorite completate; Guardian = addestramenti + illuminazioni del guardiano; Awakenings; Empowers = empower al Temple; Rituals = rituali dell'Oracolo; All dailies / All missions / All expeditions = giorni con tutte le giornaliere / missioni della mappa / spedizioni completate (+1 al giorno = tutto fatto); Map missions = missioni vinte; Arena fights / Arena wins = combattimenti / vittorie nell'Arena of Kings; Guild donated = Guild Coin donate. Errors = task falliti nelle ultime 24 ore. Restarts = interventi del watchdog nelle ultime 24 ore.</p>
 <p style="font-size:15px;margin:20px 0 4px"><b>Formazione</b></p>
-<p style="margin:0 0 8px;color:#57606a">Dal controllo giornaliero delle 11:02 (FORMATION_PLAN.md). &#9733; = leader. La squadra cambia solo se rende almeno il 10% in pi&ugrave;; x = danno di squadra dopo / prima. Obiettivo = la squadra che i bonus dell'account (artefatti, beast, alberi) favoriscono a parit&agrave; di investimento.</p>
+<p style="margin:0 0 8px;color:#57606a">Dal controllo giornaliero un'ora dopo il reset: 11:02 con l'ora legale, 10:02 con quella solare (FORMATION_PLAN.md). &#9733; = leader. La squadra cambia solo se rende almeno il 10% in pi&ugrave;; x = danno di squadra dopo / prima. Obiettivo = la squadra che i bonus dell'account (artefatti, beast, alberi) favoriscono a parit&agrave; di investimento.</p>
 <table style="border-collapse:collapse;font-size:12px">
 <tr>$((('Instance', 'Squadra in battaglia', 'Ultimo controllo', 'Obiettivo') | ForEach-Object { "<th style=`"$th;text-align:left`">$_</th>" }) -join '')</tr>
 $($formation -join "`n")

@@ -805,7 +805,10 @@ istanze si arriva al commit limit da 88 GB: compaiono gli eventi 2004 ogni 5 min
 muoiono senza report di crash. Visto sul PC principale il 10/10, il 14/10 tra le 06:41 e le 07:50
 (tutte le sessioni chiuse tra le 06:47 e le 07:48) e il 16/10 tra le 08:20 e le 09:04 (2 istanze su
 17); sul secondo PC il 9/10 alle 12:16-12:20 (18 istanze a ~3 GB). Per questo, su tutti e due i PC
-dal 16/10, l'attività `Firestone_Riavvio` ferma e riavvia tutte le istanze alle 00, 06, 12 e 18. Il
+dal 16/10, l'attività `Firestone_Riavvio` ferma e riavvia tutte le istanze alle 00, 06, 12 e 18
+(ora legale; `New-ScheduledTaskTrigger -At` salva l'ora con l'offset, quindi le attività seguono l'UTC
+come il reset del gioco, alle 08:00 UTC: con l'ora solare, dal 25/10, il riavvio è alle 23, 05, 11 e 17
+e la mail alle 08:50, sempre 10 minuti prima del reset). Il
 bot salva il cfg a ogni modifica (`BotTask.PersistNextRunTime`), quindi la chiusura forzata non
 perde né i timer né i contatori. Le due attività (riavvio e watchdog) si creano col blocco in fondo a
 questo punto. Per riavviare subito: `Avvia_Tutte_Istanze_Firestone.bat` (punto 3) o
@@ -889,7 +892,8 @@ Copy-Item C:\Repos\FirestoneBot\tools\Restart\desktop\*.bat "$HOME\Desktop\Fires
 ```
 ### 6.5 Resoconto giornaliero via mail
 
-`tools\Report\daily_report.ps1`, su PC-Guesly ogni giorno alle 09:50 (prima del reset delle 10:00),
+`tools\Report\daily_report.ps1`, su PC-Guesly ogni giorno alle 07:50 UTC (prima del reset delle 08:00
+UTC: 09:50 con l'ora legale, 08:50 con quella solare, punto 6.4),
 manda una mail "Firestone BOT gg/mm/aaaa" con una tabella, colonne in inglese, una riga per istanza
 (0-16 lette dal PC principale con PowerShell remoto, 17-31 da qui, dal 17/10; prima 17-30): Status, Level, Max stage, Hero
 power, WM power (squadra di war machine), Research, Meteorite, Guardian (addestramenti +
