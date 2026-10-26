@@ -218,6 +218,9 @@ lettura e click.
    **Fatto il 26/10 su Steam-10 (Conquest, 4.144 -> 2.144 gemme).** `purchaseButtonGems` apre il
    popup `popups/SpendConfirm` e compra solo il suo `bg/confirmButton`: il primo tentativo, senza
    conferma, aveva lasciato gemme e posseduti come prima. Steam-10 resta con `dry_run = false`.
+   **Flotta il 26/10 sera, con l'ok dell'utente:** `dry_run = false` nel template, applicato su
+   Steam-0..31 con `last_done_date` e `next_run_time_internal` dell'Amulet Shop azzerati, così ogni
+   istanza ricontrolla subito l'amuleto del giorno.
 4. **Flotta**: `enabled = true` e `dry_run = false` nel template, `apply_template.ps1`, poi
    distribuzione della DLL come sempre. Nei giorni dopo si controllano le righe `Amulet of the day`
    e gli acquisti.

@@ -139,9 +139,10 @@ public static class BotSettings
             "(e.g. 17 for Steam-17..31) - otherwise the grid starts from an empty row far off-screen.");
 
         _windowGridFirstSpan = _category.CreateEntry("window_grid_first_span", 2, "Window Grid First Span",
-            "The window_grid_first_instance window covers a block of this many cells per side in the " +
-            "top-left corner, and the other instances fill the remaining cells. Default: 2 - with 5 " +
-            "columns, 17 instances (Steam-0..16) fill the 5x4 grid exactly. 1 = a cell like the others.");
+            "Steam-0's window covers a block of this many cells per side in the top-left corner, and the " +
+            "other instances fill the remaining cells. Default: 2 - with 5 columns, 17 instances " +
+            "(Steam-0..16) fill the 5x4 grid exactly. 1 = a cell like the others. Ignored when " +
+            "window_grid_first_instance isn't 0: only Steam-0 gets the bigger window.");
 
         _category.SaveToFile();
         Logger.Info($"System Initialized. Configuration: {ConfigPath}");
@@ -168,7 +169,8 @@ public static class BotSettings
         AudioListener.pause = true;
         var columns = Mathf.Max(1, _windowGridColumns.Value);
         var firstInstance = Mathf.Max(0, _windowGridFirstInstance.Value);
-        var span = Mathf.Clamp(_windowGridFirstSpan.Value, 1, columns);
+        // Only Steam-0 is big: a PC whose grid starts elsewhere (Steam-17) keeps single cells.
+        var span = firstInstance == 0 ? Mathf.Clamp(_windowGridFirstSpan.Value, 1, columns) : 1;
         var (width, height) = (Mathf.Max(1, _windowWidth.Value), Mathf.Max(1, _windowHeight.Value));
         if (_windowGridEnabled.Value) (width, height) = WindowLayout.ClientSize(width, height, firstInstance, span);
         Screen.SetResolution(width, height, false);
