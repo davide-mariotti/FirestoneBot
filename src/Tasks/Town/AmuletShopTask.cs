@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using Firebot.Core;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
@@ -81,6 +82,12 @@ public class AmuletShopTask : BotTask
         else
         {
             yield return buy.Click();
+            // On Steam-10 (26/10) the gem button alone bought nothing: it asks first, like Empower's
+            // ActionRequired. The screens are logged until the first real purchase is seen working.
+            var confirm = new GameButton(Paths.MenusLoc.ActionRequiredLoc.ConfirmBtn);
+            yield return Poll.Until(() => confirm.IsVisible() || Amulets.Owns(today), 10);
+            Debug($"[INFO] Amulet purchase: confirm shown {confirm.IsVisible()}, screens {Watchdog.DumpActiveScreens()}.");
+            if (confirm.IsVisible()) yield return confirm.Click();
             yield return Poll.Until(() => Amulets.Owns(today), 20);
             Amulets.TryRead(out _, out _, out var after);
             var bought = Amulets.Owns(today);
