@@ -215,6 +215,9 @@ lettura e click.
 3. **Primo acquisto vero, su Steam-0 o un account scelto dall'utente**, solo dopo il suo ok. Si guarda
    come va il click: popup di conferma? Animazione? `claimedObj` che compare? Si verificano le gemme
    -2.000 e `HaveAmulet()`.
+   **Fatto il 26/10 su Steam-10 (Conquest, 4.144 -> 2.144 gemme).** `purchaseButtonGems` apre il
+   popup `popups/SpendConfirm` e compra solo il suo `bg/confirmButton`: il primo tentativo, senza
+   conferma, aveva lasciato gemme e posseduti come prima. Steam-10 resta con `dry_run = false`.
 4. **Flotta**: `enabled = true` e `dry_run = false` nel template, `apply_template.ps1`, poi
    distribuzione della DLL come sempre. Nei giorni dopo si controllano le righe `Amulet of the day`
    e gli acquisti.

@@ -283,6 +283,15 @@ public static partial class Paths
             public const string ConfirmBtn = Root + "/bg/confirmButton";
         }
 
+        // "Spend gems?" gate opened by the Store's amulet gem button: Steam-10 bought Conquest through
+        // it on 26/10.
+        public static class SpendConfirmLoc
+        {
+            internal const string Root = MenusLoc.Root + "/popups/SpendConfirm";
+
+            public const string ConfirmBtn = Root + "/bg/confirmButton";
+        }
+
         // Shown right after a successful empower.
         public static class TOEPrestigeCompleteLoc
         {

@@ -82,12 +82,13 @@ public class AmuletShopTask : BotTask
         else
         {
             yield return buy.Click();
-            // On Steam-10 (26/10) the gem button alone bought nothing: it asks first, like Empower's
-            // ActionRequired. The screens are logged until the first real purchase is seen working.
-            var confirm = new GameButton(Paths.MenusLoc.ActionRequiredLoc.ConfirmBtn);
-            yield return Poll.Until(() => confirm.IsVisible() || Amulets.Owns(today), 10);
-            Debug($"[INFO] Amulet purchase: confirm shown {confirm.IsVisible()}, screens {Watchdog.DumpActiveScreens()}.");
+            // The gem button only opens popups/SpendConfirm; its confirm buys (Steam-10, 26/10).
+            var confirm = new GameButton(Paths.MenusLoc.SpendConfirmLoc.ConfirmBtn);
+            yield return Poll.Until(confirm.IsVisible, 10);
             if (confirm.IsVisible()) yield return confirm.Click();
+            else
+                Debug($"[FAILED] Amulet purchase: no confirm button. Screens {Watchdog.DumpActiveScreens()}, " +
+                      $"SpendConfirm:\n{Watchdog.DumpChildrenRecursive(Paths.MenusLoc.SpendConfirmLoc.Root, 3)}");
             yield return Poll.Until(() => Amulets.Owns(today), 20);
             Amulets.TryRead(out _, out _, out var after);
             var bought = Amulets.Owns(today);
