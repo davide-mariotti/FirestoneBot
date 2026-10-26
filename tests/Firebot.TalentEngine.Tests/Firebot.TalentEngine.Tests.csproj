@@ -23,5 +23,6 @@
         <Compile Include="..\..\src\Tasks\Town\BlueprintPlanner.cs" Link="BlueprintPlanner.cs" />
         <Compile Include="..\..\src\Tasks\Town\AmuletPlanner.cs" Link="AmuletPlanner.cs" />
         <Compile Include="..\..\src\Tasks\Character\FormationPlanner.cs" Link="FormationPlanner.cs" />
+        <Compile Include="..\..\src\Core\GridCells.cs" Link="GridCells.cs" />
     </ItemGroup>
 </Project>

@@ -1038,9 +1038,13 @@ box:
 | `window_width` | `504` | `504` |
 | `window_height` | `316` | `316` |
 | `window_grid_first_instance` | `0` (default) | `17` |
+| `window_grid_first_span` | `2` (default) | `2` (default) |
 
 `window_grid_first_instance` è il numero dell'istanza che va in alto a sinistra: senza, sul
-secondo PC Steam-17 finirebbe alla quarta riga, cioè fuori dallo schermo. Con 504x316 ogni
+secondo PC Steam-17 finirebbe alla quarta riga, cioè fuori dallo schermo. Dal 26/10 quella finestra
+occupa un blocco 2x2 di celle (`window_grid_first_span`) e le altre riempiono le celle libere: sul PC
+principale Steam-0 più 16 istanze riempiono esattamente la griglia 5x4, prima restava vuota mezza
+quarta riga; sul secondo PC restano libere le ultime 2 celle invece di tutta la quarta riga. Con 504x316 ogni
 finestra visibile è 506x348: 5 colonne = 2530 px, 4 righe = 1392 px (altezza utile sopra la
 taskbar), quindi bastano per 20 istanze. Con i vecchi 512x384 le finestre di una riga coprivano la
 barra del titolo di quella sopra e la quarta riga usciva dallo schermo.

@@ -18,7 +18,18 @@ public static class WindowLayout
 {
     private static readonly Regex InstanceIndexPattern = new(@"Steam-(\d+)", RegexOptions.Compiled);
 
-    public static void ApplyGridPosition(int columns, int cellWidth, int cellHeight, int firstInstance)
+    /// <summary>
+    ///     The client size Screen.SetResolution should get: one cell, or for the first instance its
+    ///     span x span block, frames between the cells included.
+    /// </summary>
+    public static (int Width, int Height) ClientSize(int cellWidth, int cellHeight, int firstInstance, int span)
+    {
+        if (span <= 1 || DetectInstanceIndex() != firstInstance) return (cellWidth, cellHeight);
+        var frame = MeasureFrame(FindGameWindow());
+        return (span * cellWidth + (span - 1) * frame.ChromeWidth, span * cellHeight + (span - 1) * frame.ChromeHeight);
+    }
+
+    public static void ApplyGridPosition(int columns, int cellWidth, int cellHeight, int firstInstance, int span)
     {
         var instance = DetectInstanceIndex();
         if (instance == null)
@@ -48,8 +59,7 @@ public static class WindowLayout
         // The window is shifted by its invisible resize border so the visible edges line up.
         var pitchX = cellWidth + frame.ChromeWidth;
         var pitchY = cellHeight + frame.ChromeHeight;
-        var col = index % columns;
-        var row = index / columns;
+        var (col, row) = GridCells.Of(index, columns, span);
         var x = col * pitchX - frame.InvisibleLeft;
         var y = row * pitchY - frame.InvisibleTop;
 
