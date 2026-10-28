@@ -25,6 +25,8 @@
     (%TEMP%\restart_fleet.paused) until a restart is started by hand. The three bats on the desktop
     (tools\Restart\desktop) wrap -Stop, -Instance and the Firestone_Riavvio task.
 
+    Before each start, a game cfg a BSOD left full of NULs is put back from the copy the last start kept.
+
     An instance without a Sandboxie box folder (Steam-0 on the main PC) is run outside the sandbox.
     Every step is logged to %TEMP%\restart_fleet.log.
 
@@ -66,9 +68,22 @@ function Test-Boxed([int]$n) { Test-Path (Get-Box $n) }
 function Test-Game([int]$n) { [bool](Get-Process Firestone -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "*\Steam-$n\*" }) }
 function Get-AvailableGB { (Get-CimInstance Win32_PerfFormattedData_PerfOS_Memory).AvailableBytes / 1GB }
 
-function Get-GameLog([int]$n) {
-    $relative = "Program Files (x86)\Steam-$n\steamapps\common\Firestone\MelonLoader\Latest.log"
+function Get-GameDir([int]$n) {
+    $relative = "Program Files (x86)\Steam-$n\steamapps\common\Firestone"
     if (Test-Boxed $n) { Join-Path (Get-Box $n) "drive\C\$relative" } else { "C:\$relative" }
+}
+function Get-GameLog([int]$n) { Join-Path (Get-GameDir $n) 'MelonLoader\Latest.log' }
+
+# A BSOD while a game saves leaves its cfg full of NULs, and MelonLoader then replaces it with the
+# defaults: auto_start off, so the bot idled and the watchdog restarted it every 20 minutes (Steam-0/1/3/4,
+# 28/10 11:08-12:36). Every start keeps a copy of the good cfgs and puts it back over a NUL-filled or empty one.
+function Restore-Cfg([int]$n) {
+    foreach ($cfg in Get-ChildItem (Join-Path (Get-GameDir $n) 'UserData') -ErrorAction SilentlyContinue | Where-Object Extension -eq '.cfg') {
+        $bak = "$($cfg.FullName).bak"
+        $stream = [IO.File]::OpenRead($cfg.FullName); $first = $stream.ReadByte(); $stream.Close()
+        if ($first -gt 0) { Copy-Item $cfg.FullName $bak -Force }
+        elseif (Test-Path $bak) { Copy-Item $bak $cfg.FullName -Force; Log "Steam-${n}: $($cfg.Name) empty or full of NULs, put back the copy of $((Get-Item $bak).LastWriteTime)" }
+    }
 }
 
 function Stop-Instance([int[]]$ns) {
@@ -125,6 +140,7 @@ function Send-Start([int]$n) {
     $folder = "C:\Program Files (x86)\Steam-$n"
     if (-not (Test-Path "$folder\steam.cfg")) { Set-Content "$folder\steam.cfg" 'BootStrapperInhibitAll=enable' -ErrorAction SilentlyContinue }
     Disable-Cloud $n
+    Restore-Cfg $n
     if (Test-Boxed $n) { & $sandboxie "/box:SteamB$n" "$folder\steam.exe" -silent -applaunch 1013320 }
     else { Start-Process "$folder\steam.exe" -ArgumentList '-silent', '-applaunch', '1013320' }
 }
