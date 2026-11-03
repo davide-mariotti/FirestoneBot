@@ -224,9 +224,15 @@ try {
         Stop-Instance $group
         & powershell -NoProfile -ExecutionPolicy Bypass -File $trim -MinRamPercent 0 *> $null
         # Each new game takes ~1.3 GB in its first minute (17/10): only the ones that fit start now, the
-        # rest go to the next group, measured once these have grown.
-        $available = Get-AvailableGB
-        $fit = [int][Math]::Min($group.Count, [Math]::Floor(($available - $MinAvailableGB) / $GameGB) + 1)
+        # rest go to the next group, measured once these have grown. The first start after a game update
+        # also runs Cpp2IL for 1-2 minutes, and measured at that peak the RAM left Steam-11..16 and
+        # Steam-28..31 off for 6 hours (3.64, 03/11 17:00), so with no room it waits up to 3 minutes first.
+        foreach ($wait in 0, 60, 60, 60) {
+            Start-Sleep $wait
+            $available = Get-AvailableGB
+            $fit = [int][Math]::Min($group.Count, [Math]::Floor(($available - $MinAvailableGB) / $GameGB) + 1)
+            if ($fit -gt 0) { break }
+        }
         if ($fit -le 0) {
             Stop-Instance ($n..$To)
             $top = $n - 1
