@@ -16,6 +16,9 @@ e.g. C:/Program Files (x86)/Steam-0/steamapps/common/Firestone/Firestone_Data. A
 updates inside its Sandboxie box, so point it there (C:/Sandbox/<user>/SteamB<N>/drive/C/Program
 Files (x86)/Steam-<N>/...): the real install keeps the version from before the box (3.60 vs 3.61 on 21/10).
 
+Since 3.64 most prefabs are in the Addressables bundles (StreamingAssets/aa), which this does not read:
+a root that is only there comes back as NOT FOUND.
+
 Find candidate root names first by grepping resources.assets object names (e.g. via a
 quick UnityPy scan), or by cross-referencing existing paths in src/Infrastructure/Paths/.
 """
