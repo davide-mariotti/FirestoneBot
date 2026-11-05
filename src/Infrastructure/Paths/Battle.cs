@@ -109,6 +109,9 @@ public static partial class Paths
 
             public const string ScarabGameMilestones = "ScarabGameMilestones";
 
+            // Lit once the Ancient Coins pay for a vault (Steam-23, 05/11).
+            public const string PharaohsVault = "PharaohsVault";
+
             // Opens Magic Quarters on its Chaos Rift (holy damage) tab.
             public const string GuardianHolyUpgrade = "GuardianHolyUpgrade";
 

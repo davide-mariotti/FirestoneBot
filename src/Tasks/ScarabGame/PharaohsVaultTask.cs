@@ -21,10 +21,11 @@ public class PharaohsVaultTask : BotTask
     internal override TaskGroup Group => TaskGroup.ScarabGame;
     protected override int MinimumCharacterLevel => 60;
 
-    // The ScarabGame badge is the one that lights for the free spins (the PharaohsVault badge never
-    // does); ScarabGameMilestones lights for the milestone track.
+    // ScarabGame lights for the free spins, ScarabGameMilestones for the milestone track, PharaohsVault
+    // for the coins a milestone hands out after this run's vault step.
     protected override string[] NotificationPaths =>
-        RailBadges(Paths.BattleLoc.NotificationsLoc.ScarabGame, Paths.BattleLoc.NotificationsLoc.ScarabGameMilestones);
+        RailBadges(Paths.BattleLoc.NotificationsLoc.ScarabGame, Paths.BattleLoc.NotificationsLoc.ScarabGameMilestones,
+            Paths.BattleLoc.NotificationsLoc.PharaohsVault);
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
 

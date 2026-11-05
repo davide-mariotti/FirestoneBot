@@ -63,8 +63,8 @@ public static partial class Paths
 
     public static class ScarabGameMilestonesLoc
     {
-        // "MileStones" with a capital S is the game's own spelling, and Transform.Find is case-sensitive.
-        public const string Root = MenusLoc.Root + "/popups/ScarabGameMileStones";
+        // "ScarabGameMileStones" up to 3.63; Transform.Find is case-sensitive.
+        public const string Root = MenusLoc.Root + "/popups/ScarabGameMilestones";
 
         public const string CloseBtn = Root + "/bg/closeButton";
 
