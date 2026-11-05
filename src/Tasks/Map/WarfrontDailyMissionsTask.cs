@@ -7,6 +7,7 @@ using Firebot.GameModel.Features.Map;
 using Firebot.GameModel.Features.Map.WarfrontCampaign;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
+using Firebot.Utilities;
 using Logger = Firebot.Core.Logger;
 
 namespace Firebot.Tasks.Map;
@@ -118,7 +119,10 @@ public class WarfrontDailyMissionsTask : BotTask
         // Right after the reset the list can still show yesterday's: on 03/10 every run that ended by
         // 10:00:17 fought 0 of 10 (Steam-1, -6, -8, -15) and every one from 10:00:27 fought 2. Nothing
         // fought in the reset's first hour means try again shortly, not tomorrow.
+        // The missions renew with the day, whatever the popup's countdown says: on 04/11 it read 37 h on
+        // Steam-0, which then skipped the 05/11 reset.
         var nextReset = WarfrontDailyMissions.NextRunTime;
+        if (nextReset > GameDay.NextReset()) nextReset = GameDay.NextReset();
         NextRunTime = fought == 0 && nextReset - DateTime.Now > TimeSpan.FromHours(23) ? DateTime.Now + RetryAfterReset : nextReset;
 
         yield return WarfrontDailyMissions.Close;
