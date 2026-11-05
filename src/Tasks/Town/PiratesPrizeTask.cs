@@ -17,7 +17,7 @@ namespace Firebot.Tasks.Town;
 /// <summary>
 ///     Claims Pirate's Prize's free track - never the paid one. The ~20 tiers all share one name, so
 ///     a path can't address a specific tier (it always resolves to the first): this walks the raw
-///     Transforms by index and clicks each tier's own button.
+///     Transforms by index and clicks each tier's own button, on every page with rewards left.
 /// </summary>
 public class PiratesPrizeTask : BotTask
 {
@@ -28,6 +28,8 @@ public class PiratesPrizeTask : BotTask
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
     private static readonly WaitForSeconds ClickSettleWait = new(0.5f);
+    private static readonly WaitForSeconds PageTurnWait = new(1f);
+    private const int MaxPages = 10;
 
     public override IEnumerator Execute()
     {
@@ -41,27 +43,52 @@ public class PiratesPrizeTask : BotTask
         yield return Poll.Until(() =>
             GameElement.FindTransform(Paths.PirateShipLoc.PiratesPrizeLoc.TierListRoot)?.childCount > 0);
 
-        var tierListRoot = GameElement.FindTransform(Paths.PirateShipLoc.PiratesPrizeLoc.TierListRoot);
+        var claimed = 0;
+        var pages = 0;
+        while (pages++ < MaxPages)
+        {
+            var tierListRoot = GameElement.FindTransform(Paths.PirateShipLoc.PiratesPrizeLoc.TierListRoot);
+            if (tierListRoot == null)
+            {
+                Logger.Debug("[PiratesPrizeTask] Tier list root not found - skipping claim scan.");
+                break;
+            }
 
-        if (tierListRoot == null)
-        {
-            Logger.Debug("[PiratesPrizeTask] Tier list root not found - skipping claim scan.");
-        }
-        else
-        {
             for (var i = 0; i < tierListRoot.childCount; i++)
             {
                 var tier = tierListRoot.GetChild(i);
                 if (!tier.name.StartsWith("ppTierInteraction")) continue;
 
-                if (TryClaimTier(tier)) yield return ClickSettleWait;
+                if (!TryClaimTier(tier)) continue;
+
+                claimed++;
+                yield return ClickSettleWait;
             }
+
+            var arrow = NextPageArrow();
+            if (arrow == null) break;
+
+            yield return new GameButton(arrow).ClickSimulated();
+            yield return PageTurnWait;
         }
+
+        Logger.Debug($"[PiratesPrizeTask] [INFO] Claimed {claimed} on {pages} page(s).");
 
         yield return PirateShip.Close;
         yield return TownScreen.Close;
 
         NextRunTime = DateTime.Now + RecheckDelay;
+    }
+
+    // The arrow whose bell is lit: an account past a page keeps what it hadn't claimed there, and the
+    // badge stayed lit for good on Steam-5 and -15 (03-05/11) while this read only the current page.
+    private static string NextPageArrow()
+    {
+        if (new GameElement(Paths.PirateShipLoc.PiratesPrizeLoc.LeftArrowBell).IsVisible())
+            return Paths.PirateShipLoc.PiratesPrizeLoc.LeftArrowBtn;
+        return new GameElement(Paths.PirateShipLoc.PiratesPrizeLoc.RightArrowBell).IsVisible()
+            ? Paths.PirateShipLoc.PiratesPrizeLoc.RightArrowBtn
+            : null;
     }
 
     // These claim buttons have no onClick listeners, so this sends the simulated pointer click.

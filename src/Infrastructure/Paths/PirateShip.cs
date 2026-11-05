@@ -22,6 +22,16 @@ public static partial class Paths
             // apart by path - PiratesPrizeTask walks this root's children as raw Transforms.
             public const string TierListRoot = SubmenuRoot + "/Scroll View/Viewport/content/rewardsTierSection";
 
+            // The rewards are split into pages, shown one at a time. A bell on an arrow means rewards
+            // left unclaimed that way, and those keep the rail badge lit.
+            public const string LeftArrowBtn = SubmenuRoot + "/navigator/leftArrow";
+
+            public const string LeftArrowBell = LeftArrowBtn + "/notification";
+
+            public const string RightArrowBtn = SubmenuRoot + "/navigator/rightArrow";
+
+            public const string RightArrowBell = RightArrowBtn + "/notification";
+
             // Relative to a tier Transform, for Transform.Find (no leading slash). Only the free
             // track: piratesPrizePaidInteraction and every purchaseButton/purchasePrice cost currency.
             public const string TierFreeClaimBtn = "piratesPrizeFreeInteraction/purchaseFreeButton";
