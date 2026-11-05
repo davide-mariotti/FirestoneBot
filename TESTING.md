@@ -384,7 +384,7 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   (Empower, Boss, `SeenBadgesTask`, War Machines acceso) e 22:13 (attesa delle schermate di Scarab). Alle 22:23, dieci
   minuti dopo l'ultimo: bot caricato su 32 su 32, nessun errore, rail vuoto su 29. Gli altri tre aspettavano il proprio
   giro: Steam-11 e -13 `TemplePrestige` col rapporto sopra 1 e ancora in salita (l'Empower aspetta il muro), Steam-23
-  `PharaohsVault`. Dopo ogni riavvio il rail si riaccende per qualche minuto, finché i task non passano.
+  `PharaohsVault`. Dopo ogni riavvio il rail si riaccende per qualche minuto, finché i task non passano. Alle 23:23, dopo il riavvio programmato delle 23:00, rail vuoto su 32 su 32. Quarto giro alle 23:31 (Seals of Power, Oracle's Gift): alle 23:51 Hall of Heroes passato su 32 su 32, 89 seal usati, nessuno fallito, nessun errore.
 - **Aggiornamento 3.64 (3/11), controllo del 5/11.** Dalla 3.64 i prefab non stanno più in `resources.assets`
   ma nei bundle Addressables di `StreamingAssets/aa`: `tools/unity_ui_mapper.py` non li trova. Per il confronto
   tra versioni: UnityPy su `*.assets` e `*.bundle`, un elenco di path per versione, poi `comm`. Rotti dalla 3.64:
