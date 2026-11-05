@@ -24,6 +24,10 @@ public static class BotManager
     // A normal start leaves the splash in about a minute.
     private const float StuckLoadingSeconds = 300;
 
+    // Between tasks the HUD is back within seconds, and Watchdog closes what's open before each task.
+    private static readonly TimeSpan StuckHud = TimeSpan.FromMinutes(10);
+    private static DateTime? _hudHiddenSince;
+
     private static readonly System.Collections.Generic.List<BotTask> Tasks = new();
 
     // Where PickEligibleTask's round-robin resumes.
@@ -105,6 +109,16 @@ public static class BotManager
                 new GameModel.Base.GameElement(Infrastructure.Paths.WatchdogLoc.LoadingScreen).IsVisible())
             {
                 Logger.Info($"Still on the loading screen {Time.realtimeSinceStartup / 60:0} min after start - closing the game.");
+                Process.GetCurrentProcess().Kill();
+            }
+
+            // Closing a screen now and then leaves the battle HUD hidden for good (Steam-9 on 04/11,
+            // Steam-20 on 05/11): nothing can navigate, and the bot idled until the next 6-hour restart.
+            if (new GameModel.Base.GameElement(Infrastructure.Paths.BattleLoc.RightSideUILoc.MapBtn).IsVisible())
+                _hudHiddenSince = null;
+            else if (DateTime.Now - (_hudHiddenSince ??= DateTime.Now) > StuckHud)
+            {
+                Logger.Info($"Battle HUD hidden for {StuckHud.TotalMinutes:0} min, open: {Watchdog.DumpActiveScreens()} - closing the game.");
                 Process.GetCurrentProcess().Kill();
             }
 
@@ -242,6 +256,8 @@ public static class BotManager
             var timeLeft = TimeParser.FormatFriendlyDuration(t.NextRunTime - now);
             Logger.Info($"| {nextRun,-19} | {timeLeft,-11} | {name,-30} | {status,-13} | {lastRun,-19} |");
         }
+
+        Logger.Info($"[Rail] Lit: {Notifications.Lit}");
     }
 
     /// <summary>

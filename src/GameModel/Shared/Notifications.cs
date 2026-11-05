@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 
@@ -11,6 +13,20 @@ namespace Firebot.GameModel.Shared;
 /// </summary>
 public static class Notifications
 {
+    /// <summary>The badges lit on the rail, whichever task (or none) reads them.</summary>
+    public static string Lit
+    {
+        get
+        {
+            var rail = GameElement.FindTransform(Paths.BattleLoc.NotificationsLoc.Root);
+            var lit = new List<string>();
+            for (var i = 0; rail != null && i < rail.childCount; i++)
+                if (rail.GetChild(i).gameObject.activeSelf)
+                    lit.Add(rail.GetChild(i).name);
+            return string.Join(", ", lit);
+        }
+    }
+
     private static IEnumerator Click(string badgeName) => UiVariantButton.Click(
         new GameNotificationButton(Paths.BattleLoc.NotificationsLoc.Root + "/" + badgeName),
         new GameNotificationButton(Paths.BattleLoc.NotificationsLoc.FallbackRoot + "/" + badgeName));
