@@ -10,7 +10,8 @@ using Logger = Firebot.Core.Logger;
 namespace Firebot.BotActions;
 
 /// <summary>
-///     When the stage stops advancing for stall_minutes (a wall the team can't clear), steps back
+///     When the stage stops advancing for stall_minutes, fights the boss if the game is waiting for
+///     that; a stage that still doesn't move is a wall the team can't clear, so it steps back
 ///     retreat_stages stages to farm one that clears quickly, and climbs back to retry the wall every
 ///     retry_minutes until the next Empower.
 /// </summary>
@@ -30,6 +31,10 @@ public static class AutoRetreat
 
     private static int _lastSeenStage = -1;
     private static DateTime _lastProgressTime = DateTime.MinValue;
+
+    // A lost boss waits for its button however strong the team gets: Steam-7 sat on stage 75 for two
+    // days (03-05/11) with heroes that had reached 934. One try per stall, then it's a real wall.
+    private static int _bossTriedOn = -1;
 
     // After one retreat, stay put until the next Empower instead of retreating further on every poll.
     // Saved, or every restart stepped back 5 more: Steam-17 went 285 -> 264 over 17-18/10.
@@ -177,6 +182,16 @@ public static class AutoRetreat
             }
             else if (DateTime.Now - _lastProgressTime >= TimeSpan.FromMinutes(StallMinutes))
             {
+                if (_bossTriedOn != stage && StageProgress.FightBossBtn.IsClickable())
+                {
+                    Logger.Info($"[AutoRetreat] Stage {stage} stalled for {StallMinutes:0.#} min on a boss: fighting it.");
+                    _bossTriedOn = stage;
+                    _lastProgressTime = DateTime.Now;
+                    yield return StageProgress.FightBossBtn.Click();
+                    yield return PollWait;
+                    continue;
+                }
+
                 Logger.Info(
                     $"[AutoRetreat] Stage {stage} stalled for {StallMinutes:0.#} min. Retreating {RetreatStages} stage(s).");
 
@@ -188,6 +203,7 @@ public static class AutoRetreat
 
                 _suppressedUntilReset = true;
                 _retreatTime = DateTime.Now;
+                _bossTriedOn = -1;
             }
 
             yield return PollWait;

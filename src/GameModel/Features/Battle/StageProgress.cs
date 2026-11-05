@@ -12,4 +12,6 @@ public static class StageProgress
     public static IEnumerator GoBack => new GameButton(Paths.BattleLoc.StageProgressionLoc.GoBackBtn).Click();
 
     public static GameButton GoForthBtn => new(Paths.BattleLoc.StageProgressionLoc.GoForthBtn);
+
+    public static GameButton FightBossBtn => new(Paths.BattleLoc.RightSideUILoc.FightBossBtn);
 }

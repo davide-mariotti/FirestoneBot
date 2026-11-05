@@ -142,6 +142,9 @@ public static partial class Paths
 
             public const string PathOfGloryNotification = PathOfGloryBtn + "/notification";
 
+            // Shown after a lost boss: the game doesn't try that boss again until it's pressed.
+            public const string FightBossBtn = BattleLoc.Root + "/rightSideUI/fightBossButton";
+
             public const string EventsBtn = Root + "/eventsButton";
 
             // One badge for every event: lit while any of them has something to claim.
