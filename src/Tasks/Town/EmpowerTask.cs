@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Firebot.BotActions;
+using Firebot.Core;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
@@ -23,6 +24,9 @@ public class EmpowerTask : BotTask
     internal override TaskGroup Group => TaskGroup.Town;
 
     private static readonly TimeSpan RetryDelay = TimeSpan.FromMinutes(5);
+
+    // Up to 10 s for each screen of the Empower.
+    private const int PopupPolls = 20;
 
     private MelonPreferences_Entry<float> _minResetRatio;
     private MelonPreferences_Entry<int> _minAdventureMinutes;
@@ -62,6 +66,14 @@ public class EmpowerTask : BotTask
         );
     }
 
+    private static IEnumerator ClickWhenReady(string path, Action<bool> ready)
+    {
+        var button = new GameButton(path);
+        yield return Poll.Until(() => button.IsClickable(), PopupPolls);
+        ready(button.IsClickable());
+        yield return button.Click();
+    }
+
     public override IEnumerator Execute()
     {
         yield return Notifications.TemplePrestige;
@@ -83,10 +95,11 @@ public class EmpowerTask : BotTask
 
         var timeText = TempleOfEternals.AdventureTimePlayedText;
         var timePlayed = TimeParser.ParseFrom(timeText);
-        var found = TempleOfEternals.FirestonesFound;
-        var owned = TempleOfEternals.FirestonesYouOwn;
+        var found = TempleOfEternals.FirestonesFoundLog10;
+        var owned = TempleOfEternals.FirestonesYouOwnLog10;
+        var ownedRead = !double.IsNegativeInfinity(owned);
 
-        var ratio = owned > 0 ? found / owned : 0;
+        var ratio = ownedRead ? Math.Pow(10, found - owned) : 0;
         var minRatio = _minResetRatio?.Value ?? 1.0f;
         var minDuration = TimeSpan.FromMinutes(_minAdventureMinutes?.Value ?? 0);
         var maxMinutes = _maxAdventureMinutes?.Value ?? 0;
@@ -100,14 +113,14 @@ public class EmpowerTask : BotTask
         var foundText = TempleOfEternals.FirestonesFoundText;
         var ownedText = TempleOfEternals.FirestonesYouOwnText;
 
-        Debug($"[INFO] Adventure time: {timePlayed} ('{timeText}'), Firestones found: {found} ('{foundText}'), " +
-              $"Temple's Firestones: {owned} ('{ownedText}'), " +
+        Debug($"[INFO] Adventure time: {timePlayed} ('{timeText}'), Firestones found: 10^{found:0.##} ('{foundText}'), " +
+              $"Temple's Firestones: 10^{owned:0.##} ('{ownedText}'), " +
               $"Ratio: {ratio:0.##} (need {minRatio:0.##} after {minDuration} at the wall, or force empower after {maxDuration}), " +
               $"at the wall: {atWall}.");
 
         // Only a brand-new account has nothing banked: a 0 here means the text didn't parse, and then
         // the ratio can never trigger an empower.
-        if (owned <= 0)
+        if (!ownedRead)
             Debug($"[FAILED] Temple's Firestones read as 0 from '{ownedText}' - no ratio-based empower until fixed.");
 
         // An unreadable time must not hold the empower back: on Steam-17..31 it read 0 for days while
@@ -118,12 +131,16 @@ public class EmpowerTask : BotTask
 
         if (((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall) || timePlayed >= maxDuration)
         {
+            // Each screen can take longer than the click delay, the first time after a start above all:
+            // on Steam-0 (05/11) the popup wasn't up yet, nothing was empowered and the wall was forgotten.
+            var empowered = false;
             yield return TempleOfEternals.OpenEmpowerPopup;
-            yield return new GameButton(Paths.MenusLoc.EmpowerPopupLoc.EmpowerBtn).Click();
-            yield return new GameButton(Paths.MenusLoc.ActionRequiredLoc.ConfirmBtn).Click();
-            yield return new GameButton(Paths.MenusLoc.TOEPrestigeCompleteLoc.ConfirmBtn).Click();
+            yield return ClickWhenReady(Paths.MenusLoc.EmpowerPopupLoc.EmpowerBtn, ok => empowered = ok);
+            if (empowered) yield return ClickWhenReady(Paths.MenusLoc.ActionRequiredLoc.ConfirmBtn, ok => empowered = ok);
+            if (empowered) yield return ClickWhenReady(Paths.MenusLoc.TOEPrestigeCompleteLoc.ConfirmBtn, ok => empowered = ok);
 
-            AutoRetreat.OnAdventureReset();
+            if (empowered) AutoRetreat.OnAdventureReset();
+            else Debug($"[FAILED] Empower didn't go through. Screens: {Watchdog.DumpActiveScreens()}");
 
             NextRunTime = DateTime.Now + RetryDelay;
         }
@@ -135,7 +152,7 @@ public class EmpowerTask : BotTask
             // No point checking again before the minimum adventure time has passed - unless nothing read
             // (the Temple never opened, e.g. behind the start-up popups): then its 0 time means nothing,
             // and waiting for it cost an hour on 3 instances after a restart (30/09).
-            var timeUntilMinDuration = owned > 0 ? minDuration - timePlayed : TimeSpan.Zero;
+            var timeUntilMinDuration = ownedRead ? minDuration - timePlayed : TimeSpan.Zero;
             NextRunTime = DateTime.Now + (timeUntilMinDuration > RetryDelay ? timeUntilMinDuration : RetryDelay);
         }
     }

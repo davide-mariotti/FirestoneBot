@@ -1,3 +1,4 @@
+using System;
 using Firebot.Utilities;
 using Xunit;
 
@@ -28,4 +29,24 @@ public class ParseAbbreviatedTests
     {
         Assert.Equal(-1, StringUtils.ParseAbbreviated(text, -1));
     }
+
+    // Steam-0 on 05/11: both counts past a double's range, and a real ratio in the thousands.
+    [Fact]
+    public void Log10_ComparesNumbersPastADouble()
+    {
+        var found = StringUtils.ParseAbbreviatedLog10("6,35dv");
+        var owned = StringUtils.ParseAbbreviatedLog10("468,24dt");
+
+        Assert.True(double.IsInfinity(StringUtils.ParseAbbreviated("6,35dv")));
+        Assert.Equal(312.803, found, 3);
+        Assert.Equal(308.670, owned, 3);
+        Assert.Equal(13561, Math.Pow(10, found - owned), 0);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("0")]
+    [InlineData("Loading")]
+    public void Log10_IsMinusInfinityWithoutANumber(string text) =>
+        Assert.Equal(double.NegativeInfinity, StringUtils.ParseAbbreviatedLog10(text));
 }

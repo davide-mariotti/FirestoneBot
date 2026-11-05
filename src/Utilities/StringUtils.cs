@@ -39,42 +39,51 @@ public static class StringUtils
     ///     writes two lowercase letters, aa = 1e15 and x1000 per letter step (the wiki's Map table:
     ///     128T x20 = 2.56aa, 51.2aa x20 = 1.0ab).
     /// </summary>
-    public static double ParseAbbreviated(string text, double fallback = 0)
+    public static double ParseAbbreviated(string text, double fallback = 0) =>
+        TryParseAbbreviated(text, out var number, out var exponent) ? number * Math.Pow(10, exponent) : fallback;
+
+    /// <summary>
+    ///     log10 of ParseAbbreviated's number, for what a double can't hold: past 1.8e308 ("dt" is 1e306)
+    ///     it reads Infinity. -Infinity when the text is 0 or unreadable.
+    /// </summary>
+    public static double ParseAbbreviatedLog10(string text) =>
+        TryParseAbbreviated(text, out var number, out var exponent) && number > 0
+            ? Math.Log10(number) + exponent
+            : double.NegativeInfinity;
+
+    private static bool TryParseAbbreviated(string text, out double number, out int exponent)
     {
+        number = 0;
+        exponent = 0;
+
         text = text?.Trim() ?? "";
-        if (text.Length == 0) return fallback;
+        if (text.Length == 0) return false;
 
         var colonIndex = text.LastIndexOf(':');
         if (colonIndex >= 0) text = text[(colonIndex + 1)..].Trim();
-        if (text.Length == 0) return fallback;
+        if (text.Length == 0) return false;
 
-        var multiplier = 1d;
         if (text.Length >= 3 && text[^1] is >= 'a' and <= 'z' && text[^2] is >= 'a' and <= 'z')
         {
-            // ponytail: a double overflows past "dt" (1e306); switch the callers to log scale if an account gets there.
-            multiplier = Math.Pow(10, 15 + 3 * ((text[^2] - 'a') * 26 + (text[^1] - 'a')));
+            exponent = 15 + 3 * ((text[^2] - 'a') * 26 + (text[^1] - 'a'));
             text = text[..^2].Trim();
         }
         else if (char.ToUpperInvariant(text[^1]) is 'K' or 'M' or 'B' or 'T')
         {
-            multiplier = char.ToUpperInvariant(text[^1]) switch { 'K' => 1e3, 'M' => 1e6, 'B' => 1e9, _ => 1e12 };
+            exponent = char.ToUpperInvariant(text[^1]) switch { 'K' => 3, 'M' => 6, 'B' => 9, _ => 12 };
             text = text[..^1].Trim();
         }
 
         // Before the invariant parse, which would happily read "17.242" as seventeen point something.
         if (DotGroupedInteger.IsMatch(text) &&
             long.TryParse(text.Replace(".", ""), NumberStyles.Integer, CultureInfo.InvariantCulture, out var groupedValue))
-            return groupedValue * multiplier;
+        {
+            number = groupedValue;
+            return true;
+        }
 
-        if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var invariantValue))
-            return invariantValue * multiplier;
-
-        if (double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var currentCultureValue))
-            return currentCultureValue * multiplier;
-
-        var europeanStyle = text.Replace(".", "").Replace(",", ".");
-        return double.TryParse(europeanStyle, NumberStyles.Float, CultureInfo.InvariantCulture, out var europeanValue)
-            ? europeanValue * multiplier
-            : fallback;
+        return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number) ||
+               double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out number) ||
+               double.TryParse(text.Replace(".", "").Replace(",", "."), NumberStyles.Float, CultureInfo.InvariantCulture, out number);
     }
 }
