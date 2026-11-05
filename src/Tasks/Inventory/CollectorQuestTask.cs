@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using MelonLoader;
 using UnityEngine;
@@ -89,6 +90,8 @@ public class CollectorQuestTask : DailyQuestTask
         yield return InventoryScreen.Open;
         yield return InventoryScreen.OpenChestsTab;
         yield return ChestListPopulateDelay;
+        // Right after a start the list takes longer: read early, /oraclesGift was still hidden (Steam-0, 05/11).
+        yield return Poll.Until(() => InventoryScreen.HasChests, 16);
     }
 
     // Up to Legendary if nothing cheaper is left: what asks for them comes first.

@@ -257,7 +257,7 @@ the game.
 ## Open Points
 
 - **In-game configuration UI**: settings are edited in `FirebotPreferences.cfg` only.
-- **Soul stones** (Hall of Heroes, character level 200) aren't handled, and the Oracle's gifts pile up unopened.
+- **Soul stones** (Hall of Heroes, character level 200) aren't handled.
 - **War Machines** level with single clicks; the bulk multiplier isn't wired up.
 - The full list of known issues and deferred work is in [TESTING.md](TESTING.md).
 

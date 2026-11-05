@@ -31,6 +31,8 @@ public static partial class Paths
         public const string LegendaryChestSlot = "/Legendary";
 
         public const string MysteryBoxSlot = "/mysteryBox";
+
+        public const string OraclesGiftSlot = "/oraclesGift";
     }
 
     // Opened by clicking a chest slot.
@@ -53,6 +55,16 @@ public static partial class Paths
     public static class MysteryBoxOpenPreviewLoc
     {
         private const string Root = MenusLoc.Root + "/popups/MysteryBoxOpenPreview";
+
+        public const string OpenX1Btn = Root + "/bg/openingOptions/openx1";
+
+        public const string OpenX10Btn = Root + "/bg/openingOptions/openx10";
+    }
+
+    // The Inventory's oraclesGift slot opens this one.
+    public static class OraclesGiftOpenPreviewLoc
+    {
+        private const string Root = MenusLoc.Root + "/popups/OraclesGiftOpenPreview";
 
         public const string OpenX1Btn = Root + "/bg/openingOptions/openx1";
 

@@ -18,6 +18,19 @@ public static class Inventory
     public static IEnumerator Close => new GameButton(Paths.InventoryLoc.CloseBtn).Click();
 
     public static GameElement Content => new(Paths.InventoryLoc.ContentRoot);
+
+    /// <summary>Some slot of the open tab is on screen: the list has been built.</summary>
+    public static bool HasChests
+    {
+        get
+        {
+            var content = GameElement.FindTransform(Paths.InventoryLoc.ContentRoot);
+            for (var i = 0; content != null && i < content.childCount; i++)
+                if (content.GetChild(i).gameObject.activeInHierarchy && !content.GetChild(i).name.StartsWith("emptySlot"))
+                    return true;
+            return false;
+        }
+    }
 }
 
 /// <summary>Opens chests of one slot: preview popup, then x10/x1 batches on the results screen.</summary>
@@ -50,9 +63,12 @@ public static class ChestOpening
         // Chest slots are pooled list cells whose Button has no onClick listeners.
         yield return slot.ClickSimulated(); // opens ChestOpenPreview
 
-        var isMysteryBox = slotPath == Paths.InventoryLoc.MysteryBoxSlot;
-        var previewX10 = isMysteryBox ? Paths.MysteryBoxOpenPreviewLoc.OpenX10Btn : Paths.ChestOpenPreviewLoc.OpenX10Btn;
-        var previewX1 = isMysteryBox ? Paths.MysteryBoxOpenPreviewLoc.OpenX1Btn : Paths.ChestOpenPreviewLoc.OpenX1Btn;
+        var (previewX10, previewX1) = slotPath switch
+        {
+            Paths.InventoryLoc.MysteryBoxSlot => (Paths.MysteryBoxOpenPreviewLoc.OpenX10Btn, Paths.MysteryBoxOpenPreviewLoc.OpenX1Btn),
+            Paths.InventoryLoc.OraclesGiftSlot => (Paths.OraclesGiftOpenPreviewLoc.OpenX10Btn, Paths.OraclesGiftOpenPreviewLoc.OpenX1Btn),
+            _ => (Paths.ChestOpenPreviewLoc.OpenX10Btn, Paths.ChestOpenPreviewLoc.OpenX1Btn)
+        };
 
         var onPreview = true;
         var openPreviewAttempts = 0;
