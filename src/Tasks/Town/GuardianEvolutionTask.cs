@@ -17,7 +17,9 @@ public class GuardianEvolutionTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
 
-    protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.GuardianEvolution;
+    // A guardian "Ready to Evolve" lights GuardianTraining too, for hours (Steam-18 and -19, 05/11).
+    protected override string[] NotificationPaths => RailBadges(Paths.BattleLoc.NotificationsLoc.GuardianEvolution,
+        Paths.BattleLoc.NotificationsLoc.GuardianTraining);
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(12);
 
