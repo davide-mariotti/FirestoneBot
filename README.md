@@ -19,7 +19,7 @@ Firebot **is not a cheat**. It does not modify game resources, grant unfair adva
 ## Features
 
 Every automation has its own section in `FirebotPreferences.cfg`, with an `enabled` switch and its
-own settings. All of them are on by default except **War Machines**. None of
+own settings. All of them are on by default. None of
 them spends gems or real money. The defaults follow the F2P strategy guide in
 [`docs/firestone_guida_F2P.md`](docs/firestone_guida_F2P.md) (Italian).
 

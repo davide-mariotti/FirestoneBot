@@ -4,6 +4,7 @@ using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
+using Logger = Firebot.Core.Logger;
 using TownScreen = Firebot.GameModel.Features.Town.Town;
 
 namespace Firebot.Tasks.Town;
@@ -17,11 +18,10 @@ public class WarMachinesTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
 
-    // Off by default though it works: Expedition Tokens are shared with TreeOfLifeTask and nothing
-    // splits them, so running both lets whichever runs first drain them. The F2P guide says to
-    // spend them in one place and picks the personal tree. Swap the two tasks' "enabled" to go the
-    // War Machine route instead - never enable both.
-    protected override bool DefaultEnabled => false;
+    // Expedition Tokens are shared with TreeOfLifeTask and nothing splits them: a level costs 500 and
+    // this runs at 500, so the personal tree's dearer nodes wait. Off from 04/10 to 05/11 for that
+    // (the F2P guide picks the tree), which left this badge lit on every account: the user wants an
+    // empty rail. "enabled = false" goes back to saving the tokens for the tree.
 
     // Assumed from the Engineer building's level-50 unlock; the wiki gives none for war machines.
     protected override int MinimumCharacterLevel => 50;
@@ -43,17 +43,19 @@ public class WarMachinesTask : BotTask
 
         yield return TownScreen.OpenWarMachines;
 
+        var levels = 0;
+        var outOfCurrency = false;
         foreach (var machine in WarMachines.Machines)
         {
             yield return WarMachines.SelectMachine(machine);
             yield return WarMachines.OpenWorkshopTab;
 
             var iterations = 0;
-            var outOfCurrency = false;
 
             while (WarMachines.LevelUpBtn.IsClickable() && iterations < MaxIterationsPerMachine)
             {
                 iterations++;
+                levels++;
                 yield return WarMachines.LevelUpBtn.Click();
 
                 if (!CurrencyMissingPopup.IsShowing) continue;
@@ -65,6 +67,8 @@ public class WarMachinesTask : BotTask
 
             if (outOfCurrency) break;
         }
+
+        Logger.Debug($"[WarMachinesTask] [INFO] {levels} click(s), out of tokens or components: {outOfCurrency}.");
 
         yield return WarMachines.Close;
         yield return TownScreen.Close;
