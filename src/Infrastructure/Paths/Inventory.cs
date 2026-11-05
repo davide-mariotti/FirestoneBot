@@ -29,6 +29,8 @@ public static partial class Paths
         public const string EpicChestSlot = "/Epic";
 
         public const string LegendaryChestSlot = "/Legendary";
+
+        public const string MysteryBoxSlot = "/mysteryBox";
     }
 
     // Opened by clicking a chest slot.
@@ -45,6 +47,16 @@ public static partial class Paths
         // Inactive in the prefab (UnityPy dump, 03/10); assumed to replace the open buttons on a chest
         // the account can't open yet (/Iron never opened on the level 30-59 accounts).
         public const string RequirementText = Root + "/bg/chestRequirementBg/text";
+    }
+
+    // The Inventory's mysteryBox slot opens this popup instead of ChestOpenPreview.
+    public static class MysteryBoxOpenPreviewLoc
+    {
+        private const string Root = MenusLoc.Root + "/popups/MysteryBoxOpenPreview";
+
+        public const string OpenX1Btn = Root + "/bg/openingOptions/openx1";
+
+        public const string OpenX10Btn = Root + "/bg/openingOptions/openx10";
     }
 
     // "New items" (a jewel never owned before), raised over the results screen by Golden chests;

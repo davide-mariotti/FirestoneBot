@@ -50,6 +50,10 @@ public static class ChestOpening
         // Chest slots are pooled list cells whose Button has no onClick listeners.
         yield return slot.ClickSimulated(); // opens ChestOpenPreview
 
+        var isMysteryBox = slotPath == Paths.InventoryLoc.MysteryBoxSlot;
+        var previewX10 = isMysteryBox ? Paths.MysteryBoxOpenPreviewLoc.OpenX10Btn : Paths.ChestOpenPreviewLoc.OpenX10Btn;
+        var previewX1 = isMysteryBox ? Paths.MysteryBoxOpenPreviewLoc.OpenX1Btn : Paths.ChestOpenPreviewLoc.OpenX1Btn;
+
         var onPreview = true;
         var openPreviewAttempts = 0;
         const int MaxOpenPreviewAttempts = 3;
@@ -57,12 +61,8 @@ public static class ChestOpening
 
         while (remainingToOpen > 0)
         {
-            var openX10 = new GameButton(onPreview
-                ? Paths.ChestOpenPreviewLoc.OpenX10Btn
-                : Paths.ChestOpeningLoc.OpenX10Btn);
-            var openX1 = new GameButton(onPreview
-                ? Paths.ChestOpenPreviewLoc.OpenX1Btn
-                : Paths.ChestOpeningLoc.OpenX1Btn);
+            var openX10 = new GameButton(onPreview ? previewX10 : Paths.ChestOpeningLoc.OpenX10Btn);
+            var openX1 = new GameButton(onPreview ? previewX1 : Paths.ChestOpeningLoc.OpenX1Btn);
 
             yield return Poll.Until(() => openX10.IsClickable() || openX1.IsClickable() || NewItemShown()
                     || (onPreview && RequirementShown()), MaxChestTransitionPolls, ChestTransitionPollSeconds);
