@@ -116,7 +116,7 @@ public class WarfrontCampaignTask : BotTask
     {
         yield return WorldMap.Open;
         yield return WorldMap.OpenWarfrontCampaignTab;
-        yield return WarfrontCampaign.OpenPreview(battle.Mission);
+        yield return WarfrontCampaign.OpenPreview(battle.Mission, battle.Mode);
 
         var fight = WarfrontCampaign.FightButton(battle.Mode);
         if (fight == null || !fight.IsClickable())

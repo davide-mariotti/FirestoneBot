@@ -50,6 +50,7 @@ Un task nuovo e separato, `WarfrontCampaignTask` (gruppo Warfront, livello 50, c
   Riverlands, 13-22 Frostfire, 23-26 Ebony Jungle, 27-29 Trinity Islands, 30-39 Ebony Jungle, 40-50
   The Cauldron, 51-57 Silverwood, 58-64 Celenis, 65-70 Hinterlands, 71-80 Dreadland, 81-85 Doomfire
   Island, 86-90 Eastrock Island. Insane si sblocca a 190 stelle, Nightmare a 319.
+- **Dalla 3.64 (3/11)** la difficoltà si sceglie sulla mappa e ognuna ha il suo percorso e un requisito di stelle: la regola qui sotto vale fino alla 3.63, ora decide `CanFightMission` del gioco.
 - **Sblocco**: la missione m+1 richiede m vinta almeno a Easy; una difficoltà richiede quella prima
   vinta sulla stessa missione (popup: "Beat previous difficulty"). Da verificare se Normal di m
   richiede anche Normal di m-1.

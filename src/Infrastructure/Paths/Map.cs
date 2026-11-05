@@ -23,7 +23,7 @@ public static partial class Paths
 
         public static class WarfrontLoc
         {
-            private const string SubmenuRoot = WorldMapLoc.Root + "/submenus/warfrontCampaignSubmenu";
+            public const string SubmenuRoot = WorldMapLoc.Root + "/submenus/warfrontCampaignSubmenu";
 
             private const string LootBtn = SubmenuRoot + "/loot";
 
@@ -77,8 +77,9 @@ public static partial class Paths
         public const string PinsRoot = "menusRoot/mapRoot/mapElements/warfrontCampaignMissions";
     }
 
-    // Opened by a campaign pin. One column per difficulty under ModesRoot (WFCampaignModeInteraction),
-    // whose fightButton is clickable only when unlocked and the squad's power is enough.
+    // Opened by a campaign pin. Since 3.64 ModesRoot holds one panel (WFCampaignModeInteraction), for
+    // the difficulty picked on the map's selector; its fightButton is clickable only when the game
+    // allows the fight and the squad's power is enough.
     public static class WFCampaignMissionPreviewLoc
     {
         private const string Root = MenusLoc.Root + "/popups/WFCampaignMissionPreview";

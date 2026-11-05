@@ -35,20 +35,16 @@ public static class WarfrontCampaign
     }
 
     /// <summary>
-    ///     The next difficulty not won on each mission, when it's unlocked: Easy needs the previous
-    ///     mission's Easy, any other difficulty only the one before it on the same mission (live 03/10).
+    ///     Every fight not won yet that the game allows now, by its own check: since 3.64 a difficulty
+    ///     has its own map and star requirement, so the rules can't be derived from the missions won.
     /// </summary>
     public static List<Battle> Unlocked()
     {
         var battles = new List<Battle>();
         for (var i = 0; Missions.ContainsKey(i); i++)
-        {
-            var mission = Missions[i];
-            var mode = Enumerable.Range(0, ModeNames.Length).FirstOrDefault(d => !IsWon(mission, d), -1);
-            if (mode < 0) continue;
-            if (mode == 0 && i > 0 && !IsWon(Missions[i - 1], 0)) break; // every later mission is locked too
-            battles.Add(new Battle(i + 1, mode, mission.modePowerReqDict[(GameMode)mode]));
-        }
+            for (var mode = 0; mode < ModeNames.Length; mode++)
+                if (!IsWon(Missions[i], mode) && Handlers.WFCampaignMissionHandler.CanFightMission(i, (GameMode)mode))
+                    battles.Add(new Battle(i + 1, mode, Missions[i].modePowerReqDict[(GameMode)mode]));
 
         return battles;
     }
@@ -68,15 +64,33 @@ public static class WarfrontCampaign
 
     public static bool IsPreviewVisible => new GameElement(Paths.WFCampaignMissionPreviewLoc.CloseBtn).IsVisible();
 
-    /// <summary>Opens a mission's preview from its pin, hidden or not; the map's Warfront tab must be open.</summary>
-    public static IEnumerator OpenPreview(int mission)
+    /// <summary>
+    ///     Opens a mission's preview from its pin, hidden or not, at a difficulty if one is given; the
+    ///     map's Warfront tab must be open.
+    /// </summary>
+    public static IEnumerator OpenPreview(int mission, int? mode = null)
     {
         WFCampaignMissionMapInteraction pin = null;
         yield return Poll.Until(() => (pin = Pin(mission)) != null);
         if (pin == null) yield break;
 
+        if (mode != null) yield return SelectDifficulty(pin, mode.Value);
+
         pin.OnPointerClick(new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left });
         yield return Poll.Until(() => IsPreviewVisible);
+    }
+
+    // A pin opens the difficulty picked on the map's selector, and every pin follows the selector.
+    private static IEnumerator SelectDifficulty(WFCampaignMissionMapInteraction pin, int mode)
+    {
+        var selector = GameElement.FindTransform(Paths.WorldMapLoc.WarfrontLoc.SubmenuRoot)?
+            .GetComponentInChildren<WFCampaignSubmenuViewController>(true);
+
+        for (var step = 0; selector != null && step < ModeNames.Length && (int)pin.selectedDifficulty != mode; step++)
+        {
+            var button = (int)pin.selectedDifficulty < mode ? selector.nextDifficultyButton : selector.previousDifficultyButton;
+            yield return new GameButton(transform: button.transform).Click();
+        }
     }
 
     private static WFCampaignMissionMapInteraction Pin(int mission) =>
@@ -84,7 +98,7 @@ public static class WarfrontCampaign
             .GetComponentsInChildren<WFCampaignMissionMapInteraction>(true)
             .FirstOrDefault(p => p.mission != null && p.mission.missionIndex == mission - 1);
 
-    /// <summary>The open preview's fight button for a difficulty, only when the game allows that fight now.</summary>
+    /// <summary>The open preview's fight button, only if it shows that difficulty.</summary>
     public static GameButton FightButton(int mode)
     {
         var modes = GameElement.FindTransform(Paths.WFCampaignMissionPreviewLoc.ModesRoot);
