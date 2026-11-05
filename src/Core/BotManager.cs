@@ -24,7 +24,9 @@ public static class BotManager
     // A normal start leaves the splash in about a minute.
     private const float StuckLoadingSeconds = 300;
 
-    // Between tasks the HUD is back within seconds, and Watchdog closes what's open before each task.
+    // Between tasks the HUD is back within seconds. Past the first delay Watchdog closes what's open,
+    // and past the second only a restart is left.
+    private static readonly TimeSpan HiddenHud = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan StuckHud = TimeSpan.FromMinutes(10);
     private static DateTime? _hudHiddenSince;
 
@@ -112,14 +114,20 @@ public static class BotManager
                 Process.GetCurrentProcess().Kill();
             }
 
-            // Closing a screen now and then leaves the battle HUD hidden for good (Steam-9 on 04/11,
-            // Steam-20 on 05/11): nothing can navigate, and the bot idled until the next 6-hour restart.
+            // Now and then the battle HUD goes hidden with no task running: popups/GuildBank over
+            // menus/TownGuild on Steam-2, -3 and -10 (05/11), opened by nothing the bot logs. With an empty
+            // rail no task comes to clear it, and before this the bot idled until the 6-hour restart.
             if (new GameModel.Base.GameElement(Infrastructure.Paths.BattleLoc.RightSideUILoc.MapBtn).IsVisible())
                 _hudHiddenSince = null;
             else if (DateTime.Now - (_hudHiddenSince ??= DateTime.Now) > StuckHud)
             {
                 Logger.Info($"Battle HUD hidden for {StuckHud.TotalMinutes:0} min, open: {Watchdog.DumpActiveScreens()} - closing the game.");
                 Process.GetCurrentProcess().Kill();
+            }
+            else if (DateTime.Now - _hudHiddenSince > HiddenHud)
+            {
+                Logger.Info($"Battle HUD hidden, open: {Watchdog.DumpActiveScreens()} - clearing.");
+                yield return RunSafe(Watchdog.ForceClearAll(), "Watchdog cleanup of a hidden HUD");
             }
 
             // Every task's readiness check reads the level - read it once per tick.

@@ -410,7 +410,7 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   il prossimo giro non va mai oltre il reset.
 - **HUD di battaglia sparito.** Ogni tanto, chiudendo una schermata, la HUD non torna: nessun task può navigare e
   il bot gira a vuoto fino al riavvio delle 6 ore (Steam-9 il 4/11 dalle 11:15, dopo Expedition; Steam-20 il 5/11
-  dalle 09:15, dopo Daily Store). Dal 5/11 il bot chiude il gioco dopo 10 minuti con la HUD nascosta tra un task e
+  dalle 09:15, dopo Daily Store). Sul 5/11 alle 22:31-22:33 anche Steam-2, -3 e -10, senza nessun task in corso: aperti `popups/GuildBank` e `menus/TownGuild`, non si sa da cosa. Dal 5/11, con la HUD nascosta da 1 minuto tra un task e l'altro, il Watchdog chiude quel che c'è; il bot chiude il gioco dopo 10 minuti con la HUD nascosta tra un task e
   l'altro e il watchdog lo riavvia; il log dice cosa era aperto (`Battle HUD hidden for 10 min, open: ...`).
 
 
