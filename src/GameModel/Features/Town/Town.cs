@@ -1,4 +1,5 @@
 using System.Collections;
+using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 
@@ -38,13 +39,25 @@ public static class Town
     // The tavern building also opens a choice popup first: the card game or Scarab's Game.
     public static IEnumerator OpenTavern => OpenViaTavernSelection(Paths.MenusLoc.TavernSelectionLoc.OpenTavernBtn);
 
-    public static IEnumerator OpenScarabGame =>
-        OpenViaTavernSelection(Paths.MenusLoc.TavernSelectionLoc.OpenScarabGameBtn);
+    public static IEnumerator OpenScarabGame => OpenScarabGameAndWait();
+
+    // Since 3.64 screens load from bundles and this one can take seconds: read at once, every button
+    // of Pharaoh's Vault was still hidden and the run did nothing in 10 s (Steam-17, 05/11).
+    private static IEnumerator OpenScarabGameAndWait()
+    {
+        yield return OpenViaTavernSelection(Paths.MenusLoc.TavernSelectionLoc.OpenScarabGameBtn);
+        yield return Poll.Until(() => new GameElement(Paths.ScarabGameLoc.CloseBtn).IsVisible(), ScreenPolls);
+    }
+
+    private const int ScreenPolls = 20;
 
     private static IEnumerator OpenViaTavernSelection(string cardPath)
     {
         yield return new GameButton(Paths.MenusLoc.TownIrongardLoc.TavernBtn).Click();
-        yield return new GameButton(cardPath).Click();
+
+        var card = new GameButton(cardPath);
+        yield return Poll.Until(() => card.IsClickable(), ScreenPolls);
+        yield return card.Click();
     }
 
     public static IEnumerator OpenExoticMerchant =>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Firebot.Core.Tasks;
+using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using PharaohsVaultScreen = Firebot.GameModel.Features.ScarabGame.PharaohsVault;
@@ -41,6 +42,7 @@ public class PharaohsVaultTask : BotTask
         yield return ScarabGameScreen.SpinUntilExhausted();
 
         yield return ScarabGameScreen.OpenVault;
+        yield return Poll.Until(() => PharaohsVaultScreen.OpenBtn.IsVisible(), 20);
         yield return PharaohsVaultScreen.MaxOutQuantity();
         yield return PharaohsVaultScreen.OpenUntilExhausted();
         yield return PharaohsVaultScreen.Close;

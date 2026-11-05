@@ -76,14 +76,31 @@ public static class PharaohsVault
     public static IEnumerator MaxOutQuantity() => ScarabGame.CycleToMax(
         new GameButton(Paths.PharaohsVaultLoc.ChangeQuantityBtn), new GameText(Paths.PharaohsVaultLoc.QuantityTxt));
 
-    /// <summary>Opens until the coins run out, letting each reveal finish before the next.</summary>
+    /// <summary>
+    ///     Opens until the coins run out, letting each reveal finish before the next, trying every
+    ///     quantity of the toggle: the one MaxOutQuantity left may cost more than the coins there are.
+    /// </summary>
     public static IEnumerator OpenUntilExhausted()
     {
-        while (OpenBtn.IsClickable())
+        const int quantities = 4;
+        var toggle = new GameButton(Paths.PharaohsVaultLoc.ChangeQuantityBtn);
+        var quantity = new GameText(Paths.PharaohsVaultLoc.QuantityTxt);
+        var opened = new List<string>();
+
+        for (var i = 0; i < quantities; i++)
         {
-            yield return OpenBtn.Click();
-            yield return ScarabGame.WaitUntilClickable(OpenBtn);
+            while (OpenBtn.IsClickable())
+            {
+                opened.Add(quantity.GetParsedText());
+                yield return OpenBtn.Click();
+                yield return ScarabGame.WaitUntilClickable(OpenBtn);
+            }
+
+            if (!toggle.IsClickable()) break;
+            yield return toggle.Click();
         }
+
+        Logger.Debug($"[INFO] Pharaoh's Vault: opened at [{string.Join(", ", opened)}].");
     }
 
     public static IEnumerator Close => new GameButton(Paths.PharaohsVaultLoc.CloseBtn).Click();
