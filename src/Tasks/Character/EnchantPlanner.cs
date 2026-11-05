@@ -29,14 +29,23 @@ public sealed record HeroState(string Name, bool InFormation, int GearPower, int
     public int GearPower { get; set; } = GearPower;
 
     public int[] Levels(EnchantCategory category) => category == EnchantCategory.Gear ? Gear : Jewels;
+
+    // The level each slot needs for a Seal of Power in hand, 0 without one. Read from the Seals tab on
+    // every run, so it isn't part of the snapshot.
+    public int[] GearSeals { get; init; } = new int[GearSlots];
+
+    public int[] JewelSeals { get; init; } = new int[JewelSlots];
+
+    public int[] Seals(EnchantCategory category) => category == EnchantCategory.Gear ? GearSeals : JewelSeals;
 }
 
 public sealed record EnchantStep(HeroState Hero, EnchantCategory Category, int Slot, int FromLevel, long Cost);
 
 /// <summary>
 ///     Decides, before any click, exactly which enchants a balance buys. Gear tier unlocks come
-///     first (GatingOrder, NextGatingSlot); then the lowest effective level wins (Plan). Pure: no
-///     game types, so the tests project compiles it in directly.
+///     first (GatingOrder, NextGatingSlot); then a slot short of the level its Seal of Power needs, since
+///     a rarity triples the item; then the lowest effective level wins (Plan). Pure: no game types, so
+///     the tests project compiles it in directly.
 /// </summary>
 public static class EnchantPlanner
 {
@@ -63,6 +72,28 @@ public static class EnchantPlanner
 
     public static string SlotName(EnchantCategory category, int slot) =>
         (category == EnchantCategory.Gear ? GearNames : JewelNames)[slot];
+
+    public static int SlotIndex(EnchantCategory category, string name) =>
+        Array.IndexOf(category == EnchantCategory.Gear ? GearNames : JewelNames, name);
+
+    // Rarity an item needs for each seal, and the level (the game's "Rarity Epic + Enchantment 6").
+    private static readonly Dictionary<string, (string Item, int Level)> SealRequirements = new()
+    {
+        ["Legendary"] = ("Epic", 6), ["Mythic"] = ("Legendary", 9), ["Titan"] = ("Mythic", 11), ["Angel"] = ("Titan", 13)
+    };
+
+    /// <summary>
+    ///     The level a seal in hand asks of its item, 0 while the item's rarity isn't the one before the
+    ///     seal's: only a better item from a chest helps then, no enchant does.
+    /// </summary>
+    public static int SealLevel(string itemRarity, string sealRarity) =>
+        SealRequirements.TryGetValue(sealRarity, out var need) && need.Item == itemRarity ? need.Level : 0;
+
+    /// <summary>A seal of this hero whose level is there: the enchants just bought may have got it there.</summary>
+    public static bool SealReached(HeroState hero) =>
+        new[] { EnchantCategory.Gear, EnchantCategory.Jewels }.Any(category =>
+            Enumerable.Range(0, hero.Seals(category).Length).Any(slot =>
+                hero.Seals(category)[slot] > 0 && hero.Levels(category)[slot] >= hero.Seals(category)[slot]));
 
     public static int GearTier(int slot) => slot < 3 ? 1 : slot < 6 ? 2 : 3;
 
@@ -111,11 +142,15 @@ public static class EnchantPlanner
             where category == EnchantCategory.Jewels || GearTier(slot) > 1 || hero.InFormation
             let advantage = category == EnchantCategory.Gear ? GearAdvantage[slot] : 0
             select (Step: new EnchantStep(hero, category, slot, slots[slot], Cost(category, slot, slots[slot])),
-                Effective: slots[slot] - advantage, HeroIndex: heroIndex);
+                Effective: slots[slot] - advantage, HeroIndex: heroIndex,
+                ForSeal: slots[slot] < hero.Seals(category)[slot],
+                ToSeal: Math.Max(hero.Seals(category)[slot] - slots[slot], 0));
 
+        // Nothing changes until the seal is used, so the one closest to its level comes first.
+        var sealsFirst = all.OrderByDescending(c => c.ForSeal).ThenBy(c => c.ToSeal);
         var ranked = category == EnchantCategory.Gear
-            ? all.OrderBy(c => c.Effective).ThenByDescending(c => c.Step.Hero.InFormation).ThenBy(c => c.Step.Cost)
-            : all.OrderBy(c => c.Effective).ThenBy(c => c.Step.Cost).ThenByDescending(c => c.Step.Hero.InFormation);
+            ? sealsFirst.ThenBy(c => c.Effective).ThenByDescending(c => c.Step.Hero.InFormation).ThenBy(c => c.Step.Cost)
+            : sealsFirst.ThenBy(c => c.Effective).ThenBy(c => c.Step.Cost).ThenByDescending(c => c.Step.Hero.InFormation);
 
         return ranked.ThenBy(c => c.Step.Hero.Name, StringComparer.Ordinal).ThenBy(c => c.Step.Slot).Select(c => (c.Step, c.HeroIndex));
     }

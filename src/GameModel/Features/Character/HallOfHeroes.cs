@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
+using Il2Cpp;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -144,6 +146,59 @@ public static class HallOfHeroes
         // Not interactable both when the balance is short and when the item needs a higher rarity.
         public static GameButton EnchantBtn(bool jewels, string slotName) =>
             new(Row(jewels, slotName) + "/" + Paths.HallOfHeroesLoc.EnchantingSubmenuLoc.RowEnchantBtn);
+    }
+
+    /// <summary>The selected hero's Seals of Power tab: an item with its seal rises in rarity at the right level.</summary>
+    public static class Seals
+    {
+        public static IEnumerator Open(bool jewels)
+        {
+            yield return new GameButton(Paths.HallOfHeroesLoc.SealsTabBtn).Click();
+            yield return new GameButton(jewels
+                ? Paths.HallOfHeroesLoc.SealsSubmenuLoc.JewelsCategoryTabBtn
+                : Paths.HallOfHeroesLoc.SealsSubmenuLoc.GearCategoryTabBtn).Click();
+        }
+
+        /// <summary>An item with its seal in hand. CanRise: the requirements are met.</summary>
+        public sealed record Row(string Slot, string ItemRarity, string SealRarity, int Level, bool CanRise, Button Button);
+
+        /// <summary>The rows of the open category; the tab also lists items whose seal is missing.</summary>
+        public static List<Row> Rows(bool jewels)
+        {
+            var rows = new List<Row>();
+            var root = GameElement.FindTransform(Paths.HallOfHeroesLoc.SealsSubmenuLoc.Root);
+            if (root == null) return rows;
+
+            if (jewels)
+            {
+                foreach (var r in root.GetComponentsInChildren<JewelSealUpgradeInteraction>())
+                    if (r.itemForUpgrade != null && r.sealToCheck != null && r.sealToCheck.hasSeal)
+                        rows.Add(new Row(r.itemForUpgrade.jewelSlot.ToString(), r.itemForUpgrade.rarity.ToString(),
+                            r.sealToCheck.rarity.ToString(), r.itemForUpgrade.enchantLevel,
+                            r.CheckIfYouCanIncreaseRarity() && r.increaseRarityButton.interactable, r.increaseRarityButton));
+            }
+            else
+            {
+                foreach (var r in root.GetComponentsInChildren<GearSealUpgradeInteraction>())
+                    if (r.itemForUpgrade != null && r.sealToCheck != null && r.sealToCheck.hasSeal)
+                        rows.Add(new Row(r.itemForUpgrade.gearSlot.ToString(), r.itemForUpgrade.itemRarity.ToString(),
+                            r.sealToCheck.rarity.ToString(), r.itemForUpgrade.EnchantLevel,
+                            r.CheckIfYouCanIncreaseRarity() && r.increaseRarityButton.interactable, r.increaseRarityButton));
+            }
+
+            return rows;
+        }
+
+        // The animation shows the close button when it ends. Where the screen sits is read live.
+        private static GameButton[] ActivationCloseBtns => new[]
+        {
+            new GameButton(Paths.MenusLoc.Root + "/popups/ActivateSeal/closeButton"),
+            new GameButton(Paths.MenusLoc.Root + "/menus/ActivateSeal/closeButton")
+        };
+
+        public static bool IsActivationOver => ActivationCloseBtns.Any(b => b.IsClickable());
+
+        public static IEnumerator CloseActivation => UiVariantButton.Click(ActivationCloseBtns);
     }
 
     /// <summary>The selected hero's rarity step, paid in Contracts. Its tab hides the enchanting counters.</summary>

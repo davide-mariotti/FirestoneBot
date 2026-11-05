@@ -126,9 +126,11 @@ public class HallOfHeroesTask : BotTask
         else
             _heroes = _heroes.Select(h => h with { InFormation = formation.Contains(h.Name) }).ToList();
 
+        if (!_stop) yield return UseSeals(_heroes);
         if (!_stop) yield return UnlockTiers(!fullRead);
         if (!_stop && !_gearBlocked) yield return Spend(EnchantCategory.Gear);
         if (!_stop) yield return Spend(EnchantCategory.Jewels);
+        if (!_stop) yield return UseSeals(_heroes.Where(EnchantPlanner.SealReached).ToList());
         // Last: its tab hides the counters the enchants read. Once a day, with the full read.
         if (!_stop && fullRead) yield return IncreaseRarity();
 
@@ -493,6 +495,79 @@ public class HallOfHeroesTask : BotTask
         Debug($"[FAILED] Hero cell {index} shows '{shown}', the snapshot expects '{hero.Name}' - full read on the next run.");
         _heroSnapshotTime.Value = "";
         _stop = _rosterMoved = true;
+    }
+
+    /// <summary>
+    ///     Seals of Power: uses every seal whose item meets the requirements, a rarity up that triples
+    ///     the item and lifts its level cap, and notes the level the others ask for, which EnchantPlanner
+    ///     then buys first. Spends only seals, which do nothing else.
+    /// </summary>
+    private IEnumerator UseSeals(IReadOnlyList<HeroState> heroes)
+    {
+        const int maxPerCategory = 8;
+        var waiting = new List<string>();
+
+        foreach (var hero in heroes)
+        {
+            yield return SelectHero(hero);
+            if (_stop) yield break;
+
+            foreach (var category in new[] { EnchantCategory.Gear, EnchantCategory.Jewels })
+            {
+                var jewels = category == EnchantCategory.Jewels;
+                yield return HallOfHeroesModel.Seals.Open(jewels);
+                yield return Poll.Until(() => HallOfHeroesModel.Seals.Rows(jewels).Count > 0, 4);
+
+                for (var used = 0; used < maxPerCategory; used++)
+                {
+                    var row = HallOfHeroesModel.Seals.Rows(jewels).FirstOrDefault(r => r.CanRise);
+                    if (row == null) break;
+
+                    var ok = false;
+                    yield return UseSeal(hero, category, row, done => ok = done);
+                    if (!ok) break;
+                }
+
+                var seals = hero.Seals(category);
+                Array.Clear(seals, 0, seals.Length);
+                foreach (var row in HallOfHeroesModel.Seals.Rows(jewels))
+                {
+                    var slot = EnchantPlanner.SlotIndex(category, row.Slot);
+                    var need = EnchantPlanner.SealLevel(row.ItemRarity, row.SealRarity);
+                    if (slot < 0 || need == 0) continue;
+
+                    seals[slot] = need;
+                    waiting.Add($"{hero.Name} {row.Slot} {row.Level}/{need}");
+                }
+            }
+        }
+
+        if (heroes.Count > 0) Debug($"[INFO] Seals waiting for a level: {(waiting.Count == 0 ? "none" : string.Join(", ", waiting))}.");
+    }
+
+    private IEnumerator UseSeal(HeroState hero, EnchantCategory category, HallOfHeroesModel.Seals.Row row, Action<bool> done)
+    {
+        var jewels = category == EnchantCategory.Jewels;
+        yield return new GameButton(transform: row.Button.transform).Click();
+        yield return Poll.Until(() => HallOfHeroesModel.Seals.IsActivationOver, 60);
+        Debug($"[INFO] Seal: {hero.Name} {row.Slot} {row.ItemRarity} level {row.Level} with its {row.SealRarity} seal. " +
+              $"Open: {Watchdog.DumpActiveScreens()}");
+        yield return HallOfHeroesModel.Seals.CloseActivation;
+
+        yield return HallOfHeroesModel.Seals.Open(jewels);
+        yield return Poll.Until(() => HallOfHeroesModel.Seals.Rows(jewels).All(r => r.Slot != row.Slot || r.ItemRarity != row.ItemRarity));
+
+        var stillThere = HallOfHeroesModel.Seals.Rows(jewels).Any(r => r.Slot == row.Slot && r.ItemRarity == row.ItemRarity);
+        if (stillThere)
+            Debug($"[FAILED] Seal: {hero.Name} {row.Slot} still {row.ItemRarity} after the click - no more seals here this run.");
+        else
+        {
+            // The new rarity lifts the cap a slot may have been sitting at: its level is good again.
+            var slot = EnchantPlanner.SlotIndex(category, row.Slot);
+            if (slot >= 0) hero.Levels(category)[slot] = row.Level;
+        }
+
+        done(!stillThere);
     }
 
     /// <summary>

@@ -30,6 +30,19 @@ public static partial class Paths
 
         public const string HeroRarityTabBtn = Root + "/submenus/submenuButtons/heroRarity";
 
+        public const string SealsTabBtn = Root + "/submenus/submenuButtons/sealsOfPower";
+
+        // One row per item that can rise in rarity, built by the game for the selected hero
+        // (GearSealUpgradeInteraction, JewelSealUpgradeInteraction).
+        public static class SealsSubmenuLoc
+        {
+            public const string Root = HallOfHeroesLoc.Root + "/submenus/bg/sealsOfPowerSubmenu";
+
+            public const string GearCategoryTabBtn = Root + "/categoryButtons/gear";
+
+            public const string JewelsCategoryTabBtn = Root + "/categoryButtons/jewels";
+        }
+
         // Seen live on 2026-10-03 (Steam-0, Cirilo): 'Common - Cirilo' -> 'Uncommon - Cirilo', rarityButton
         // costText '30' with currencyIcon 'contracts64', requirementsText 'Requires to be Uncommon rarity:
         // <color=#0FE607>Gear Items</color>'. The static dump's blessingsSubmenu isn't what the tab opens.

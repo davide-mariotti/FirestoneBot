@@ -12,6 +12,55 @@ public class EnchantPlannerTests
     private static HeroState Hero(string name, bool inFormation, int power, int[] gear, int[]? jewels = null) =>
         new(name, inFormation, power, gear, jewels ?? new[] { 0, 0, 0, L, L, L });
 
+    // The user's example (05/11): three items at 5, a Seal only for one of them, which needs 6.
+    [Fact]
+    public void Plan_TakesTheSealedSlotToItsLevelFirst()
+    {
+        var hero = Hero("A", false, 0, new[] { 16, 16, 16, 16, 16, 16, 16, 16 }, new[] { 5, 5, 5, L, L, L }) with
+        {
+            JewelSeals = new[] { 0, 0, 6, 0, 0, 0 }
+        };
+
+        var plan = EnchantPlanner.Plan(new[] { hero }, EnchantCategory.Jewels, 960);
+
+        Assert.Equal(new[] { 2 }, plan.Select(s => s.Slot));
+    }
+
+    [Theory]
+    [InlineData("Epic", "Legendary", 6)]
+    [InlineData("Legendary", "Mythic", 9)]
+    [InlineData("Titan", "Angel", 13)]
+    [InlineData("Rare", "Legendary", 0)] // Boris' Chest on Steam-1: only a better item helps
+    [InlineData("Epic", "Mythic", 0)] // Muriel's Chest: its Legendary seal is what's missing
+    public void SealLevel_AsksForTheRarityBeforeTheSeal(string item, string seal, int level) =>
+        Assert.Equal(level, EnchantPlanner.SealLevel(item, seal));
+
+    [Fact]
+    public void Plan_GoesForTheSealClosestToItsLevel()
+    {
+        var hero = Hero("A", false, 0, new[] { 16, 16, 16, 16, 16, 16, 16, 16 }, new[] { 2, 5, 16, L, L, L }) with
+        {
+            JewelSeals = new[] { 6, 6, 0, 0, 0, 0 }
+        };
+
+        var plan = EnchantPlanner.Plan(new[] { hero }, EnchantCategory.Jewels, 960);
+
+        Assert.Equal(new[] { 1 }, plan.Select(s => s.Slot));
+    }
+
+    [Fact]
+    public void Plan_ForgetsTheSealOnceTheLevelIsThere()
+    {
+        var hero = Hero("A", false, 0, new[] { 16, 16, 16, 16, 16, 16, 16, 16 }, new[] { 5, 5, 6, L, L, L }) with
+        {
+            JewelSeals = new[] { 0, 0, 6, 0, 0, 0 }
+        };
+
+        var plan = EnchantPlanner.Plan(new[] { hero }, EnchantCategory.Jewels, 960);
+
+        Assert.Equal(new[] { 0 }, plan.Select(s => s.Slot));
+    }
+
     [Fact]
     public void Plan_BuysExactlyWhatTheBalanceCovers()
     {
