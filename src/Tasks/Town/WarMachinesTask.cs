@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Firebot.Core.Tasks;
+using Firebot.GameModel.Features.Guild;
 using Firebot.GameModel.Features.Town;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
@@ -18,10 +19,13 @@ public class WarMachinesTask : BotTask
 {
     internal override TaskGroup Group => TaskGroup.Town;
 
-    // Expedition Tokens are shared with TreeOfLifeTask and nothing splits them: a level costs 500 and
-    // this runs at 500, so the personal tree's dearer nodes wait. Off from 04/10 to 05/11 for that
-    // (the F2P guide picks the tree), which left this badge lit on every account: the user wants an
-    // empty rail. "enabled = false" goes back to saving the tokens for the tree.
+    // Expedition Tokens are shared with TreeOfLifeTask and a level here costs 500, so running at 500
+    // starves the tree's dearer nodes. The user's rule (07/11): the Personal Tree comes first, and
+    // until it reaches this level the Warmachines badge stays lit on purpose. Past it this comes back
+    // by itself, so "enabled" stays true.
+    private const int TreeLevelFirst = 50;
+
+    private static bool TreeIsDone => TreeOfLife.PersonalLevel >= TreeLevelFirst;
 
     // Assumed from the Engineer building's level-50 unlock; the wiki gives none for war machines.
     protected override int MinimumCharacterLevel => 50;
@@ -31,12 +35,21 @@ public class WarMachinesTask : BotTask
     // The game hands components out by itself, so a lit badge means there's leveling to do.
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.Warmachines;
 
+    public override bool IsNotificationVisible() => base.IsNotificationVisible() && TreeIsDone;
+
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
 
     private const int MaxIterationsPerMachine = 200;
 
     public override IEnumerator Execute()
     {
+        if (!TreeIsDone)
+        {
+            Logger.Debug($"[WarMachinesTask] [INFO] Waiting for the Personal Tree: level {TreeOfLife.PersonalLevel} of {TreeLevelFirst}.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.Warmachines;
 
         yield return TownScreen.Open;

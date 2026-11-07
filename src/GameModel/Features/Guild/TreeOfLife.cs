@@ -25,6 +25,9 @@ public static class TreeOfLife
         PersonalUpgradeType.BattleCry, PersonalUpgradeType.Miner
     };
 
+    /// <summary>The Personal Tree's own level, from the game's data: no screen needed, 0 until it has loaded.</summary>
+    public static int PersonalLevel => (int)(GameInitialize.HandlerLoader?.ToLPersonalUpgradeHandler?.personalTreeLevel ?? 0);
+
     public static IEnumerator OpenPersonalTab => new GameButton(Paths.TreeOfLifeLoc.PersonalTabBtn).Click();
 
     public static GameButton PersonalNode(int index) => new(NodePath(index));

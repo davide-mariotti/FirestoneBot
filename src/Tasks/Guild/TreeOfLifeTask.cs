@@ -13,7 +13,7 @@ namespace Firebot.Tasks.Guild;
 ///     Spends Expedition Tokens on the Personal Tree, in the order TreeOfLifePlanner gives: steps of 5
 ///     levels, priority branches first (the user's rule, 04/10). Picking again after every purchase
 ///     spreads the tokens instead of maxing one upgrade while the rest sit at zero. War Machines
-///     level with the same tokens and stay off (warmachinestask).
+///     level with the same tokens and wait for this tree to reach level 50 (WarMachinesTask).
 /// </summary>
 public class TreeOfLifeTask : BotTask
 {

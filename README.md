@@ -60,7 +60,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Oracle Rituals** (character level 200): claims the finished ritual and starts the next one - one runs at a time, 40 minutes each - which also covers the level-200 daily quest for 2 rituals. **Oracle's Gift**: claims the free daily gift in the Oracle's store. **Oracle Blessings**: spends glyphs on every blessing the game marks as affordable, one level per run while its badge stays lit.
 - **Amulet Shop**: reads the Store's amulet of the day every hour and buys it for 2000 gems when it's worth it, by tier and keeping gems back for the better ones still missing (AMULETS_PLAN.md). Starts in `dry_run`: logs what it would buy and never clicks until `dry_run = false`.
 - **System Mail**: claims every mailbox reward; never deletes mail.
-- **War Machines** (off by default): levels every owned war machine. It spends the same Expedition Tokens as the Personal Tree, which the guide puts first.
+- **War Machines**: levels every owned war machine, but only once the Personal Tree has reached level 50: both spend the same Expedition Tokens, and the tree comes first. Until then its badge stays lit.
 - **War Machine Rarity**: raises war machine rarity with Tools, in grid order, whenever one is affordable.
 
 **Guild**
