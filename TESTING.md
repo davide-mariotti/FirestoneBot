@@ -381,6 +381,15 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
 
 ## Problemi noti
 
+- **Liberation rifiutata dal server (7/11, corretto lo stesso giorno).** Su Steam-3, -4, -17, -25,
+  -26 e -30 il primo click ha aperto `menus/Achievements` al posto della battaglia (sempre lì: 26
+  account riusciti in 1,5-1,7 s, questi 6 no). Il server ha contato la missione, il client la offre
+  ancora, e ogni click riceve `An error occurred on the server. Please try again.` (`GenericMessage`,
+  letto da uno screenshot di Steam-25), che lascia morti anche i bottoni delle altre missioni: giri
+  da 0 ogni 2 minuti. Solo ricaricare il client lo sblocca (Steam-17: missione 0 vinta, poi le altre
+  2). Ora il task aspetta la risposta fino a 20 s dopo un click preso e, se il server rifiuta, chiude
+  il gioco una volta per game-day (`restarted_on`). Il Watchdog scrive il testo di ogni `GenericMessage`.
+
 - **Reset del gioco spostato dalle 08:00 alle 09:00 UTC (6/11, corretto il 7/11).** Con la build
   26480681 del 6/11 (`Game Version` sempre 3.64) il gioco ha il reset alle 10:00 italiane anche
   d'inverno: `TimeLibrary.officialServerTimeResetHour` = 9, rinnovo delle quest letto alle 10:00:07.

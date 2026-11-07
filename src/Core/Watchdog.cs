@@ -31,10 +31,16 @@ public static class Watchdog
                     var button = new GameButton($"{root}/{screen.Name}{buttonSuffix}");
                     if (!button.IsVisible()) continue;
 
-                    Logger.Debug($"[Watchdog] Closing popup: {button.FullPath}");
+                    Logger.Debug($"[Watchdog] Closing popup: {button.FullPath}{ScreenText(screen)}");
                     yield return button.Click();
                 }
     }
+
+    // A game's message says why something was refused, and this is the last chance to read it.
+    private static string ScreenText(GameElement screen) =>
+        screen.Name == "GenericMessage" && GameElement.FindTransform(Paths.MenusLoc.GenericMessageLoc.Root) is { } popup
+            ? " - " + string.Join(" | ", popup.GetComponentsInChildren<Il2CppTMPro.TMP_Text>().Select(t => t.text))
+            : "";
 
     /// <summary>Read-only: every screen active right now under events/, popups/ and menus/.</summary>
     public static string DumpActiveScreens()

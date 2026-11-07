@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 using Firebot.Core;
 using Firebot.Core.Tasks;
@@ -8,6 +9,7 @@ using Firebot.GameModel.Features.Map.WarfrontCampaign;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using Firebot.Utilities;
+using MelonLoader;
 using Logger = Firebot.Core.Logger;
 
 namespace Firebot.Tasks.Map;
@@ -33,6 +35,15 @@ public class WarfrontDailyMissionsTask : BotTask
     private const float SimOpenPollSeconds = 0.5f;
     private const int MaxFightAttempts = 3;
 
+    // A click the game took leaves every fight button disabled until the answer, which can be late:
+    // the server's refusal comes ~10 s on, and the Achievements menu can open ahead of the battle.
+    private const int MaxAnswerPolls = 40;
+
+    private static bool FightAnswered =>
+        WFBattleSim.IsVisible || WFBattle.IsVisible || WFBattleResult.IsDecided || WarfrontLiberationMissions.FightRefused;
+
+    private MelonPreferences_Entry<string> _restartedOn;
+
     private static readonly TimeSpan RetryAfterReset = TimeSpan.FromMinutes(5);
 
     // Asks the game, not the clock: missions also turn up away from the bot's reset, with the stars
@@ -40,6 +51,24 @@ public class WarfrontDailyMissionsTask : BotTask
     // The badge on the daily-missions button shows only with the map open, and the rail's is the loot task's.
     public override bool IsNotificationVisible() =>
         IsEnabled && MeetsLevelRequirement && WarfrontLiberationMissions.HasAvailable;
+
+    protected override void OnConfigure(MelonPreferences_Category category) =>
+        _restartedOn ??= category.CreateEntry("restarted_on", "", "Restarted On",
+            "(auto-managed, don't edit) - the last game-day a refused fight restarted the game.");
+
+    // 07/11, Steam-3, -4, -17, -25, -26 and -30: a fight that reached an achievement opened
+    // menus/Achievements instead of the battle. The server counted the mission, the client still offers
+    // it, and each click on it gets "An error occurred on the server", which leaves the other missions'
+    // buttons dead too. Only reloading the client clears it. Once a game-day, so an outage can't loop.
+    private void RestartOnceToday()
+    {
+        if (_restartedOn.Value == GameDay.Today()) return;
+
+        _restartedOn.Value = GameDay.Today();
+        PersistNextRunTime();
+        Logger.Info("[WarfrontDailyMissionsTask] The server refused a mission the game still offers - closing the game.");
+        Process.GetCurrentProcess().Kill();
+    }
 
     public override IEnumerator Execute()
     {
@@ -77,8 +106,9 @@ public class WarfrontDailyMissionsTask : BotTask
                 }
 
                 yield return fightBtn.Click();
-                yield return Poll.Until(() => WFBattleSim.IsVisible || WFBattle.IsVisible || WFBattleResult.IsDecided,
-                    MaxSimOpenPolls, SimOpenPollSeconds);
+                yield return Poll.Until(() => FightAnswered, MaxSimOpenPolls, SimOpenPollSeconds);
+                if (!FightAnswered && !fightBtn.IsClickable())
+                    yield return Poll.Until(() => FightAnswered, MaxAnswerPolls, SimOpenPollSeconds);
 
                 simOpened = WFBattleSim.IsVisible;
                 battleAlreadyRunning = WFBattle.IsVisible || WFBattleResult.IsDecided;
@@ -86,6 +116,8 @@ public class WarfrontDailyMissionsTask : BotTask
                              $"WFBattleSim visible={simOpened}, battle already running={battleAlreadyRunning}, " +
                              $"screenOpen={WarfrontLiberationMissions.IsVisible}.");
             }
+
+            if (WarfrontLiberationMissions.FightRefused) RestartOnceToday();
 
             if (!simOpened && !battleAlreadyRunning)
             {

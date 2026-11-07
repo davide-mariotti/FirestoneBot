@@ -380,7 +380,7 @@ public static partial class Paths
         // screen that raised it, so closing it leaves that screen open.
         public static class GenericMessageLoc
         {
-            private const string Root = MenusLoc.Root + "/popups/GenericMessage";
+            public const string Root = MenusLoc.Root + "/popups/GenericMessage";
 
             public const string CloseBtn = Root + "/bg/closeButton";
         }

@@ -37,6 +37,9 @@ public static class WarfrontLiberationMissions
         GameInitialize.HandlerLoader?.LiberationMissionsHandler is { missions: not null } handler &&
         handler.HasAvailableMissions();
 
+    /// <summary>The server's "An error occurred" after a fight click; nothing else raises this popup here.</summary>
+    public static bool FightRefused => new GameElement(Paths.MenusLoc.GenericMessageLoc.CloseBtn).IsVisible();
+
     public static GameElement MissionsGrid => new(Paths.WFLiberationMissionsLoc.MissionsGridRoot);
 
     /// <summary>
