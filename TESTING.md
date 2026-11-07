@@ -402,6 +402,11 @@ Globali: `low_resource_mode` ✅ (18/09) e griglia delle finestre ✅ (26/09, 18
   `Quest list:` con ogni quest come la tiene il gioco. Formation è passata alle 09:32 UTC per restare
   dopo la calca del reset e prima del riavvio delle 10:00 UTC. Il confronto dei path falliti prima e
   dopo l'update (555 path) non ha trovato schermate rotte.
+  **Rollout del 7/11, censimento delle 03:15 su Steam-0..31:** 49 task su 49, nessun `[FAILED] Task`,
+  `WarfrontCampaign` spento ovunque, daily tutte reclamate su 14 account e tutte tranne `prophet`
+  sui 18 sotto il livello 200 (Steam-10, -12, -16, -17..31). Personal Tree tra 19 e 25. Su Steam-8
+  la quarta missione è partita da sola alle 02:53 senza aspettare il reset. Da vedere al primo
+  reset vero, le 10:00 del 7/11. Il riavvio per un fight rifiutato non si è ancora visto dal vivo.
 - **Rollout del 5/11, Steam-0..31.** Tre giri: 20:29 (campagna, milestone, Pirate's Prize, Mystery Box, HUD), 21:10
   (Empower, Boss, `SeenBadgesTask`, War Machines acceso) e 22:13 (attesa delle schermate di Scarab). Alle 22:23, dieci
   minuti dopo l'ultimo: bot caricato su 32 su 32, nessun errore, rail vuoto su 29. Gli altri tre aspettavano il proprio
