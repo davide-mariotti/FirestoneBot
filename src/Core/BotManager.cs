@@ -134,6 +134,15 @@ public static class BotManager
             PlayerAvatar.RefreshCachedLevel();
             if (DateTime.Now >= _nextSnapshot) LogSnapshot();
 
+            // The game moved its reset on 06/11 and the bot, with the hour written in, spent a day on
+            // the wrong side of it. 0 would only mean the game hasn't set it yet.
+            var resetHour = TimeLibrary.officialServerTimeResetHour;
+            if (resetHour > 0 && resetHour != GameDay.ResetHourUtc)
+            {
+                Logger.Info($"Game reset hour: {GameDay.ResetHourUtc} -> {resetHour} UTC.");
+                GameDay.ResetHourUtc = resetHour;
+            }
+
             var notificationVisible = new bool[Tasks.Count];
             for (var i = 0; i < Tasks.Count; i++) notificationVisible[i] = Tasks[i].IsNotificationVisible();
 

@@ -35,8 +35,11 @@ public class WarfrontDailyMissionsTask : BotTask
 
     private static readonly TimeSpan RetryAfterReset = TimeSpan.FromMinutes(5);
 
-    // The badge sits on the daily-missions button itself, not on the notification rail.
-    protected override string[] NotificationPaths => new[] { Paths.WorldMapLoc.WarfrontLoc.DailyMissionsNotification };
+    // Asks the game, not the clock: missions also turn up away from the bot's reset, with the stars
+    // for a new one or when the game moves its reset (06/11, all 32 accounts sat on them for a day).
+    // The badge on the daily-missions button shows only with the map open, and the rail's is the loot task's.
+    public override bool IsNotificationVisible() =>
+        IsEnabled && MeetsLevelRequirement && WarfrontLiberationMissions.HasAvailable;
 
     public override IEnumerator Execute()
     {

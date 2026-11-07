@@ -3,16 +3,19 @@ using System;
 namespace Firebot.Utilities;
 
 /// <summary>
-///     The game's daily reset (quests and every "already done today" tracker tied to them) happens at
-///     08:00 UTC, not midnight: 10:00 in Italian summer time, 09:00 in winter (25/10, the day the clocks
-///     went back, the game's countdowns read 09:00). Before it, it's still the previous game-day.
+///     The game's daily reset (quests and every "already done today" tracker tied to them). Before it,
+///     it's still the previous game-day. The hour is the game's to change: 08:00 UTC until the 06/11
+///     update, 09:00 UTC since, which keeps it at 10:00 Italian time in winter too.
 ///     The bot starts its day 2 minutes later: right at the reset the game still shows yesterday's quests
 ///     for up to a minute (01/10) and yesterday's liberation missions for ~20 s (03/10).
 /// </summary>
 public static class GameDay
 {
-    private static readonly TimeSpan GameReset = TimeSpan.FromHours(8);
-    private static readonly TimeSpan Reset = GameReset + TimeSpan.FromMinutes(2);
+    /// <summary>BotManager keeps this on TimeLibrary.officialServerTimeResetHour; this class has no game types.</summary>
+    public static int ResetHourUtc { get; set; } = 9;
+
+    private static TimeSpan GameReset => TimeSpan.FromHours(ResetHourUtc);
+    private static TimeSpan Reset => GameReset + TimeSpan.FromMinutes(2);
 
     // A countdown read to the second can land a few seconds either side of the reset.
     private static readonly TimeSpan CountdownSlack = TimeSpan.FromSeconds(30);
@@ -25,7 +28,7 @@ public static class GameDay
         return gameDay.ToString("yyyy-MM-dd");
     }
 
-    /// <summary>The next 08:02 UTC, when the bot's game-day starts, in local time.</summary>
+    /// <summary>The next start of the bot's game-day, in local time.</summary>
     public static DateTime NextReset() => NextUtc(Reset);
 
     /// <summary>The next time of day <paramref name="utcTime" /> in UTC, in local time.</summary>
@@ -35,7 +38,7 @@ public static class GameDay
         return (DateTime.UtcNow < at ? at : at.AddDays(1)).ToLocalTime();
     }
 
-    /// <summary>A run time that falls on the reset - a game countdown to 08:00 UTC - moves to 08:02 UTC.</summary>
+    /// <summary>A run time that falls on the reset - a game countdown to it - moves to the bot's, 2 minutes later.</summary>
     public static DateTime PastReset(DateTime time)
     {
         if (time.Date == DateTime.MaxValue.Date || time == DateTime.MinValue) return time;

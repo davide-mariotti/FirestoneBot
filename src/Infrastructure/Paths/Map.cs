@@ -32,8 +32,6 @@ public static partial class Paths
             public const string ClaimBtn = LootBtn + "/claimButton";
 
             public const string DailyMissionsBtn = SubmenuRoot + "/dailyMissionsButton";
-
-            public const string DailyMissionsNotification = DailyMissionsBtn + "/notification";
         }
     }
 

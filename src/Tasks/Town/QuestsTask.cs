@@ -3,6 +3,7 @@ using System.Collections;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
+using Il2Cpp;
 
 namespace Firebot.Tasks.Town;
 
@@ -39,10 +40,24 @@ public class QuestsTask : BotTask
 
         yield return CharacterScreen.Close;
         Debug($"[INFO] Quests: claimed {daily.Count} daily, {weekly.Count} weekly.");
+        Debug($"[INFO] Quest list: {Describe()}");
 
         var earliestRenew = dailyRenewTime < weeklyRenewTime ? dailyRenewTime : weeklyRenewTime;
         var computedNext = earliestRenew > DateTime.Now ? earliestRenew : DateTime.Now + FallbackRetryDelay;
         var maxNext = DateTime.Now + MaxRecheckDelay;
         NextRunTime = computedNext < maxNext ? computedNext : maxNext;
+    }
+
+    // Every quest as the game holds it, "*" once claimed: what's left of the day without opening the screen.
+    private static string Describe()
+    {
+        var parts = new System.Collections.Generic.List<string>();
+        foreach (var entry in GameInitialize.HandlerLoader.QuestHandler.quests)
+        {
+            var q = entry.Value;
+            parts.Add($"{q.questName}({q.questResetType}) {q.questProgress}/{q.questRequirement}{(q.hasClaimed ? "*" : "")}");
+        }
+
+        return string.Join(", ", parts);
     }
 }

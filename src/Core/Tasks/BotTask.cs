@@ -99,7 +99,7 @@ public abstract class BotTask
     /// </summary>
     protected virtual int MinimumCharacterLevel => 0;
 
-    private bool MeetsLevelRequirement => PlayerAvatar.CharacterLevel >= MinimumCharacterLevel;
+    protected bool MeetsLevelRequirement => PlayerAvatar.CharacterLevel >= MinimumCharacterLevel;
 
     /// <summary>
     ///     "enabled" for a new config file. False only for a task that shouldn't run until someone

@@ -14,8 +14,8 @@ namespace Firebot.Tasks.Character;
 /// <summary>
 ///     The daily formation check (FORMATION_PLAN.md): the strongest five the account can field now, and
 ///     the target its own multipliers favor. Logs both against the formation in battle; without
-///     dry_run it swaps heroes from the deck and sets the leader. Runs an hour after the reset (GameDay),
-///     out of its rush.
+///     dry_run it swaps heroes from the deck and sets the leader. Runs half an hour after the reset
+///     (GameDay), out of its rush.
 /// </summary>
 public class FormationTask : BotTask
 {
@@ -26,9 +26,9 @@ public class FormationTask : BotTask
     // The target only moves for a clearly better one: investments follow it (HallOfHeroesTask).
     private const double TargetMinGain = 0.20;
 
-    // UTC, an hour after the bot's reset: 11:02 in summer time, 10:02 in winter - always 58 minutes
-    // before the restart that Firestone_Riavvio runs at 10:00 UTC.
-    private static readonly TimeSpan RunAt = new(9, 2, 0);
+    // UTC: past the rush of the reset (09:00 UTC since 06/11), and 28 minutes before the restart that
+    // Firestone_Riavvio runs at 10:00 UTC.
+    private static readonly TimeSpan RunAt = new(9, 32, 0);
 
     private MelonPreferences_Entry<bool> _dryRun;
     private MelonPreferences_Entry<string> _target;

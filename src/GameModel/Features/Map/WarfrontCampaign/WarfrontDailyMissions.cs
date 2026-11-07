@@ -4,6 +4,7 @@ using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
+using Il2Cpp;
 
 namespace Firebot.GameModel.Features.Map.WarfrontCampaign;
 
@@ -27,6 +28,14 @@ public static class WarfrontDailyMissions
 public static class WarfrontLiberationMissions
 {
     public static bool IsVisible => new GameElement(Paths.WFLiberationMissionsLoc.CloseBtn).IsVisible();
+
+    /// <summary>
+    ///     The game's own word that a mission is waiting, readable with no screen open. It's what lights
+    ///     the rail's WarfrontCampaign badge. Read on every scan, so it holds until the handler has loaded.
+    /// </summary>
+    public static bool HasAvailable =>
+        GameInitialize.HandlerLoader?.LiberationMissionsHandler is { missions: not null } handler &&
+        handler.HasAvailableMissions();
 
     public static GameElement MissionsGrid => new(Paths.WFLiberationMissionsLoc.MissionsGridRoot);
 
