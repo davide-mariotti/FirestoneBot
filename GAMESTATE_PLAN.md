@@ -169,8 +169,11 @@ l'ultima fase e sono la parte più rischiosa:
 
 ## Cosa non fare
 
-- Non chiamare i metodi del gioco che agiscono (claim, start, buy, upgrade) al posto dei click:
-  rompe la promessa del README, e ci sono ACTk e la validazione del server.
+- Non chiamare i metodi del gioco che agiscono (claim, start, buy, upgrade) al posto dei click.
+  ACTk non lo vedrebbe: controlla valori in memoria, velocità e orologio, non chi chiama un metodo.
+  Il rischio è il server, che riceverebbe richieste che la UI in quel momento non manderebbe
+  (`UserAPI.isCheater`/`isBanned` arrivano dal server). Il guadagno è piccolo, perché i click
+  funzionano. Se un giorno si farà: solo il metodo che chiama il bottone, e solo con il bottone attivo.
 - Non scrivere campi del gioco.
 - Non togliere la lettura dalla UI finché il dato del gioco non è verificato su tutta la flotta per
   qualche giorno.
