@@ -138,6 +138,15 @@ Da capire con la sonda: quanti regali si aprono e ogni quanto (sembra uno al gio
 l'apertura ha un costo (se sì, chiedere all'utente), dove sono il bottone e la milestone. Poi un task
 che apre il regalo del giorno e chiude le offerte di Eve senza toccarle.
 
+**Dal codice del gioco (REA, build del 06/11, letto il 26/11; nomi visti, non ancora provati dal
+vivo):**
+- `GameInitialize.HandlerLoader.frostfireFestivalHandler` ha `InProgress()`, `CanClaimNow()`,
+  `todayClaimed`, `daysClaimed`, `IsLastDayOfEvent()`, `GetAvailableFrostfirePacksCount()`,
+  `openedBoxes`/`IsBoxOpened(n)` e `HasEventManagerPopupNotification()`.
+- Quindi è un regalo al giorno, e il task può partire con `InProgress() && CanClaimNow()` senza aprire
+  niente. La richiesta al server si chiama `ClaimFrostfireFestivalDaily`.
+- Vedi GAMESTATE_PLAN.md, "Funzioni nuove trovate nel dump".
+
 ## 5. Anniversario (aprile)
 
 Gli account che hanno già fatto un New Player Event hanno l'anniversario (2 settimane, ogni aprile):

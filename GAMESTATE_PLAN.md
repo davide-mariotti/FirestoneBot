@@ -136,10 +136,8 @@ Il log ha anche un altro costo fisso: a ogni scan, per ogni badge, due `[FAILED]
      - missioni, spedizioni, ricerche ed esperimenti mai fermi più di uno scan dopo la fine;
      - numeri dello `Snapshot` (stage, gemme, ...) in linea coi vicini.
    - **Velocità:** minuti per ora di navigazione rispetto ai 9,7 di partenza. Obiettivo: almeno la
-     metà.
-   - **RAM:** memoria privata di Steam-27 contro quella di Steam-26 e Steam-28 a pari uptime
-     (`Get-Process Firestone`, `PrivateMemorySize64`). Vedi la sezione "RAM". Il conteggio dei minuti è il regex `\[Task\] (.+?) finished in ([\d.]+)s` sul `Latest.log`
-     della box, aperto in condivisione (`[IO.File]::Open(path,'Open','Read','ReadWrite')`).
+     metà. Il conteggio dei minuti è il regex `\[Task\] (.+?) finished in ([\d.]+)s` sul
+     `Latest.log` della box, aperto in condivisione (`[IO.File]::Open(path,'Open','Read','ReadWrite')`).
 7. **Se va tutto bene:**
    - `git switch main`, `git merge --no-ff game-state`, `git push`;
    - deploy su tutta la flotta, su entrambi i PC, come al solito;
@@ -197,6 +195,17 @@ eventi e priorità delle ricerche passano agli enum (`CalendarEventChallenges`,
   chiude l'ultimo. `menuStack` dice cosa è aperto senza cercare GameObject.
 - Sostituisce le catene Town → edificio → sottomenu di `Town.cs`, `TownGuild.cs`, `Library.cs`,
   `WorldMap.cs`, `CharacterScreen.cs`, ... e buona parte del lavoro di chiusura del `Watchdog`.
+- Prima scelta, quando esiste: le funzioni dedicate che chiamano i bottoni del HUD,
+  `GameInitialize.MenuLoader.adventureScreen.Open*`. Sono `OpenLibrary(LibraryMech+SubmenuNum)`,
+  `OpenMagicQuarters(...)`, `OpenAlchemist(...)`, `OpenExoticMerchant(...)`, `OpenTavern(...)`,
+  `OpenPirateShip(...)`, `OpenOracleMech(...)`, `OpenWorldMap(...)`, `OpenGuildExpeditions()`,
+  `OpenEngineer()`, `OpenArenaOfKings()`, `OpenChaosRift()`, `OpenForbiddenKnowledge()`,
+  `OpenScarabGame(...)`, `OpenBattlePass(...)`, `OpenStore(...)`, `OpenTempleOfEternals()`, ... (36
+  in tutto). I sottomenu sono enum tipizzati, quindi niente numeri da indovinare. `OpenMenu` resta per
+  le schermate che non ne hanno una.
+- Per i task delle quest (Collector, Gamer, Merchant, Miner): `QuestHandler.dictQuestGoToAction`
+  (`Dictionary<QuestCode, Action>`) è il bottone "Go" di ogni quest, cioè il gioco stesso che porta
+  dove serve.
 - `menuUnlocked` (`Dictionary<(MenuName,int), Func<bool>>`) e
   `UnlockMechanismsHandler.MechanismsLevelUnlocks` dicono se una funzione è sbloccata. Possono
   sostituire i `MinimumCharacterLevel` presi dal wiki.
@@ -290,9 +299,9 @@ sono i valori per decidere cosa fare; per la navigazione vale la leva D per tutt
 | Hero Upgrade | continuo | `NotificationHandler.UpgradesNotificationCheck` / badge degli upgrade (?) | livelli degli eroi da `heroDeck` invece di `HeroUpgrade.cs:167` |
 | Flying Bonus Hunter | continuo | `BeerHandler.dragonBeerHandler` / `femaleDragonBeerHandler`, `FallingItemHandler` (?) invece di cercare i GameObject a ogni scan | |
 
-## Flussi da ripensare con i dati (decisioni migliori, non solo più veloci)
+## Flussi nuovi (decisi dall'utente il 26/11, fanno parte del branch)
 
-Ognuno di questi va deciso con l'utente: cambia cosa fa il bot, non solo come lo fa.
+Questi cambiano cosa fa il bot, non solo come lo fa. Le scelte qui sotto sono già approvate.
 
 1. **Ricerca (Firestone e Meteorite).**
    - **Oggi:** apre le anteprime dei nodi una per una e sceglie per nome inglese, se no il primo
@@ -302,7 +311,8 @@ Ognuno di questi va deciso con l'utente: cambia cosa fa il bot, non solo come lo
    - **Firestone, dai dati:** `FirestoneResearchHandler.researchTrees[currentTree]` ha ogni nodo con
      `level`, `levelCap`, `realTimeRequired`, `researchState`, `IsUnlocked`,
      `firestoneResearchType` (enum) e `researchTier`. La scelta si fa in memoria, poi un solo click sul
-     bottone del nodo (`firestoneResearchInteraction`). Proposta: priorità per enum, poi il
+     bottone del nodo (`firestoneResearchInteraction`). **Deciso:** prima le priorità di oggi, ma per
+     enum (`RainingGold`, `Prestigious`, `FirestoneEffect`, ...); fuori dalle priorità, il
      `realTimeRequired` più corto invece del primo della griglia. Così si completano più livelli
      all'ora e i tier si sbloccano prima (`tierNTreeMUnlock`).
    - **Meteorite, dai dati:** `MeteoriteResearchHandler.researchTrees` ha `levelUpCost`,
@@ -319,19 +329,27 @@ Ognuno di questi va deciso con l'utente: cambia cosa fa il bot, non solo come lo
      cliccando e la cache "cached maxed".
    - Il task è pronto solo se esiste un nodo `unlocked`, sotto il cap e con il tier raggiunto. Oggi
      gira 45 s ogni 30 min su Steam-20, -27 e -29 con `TalentAvailable` acceso.
+   - Prima di toccarli sul branch: se il lavoro dell'altra chat è già su main, si fa rebase del
+     branch su main e queste letture si aggiungono al loro codice. Se no, ci si mette d'accordo con
+     l'utente per non lavorare in due sugli stessi file.
 3. **Spedizioni.**
    - **Oggi:** parte la prima in attesa.
    - **Dai dati:** `guildManagement.expeditionData.expeditions` le elenca tutte con
      `expeditionTokenReward`, `guildCoinReward` e `timeReq`. I token spedizione sono la risorsa che
-     frena (Personal Tree a 50 prima delle War Machines), quindi si può scegliere quella con più token
-     all'ora, oppure quella che finisce prima del prossimo controllo.
+     frena (Personal Tree a 50 prima delle War Machines).
+   - **Deciso:** si fa partire quella con più token all'ora (`expeditionTokenReward / timeReq`); a
+     parità, quella con più monete.
 4. **Empower.**
    - Il gioco ha un suo segnale: il badge `TemplePrestige` (`NotificationHandler.PrestigeNotificationCheck`,
      `prestigeNotificationMultiplier`), visto decine di volte per istanza il 26/11. Il bot non lo usa.
    - Con `firestones.firestonesEarnedThisRun` letto gratis a ogni scan (oggi il Temple si apre 38
      volte in 5 ore) si può misurare quanto crescono i Firestones nella run, e fare il reset quando la
      crescita rallenta invece di aspettare il muro.
-   - Prima si registra la curva nel log durante le 12 ore, poi si decide coi numeri.
+   - **Deciso:** durante le 12 ore la regola del reset resta quella di oggi, e il bot registra la
+     curva: una riga `[Empower] curve` per scan, con minuti della run, log10 di
+     `firestonesEarnedThisRun`, log10 dei Firestones posseduti e `TemplePrestige` acceso o spento.
+   - Dopo le 12 ore si scrive la regola nuova coi numeri (reset quando la crescita rallenta) e si
+     mostra all'utente prima di attivarla.
 5. **Oracle's Gift:** non legge il timer ("renews 01/01/0001") e riprova circa ogni 2 minuti; il
    badge è acceso ora su Steam-19 e -23. Si sistema con `OraclesGiftDailyClaimHandler.lastClaim` /
    `expectClaim`.
@@ -343,30 +361,53 @@ Ognuno di questi va deciso con l'utente: cambia cosa fa il bot, non solo come lo
    probabilmente bloccato. Si controlla lo sblocco (`UnlockMechanismType.TowerOfSouls`); priorità
    bassa.
 
-## RAM
+## Funzioni nuove trovate nel dump (da decidere con l'utente, fuori dalle 12 ore)
 
-- **26/11 alle 22:20, su PC-Guesly:** 12 istanze; ognuna 0,85-1,15 GB di working set e 1,4-1,9 GB di
-  memoria privata. La memoria privata cresce con l'uptime: circa 1,45 GB appena riavviata, circa
-  1,9 GB dopo 5 ore.
-- Il riavvio delle 17:00 ha lasciato spente Steam-29..31 ("0,6 GB available, under 1.5"), ed erano
-  ancora spente alle 22:20. Il limite della flotta è la RAM.
-- **Ipotesi:** aprire i menu carica asset (`PlayerActivityBlockReason.Addressables`) che poi restano
-  in memoria, quindi meno aperture vorrebbero dire meno crescita. Il criterio RAM delle 12 ore serve a
-  verificarlo.
-- **Possibile leva dopo le 12 ore:** `Resources.UnloadUnusedAssets()` dopo `CloseToMainScreen()`. È
-  un'API di Unity, solo lato client; va misurata.
+Sono cose che il bot oggi non fa. Ognuna va decisa con l'utente prima di scriverla.
+
+1. **Frostfire Festival (dal 03/12): urgente, va su main senza aspettare il branch.**
+   - `HandlerLoader.frostfireFestivalHandler` risponde alle domande della sezione 4 di
+     EVENTS_PLAN.md: `InProgress()`, `CanClaimNow()`, `todayClaimed`, `daysClaimed`,
+     `IsLastDayOfEvent()`, `GetAvailableFrostfirePacksCount()`, `openedBoxes`/`IsBoxOpened(n)`.
+     `HasEventManagerPopupNotification()` dice anche quando la carta dell'evento ha qualcosa da fare.
+   - È un regalo al giorno. Ogni regalo può dare tra l'altro 1.000 token spedizione, la risorsa che
+     frena.
+   - Il task è pronto con `InProgress() && CanClaimNow()`; il server lo chiama
+     `ClaimFrostfireFestivalDaily`.
+2. **Routine di push con pergamene e consumabili.**
+   - **Cosa dice la guida:** `docs/firestone_guida_F2P.md`, sezione "Consumabili di gold, pergamene e
+     routine di push". Scroll of Speed, Damage e Health si attivano insieme (un talento triplica il
+     danno quando sono attive tutte e tre), e i consumabili di gold si usano dal più piccolo, solo con
+     le pergamene attive.
+   - **Oggi:** il bot non usa mai un consumabile. In più `MerchantQuestTask` vende Scroll of Health e
+     Scroll of Damage, mentre la guida dice di tenerne qualcuna.
+   - **Dati:**
+     - `HandlerLoader.scrollsHandler.scrollItems` (`amount`, `itemDuration`, `timePassed`),
+       `AllScrollsActive()`, `AncientKnowledgeActive`;
+     - `inventoryItemsHandler.inventoryItems` (`amount`, `effectDuration`, `timePassed`);
+     - lo stage da `mainBattle`.
+   - **Momento naturale:** quando AutoRetreat riprova il muro (ogni 30 min), prima di risalire. Si usa
+     il bottone "usa" dell'oggetto (`ScrollInteraction` / `InventoryItemInteraction`), mai
+     `UseTheItemAskServer`.
+3. **Premi che il bot non chiede mai.** Nel catalogo delle richieste al server (`SocketFunctions`, 250
+   metodi) ci sono claim che nessun task fa:
+   - `ClaimMemberRewardsFromGuildItems`: oggetti distribuiti dalla gilda ai membri, menu
+     `GuildDistribution`. Va chiesto all'utente se la sua gilda li distribuisce.
+   - `ClaimFreeOrbsOfProphecy`: Tower of Souls, vedi "Flussi nuovi", punto 7.
+   - `ClaimCampaignRewards`: da capire con una sonda (`HDSAccount.ClaimCampaignRewardsCallback`).
 
 ## Ordine dentro il branch
 
 1. Fase 0 (sonda).
 2. A (badge): una modifica, 26 task, più il log più pulito.
 3. F (connessione).
-4. I due sprechi misurati: Talents e Oracle's Gift.
-5. B e C sui task in grassetto nella tabella, dal più costoso.
-6. D (navigazione), partendo da Map Missions e Library.
-7. E (attese) e `interaction_delay = 0.5`.
-8. G e H.
-9. Le 12 ore.
+4. I due sprechi misurati: Talents (vedi "Flussi nuovi", punto 2) e Oracle's Gift.
+5. Ricerca e spedizioni coi dati, più la curva dell'Empower ("Flussi nuovi", punti 1, 3 e 4).
+6. B e C sugli altri task in grassetto nella tabella, dal più costoso.
+7. D (navigazione), partendo da Map Missions e Library.
+8. E (attese) e `interaction_delay = 0.5`.
+9. G e H.
+10. Le 12 ore.
 
 ## Cosa non fare
 
