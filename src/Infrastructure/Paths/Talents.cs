@@ -24,12 +24,6 @@ public static partial class Paths
 
         public const string CloseBtn = Root + "/bg/closeButton";
 
-        // "Level N/M", e.g. "Level 1/25".
-        public const string LevelTxt = Root + "/bg/talentLevelText";
-
-        // Shown instead of the upgrade buttons while this node's prerequisites aren't met.
-        public const string LockedRoot = Root + "/bg/talentLocked";
-
         public const string UpgradeBtn = Root + "/bg/talentUpgrades/upgradeTalentButton";
     }
 }

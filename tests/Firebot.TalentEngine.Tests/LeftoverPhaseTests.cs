@@ -14,8 +14,8 @@ public class LeftoverPhaseTests
         var tree = new TalentTreeDefinition(
             new[]
             {
-                new TalentNode(0, "A", 5, Tier: 0),
-                new TalentNode(1, "B", 5, Tier: 0)
+                new TalentNode(0, "A", 5, 0),
+                new TalentNode(1, "B", 5, 0)
             },
             new[] { 0 });
         var priorities = new Dictionary<string, int> { ["A"] = 100, ["B"] = 50 };
@@ -31,7 +31,7 @@ public class LeftoverPhaseTests
     public void PointsBeyondEveryCandidatesCapacity_AreSimplyNotAllocated()
     {
         var tree = new TalentTreeDefinition(
-            new[] { new TalentNode(0, "A", 5, Tier: 0) },
+            new[] { new TalentNode(0, "A", 5, 0) },
             new[] { 0 });
         var priorities = new Dictionary<string, int> { ["A"] = 100 };
 

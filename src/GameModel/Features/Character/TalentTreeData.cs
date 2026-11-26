@@ -6,8 +6,8 @@ namespace Firebot.GameModel.Features.Character;
 /// <summary>
 ///     Firestone's talent tree (89 nodes, 46 tiers) for <see cref="TalentEngine.TalentAllocator" />.
 ///     Node names were read live from every talentInteraction preview; tier thresholds come from the
-///     wiki. No node has a prerequisite: the game's per-node "previous talent" locks aren't mapped and
-///     are discovered at investment time instead (see TalentsTask).
+///     wiki. A tier also needs a point in the tier before it, which TalentAllocator applies; TalentsTask
+///     checks every node's cap against the game's data before planning.
 /// </summary>
 public static class TalentTreeData
 {

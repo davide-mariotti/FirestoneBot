@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     Copies every setting that isn't auto-managed from the template. Keeps each account's own state
-    (next runs, daily counters, known_maxed_nodes, hero_snapshot, campaign defeats) and its talentstask.guide_start_index, and sets
+    (next runs, daily counters, hero_snapshot, campaign defeats), and sets
     window_grid_first_instance to -FirstInstance. A sandboxed instance gets both copies: the real path
     and the one inside C:\Sandbox\<user>\SteamB<N>. Files are written as UTF-8 without BOM.
 
@@ -31,9 +31,8 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $autoManaged = 'next_run_time_internal', 'last_done_date', 'gear_chests_opened_today', 'gear_chests_date',
-    'reserve_override_used_date', 'plays_done_today', 'plays_done_date', 'known_maxed_nodes', 'hero_snapshot',
+    'reserve_override_used_date', 'plays_done_today', 'plays_done_date', 'hero_snapshot',
     'hero_snapshot_time', 'defeats', 'wall_hit_internal'
-$perAccount = @('talentstask.guide_start_index')
 
 # "section.key" -> value, for every line of a cfg that is a setting to copy.
 function Get-Settings([string[]]$lines) {
@@ -43,7 +42,7 @@ function Get-Settings([string[]]$lines) {
         if ($line -match '^\[(.+)\]$') { $section = $Matches[1]; continue }
         if ($section -and $line -match '^([a-z_]+) = (.*)$' -and $autoManaged -notcontains $Matches[1]) {
             $key = "$section.$($Matches[1])"
-            if ($perAccount -notcontains $key) { $settings[$key] = $Matches[2] }
+            $settings[$key] = $Matches[2]
         }
     }
     $settings

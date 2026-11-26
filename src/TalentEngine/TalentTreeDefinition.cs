@@ -40,10 +40,6 @@ public sealed class TalentTreeDefinition
             if (node.Tier < 0 || node.Tier >= tierThresholds.Count)
                 throw new ArgumentException($"Node {i} ('{node.Name}') has Tier {node.Tier}, outside " +
                                              $"[0, {tierThresholds.Count - 1}].", nameof(nodes));
-
-            if (node.PrerequisiteIndex is { } prereq && (prereq < 0 || prereq >= i))
-                throw new ArgumentException($"Node {i} ('{node.Name}')'s PrerequisiteIndex ({prereq}) must " +
-                                             "refer to an earlier node.", nameof(nodes));
         }
 
         Nodes = nodes;

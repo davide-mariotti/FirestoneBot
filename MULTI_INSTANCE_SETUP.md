@@ -994,8 +994,7 @@ task sono accesi e con quali parametri. Le righe marcate `(auto-managed, don't e
 apposta: sono lo stato di avanzamento di ogni account, che il bot scrive da solo.
 
 Non si copia a mano: `tools/ConfigTemplate/apply_template.ps1` porta al template ogni istanza di
-un intervallo, nel file reale e in quello del sandbox, lasciando lo stato dell'account e il suo
-`talentstask.guide_start_index`, e mettendo `window_grid_first_instance` al primo numero
+un intervallo, nel file reale e in quello del sandbox, lasciando lo stato dell'account e mettendo `window_grid_first_instance` al primo numero
 dell'intervallo (vedi 8.2). Scrive in UTF-8 senza BOM e si rifiuta di scrivere se un gioco
 dell'intervallo è aperto. Sequenza, dopo il deploy della DLL (punto 5):
 

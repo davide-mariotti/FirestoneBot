@@ -5,16 +5,16 @@ using System.Linq;
 namespace Firebot.TalentEngine;
 
 /// <summary>
-///     Plans how to spend talent points: reach the deepest tier possible, then spend what's left. Pure -
+///     Plans how to spend talent points, one point at a time, as deep into the tree as it goes. Pure -
 ///     the caller passes the live state on every call.
-///     Each step closes the gap to the next tier with the open, uncapped, unlocked nodes, highest
-///     priority first, moving on only once a node is capped. Opening a tier depends only on the total
-///     spent, not on which nodes hold it, so this reaches the same depth as any other split while
-///     giving low-priority nodes only the strict minimum. When no deeper tier is reachable, the
-///     leftover points go the same way, maxing nodes out by priority.
+///     Tier t opens with TierThresholds[t] points spent anywhere and at least one point in tier t-1
+///     (wiki). So when the last open tier has no point yet, the next point goes to its best node: the
+///     one point that opens the way (Weaklings for Ancient Knowledge, Ancient Knowledge for Raining
+///     Gold and Coworkers). Every other point goes to the open, uncapped node with the highest priority.
 /// </summary>
 public static class TalentAllocator
 {
+    /// <summary>The steps in the order to invest them: a node opening the way comes before what it opens.</summary>
     public static IReadOnlyList<TalentAllocationStep> Plan(
         TalentTreeDefinition tree,
         IReadOnlyList<int> currentRanks,
@@ -27,94 +27,53 @@ public static class TalentAllocator
             throw new ArgumentException("currentRanks must have exactly one entry per node.", nameof(currentRanks));
 
         var ranks = currentRanks.ToArray();
-        var remaining = availablePoints;
-        var totalSpent = ranks.Sum();
+        var order = new List<int>();
         var gains = new Dictionary<int, int>();
 
-        while (remaining > 0)
+        for (var left = availablePoints; left > 0; left--)
         {
-            var nextTier = FindNextTier(tree, totalSpent);
-            if (nextTier == null) break;
+            var node = NextPoint(tree, ranks, lockedNodeIndices, priorities, defaultPriority);
+            if (node == null) break;
 
-            var missing = tree.TierThresholds[nextTier.Value] - totalSpent;
-            if (missing > remaining) break;
-
-            var candidates = GetCandidates(tree, ranks, lockedNodeIndices, totalSpent, priorities, defaultPriority);
-            var totalCapacity = candidates.Sum(i => tree.Nodes[i].MaxRank - ranks[i]);
-            if (totalCapacity < missing) break;
-
-            Fill(tree, ranks, gains, candidates, missing);
-            totalSpent += missing;
-            remaining -= missing;
+            ranks[node.Value]++;
+            if (!gains.ContainsKey(node.Value)) order.Add(node.Value);
+            gains[node.Value] = gains.GetValueOrDefault(node.Value) + 1;
         }
 
-        if (remaining > 0)
-        {
-            var candidates = GetCandidates(tree, ranks, lockedNodeIndices, totalSpent, priorities, defaultPriority);
-            Fill(tree, ranks, gains, candidates, remaining);
-        }
-
-        return gains
-            .Select(kv => new TalentAllocationStep(kv.Key, kv.Value))
-            .OrderBy(s => s.NodeIndex)
-            .ToList();
+        return order.Select(i => new TalentAllocationStep(i, gains[i])).ToList();
     }
 
-    /// <summary>
-    ///     Spends up to points on the candidates in order, filling each before the next. Placing fewer
-    ///     is fine: the depth phase checked the capacity first, and the leftover phase can run out.
-    /// </summary>
-    private static void Fill(
-        TalentTreeDefinition tree, int[] ranks, Dictionary<int, int> gains, List<int> candidates, int points)
+    /// <summary>How many tiers are open, from the top: tier t needs its threshold and a point in t-1.</summary>
+    public static int OpenTiers(TalentTreeDefinition tree, IReadOnlyList<int> ranks)
     {
-        var toFill = points;
-        foreach (var idx in candidates)
-        {
-            if (toFill <= 0) break;
-
-            var capacity = tree.Nodes[idx].MaxRank - ranks[idx];
-            var take = Math.Min(capacity, toFill);
-            if (take <= 0) continue;
-
-            ranks[idx] += take;
-            gains[idx] = gains.GetValueOrDefault(idx) + take;
-            toFill -= take;
-        }
+        var spent = ranks.Sum();
+        var open = 1;
+        while (open < tree.TierThresholds.Count && tree.TierThresholds[open] <= spent && TierHasPoint(tree, ranks, open - 1))
+            open++;
+        return open;
     }
 
-    private static int? FindNextTier(TalentTreeDefinition tree, int totalSpent)
+    private static int? NextPoint(TalentTreeDefinition tree, int[] ranks, IReadOnlySet<int> locked,
+        IReadOnlyDictionary<string, int> priorities, int defaultPriority)
     {
-        for (var t = 0; t < tree.TierThresholds.Count; t++)
-            if (tree.TierThresholds[t] > totalSpent)
-                return t;
-
-        return null;
-    }
-
-    /// <summary>
-    ///     The nodes that can take a point now - tier open, not capped, not known locked, prerequisite
-    ///     met - highest priority first, then by index.
-    /// </summary>
-    private static List<int> GetCandidates(
-        TalentTreeDefinition tree, int[] ranks, IReadOnlySet<int> lockedNodeIndices,
-        int totalSpent, IReadOnlyDictionary<string, int> priorities, int defaultPriority)
-    {
-        var candidates = new List<int>();
-
-        for (var i = 0; i < tree.Nodes.Count; i++)
-        {
-            var node = tree.Nodes[i];
-            if (tree.TierThresholds[node.Tier] > totalSpent) continue;
-            if (ranks[i] >= node.MaxRank) continue;
-            if (lockedNodeIndices.Contains(i)) continue;
-            if (node.PrerequisiteIndex is { } prereq && ranks[prereq] < node.PrerequisiteMinRank) continue;
-
-            candidates.Add(i);
-        }
-
-        return candidates
+        var open = OpenTiers(tree, ranks);
+        var candidates = Enumerable.Range(0, tree.Nodes.Count)
+            .Where(i => tree.Nodes[i].Tier < open && ranks[i] < tree.Nodes[i].MaxRank && !locked.Contains(i))
             .OrderByDescending(i => priorities.GetValueOrDefault(tree.Nodes[i].Name, defaultPriority))
             .ThenBy(i => i)
             .ToList();
+
+        if (open < tree.TierThresholds.Count && !TierHasPoint(tree, ranks, open - 1))
+            foreach (var i in candidates)
+                if (tree.Nodes[i].Tier == open - 1) return i;
+
+        return candidates.Count > 0 ? candidates[0] : null;
+    }
+
+    private static bool TierHasPoint(TalentTreeDefinition tree, IReadOnlyList<int> ranks, int tier)
+    {
+        for (var i = 0; i < tree.Nodes.Count; i++)
+            if (tree.Nodes[i].Tier == tier && ranks[i] > 0) return true;
+        return false;
     }
 }

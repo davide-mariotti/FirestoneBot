@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Character;
+using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Firebot.TalentEngine;
@@ -12,11 +13,10 @@ using MelonLoader;
 namespace Firebot.Tasks.Character;
 
 /// <summary>
-///     Spends talent points to reach as deep into the 46-tier tree as possible (TalentAllocator
-///     decides), re-planning from the live state on every run and never touching points already spent.
-///     The game's per-node prerequisites aren't mapped: a node that turns out locked is excluded and
-///     the plan redone, which converges within 89 re-plans. Only open tiers are read, and nodes
-///     recorded as maxed (known_maxed_nodes) are skipped, so a run only reads the tree's frontier.
+///     Spends talent points as TalentAllocator plans them: deeper first, with the one point each tier
+///     needs in the tier before it, then by priority. Levels and locks come from the game's data behind
+///     each node, re-read after every save; points already spent are never touched. Nothing is invested
+///     when the nodes' levels don't add up to the points counter.
 /// </summary>
 public class TalentsTask : BotTask
 {
@@ -24,8 +24,11 @@ public class TalentsTask : BotTask
 
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.TalentAvailable;
 
+    // After a reset all ~200 points go in one run, a click a second plus a save per node.
+    internal override float? MaxRuntimeSeconds => 900f;
+
     private MelonPreferences_Entry<string> _priorityOverrides;
-    private MelonPreferences_Entry<string> _knownMaxedNodes;
+    private MelonPreferences_Entry<bool> _planOnly;
 
     protected override void OnConfigure(MelonPreferences_Category category)
     {
@@ -41,12 +44,11 @@ public class TalentsTask : BotTask
             "entries are logged and ignored. Anything not listed here keeps its default priority."
         );
 
-        _knownMaxedNodes = category.CreateEntry(
-            "known_maxed_nodes",
-            "",
-            "Known Maxed Nodes",
-            "(auto-managed, don't edit) - comma-separated catalog indices already confirmed at max " +
-            "rank, so future runs don't need to re-open them just to read their level."
+        _planOnly = category.CreateEntry(
+            "plan_only",
+            false,
+            "Plan Only",
+            "Logs the tree and the plan without investing anything, to check them first. Default is false."
         );
     }
 
@@ -66,124 +68,113 @@ public class TalentsTask : BotTask
 
         yield return CharacterScreen.OpenTalentsTab;
 
-        var availablePoints = Talents.AvailablePoints;
+        var tree = TalentTreeData.Tree;
+        var priorities = TalentBuildConfig.Resolve(_priorityOverrides.Value, m => Debug(m));
+        var excluded = new HashSet<int>();
+        var first = true;
 
-        if (availablePoints > 0)
+        while (Talents.AvailablePoints > 0)
         {
-            var totalSpent = Talents.TotalPointsAwarded - availablePoints;
-            Debug($"Available points: {availablePoints}, total spent: {totalSpent}.");
+            var available = Talents.AvailablePoints;
+            var spent = Talents.TotalPointsAwarded - available;
+            // A save reaches the nodes' data a moment after the counter.
+            yield return Poll.Until(() => Read(tree).Ranks?.Sum() == spent);
 
-            var tree = TalentTreeData.Tree;
-            var priorities = TalentBuildConfig.Resolve(_priorityOverrides.Value);
-            var knownMaxed = ParseIndexSet(_knownMaxedNodes.Value);
-            var lockedNodes = new HashSet<int>();
-            var ranks = new int[tree.Nodes.Count];
-
-            for (var i = 0; i < tree.Nodes.Count; i++)
+            var (ranks, locked, problem) = Read(tree);
+            if (problem == null && ranks.Sum() != spent)
+                problem = $"the nodes hold {ranks.Sum()} points but the counter says {spent} spent";
+            if (problem != null)
             {
-                var node = tree.Nodes[i];
-                if (tree.TierThresholds[node.Tier] > totalSpent) continue; // tier not open - rank is always 0
-
-                if (knownMaxed.Contains(i))
-                {
-                    ranks[i] = node.MaxRank;
-                    Debug($"  [{i}] '{node.Name}' tier={node.Tier} rank={ranks[i]}/{node.MaxRank} (cached maxed) priority={PriorityOf(priorities, node.Name)}");
-                    continue;
-                }
-
-                yield return Talents.OpenNode(i);
-
-                if (Talents.IsPreviewLocked)
-                {
-                    lockedNodes.Add(i);
-                    Debug($"  [{i}] '{node.Name}' tier={node.Tier} LOCKED priority={PriorityOf(priorities, node.Name)}");
-                }
-                else
-                {
-                    ranks[i] = Talents.PreviewCurrentRank;
-                    if (ranks[i] >= node.MaxRank) MarkMaxed(i, knownMaxed);
-                    Debug($"  [{i}] '{node.Name}' tier={node.Tier} rank={ranks[i]}/{node.MaxRank} priority={PriorityOf(priorities, node.Name)}");
-                }
-
-                yield return Talents.ClosePreview;
+                Debug($"[FAILED] Talents: {problem} - nothing invested.");
+                break;
             }
 
-            // Each pass re-plans from the corrected ranks and locks, so a misread doesn't leave points unspent.
-            var progressMade = true;
-            while (availablePoints > 0 && progressMade)
+            var plan = TalentAllocator.Plan(tree, ranks, excluded, available, priorities, TalentBuildConfig.DefaultPriority);
+            if (first)
             {
-                var plan = TalentAllocator.Plan(tree, ranks, lockedNodes, availablePoints, priorities,
-                    TalentBuildConfig.DefaultPriority);
-                if (plan.Count == 0)
-                {
-                    Debug("Plan() returned no steps - nothing more can be invested this run.");
-                    break;
-                }
+                first = false;
+                Debug($"[INFO] Talents: {available} to spend, {spent} spent, {TalentAllocator.OpenTiers(tree, ranks)} tiers open. " +
+                      $"Tree: {Describe(tree, ranks, locked)}");
+                Debug($"[INFO] Plan: {string.Join(", ", plan.Select(s => $"'{tree.Nodes[s.NodeIndex].Name}'+{s.PointsToAdd}"))}");
+                if (_planOnly.Value) break;
+            }
 
-                Debug($"Plan: {string.Join(", ", plan.Select(s => $"'{tree.Nodes[s.NodeIndex].Name}'+{s.PointsToAdd}"))}");
+            if (plan.Count == 0) break;
 
-                progressMade = false;
+            var step = plan[0];
+            var node = tree.Nodes[step.NodeIndex];
+            if (locked.Contains(step.NodeIndex))
+            {
+                Debug($"[INFO] '{node.Name}' [{step.NodeIndex}] is locked in the game - excluded, replanning.");
+                excluded.Add(step.NodeIndex);
+                continue;
+            }
 
-                foreach (var step in plan)
-                {
-                    if (availablePoints <= 0) break;
+            yield return Talents.OpenNode(step.NodeIndex);
+            var invested = 0;
+            while (invested < step.PointsToAdd && Talents.UpgradeButton.IsClickable())
+            {
+                yield return Talents.UpgradeButton.Click();
+                invested++;
+            }
 
-                    var node = tree.Nodes[step.NodeIndex];
-                    yield return Talents.OpenNode(step.NodeIndex);
+            yield return Talents.ClosePreview;
+            if (invested > 0) yield return Talents.Save;
 
-                    if (Talents.IsPreviewLocked)
-                    {
-                        // Either its tier just opened within this plan, or it's one of the tree's
-                        // unmapped per-node prerequisites: exclude it and re-plan.
-                        Debug($"  '{node.Name}' unexpectedly locked at investment time - excluding and replanning.");
-                        lockedNodes.Add(step.NodeIndex);
-                        yield return Talents.ClosePreview;
-                        progressMade = true;
-                        continue;
-                    }
+            Debug($"[INFO] Invested {invested} in '{node.Name}' [{step.NodeIndex}] (wanted {step.PointsToAdd}).");
+            if (invested == 0)
+            {
+                excluded.Add(step.NodeIndex);
+                continue;
+            }
 
-                    var invested = 0;
-                    for (var i = 0; i < step.PointsToAdd && availablePoints > 0 &&
-                                    Talents.UpgradeButton.IsClickable(); i++)
-                    {
-                        yield return Talents.UpgradeButton.Click();
-                        availablePoints--;
-                        invested++;
-                    }
-
-                    Debug($"  Invested {invested} in '{node.Name}' (wanted {step.PointsToAdd}).");
-
-                    yield return Talents.ClosePreview;
-                    if (invested > 0) yield return Talents.Save;
-
-                    // The button going unclickable early, with points left, means the node is really
-                    // capped - trust the game over the earlier read.
-                    var hitRealCap = invested < step.PointsToAdd && availablePoints > 0;
-                    ranks[step.NodeIndex] = hitRealCap ? node.MaxRank : ranks[step.NodeIndex] + invested;
-                    if (hitRealCap || ranks[step.NodeIndex] >= node.MaxRank) MarkMaxed(step.NodeIndex, knownMaxed);
-
-                    if (invested > 0 || hitRealCap) progressMade = true;
-                }
+            yield return Poll.Until(() => Talents.AvailablePoints < available);
+            if (Talents.AvailablePoints >= available)
+            {
+                Debug($"[FAILED] Talents: still {Talents.AvailablePoints} points after saving - stopped.");
+                break;
             }
         }
 
         yield return CharacterScreen.Close;
     }
 
-    private static int PriorityOf(IReadOnlyDictionary<string, int> priorities, string name) =>
-        priorities.TryGetValue(name, out var p) ? p : TalentBuildConfig.DefaultPriority;
-
-    private void MarkMaxed(int nodeIndex, HashSet<int> knownMaxed)
+    /// <summary>
+    ///     Every node's level from the game's data, and which ones the game has locked. A problem when a
+    ///     node is missing or its cap isn't TalentTreeData's: the tree changed, so nothing gets planned.
+    /// </summary>
+    private static (int[] Ranks, HashSet<int> Locked, string Problem) Read(TalentTreeDefinition tree)
     {
-        if (!knownMaxed.Add(nodeIndex)) return;
-        _knownMaxedNodes.Value = string.Join(",", knownMaxed.OrderBy(i => i));
+        var ranks = new int[tree.Nodes.Count];
+        var locked = new HashSet<int>();
+        for (var i = 0; i < tree.Nodes.Count; i++)
+        {
+            var data = Talents.NodeData(i);
+            if (data == null) return (null, null, $"node [{i}] '{tree.Nodes[i].Name}' isn't on the screen");
+            if (data.levelCap != tree.Nodes[i].MaxRank)
+                return (null, null, $"node [{i}] '{tree.Nodes[i].Name}' caps at {data.levelCap} in the game ('{data.name}'), {tree.Nodes[i].MaxRank} here");
+
+            ranks[i] = (int)Math.Round((double)data.level);
+            if (!data.unlocked) locked.Add(i);
+        }
+
+        return (ranks, locked, null);
     }
 
-    private static HashSet<int> ParseIndexSet(string csv) =>
-        string.IsNullOrWhiteSpace(csv)
-            ? new HashSet<int>()
-            : csv.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => int.TryParse(s.Trim(), out var v) ? v : -1)
-                .Where(v => v >= 0)
-                .ToHashSet();
+    // Nodes with points or open, and where the game's locks disagree with the tier rule.
+    private static string Describe(TalentTreeDefinition tree, int[] ranks, HashSet<int> locked)
+    {
+        var open = TalentAllocator.OpenTiers(tree, ranks);
+        var parts = new List<string>();
+        for (var i = 0; i < tree.Nodes.Count; i++)
+        {
+            var node = tree.Nodes[i];
+            bool modelOpen = node.Tier < open, gameOpen = !locked.Contains(i);
+            if (ranks[i] == 0 && !modelOpen && !gameOpen) continue;
+            var flag = modelOpen == gameOpen ? "" : gameOpen ? " (open in game)" : " (locked in game)";
+            parts.Add($"[{i}] {node.Name} {ranks[i]}/{node.MaxRank}{flag}");
+        }
+
+        return string.Join(", ", parts);
+    }
 }

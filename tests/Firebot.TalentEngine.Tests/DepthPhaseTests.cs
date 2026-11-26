@@ -12,10 +12,10 @@ public class DepthPhaseTests
         new(
             new[]
             {
-                new TalentNode(0, "A", maxA, Tier: 0),
-                new TalentNode(1, "B", maxB, Tier: 0),
-                new TalentNode(2, "C", maxC, Tier: 0),
-                new TalentNode(3, "D", 1, Tier: 1)
+                new TalentNode(0, "A", maxA, 0),
+                new TalentNode(1, "B", maxB, 0),
+                new TalentNode(2, "C", maxC, 0),
+                new TalentNode(3, "D", 1, 1)
             },
             new[] { 0, 10 });
 
@@ -67,9 +67,9 @@ public class DepthPhaseTests
         var tree = new TalentTreeDefinition(
             new[]
             {
-                new TalentNode(0, "X", 20, Tier: 0),
-                new TalentNode(1, "Y", 20, Tier: 1),
-                new TalentNode(2, "Z", 5, Tier: 2)
+                new TalentNode(0, "X", 20, 0),
+                new TalentNode(1, "Y", 20, 1),
+                new TalentNode(2, "Z", 5, 2)
             },
             new[] { 0, 5, 15 });
         var priorities = new Dictionary<string, int> { ["X"] = 10, ["Y"] = 100, ["Z"] = 10 };

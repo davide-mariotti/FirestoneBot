@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Firebot.Core;
 
 namespace Firebot.GameModel.Features.Character;
 
@@ -58,7 +57,7 @@ public static class TalentBuildConfig
     ///     Merges "Name:Priority,Name:Priority" over the defaults. Malformed entries are logged and
     ///     skipped; a name that matches no talent simply has no effect.
     /// </summary>
-    public static IReadOnlyDictionary<string, int> Resolve(string overridesCsv)
+    public static IReadOnlyDictionary<string, int> Resolve(string overridesCsv, Action<string> log)
     {
         var priorities = new Dictionary<string, int>(DefaultPriorities);
         if (string.IsNullOrWhiteSpace(overridesCsv)) return priorities;
@@ -68,7 +67,7 @@ public static class TalentBuildConfig
             var parts = entry.Split(':', 2);
             if (parts.Length != 2 || !int.TryParse(parts[1].Trim(), out var priority))
             {
-                Logger.Debug($"[TalentBuildConfig] Ignoring malformed priority_overrides entry: '{entry}'.");
+                log($"[TalentBuildConfig] Ignoring malformed priority_overrides entry: '{entry}'.");
                 continue;
             }
 
