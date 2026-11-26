@@ -133,6 +133,7 @@ public static class BotManager
             // Every task's readiness check reads the level - read it once per tick.
             PlayerAvatar.RefreshCachedLevel();
             if (DateTime.Now >= _nextSnapshot) LogSnapshot();
+            GameStateProbe.Tick();
 
             // The game moved its reset on 06/11 and the bot, with the hour written in, spent a day on
             // the wrong side of it. 0 would only mean the game hasn't set it yet.
@@ -156,6 +157,7 @@ public static class BotManager
                     yield return RunSafe(Watchdog.ForceClearAll(), $"Watchdog cleanup before {readyTask.SectionTitle}");
 
                     var stopwatch = Stopwatch.StartNew();
+                    Logger.Info($"[Probe] task {readyTask.SectionTitle} starts: menus={GameStateProbe.MenuStack()}");
 
                     yield return RunSafe(readyTask.Execute(), $"Task {readyTask.SectionTitle}", readyTask.MaxRuntimeSeconds);
                     readyTask.LastRunTime = DateTime.Now;

@@ -30,10 +30,12 @@ public class GameButton : GameElement
 
     public virtual IEnumerator Click()
     {
+        var clicked = false;
         if (IsClickable(out var button))
             try
             {
                 button.onClick.Invoke();
+                clicked = true;
             }
             catch (Exception e)
             {
@@ -45,7 +47,7 @@ public class GameButton : GameElement
                 Debug($"[FAILED] Click ignored: Button disabled/non-interactable. Path: {Path}");
         }
 
-        yield return new WaitForSeconds(InteractionDelay);
+        yield return Core.GameStateProbe.AfterClick(Path, clicked);
     }
 
     /// <summary>
@@ -71,16 +73,18 @@ public class GameButton : GameElement
             yield break;
         }
 
+        var clicked = false;
         try
         {
             DispatchPointerClick(target.gameObject);
+            clicked = true;
         }
         catch (Exception e)
         {
             Debug($"[FAILED] ClickSimulated threw exception: {e.Message}. Path: {Path}");
         }
 
-        yield return new WaitForSeconds(InteractionDelay);
+        yield return Core.GameStateProbe.AfterClick(Path, clicked);
     }
 
     /// <summary>
