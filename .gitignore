@@ -26,5 +26,8 @@ Reports/
 # MelonLoader logs copied in for analysis
 sample-log/
 
+# Game API dumps from REA (tests/GameApi/dump_api.py): game names and strings stay local
+tests/GameApi/*.txt
+
 # Local machine details (remote PC address and account)
 .env
