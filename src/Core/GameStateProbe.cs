@@ -139,16 +139,28 @@ internal static class GameStateProbe
 
         Line("notif", () =>
         {
+            // HasNotification throws KeyNotFound for a type the game never registered (PartyManagement
+            // on 26/11), so only the registered ones are asked.
             var nh = H.NotificationHandler;
             var has = new List<string>();
             var active = new List<string>();
-            foreach (var t in Enum.GetValues<NotificationType>())
+            var registered = 0;
+            foreach (var kv in NotificationHandler.notifications)
             {
-                if (nh.HasNotification(t)) has.Add(t.ToString());
-                if (NotificationHandler.IsNotificationActive(t)) active.Add(t.ToString());
+                registered++;
+                var t = kv.Key;
+                try
+                {
+                    if (nh.HasNotification(t)) has.Add(t.ToString());
+                    if (NotificationHandler.IsNotificationActive(t)) active.Add(t.ToString());
+                }
+                catch (Exception e)
+                {
+                    has.Add($"{t}:ERR {e.GetType().Name}");
+                }
             }
 
-            return $"has=[{string.Join(",", has)}] active=[{string.Join(",", active)}] rail=[{Notifications.Lit}] " +
+            return $"registered={registered} has=[{string.Join(",", has)}] active=[{string.Join(",", active)}] rail=[{Notifications.Lit}] " +
                    $"canClaimTools={nh.canClaimTools} oracleGift={nh.hasOracleGiftNotification} ritual={nh.hasRitualNotification}";
         });
 
