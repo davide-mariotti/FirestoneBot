@@ -57,6 +57,13 @@ public static class GameState
         if (game != null && ui != null && game != ui) Logger.Info($"[GameState] mismatch {what}: game={game} ui={ui}");
     }
 
+    /// <summary>Compare for times: a mismatch only past `toleranceMinutes` (the screen shows minutes, not seconds).</summary>
+    public static void CompareTimes(string what, DateTime? game, DateTime ui, double toleranceMinutes = 2)
+    {
+        if (game is { } g && ui != DateTime.MinValue && Math.Abs((g - ui).TotalMinutes) > toleranceMinutes)
+            Logger.Info($"[GameState] mismatch {what}: game={g:dd/MM HH:mm:ss} ui={ui:dd/MM HH:mm:ss}");
+    }
+
     // ---- Clock. Server timestamps are Unix seconds (probe, 26/11: serverTimeNow 7 s off the PC's UTC).
 
     public static double? ServerNow => Get("server clock", () =>
@@ -68,6 +75,49 @@ public static class GameState
 
     /// <summary>The local time a timer of `seconds` started at server time `started` ends.</summary>
     public static DateTime? Ends(double started, double seconds) => started > 0 ? At(started + seconds) : null;
+
+    private static double? SecondsToNextGameDay => Get("next game day", () => Core.ServerUpdate.timeLeftForNextDay);
+
+    /// <summary>The game's next daily reset, local time.</summary>
+    public static DateTime? NextGameDay => SecondsToNextGameDay is { } left ? DateTime.Now.AddSeconds(left) : null;
+
+    /// <summary>Whether a server timestamp falls before today's game day began (a daily claim not done today).</summary>
+    public static bool? BeforeToday(double serverTime) =>
+        ServerNow is { } now && SecondsToNextGameDay is { } left ? serverTime < now + left - 86400 : null;
+
+    // ---- Empower. Matched the Temple's own texts on Steam-27 (26/11: found 10^211.73 vs 10^211.72 shown),
+    // a few seconds late as the game recomputes it.
+
+    public static double? FirestonesFoundLog10 => Get("firestones found", () =>
+        Features.Character.Heroes.Log(H.Firestones.firestonesEarnedThisRun));
+
+    public static double? FirestonesOwnedLog10 => Get("firestones owned", () =>
+        Features.Character.Heroes.Log(H.BigCurrencyHandler.GetCurrency(BigCurrencyCode.Firestone).amount));
+
+    public static TimeSpan? AdventureTime => Get("adventure time", () =>
+        TimeSpan.FromSeconds(H.SpecialGameStatistics.save.timePlayedThisRun.GetDecrypted()));
+
+    // ---- Meteorite research.
+
+    public static double? Meteorites => Get("meteorites", () => H.CurrencyHandler.GetCurrency(CurrencyCode.Meteorite).Amount);
+
+    /// <summary>The cheapest level any unlocked, unmaxed meteorite research costs now; +Infinity when none.</summary>
+    public static double? CheapestMeteoriteResearch => Get("meteorite research costs", () =>
+    {
+        var cheapest = double.PositiveInfinity;
+        foreach (var tree in H.MeteoriteResearchHandler.researchTrees)
+            foreach (var node in tree.Value)
+                if (node.Value.IsUnlocked() && !node.Value.IsMaxLevel() && node.Value.levelUpCost.GetDecrypted() is var cost &&
+                    cost > 0 && cost < cheapest)
+                    cheapest = cost;
+        return cheapest;
+    });
+
+    // ---- Daily free claims: their handlers keep the last claim's server time.
+
+    public static bool? OraclesGiftClaimable => Get("oracle's gift last claim", () => H.OraclesGiftDailyClaimHandler.lastClaim) is { } last
+        ? BeforeToday(last)
+        : null;
 
     // ---- Connection and activity.
 

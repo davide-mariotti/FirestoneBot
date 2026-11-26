@@ -74,8 +74,65 @@ public class EmpowerTask : BotTask
         yield return button.Click();
     }
 
+    /// <summary>
+    ///     The empower rule, the same whether the numbers come from the game or off the Temple's screen:
+    ///     the ratio found/banked at the wall past the minimum time, or the maximum time. `next` is when to
+    ///     look again when it's not time yet.
+    /// </summary>
+    private bool ShouldEmpower(TimeSpan timePlayed, double found, double owned, out DateTime next, out string why)
+    {
+        var ownedRead = !double.IsNegativeInfinity(owned);
+        var ratio = ownedRead ? Math.Pow(10, found - owned) : 0;
+        var minRatio = _minResetRatio?.Value ?? 1.0f;
+        var minDuration = TimeSpan.FromMinutes(_minAdventureMinutes?.Value ?? 0);
+        var maxMinutes = _maxAdventureMinutes?.Value ?? 0;
+        var maxDuration = maxMinutes > 0 ? TimeSpan.FromMinutes(maxMinutes) : TimeSpan.MaxValue;
+
+        // The Firestones found grow with the run's top stage, about x100 every 5 minutes near it: on
+        // Steam-0 (17/10) the ratio went 0.12 -> 29 in one check and the empower came while still
+        // climbing, short of the 917 record. So the ratio only counts once the climb has stopped.
+        var atWall = AutoRetreat.HitWall || !AutoRetreat.IsEnabled;
+
+        // An unreadable time must not hold the empower back: on Steam-17..31 it read 0 for days while
+        // the ratio passed 400 and the bot sat 5 stages under its wall (17-18/10).
+        var timeKnown = timePlayed > TimeSpan.Zero;
+
+        why = $"ratio {ratio:0.##} (need {minRatio:0.##} after {minDuration} at the wall, or force empower after {maxDuration}), " +
+              $"at the wall: {atWall}";
+
+        // No point checking again before the minimum adventure time has passed - unless nothing read
+        // (the Temple never opened, e.g. behind the start-up popups): then its 0 time means nothing,
+        // and waiting for it cost an hour on 3 instances after a restart (30/09).
+        var timeUntilMinDuration = ownedRead ? minDuration - timePlayed : TimeSpan.Zero;
+        next = DateTime.Now + (timeUntilMinDuration > RetryDelay ? timeUntilMinDuration : RetryDelay);
+
+        return ((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall) || timePlayed >= maxDuration;
+    }
+
     public override IEnumerator Execute()
     {
+        // The game's own numbers decide without opening the Temple (38 openings in 5 h on Steam-27, 26/11);
+        // it only opens to empower, or when the game can't be read. Each check also logs the run's curve,
+        // to tune the rule on (GAMESTATE_PLAN.md, "Flussi nuovi" 4).
+        var gameTime = GameState.AdventureTime;
+        var gameFound = GameState.FirestonesFoundLog10;
+        var gameOwned = GameState.FirestonesOwnedLog10;
+        var fromGame = gameTime != null && gameFound != null && gameOwned != null;
+        if (fromGame)
+        {
+            var prestigeBadge = GameState.HasBadge(Il2Cpp.NotificationType.TemplePrestige);
+            Logger.Info($"[Empower] curve: run {gameTime.Value.TotalMinutes:0} min, found 10^{gameFound:0.##}, " +
+                        $"owned 10^{gameOwned:0.##}, stage {AutoRetreat.HitWall switch { true => "at the wall", false => "climbing" }}, " +
+                        $"TemplePrestige badge {prestigeBadge?.ToString() ?? "?"}");
+
+            if (!ShouldEmpower(gameTime.Value, gameFound.Value, gameOwned.Value, out var later, out var reason))
+            {
+                Debug($"[INFO] Not yet, from the game: {reason}.");
+                NextRunTime = later;
+                yield break;
+            }
+        }
+
         yield return Notifications.TemplePrestige;
 
         yield return TownScreen.Open;
@@ -97,39 +154,27 @@ public class EmpowerTask : BotTask
         var timePlayed = TimeParser.ParseFrom(timeText);
         var found = TempleOfEternals.FirestonesFoundLog10;
         var owned = TempleOfEternals.FirestonesYouOwnLog10;
-        var ownedRead = !double.IsNegativeInfinity(owned);
-
-        var ratio = ownedRead ? Math.Pow(10, found - owned) : 0;
-        var minRatio = _minResetRatio?.Value ?? 1.0f;
-        var minDuration = TimeSpan.FromMinutes(_minAdventureMinutes?.Value ?? 0);
-        var maxMinutes = _maxAdventureMinutes?.Value ?? 0;
-        var maxDuration = maxMinutes > 0 ? TimeSpan.FromMinutes(maxMinutes) : TimeSpan.MaxValue;
-
-        // The Firestones found grow with the run's top stage, about x100 every 5 minutes near it: on
-        // Steam-0 (17/10) the ratio went 0.12 -> 29 in one check and the empower came while still
-        // climbing, short of the 917 record. So the ratio only counts once the climb has stopped.
-        var atWall = AutoRetreat.HitWall || !AutoRetreat.IsEnabled;
-
         var foundText = TempleOfEternals.FirestonesFoundText;
         var ownedText = TempleOfEternals.FirestonesYouOwnText;
 
+        if (fromGame)
+        {
+            GameState.Compare("firestones found", $"{gameFound:0.#}", $"{found:0.#}");
+            GameState.Compare("firestones owned", $"{gameOwned:0.#}", $"{owned:0.#}");
+        }
+
+        var empower = ShouldEmpower(timePlayed, found, owned, out var next, out var why);
         Debug($"[INFO] Adventure time: {timePlayed} ('{timeText}'), Firestones found: 10^{found:0.##} ('{foundText}'), " +
-              $"Temple's Firestones: 10^{owned:0.##} ('{ownedText}'), " +
-              $"Ratio: {ratio:0.##} (need {minRatio:0.##} after {minDuration} at the wall, or force empower after {maxDuration}), " +
-              $"at the wall: {atWall}.");
+              $"Temple's Firestones: 10^{owned:0.##} ('{ownedText}'), {why}.");
 
         // Only a brand-new account has nothing banked: a 0 here means the text didn't parse, and then
         // the ratio can never trigger an empower.
-        if (!ownedRead)
+        if (double.IsNegativeInfinity(owned))
             Debug($"[FAILED] Temple's Firestones read as 0 from '{ownedText}' - no ratio-based empower until fixed.");
-
-        // An unreadable time must not hold the empower back: on Steam-17..31 it read 0 for days while
-        // the ratio passed 400 and the bot sat 5 stages under its wall (17-18/10).
-        var timeKnown = timePlayed > TimeSpan.Zero;
-        if (!timeKnown)
+        if (timePlayed <= TimeSpan.Zero)
             Debug($"[FAILED] Adventure time read as 0 from '{timeText}' - ignoring the minimum adventure time.");
 
-        if (((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall) || timePlayed >= maxDuration)
+        if (empower)
         {
             // Each screen can take longer than the click delay, the first time after a start above all:
             // on Steam-0 (05/11) the popup wasn't up yet, nothing was empowered and the wall was forgotten.
@@ -148,12 +193,7 @@ public class EmpowerTask : BotTask
         {
             yield return TempleOfEternals.Close;
             yield return TownScreen.Close;
-
-            // No point checking again before the minimum adventure time has passed - unless nothing read
-            // (the Temple never opened, e.g. behind the start-up popups): then its 0 time means nothing,
-            // and waiting for it cost an hour on 3 instances after a restart (30/09).
-            var timeUntilMinDuration = ownedRead ? minDuration - timePlayed : TimeSpan.Zero;
-            NextRunTime = DateTime.Now + (timeUntilMinDuration > RetryDelay ? timeUntilMinDuration : RetryDelay);
+            NextRunTime = next;
         }
     }
 }

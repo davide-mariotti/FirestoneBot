@@ -39,11 +39,48 @@ public static class GameMenu
         }
 
         yield return Poll.AfterClick($"open {menu}");
-        yield return Poll.Until(() => GameState.IsMenuOpen(menu) == true, 20, 0.1f);
+        yield return Poll.Until(() => GameState.IsMenuOpen(menu) == true, 10, 0.1f);
+
+        // The HUD's call didn't take (26/11: MagicQuarters, Oracle, Expeditions, TownGuild): the game's
+        // generic navigation next, with what the game says about why, once per menu.
+        if (GameState.IsMenuOpen(menu) != true)
+        {
+            Diagnose(menu, "HUD call");
+            if (GameState.Get($"navigate {menu}", () =>
+                {
+                    GameState.Core.NavigationControl.OpenMenu(menu, 0, 0, default);
+                    return true;
+                }) == true)
+            {
+                yield return Poll.AfterClick($"navigate {menu}");
+                yield return Poll.Until(() => GameState.IsMenuOpen(menu) == true, 10, 0.1f);
+            }
+        }
 
         var opened = GameState.IsMenuOpen(menu) == true;
-        if (!opened) Logger.Info($"[GameState] fallback open {menu}: not on the menu stack after the call ({GameState.MenuStack}).");
+        if (!opened)
+        {
+            Diagnose(menu, "navigation");
+            Logger.Info($"[GameState] fallback open {menu}: not on the menu stack after the calls ({GameState.MenuStack}).");
+        }
+
         done(opened);
+    }
+
+    private static readonly System.Collections.Generic.HashSet<string> Diagnosed = new();
+
+    private static void Diagnose(MenuName menu, string attempt)
+    {
+        if (!Diagnosed.Add($"{menu} {attempt}")) return;
+        var state = GameState.GetRef("navigation state", () =>
+        {
+            var nav = GameState.Core.NavigationControl;
+            var visible = new Base.GameElement($"{Infrastructure.Paths.WatchdogLoc.MenusRoot}/{menu}").IsVisible() ||
+                          new Base.GameElement($"{Infrastructure.Paths.WatchdogLoc.PopupsRoot}/{menu}").IsVisible();
+            return $"allowNavigation={nav.allowNavigation} pending={nav.pendingChangeMenu} stack=[{GameState.MenuStack}] " +
+                   $"menu visible={visible} adventureScreen={(Adventure == null ? "null" : "set")} blocker={GameState.Busy}";
+        });
+        Logger.Info($"[GameState] open {menu} via {attempt} didn't show: {state}");
     }
 
     /// <summary>Open(menu, open), and the click path when that fails.</summary>

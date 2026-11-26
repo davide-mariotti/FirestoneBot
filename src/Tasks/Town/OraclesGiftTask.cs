@@ -18,6 +18,12 @@ public class OraclesGiftTask : BotTask
 
     protected override string NotificationBadgeName => Paths.BattleLoc.NotificationsLoc.OraclesGift;
 
+    // The badge stays lit after the claim (since 22/10) and the countdown can read empty, which made
+    // this run every 2 minutes (14 runs in 5 h on Steam-27, 26/11). The game's last claim time says it.
+    public override bool IsNotificationVisible() => GameState.OraclesGiftClaimable is { } claimable
+        ? IsEnabled && MeetsLevelRequirement && claimable
+        : base.IsNotificationVisible();
+
     public override IEnumerator Execute()
     {
         yield return Notifications.OraclesGift;
@@ -36,9 +42,18 @@ public class OraclesGiftTask : BotTask
             yield return Poll.Until(() => OracleStore.GiftCount > before, 20);
         }
 
-        // The countdown can read empty as the store shows up (10/10: renews 01/01/0001).
-        yield return Poll.Until(() => OracleStore.NextRunTime != DateTime.MinValue);
-        NextRunTime = OracleStore.NextRunTime;
+        // The gift renews at the game's daily reset. The countdown can read empty as the store shows up
+        // (10/10: renews 01/01/0001), so it's only the fallback.
+        if (GameState.NextGameDay is { } reset)
+        {
+            NextRunTime = reset;
+            GameState.CompareTimes("oracle's gift renew", reset, OracleStore.NextRunTime);
+        }
+        else
+        {
+            yield return Poll.Until(() => OracleStore.NextRunTime != DateTime.MinValue);
+            NextRunTime = OracleStore.NextRunTime;
+        }
         Debug($"[INFO] Oracle's gift: gifts {before} -> {OracleStore.GiftCount}, renews {NextRunTime:g}.");
 
         // Since 22/10 the badge stays lit after the claim. Which tab keeps it lit, and whether the
