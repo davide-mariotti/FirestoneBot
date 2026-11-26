@@ -47,7 +47,8 @@ public class GameButton : GameElement
                 Debug($"[FAILED] Click ignored: Button disabled/non-interactable. Path: {Path}");
         }
 
-        yield return Core.GameStateProbe.AfterClick(Path, clicked);
+        // Nothing clicked, nothing to wait for: one frame, so a caller's loop still yields.
+        yield return clicked ? Poll.AfterClick(Path) : null;
     }
 
     /// <summary>
@@ -62,14 +63,14 @@ public class GameButton : GameElement
         if (target == null || !IsVisible())
         {
             Debug($"[FAILED] ClickSimulated skipped: element not visible. Path: {Path}");
-            yield return new WaitForSeconds(InteractionDelay);
+            yield return null;
             yield break;
         }
 
         if (EventSystem.current == null)
         {
             Debug($"[FAILED] ClickSimulated skipped: no EventSystem in scene. Path: {Path}");
-            yield return new WaitForSeconds(InteractionDelay);
+            yield return null;
             yield break;
         }
 
@@ -84,7 +85,7 @@ public class GameButton : GameElement
             Debug($"[FAILED] ClickSimulated threw exception: {e.Message}. Path: {Path}");
         }
 
-        yield return Core.GameStateProbe.AfterClick(Path, clicked);
+        yield return clicked ? Poll.AfterClick(Path) : null;
     }
 
     /// <summary>

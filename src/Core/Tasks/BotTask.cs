@@ -132,6 +132,47 @@ public abstract class BotTask
         }
     }
 
+    private Il2Cpp.NotificationType[] _gameBadges;
+    private bool _gameBadgesResolved;
+
+    /// <summary>
+    ///     The game's badge types behind this task's rail badges, from their names. Null when any of
+    ///     them isn't a rail badge with a game type (the mail and Path of Glory badges, the events button):
+    ///     those tasks keep reading the screen.
+    /// </summary>
+    private Il2Cpp.NotificationType[] GameBadges
+    {
+        get
+        {
+            if (_gameBadgesResolved) return _gameBadges;
+            _gameBadgesResolved = true;
+
+            var railRoots = new[] { Paths.BattleLoc.NotificationsLoc.Root + "/", Paths.BattleLoc.NotificationsLoc.FallbackRoot + "/" };
+            var names = !string.IsNullOrEmpty(NotificationBadgeName)
+                ? new[] { NotificationBadgeName }
+                : NotificationPaths?.Select(p => railRoots.FirstOrDefault(p.StartsWith) is { } root ? p[root.Length..] : null).Distinct().ToArray();
+            if (names == null || names.Length == 0 || names.Any(n => n == null)) return null;
+
+            var types = names.Select(GameState.BadgeType).ToArray();
+            _gameBadges = types.All(t => t != null) ? types.Select(t => t.Value).ToArray() : null;
+            return _gameBadges;
+        }
+    }
+
+    /// <summary>Any of the task's badges lit, as the game says; null when it can't, and the rail decides.</summary>
+    private bool? GameBadgeLit()
+    {
+        if (GameBadges == null) return null;
+        foreach (var type in GameBadges)
+            switch (GameState.HasBadge(type))
+            {
+                case null: return null;
+                case true: return true;
+            }
+
+        return false;
+    }
+
     public void InitializeConfig(string configPath)
     {
         if (_enabledEntry != null) return;
@@ -188,8 +229,8 @@ public abstract class BotTask
     ///     BadgeCooldown only spaces those runs out, an override can rule them out.
     /// </summary>
     public virtual bool IsNotificationVisible()
-        => IsEnabled && MeetsLevelRequirement && NotificationElements != null &&
-           UiVariantButton.AnyVisible(NotificationElements);
+        => IsEnabled && MeetsLevelRequirement && (GameBadgeLit() ??
+           (NotificationElements != null && UiVariantButton.AnyVisible(NotificationElements)));
 
     public abstract IEnumerator Execute();
 

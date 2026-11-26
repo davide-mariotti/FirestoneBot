@@ -29,6 +29,8 @@ public static class BotManager
     private static readonly TimeSpan HiddenHud = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan StuckHud = TimeSpan.FromMinutes(10);
     private static DateTime? _hudHiddenSince;
+    private static DateTime? _disconnectedSince;
+    private static bool _buildChecked;
 
     private static readonly System.Collections.Generic.List<BotTask> Tasks = new();
 
@@ -134,6 +136,34 @@ public static class BotManager
             PlayerAvatar.RefreshCachedLevel();
             if (DateTime.Now >= _nextSnapshot) LogSnapshot();
             GameStateProbe.Tick();
+
+            if (!_buildChecked && GameState.Build is { } build)
+            {
+                _buildChecked = true;
+                CheckGameBuild(build);
+            }
+
+            // No task while the game is off the server: clicks then hit a reconnecting game and fail or
+            // retry for nothing. A game that never comes back goes to the watchdog, like a stuck HUD.
+            if (GameState.Connected == false)
+            {
+                if (_disconnectedSince == null) Logger.Info("[GameState] off the server: no task until it's back.");
+                _disconnectedSince ??= DateTime.Now;
+                if (DateTime.Now - _disconnectedSince > StuckHud)
+                {
+                    Logger.Info($"[GameState] off the server for {StuckHud.TotalMinutes:0} min - closing the game.");
+                    Process.GetCurrentProcess().Kill();
+                }
+
+                yield return new WaitForSeconds(ScanInterval);
+                continue;
+            }
+
+            if (_disconnectedSince is { } since)
+            {
+                Logger.Info($"[GameState] back on the server after {(DateTime.Now - since).TotalSeconds:0} s off it.");
+                _disconnectedSince = null;
+            }
 
             // The game moved its reset on 06/11 and the bot, with the hour written in, spent a day on
             // the wrong side of it. 0 would only mean the game hasn't set it yet.
@@ -276,7 +306,10 @@ public static class BotManager
             Logger.Info($"| {nextRun,-19} | {timeLeft,-11} | {name,-30} | {status,-13} | {lastRun,-19} |");
         }
 
-        Logger.Info($"[Rail] Lit: {Notifications.Lit}");
+        var game = GameState.LitBadges;
+        var rail = Notifications.RailLit;
+        Logger.Info($"[Rail] Lit: {game ?? rail}");
+        GameState.Compare("lit badges", game, rail);
     }
 
     /// <summary>

@@ -9,9 +9,11 @@ public static class WorldMap
 {
     public static bool IsVisible => new GameElement(Paths.WorldMapLoc.CloseBtn).IsVisible();
 
-    // The map button intermittently ignores a click on some instances, hence the retrying open.
-    public static IEnumerator Open => Poll.ClickUntil(
-        () => new GameButton(Paths.BattleLoc.RightSideUILoc.MapBtn), () => IsVisible, "WorldMap");
+    // The game's own call first (GameMenu). The map button intermittently ignores a click on some
+    // instances, hence the retrying click open as the fallback.
+    public static IEnumerator Open => GameMenu.OpenOrClick(Il2Cpp.MenuName.WorldMap,
+        () => GameMenu.Adventure.OpenWorldMap(Il2Cpp.WorldMapMech.OpenOrigin.MainBattle, false, false),
+        () => Poll.ClickUntil(() => new GameButton(Paths.BattleLoc.RightSideUILoc.MapBtn), () => IsVisible, "WorldMap"));
 
     public static IEnumerator OpenMapMissionsTab =>
         new GameButton(Paths.WorldMapLoc.MapMissionsTabBtn).Click();

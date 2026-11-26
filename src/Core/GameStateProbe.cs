@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,8 +6,6 @@ using Firebot.GameModel.Features.Battle;
 using Firebot.GameModel.Features.Character;
 using Firebot.GameModel.Shared;
 using Il2Cpp;
-using UnityEngine;
-using static Firebot.Core.BotSettings;
 
 namespace Firebot.Core;
 
@@ -76,39 +73,6 @@ internal static class GameStateProbe
         {
             return "ERR " + e.GetType().Name;
         }
-    }
-
-    /// <summary>
-    ///     Replaces the fixed wait after a click with the same total wait in 0.1 s steps, and logs when
-    ///     the menu stack and the activity blocker stopped changing: how much of the delay was needed.
-    /// </summary>
-    public static IEnumerator AfterClick(string path, bool clicked)
-    {
-        if (!clicked)
-        {
-            yield return new WaitForSeconds(InteractionDelay);
-            yield break;
-        }
-
-        string State() => MenuStack() + " " + BlockReasons();
-
-        var start = Time.realtimeSinceStartup;
-        var first = State();
-        var last = first;
-        var settled = 0f;
-        var seen = new List<string> { first };
-        var step = new WaitForSeconds(0.1f);
-        while (Time.realtimeSinceStartup - start < InteractionDelay)
-        {
-            yield return step;
-            var now = State();
-            if (now == last) continue;
-            last = now;
-            settled = Time.realtimeSinceStartup - start;
-            seen.Add(now);
-        }
-
-        Logger.Info($"[Probe] click {path}: {string.Join(" -> ", seen)}, settled {F(settled)}s of {F(InteractionDelay)}s");
     }
 
     public static void Tick()

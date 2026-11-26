@@ -41,6 +41,6 @@ public class GameNotificationButton : GameButton
         else
             Debug($"[QUICK ACCESS] FAILED: No valid interaction component found. Path: {Path}");
 
-        yield return Core.GameStateProbe.AfterClick(Path, clicked);
+        yield return clicked ? Poll.AfterClick(Path) : null;
     }
 }
