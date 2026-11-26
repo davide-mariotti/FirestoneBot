@@ -136,7 +136,9 @@ Il log ha anche un altro costo fisso: a ogni scan, per ogni badge, due `[FAILED]
      - missioni, spedizioni, ricerche ed esperimenti mai fermi più di uno scan dopo la fine;
      - numeri dello `Snapshot` (stage, gemme, ...) in linea coi vicini.
    - **Velocità:** minuti per ora di navigazione rispetto ai 9,7 di partenza. Obiettivo: almeno la
-     metà. Il conteggio dei minuti è il regex `\[Task\] (.+?) finished in ([\d.]+)s` sul `Latest.log`
+     metà.
+   - **RAM:** memoria privata di Steam-27 contro quella di Steam-26 e Steam-28 a pari uptime
+     (`Get-Process Firestone`, `PrivateMemorySize64`). Vedi la sezione "RAM". Il conteggio dei minuti è il regex `\[Task\] (.+?) finished in ([\d.]+)s` sul `Latest.log`
      della box, aperto in condivisione (`[IO.File]::Open(path,'Open','Read','ReadWrite')`).
 7. **Se va tutto bene:**
    - `git switch main`, `git merge --no-ff game-state`, `git push`;
@@ -287,6 +289,72 @@ sono i valori per decidere cosa fare; per la navigazione vale la leva D per tutt
 | AutoRetreat | continuo | `HandlerLoader.mainBattle.CurrentStageNumber`, `MaxStageNumber`, `CurrentStageWave` invece della barra dello stage (`StageProgress`, che dà -1 quando la barra non c'è) | |
 | Hero Upgrade | continuo | `NotificationHandler.UpgradesNotificationCheck` / badge degli upgrade (?) | livelli degli eroi da `heroDeck` invece di `HeroUpgrade.cs:167` |
 | Flying Bonus Hunter | continuo | `BeerHandler.dragonBeerHandler` / `femaleDragonBeerHandler`, `FallingItemHandler` (?) invece di cercare i GameObject a ogni scan | |
+
+## Flussi da ripensare con i dati (decisioni migliori, non solo più veloci)
+
+Ognuno di questi va deciso con l'utente: cambia cosa fa il bot, non solo come lo fa.
+
+1. **Ricerca (Firestone e Meteorite).**
+   - **Oggi:** apre le anteprime dei nodi una per una e sceglie per nome inglese, se no il primo
+     della griglia. Su Steam-27, il 26/11, la scelta ha preso 55 s per Meteorite (17:19:39 →
+     17:20:34, "node #12, priorityRank=none") e 28 s per Firestone ("#13, priorityRank=none"), ogni
+     ora.
+   - **Firestone, dai dati:** `FirestoneResearchHandler.researchTrees[currentTree]` ha ogni nodo con
+     `level`, `levelCap`, `realTimeRequired`, `researchState`, `IsUnlocked`,
+     `firestoneResearchType` (enum) e `researchTier`. La scelta si fa in memoria, poi un solo click sul
+     bottone del nodo (`firestoneResearchInteraction`). Proposta: priorità per enum, poi il
+     `realTimeRequired` più corto invece del primo della griglia. Così si completano più livelli
+     all'ora e i tier si sbloccano prima (`tierNTreeMUnlock`).
+   - **Meteorite, dai dati:** `MeteoriteResearchHandler.researchTrees` ha `levelUpCost`,
+     `effectPerLevel`, `level`/`maxLevel`, `IsUnlocked()`, `CanLevelUpWithMeteorite()` e il
+     prerequisito (`meteoriteUnlocking` + `meteoriteUnlockingLevel`). Se nessun nodo costa al massimo
+     saldo meno riserva, non si apre niente. Su Steam-27 il saldo era 3384 con riserva 3000: 384
+     spendibili, e 66 s ogni ora per probabilmente non comprare niente.
+2. **Talents** (c'è un'altra chat che ci lavora).
+   - `TalentsHandler.talents` (`Dictionary<TalentType, Talents>`) ha, per ogni nodo, `level`,
+     `levelCap`, `unlocked` e `talentTier`. Ci sono anche `talentTierReqs`, `talentsCapDict`,
+     `availablePoints`, `usedTalentPoints` e `FinishedTheTalentTree()`. Le 89 voci di `TalentType`
+     sono gli 89 nodi di `TalentTreeData`.
+   - Questo sostituisce le soglie dei tier prese dal wiki, i blocchi "talento precedente" scoperti
+     cliccando e la cache "cached maxed".
+   - Il task è pronto solo se esiste un nodo `unlocked`, sotto il cap e con il tier raggiunto. Oggi
+     gira 45 s ogni 30 min su Steam-20, -27 e -29 con `TalentAvailable` acceso.
+3. **Spedizioni.**
+   - **Oggi:** parte la prima in attesa.
+   - **Dai dati:** `guildManagement.expeditionData.expeditions` le elenca tutte con
+     `expeditionTokenReward`, `guildCoinReward` e `timeReq`. I token spedizione sono la risorsa che
+     frena (Personal Tree a 50 prima delle War Machines), quindi si può scegliere quella con più token
+     all'ora, oppure quella che finisce prima del prossimo controllo.
+4. **Empower.**
+   - Il gioco ha un suo segnale: il badge `TemplePrestige` (`NotificationHandler.PrestigeNotificationCheck`,
+     `prestigeNotificationMultiplier`), visto decine di volte per istanza il 26/11. Il bot non lo usa.
+   - Con `firestones.firestonesEarnedThisRun` letto gratis a ogni scan (oggi il Temple si apre 38
+     volte in 5 ore) si può misurare quanto crescono i Firestones nella run, e fare il reset quando la
+     crescita rallenta invece di aspettare il muro.
+   - Prima si registra la curva nel log durante le 12 ore, poi si decide coi numeri.
+5. **Oracle's Gift:** non legge il timer ("renews 01/01/0001") e riprova circa ogni 2 minuti; il
+   badge è acceso ora su Steam-19 e -23. Si sistema con `OraclesGiftDailyClaimHandler.lastClaim` /
+   `expectClaim`.
+6. **Dungeon del Warfront:** `DungeonMissionsHandler.HasAvailableMissions()` è pronto per quando gli
+   account arrivano a 70 stelle (CAMPAIGN_PLAN.md, sezione 7). Il 26/11 su PC-Guesly avevano da 30 a
+   37 stelle: non serve ancora.
+7. **Tower of Souls:** `TowerOfSoulsHandler` genera Orbs of Prophecy gratis (`orbsOfProphecyGenerated`,
+   `maxFreeOrbsOfProphecy`). Il bot non lo tocca e il badge non si è mai visto su 17-31, quindi è
+   probabilmente bloccato. Si controlla lo sblocco (`UnlockMechanismType.TowerOfSouls`); priorità
+   bassa.
+
+## RAM
+
+- **26/11 alle 22:20, su PC-Guesly:** 12 istanze; ognuna 0,85-1,15 GB di working set e 1,4-1,9 GB di
+  memoria privata. La memoria privata cresce con l'uptime: circa 1,45 GB appena riavviata, circa
+  1,9 GB dopo 5 ore.
+- Il riavvio delle 17:00 ha lasciato spente Steam-29..31 ("0,6 GB available, under 1.5"), ed erano
+  ancora spente alle 22:20. Il limite della flotta è la RAM.
+- **Ipotesi:** aprire i menu carica asset (`PlayerActivityBlockReason.Addressables`) che poi restano
+  in memoria, quindi meno aperture vorrebbero dire meno crescita. Il criterio RAM delle 12 ore serve a
+  verificarlo.
+- **Possibile leva dopo le 12 ore:** `Resources.UnloadUnusedAssets()` dopo `CloseToMainScreen()`. È
+  un'API di Unity, solo lato client; va misurata.
 
 ## Ordine dentro il branch
 
