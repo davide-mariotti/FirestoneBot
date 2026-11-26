@@ -23,7 +23,7 @@ public class ExpeditionTask : BotTask
         yield return TownGuild.OpenExpeditions;
 
         yield return Expedition.Claim;
-        yield return Expedition.Start;
+        yield return Expedition.StartBest();
 
         NextRunTime = Expedition.IsExpeditionActive ? Expedition.CurrentRunTime : Expedition.NextRunTime;
 

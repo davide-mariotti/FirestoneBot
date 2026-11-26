@@ -37,6 +37,10 @@ public class MapMissionsTask : BotTask
                 yield return mission.Select();
             else
             {
+                // The game says how long it still runs: only a mission inside the free speed-up window is
+                // worth opening (26/11 Steam-27: every active mission was opened twice a run, 1 s each).
+                if (EndsAt(mission) is { } end && SpeedUpButton.FreeFrom(end) > DateTime.Now) continue;
+
                 yield return mission.Select();
                 var speedupBtn = MissionPreview.SpeedupBtn;
 
@@ -82,8 +86,8 @@ public class MapMissionsTask : BotTask
             Debug($"[INFO] Map missions: started {started} of {toStart.Count}, free squads {freeBefore} -> {MapMission.FreeSquads}, " +
                   $"in order {order}.");
 
-        DateTime? earliest = null;
-        yield return FindEarliestMissionProgress(value => earliest = value);
+        DateTime? earliest = EarliestEndFromGame();
+        if (earliest == null) yield return FindEarliestMissionProgress(value => earliest = value);
         NextRunTime = earliest ?? MapMission.NextRunTime;
 
         yield return WorldMap.Close;
@@ -118,6 +122,34 @@ public class MapMissionsTask : BotTask
                 : results.OrderByDescending(m => m.TimeRequired).ToList();
 
         foreach (var mission in results) yield return mission;
+    }
+
+    /// <summary>When the game says a map mission in progress ends, local time; null when it can't.</summary>
+    private static DateTime? EndsAt(MissionPin pin) => GameState.Get("map mission end", () =>
+    {
+        if (!pin.TryGetComponent(out Il2Cpp.MapMissionInteraction interaction)) throw new InvalidOperationException("no pin interaction");
+        foreach (var m in GameState.H.MissionsHandler.missionsInProgress)
+            if (m.missionType == interaction.missionType)
+                return GameState.Ends(m.timeStarted, m.realTimeReq) ?? throw new InvalidOperationException("no server time");
+        throw new InvalidOperationException($"{interaction.missionType} not in progress");
+    });
+
+    /// <summary>
+    ///     The free speed-up window of the first mission in progress to end, from the game's data
+    ///     (checked 26/11 against the previews: 00:40 both); null when it can't say, and the previews
+    ///     are read instead.
+    /// </summary>
+    private static DateTime? EarliestEndFromGame()
+    {
+        var ends = GameState.GetRef("map missions end", () =>
+        {
+            var list = new List<DateTime>();
+            foreach (var m in GameState.H.MissionsHandler.missionsInProgress)
+                if (GameState.Ends(m.timeStarted, m.realTimeReq) is { } end)
+                    list.Add(end);
+            return list;
+        });
+        return ends is { Count: > 0 } ? SpeedUpButton.FreeFrom(ends.Min()) : null;
     }
 
     private IEnumerator FindEarliestMissionProgress(Action<DateTime?> setEarliest)

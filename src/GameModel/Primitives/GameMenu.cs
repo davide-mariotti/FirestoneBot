@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Firebot.GameModel.Shared;
 using Il2Cpp;
 using Logger = Firebot.Core.Logger;
@@ -7,28 +8,71 @@ using Logger = Firebot.Core.Logger;
 namespace Firebot.GameModel.Primitives;
 
 /// <summary>
-///     Opens screens with the game's own HUD functions (MenuLoader.AdventureScreen.Open*), the ones its
-///     side buttons call: one call instead of the clicks through the town or the guild
-///     (GAMESTATE_PLAN.md, lever D). The click path stays as the fallback.
+///     Opens screens with the game's own navigation instead of the clicks through the town or the
+///     guild (GAMESTATE_PLAN.md, lever D). Three ways, tried in this order the first time a menu is
+///     needed: the generic NavigationControl.OpenMenu, the HUD's AdventureScreen.Open*, the clicks.
+///     The first that puts the menu on the game's stack is remembered for the session, so a way that
+///     doesn't work for a menu costs its wait once (26/11: OpenMenu opened the Tavern, neither call
+///     opened Magic Quarters, the HUD calls none).
 /// </summary>
 public static class GameMenu
 {
     internal static AdventureScreen Adventure => GameInitialize.MenuLoader.AdventureScreen;
 
-    /// <summary>
-    ///     Opens `menu` with `open` unless the game already has it open (a badge's shortcut often got
-    ///     there first), then waits for it on the menu stack. done(false) when the call failed or the
-    ///     menu never showed: the caller then clicks its way there.
-    /// </summary>
-    public static IEnumerator Open(MenuName menu, Action open, Action<bool> done)
+    private enum Way
     {
-        if (GameState.IsMenuOpen(menu) == true)
+        Navigation,
+        Hud,
+        Clicks
+    }
+
+    private static readonly Dictionary<MenuName, Way> Known = new();
+
+    /// <summary>
+    ///     Opens `menu` unless the game already has it open (a badge's shortcut often got there first):
+    ///     the remembered way, else each way in turn. `hud` is the HUD's call for it (null if none).
+    /// </summary>
+    public static IEnumerator OpenOrClick(MenuName menu, Action hud, Func<IEnumerator> viaClicks)
+    {
+        if (GameState.IsMenuOpen(menu) == true) yield break;
+
+        var known = Known.TryGetValue(menu, out var way);
+        if (!known || way == Way.Navigation)
         {
-            done(true);
-            yield break;
+            var opened = false;
+            yield return Try(menu, "navigation", () => GameState.Core.NavigationControl.OpenMenu(menu, 0, 0, default), ok => opened = ok);
+            if (opened)
+            {
+                Remember(menu, Way.Navigation);
+                yield break;
+            }
         }
 
-        if (GameState.Get($"open {menu}", () =>
+        if (hud != null && (!known || way == Way.Hud))
+        {
+            var opened = false;
+            yield return Try(menu, "HUD call", hud, ok => opened = ok);
+            if (opened)
+            {
+                Remember(menu, Way.Hud);
+                yield break;
+            }
+        }
+
+        Remember(menu, Way.Clicks);
+        yield return viaClicks();
+    }
+
+    private static void Remember(MenuName menu, Way way)
+    {
+        if (Known.TryGetValue(menu, out var before) && before == way) return;
+        Known[menu] = way;
+        Logger.Info($"[GameState] open {menu}: {way switch { Way.Navigation => "the game's navigation", Way.Hud => "the HUD call", _ => "clicks (no game call opened it)" }}.");
+    }
+
+    private static IEnumerator Try(MenuName menu, string label, Action open, Action<bool> done)
+    {
+        if (GameState.Get($"{label} {menu}", () =>
             {
                 open();
                 return true;
@@ -38,57 +82,11 @@ public static class GameMenu
             yield break;
         }
 
-        yield return Poll.AfterClick($"open {menu}");
+        yield return Poll.AfterClick($"{label} {menu}");
         yield return Poll.Until(() => GameState.IsMenuOpen(menu) == true, 10, 0.1f);
-
-        // The HUD's call didn't take (26/11: MagicQuarters, Oracle, Expeditions, TownGuild): the game's
-        // generic navigation next, with what the game says about why, once per menu.
-        if (GameState.IsMenuOpen(menu) != true)
-        {
-            Diagnose(menu, "HUD call");
-            if (GameState.Get($"navigate {menu}", () =>
-                {
-                    GameState.Core.NavigationControl.OpenMenu(menu, 0, 0, default);
-                    return true;
-                }) == true)
-            {
-                yield return Poll.AfterClick($"navigate {menu}");
-                yield return Poll.Until(() => GameState.IsMenuOpen(menu) == true, 10, 0.1f);
-            }
-        }
-
         var opened = GameState.IsMenuOpen(menu) == true;
-        if (!opened)
-        {
-            Diagnose(menu, "navigation");
-            Logger.Info($"[GameState] fallback open {menu}: not on the menu stack after the calls ({GameState.MenuStack}).");
-        }
-
+        if (!opened) Logger.Debug($"[GameState] open {menu} via {label} didn't show (stack [{GameState.MenuStack}]).");
         done(opened);
-    }
-
-    private static readonly System.Collections.Generic.HashSet<string> Diagnosed = new();
-
-    private static void Diagnose(MenuName menu, string attempt)
-    {
-        if (!Diagnosed.Add($"{menu} {attempt}")) return;
-        var state = GameState.GetRef("navigation state", () =>
-        {
-            var nav = GameState.Core.NavigationControl;
-            var visible = new Base.GameElement($"{Infrastructure.Paths.WatchdogLoc.MenusRoot}/{menu}").IsVisible() ||
-                          new Base.GameElement($"{Infrastructure.Paths.WatchdogLoc.PopupsRoot}/{menu}").IsVisible();
-            return $"allowNavigation={nav.allowNavigation} pending={nav.pendingChangeMenu} stack=[{GameState.MenuStack}] " +
-                   $"menu visible={visible} adventureScreen={(Adventure == null ? "null" : "set")} blocker={GameState.Busy}";
-        });
-        Logger.Info($"[GameState] open {menu} via {attempt} didn't show: {state}");
-    }
-
-    /// <summary>Open(menu, open), and the click path when that fails.</summary>
-    public static IEnumerator OpenOrClick(MenuName menu, Action open, Func<IEnumerator> viaClicks)
-    {
-        var opened = false;
-        yield return Open(menu, open, ok => opened = ok);
-        if (!opened) yield return viaClicks();
     }
 
     /// <summary>Clicks `open` only when the game doesn't already have `menu` open (or can't say).</summary>
