@@ -12,6 +12,8 @@ public static class MagicQuarters
 
     public static GameButton TrainBtn => new(Paths.MenusLoc.MagicQuartersLoc.TrainBtn);
 
+    public static GameButton EnlightenmentBtn => new(Paths.MenusLoc.MagicQuartersLoc.EnlightenmentBtn);
+
     public static DateTime NextRunTime => new GameText(Paths.MenusLoc.MagicQuartersLoc.NextRunTimeTxt).Time;
 
     public static IEnumerator CloseLockedPopup => new GameButton(Paths.MenusLoc.LockedGuardianLoc.CloseBtn).Click();

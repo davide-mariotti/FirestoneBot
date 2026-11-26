@@ -329,15 +329,10 @@ public static partial class Paths
 
             public const string GuardiansRoot = Root + "/guardianList";
 
-            // Relative to a guardian in GuardiansRoot; shown only once that guardian is unlocked.
-            public const string GuardianStarsIcon = "/starsParent";
-
             private const string UnlockedGuardianRoot = Root + "/submenus/bg/infoSubmenu/activities/unlocked";
 
             // Seen live on Steam-0 (30/09): desc "Enlightenment 1", costText "20", icon strangeDust64.
             public const string EnlightenmentBtn = UnlockedGuardianRoot + "/enlightenment/enlightenmentButton";
-
-            public const string EnlightenmentDescTxt = EnlightenmentBtn + "/desc";
 
             public const string EnlightenmentCostIcon = EnlightenmentBtn + "/strangeDustIcon";
 

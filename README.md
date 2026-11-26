@@ -50,7 +50,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 
 - **Daily Store Offers**: the daily check-in and the two free mystery boxes.
 - **Engineer**: collects the tools every 6 hours.
-- **Guardian Training**: keeps a guardian training (`guardian_index`).
+- **Guardian Training**: keeps a guardian training: every unlocked guardian to evolution 5 in order (Vermilion, Grace, Ankaa, Azhar), then every one to 10, then `guardian_index`. Strange Dust above `strange_dust_reserve` (10.000) goes into enlightening the same guardian.
 - **Guardian Evolution**: evolves every guardian whose evolution is available, paid in Strange Dust.
 - **Experiments**: collects finished experiments and starts new ones - Dragon blood only by default (`resource_type`).
 - **Firestone Research** keeps every slot busy and buys new slots when affordable; **Meteorite Research** researches whenever the balance stays above `min_meteorite_reserve`. Both prefer Raining Gold, Firestone Finder and Firestone Effect.
