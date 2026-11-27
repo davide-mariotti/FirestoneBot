@@ -156,9 +156,14 @@ public class WarfrontDailyMissionsTask : BotTask
         // fought in the reset's first hour means try again shortly, not tomorrow.
         // The missions renew with the day, whatever the popup's countdown says: on 04/11 it read 37 h on
         // Steam-0, which then skipped the 05/11 reset.
+        // The game's own word ends that retry: on 27/11 Steam-27 fought 3 at 10:01, then looked again every
+        // 5 minutes until 11:00 at missions already won (10 runs, 16 s each). Should yesterday's list still
+        // be what the game holds, its HasAvailable turning true makes the task ready again by itself.
         var nextReset = WarfrontDailyMissions.NextRunTime;
         if (nextReset > GameDay.NextReset()) nextReset = GameDay.NextReset();
-        NextRunTime = fought == 0 && nextReset - DateTime.Now > TimeSpan.FromHours(23) ? DateTime.Now + RetryAfterReset : nextReset;
+        NextRunTime = fought == 0 && WarfrontLiberationMissions.HasAvailable && nextReset - DateTime.Now > TimeSpan.FromHours(23)
+            ? DateTime.Now + RetryAfterReset
+            : nextReset;
 
         yield return WarfrontDailyMissions.Close;
         yield return WorldMap.Close;

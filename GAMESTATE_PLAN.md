@@ -11,10 +11,34 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
-## Stato (27/11 08:33, branch `game-state`)
+## Stato (27/11 11:28, branch `game-state`)
 
-**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 08:33 (finisce alle 20:33)**, per Forbidden
-Knowledge e Beasts, chiesti dall'utente:
+**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 11:28 (finisce alle 23:28)**, per le richieste
+dell'utente su guardiani, Arena of Kings e Hall of Heroes:
+- **Guardian Evolution** non apre Magic Quarters se il gioco (`GuardianDeck`) non ha guardiani pronti
+  a evolvere; se ce ne sono, clicca solo quelli. Prima erano 10-15 s a giro per trovarne nessuno. Alle
+  11:10 aveva Vermilion all'evoluzione 4 e Grace all'1, come legge lo schermo, quindi 0,1 s.
+- **Guardian Holy Upgrade** non apre senza Orbs of Light per il livello più economico.
+- **Guardian Training** confronta il proprio timer (`MagicQuartersInfoSubmenu.lastTrainGuardinaTime` +
+  `TrainCooldownDuration`) con lo schermo prima di usarlo. Alle 11:10 nessun mismatch.
+- **Arena of Kings** legge la potenza degli avversari dal loro `HDSAccount.warMachineArenaPower`, non
+  più dal testo, che dopo un reroll può essere vuoto. Il tempo resta comunque nelle 5 battaglie.
+- **Hall of Heroes** ogni 6 ore guardava i sigilli dei 13 eroi (circa 95 s) per poi non comprare
+  niente. Ora legge dal gioco (`HeroServer`: `gearPower`, incantesimi, `gearSealList`/`jewelSealList`)
+  i sigilli posseduti e il livello che chiedono, e prende i saldi da `CurrencyHandler`. Senza sigilli
+  da usare e senza niente che i saldi comprino non apre; quando apre, visita solo gli eroi con un
+  sigillo usabile. Si fida dei sigilli dei dati solo se coincidono con quelli visti l'ultima volta nelle
+  schede (`seals_seen`): alle 11:29 erano Benedictus Chest 3/6 e Blaze Boots 3/6 in entrambi, quindi
+  0,1 s. `hasSeal` indica il possesso (`quantity` era 0 su tutti), e gli oggetti vanno letti da
+  `heroGears`, perché `gearsDict` è vuoto. La lettura completa di ogni 24 ore confronta i livelli e la potenza del gear dei
+  dati con lo schermo, prima di poterla sostituire. I dati elencano anche gli eroi non posseduti, per
+  questo il controllo è solo che quelli dell'istantanea ci siano tutti.
+- **Daily Missions** (anche su main) rifaceva un giro ogni 5 minuti nella prima ora dopo il reset
+  anche a missioni già fatte: alle 10:01 ne aveva combattute 3, poi 10 giri da 16 s fino alle 11:00.
+  Ora con `HasAvailable` falso non ci riprova.
+- Collector Quest resta com'è: il tempo è l'apertura dei forzieri, già 10 alla volta.
+
+Alle 08:33 era ripartito per Forbidden Knowledge e Beasts, chiesti dall'utente:
 - **Forbidden Knowledge** apriva l'anteprima di ogni nodo delle tre tavole: 40-80 s a giro per non
   comprare niente. Ora legge dal gioco i tomi di ogni dio, i nodi sotto il tetto della tavola e il
   costo (1 tomo). Apre solo le tavole dove c'è da comprare, e lì solo i nodi sotto il tetto. Alle 08:34

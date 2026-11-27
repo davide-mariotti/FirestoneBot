@@ -69,12 +69,49 @@ public class HallOfHeroesTask : BotTask
             "Hero Snapshot Time",
             "(auto-managed, don't edit) - when hero_snapshot was last fully rebuilt"
         );
+
+        _sealsSeen = category.CreateEntry(
+            "seals_seen",
+            "-",
+            "Seals Seen",
+            "(auto-managed, don't edit) - the seals the Seals tabs last showed, which the game's data must match to be used"
+        );
+    }
+
+    private MelonPreferences_Entry<string> _sealsSeen;
+
+    // "Name Slot/level asked", sorted: what the seals tabs and the game's data are compared on.
+    private static string SealKeys(IEnumerable<HeroState> heroes) => string.Join(", ", heroes.SelectMany(h =>
+            new[] { EnchantCategory.Gear, EnchantCategory.Jewels }.SelectMany(c => Enumerable.Range(0, h.Seals(c).Length)
+                .Where(s => h.Seals(c)[s] > 0).Select(s => $"{h.Name} {EnchantPlanner.SlotName(c, s)}/{h.Seals(c)[s]}")))
+        .OrderBy(k => k, StringComparer.Ordinal));
+
+    /// <summary>The game's seals agree with what the Seals tabs last showed (27/11: a first read found none of the two there).</summary>
+    private bool SealsTrusted(List<HeroState> heroes)
+    {
+        SealsFromGame(heroes);
+        var keys = SealKeys(heroes);
+        if (keys == _sealsSeen.Value) return true;
+
+        GameState.Compare("hall of heroes seals", keys, _sealsSeen.Value);
+        Debug($"[INFO] Seals held, from the game: {string.Join("; ", heroes.Select(h => $"{h.Name} {_fromGame[h.Name].SealsHeld}"))}.");
+        return false;
     }
 
     public override IEnumerator Execute()
     {
         _replansLeft = MaxReplans;
         _stop = _rosterMoved = false;
+
+        // Every 6 h the run looked at all 13 heroes' Seals tabs (~95 s) to then find nothing affordable
+        // (Steam-27, 27/11): the game's data says the same with the hall closed.
+        _fromGame = HallOfHeroesModel.FromGame;
+        if (NothingToDo(out var why))
+        {
+            Debug($"[INFO] From the game: {why} - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
 
         yield return Party.Open;
         // ponytail: a formation of fewer than 5 waits the whole 8 s every run; read "Deployed: N/5" once
@@ -126,7 +163,16 @@ public class HallOfHeroesTask : BotTask
         else
             _heroes = _heroes.Select(h => h with { InFormation = formation.Contains(h.Name) }).ToList();
 
-        if (!_stop) yield return UseSeals(_heroes);
+        // With the game's data, the seals' levels come from it and only heroes with one to use now are visited.
+        if (GameMatches(_heroes) && SealsTrusted(_heroes))
+        {
+            var ready = _heroes.Where(h => _fromGame[h.Name].SealReady).ToList();
+            Debug($"[INFO] Seals from the game: {(ready.Count == 0 ? "none to use" : "to use on " + string.Join(", ", ready.Select(h => h.Name)))}; " +
+                  $"waiting: {SealsWaiting(_heroes)}.");
+            if (!_stop && ready.Count > 0) yield return UseSeals(ready);
+        }
+        else if (!_stop) yield return UseSeals(_heroes);
+
         if (!_stop) yield return UnlockTiers(!fullRead);
         if (!_stop && !_gearBlocked) yield return Spend(EnchantCategory.Gear);
         if (!_stop) yield return Spend(EnchantCategory.Jewels);
@@ -141,6 +187,56 @@ public class HallOfHeroesTask : BotTask
 
         // A roster that no longer matches the snapshot gets its full read on the short retry.
         NextRunTime = _rosterMoved ? DateTime.MinValue : DateTime.Now + RecheckDelay;
+    }
+
+    private Dictionary<string, HallOfHeroesModel.HeroData> _fromGame;
+
+    /// <summary>
+    ///     The game's data has every snapshot hero: the per-hero facts below can come from it. It lists the
+    ///     heroes not owned too (15+ against 13 owned, Steam-27 27/11), so a new hero shows up in the
+    ///     hall's count and the full read, not here.
+    /// </summary>
+    private bool GameMatches(List<HeroState> heroes) =>
+        _fromGame != null && heroes != null && heroes.All(h => _fromGame.ContainsKey(h.Name));
+
+    // The seals in hand, from the game: the level each slot's seal asks, as the Seals tab would give it.
+    private void SealsFromGame(IEnumerable<HeroState> heroes)
+    {
+        foreach (var hero in heroes)
+        {
+            var data = _fromGame[hero.Name];
+            Array.Copy(data.GearSeals, hero.GearSeals, hero.GearSeals.Length);
+            Array.Copy(data.JewelSeals, hero.JewelSeals, hero.JewelSeals.Length);
+        }
+    }
+
+    /// <summary>
+    ///     A fresh snapshot the game's data agrees with, no badge, no seal to use, no tier to unlock or
+    ///     work towards that the crystals pay, and no enchant either balance buys: the hall has nothing.
+    /// </summary>
+    private bool NothingToDo(out string why)
+    {
+        why = null;
+        var heroes = EnchantPlanner.Parse(_heroSnapshot.Value);
+        var fresh = DateTime.TryParse(_heroSnapshotTime.Value, out var readAt) && DateTime.Now - readAt < FullScanInterval;
+        if (!fresh || !GameMatches(heroes) || IsNotificationVisible()) return false;
+
+        var crystals = GameState.Get("void crystals", () => GameState.H.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.VoidCrystal).Amount);
+        var shards = GameState.Get("ethereal shards", () => GameState.H.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.EtherealShard).Amount);
+        if (crystals == null || shards == null) return false;
+
+        foreach (var hero in heroes) hero.GearPower = _fromGame[hero.Name].GearPower;
+        if (!SealsTrusted(heroes)) return false;
+
+        if (heroes.Any(h => _fromGame[h.Name].SealReady)) return false;
+        if (heroes.Any(h => EnchantPlanner.NextTierThreshold(h) is { } t && h.GearPower >= t)) return false;
+        if (EnchantPlanner.GatingOrder(heroes).Any(h => EnchantPlanner.NextGatingSlot(h) is { } s && s.Cost <= crystals)) return false;
+        if (EnchantPlanner.Plan(heroes, EnchantCategory.Gear, (long)crystals).Count > 0) return false;
+        if (EnchantPlanner.Plan(heroes, EnchantCategory.Jewels, (long)shards).Count > 0) return false;
+
+        why = $"{heroes.Count} heroes, no seal to use (waiting: {SealsWaiting(heroes)}), " +
+              $"{crystals:0} Void Crystals and {shards:0} Ethereal Shards buy nothing";
+        return true;
     }
 
     // Saves the snapshot after every hero, but stamps it only once complete: a read cut short by the
@@ -180,6 +276,36 @@ public class HallOfHeroesTask : BotTask
         _heroSnapshotTime.Value = DateTime.Now.ToString("O");
         Debug($"[INFO] Hall of Heroes, {_heroes.Count} heroes ('*' = formation or target; level('badge'/'cost'), " +
               "M = empty or needs a higher rarity, L = tier locked):\n" + string.Join("\n", table));
+        CompareWithGame();
+    }
+
+    // The free check before the data replaces the full read: gear power and every gear level the screen gave a number for.
+    private void CompareWithGame()
+    {
+        if (!GameMatches(_heroes))
+        {
+            GameState.Compare("hall of heroes heroes", _fromGame == null ? null : "all", "missing " +
+                string.Join(",", _heroes.Where(h => !_fromGame.ContainsKey(h.Name)).Select(h => h.Name)));
+            return;
+        }
+
+        foreach (var hero in _heroes)
+        {
+            var data = _fromGame[hero.Name];
+            var levels = Enumerable.Range(0, hero.Gear.Length).Where(s => hero.Gear[s] >= 0).ToList();
+            GameState.Compare($"hero {hero.Name} gear", string.Join(",", levels.Select(s => data.GearLevels[s])),
+                string.Join(",", levels.Select(s => hero.Gear[s])));
+            if (Math.Abs(data.GearPower - hero.GearPower) > Math.Max(1, hero.GearPower * 0.01))
+                GameState.Compare($"hero {hero.Name} gear power", $"{data.GearPower}", $"{hero.GearPower}");
+        }
+    }
+
+    private static string SealsWaiting(IEnumerable<HeroState> heroes)
+    {
+        var waiting = heroes.SelectMany(h => new[] { EnchantCategory.Gear, EnchantCategory.Jewels }.SelectMany(c =>
+            Enumerable.Range(0, h.Seals(c).Length).Where(s => h.Seals(c)[s] > 0)
+                .Select(s => $"{h.Name} {EnchantPlanner.SlotName(c, s)} {h.Levels(c)[s]}/{h.Seals(c)[s]}"))).ToList();
+        return waiting.Count == 0 ? "none" : string.Join(", ", waiting);
     }
 
     /// <summary>Everything about the selected hero: gear power and locked tiers (unlocking one it has reached), then every enchant row.</summary>
@@ -543,6 +669,8 @@ public class HallOfHeroesTask : BotTask
         }
 
         if (heroes.Count > 0) Debug($"[INFO] Seals waiting for a level: {(waiting.Count == 0 ? "none" : string.Join(", ", waiting))}.");
+        // Every hero's tabs read: what the game's data has to match from now on.
+        if (_heroes != null && heroes.Count == _heroes.Count && !_stop) _sealsSeen.Value = SealKeys(heroes);
     }
 
     private IEnumerator UseSeal(HeroState hero, EnchantCategory category, HallOfHeroesModel.Seals.Row row, Action<bool> done)

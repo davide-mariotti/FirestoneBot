@@ -53,6 +53,8 @@ public class GuardianTrainingTask : BotTask
         }
 
         NextRunTime = MagicQuarters.NextRunTime;
+        // The game's timer, checked against the screen before it replaces it.
+        GameState.CompareTimes("guardian training next", MagicQuarters.TrainingEnd, NextRunTime);
 
         yield return MagicQuarters.CloseLockedPopup;
         yield return MagicQuarters.Close;

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Il2Cpp;
 using UnityEngine;
@@ -17,6 +18,66 @@ namespace Firebot.GameModel.Features.Character;
 /// </summary>
 public static class HallOfHeroes
 {
+    /// <summary>
+    ///     A hero as the game has it (HeroServer), the hall closed: gear power, each gear slot's enchant
+    ///     level (-1 for an empty slot), the level each slot's Seal of Power in hand asks (0 without one,
+    ///     as the Seals tab gives it), and whether a seal can be used now.
+    /// </summary>
+    public sealed record HeroData(int GearPower, int[] GearLevels, int[] GearSeals, int[] JewelSeals, bool SealReady, string SealsHeld);
+
+    /// <summary>Every hero by name (HeroCode's names are the screen's); null when it can't be read.</summary>
+    public static Dictionary<string, HeroData> FromGame => GameState.GetRef("hall of heroes", () =>
+    {
+        var heroes = new Dictionary<string, HeroData>();
+        foreach (var kv in GameState.H.HeroServerHandler.heroesDict)
+        {
+            var h = kv.Value;
+            var levels = new int[Tasks.Character.HeroState.GearSlots];
+            var gearSeals = new int[Tasks.Character.HeroState.GearSlots];
+            var jewelSeals = new int[Tasks.Character.HeroState.JewelSlots];
+            var ready = false;
+            var held = new List<string>();
+
+            // The worn items by slot: heroGears, as gearsDict read empty (27/11, every slot -1).
+            var items = new GearItem[levels.Length];
+            foreach (var gear in h.heroGears)
+                if (gear != null && (int)gear.gearSlot >= 0 && (int)gear.gearSlot < items.Length)
+                    items[(int)gear.gearSlot] = gear;
+            for (var slot = 0; slot < levels.Length; slot++) levels[slot] = items[slot] == null ? -1 : items[slot].EnchantLevel;
+
+            // A seal in hand is hasSeal: the 27/11 read had quantity 0 on every one.
+            foreach (var seal in h.gearSealList)
+            {
+                var onItem = seal.slot >= 0 && seal.slot < items.Length ? items[seal.slot] : null;
+                if (seal.quantity > 0 || seal.hasSeal)
+                    held.Add($"g{seal.slot}{seal.rarity}({(onItem == null ? "-" : $"{onItem.itemRarity} {onItem.EnchantLevel}")})");
+                if (seal.quantity <= 0 && !seal.hasSeal || onItem == null) continue;
+                var need = Tasks.Character.EnchantPlanner.SealLevel(onItem.itemRarity.ToString(), seal.rarity.ToString());
+                if (need == 0) continue;
+                gearSeals[seal.slot] = need;
+                ready |= levels[seal.slot] >= need;
+            }
+
+            foreach (var seal in h.jewelSealList)
+            {
+                var jewel = seal.slot >= 0 && seal.slot < jewelSeals.Length && h.jewelDict.ContainsKey((JewelSlot)seal.slot)
+                    ? h.jewelDict[(JewelSlot)seal.slot]
+                    : null;
+                if (seal.quantity > 0 || seal.hasSeal)
+                    held.Add($"j{seal.slot}{seal.rarity}({(jewel == null ? "-" : $"{jewel.rarity} {jewel.enchantLevel}")})");
+                if (seal.quantity <= 0 && !seal.hasSeal || jewel == null) continue;
+                var need = Tasks.Character.EnchantPlanner.SealLevel(jewel.rarity.ToString(), seal.rarity.ToString());
+                if (need == 0) continue;
+                jewelSeals[seal.slot] = need;
+                ready |= jewel.enchantLevel >= need;
+            }
+
+            heroes[kv.Key.ToString()] = new HeroData((int)h.gearPower, levels, gearSeals, jewelSeals, ready, string.Join(" ", held));
+        }
+
+        return heroes;
+    });
+
     public static IEnumerator Close => new GameButton(Paths.HallOfHeroesLoc.CloseBtn).Click();
 
     public static bool IsOpen => IsShown(Paths.HallOfHeroesLoc.CloseBtn);
