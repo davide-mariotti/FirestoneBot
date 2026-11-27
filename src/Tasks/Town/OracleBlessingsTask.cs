@@ -25,6 +25,22 @@ public class OracleBlessingsTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The game's own word on each blessing (OracleHandler.blessings): none to level, no Oracle to open.
+        var ready = GameState.Get("oracle blessings", () =>
+        {
+            var n = 0;
+            foreach (var kv in GameState.H.OracleHandler.blessings)
+                if (kv.Value != null && !kv.Value.IsMaxLevel() && (kv.Value.hasAvailableUpgrade || kv.Value.CanLevelUp()))
+                    n++;
+            return n;
+        });
+        if (!IsNotificationVisible() && ready == 0)
+        {
+            Debug("[INFO] From the game: no blessing the glyphs pay for - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.OracleBlessings;
 
         yield return TownScreen.Open;

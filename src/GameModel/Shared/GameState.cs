@@ -229,6 +229,57 @@ public static class GameState
     /// <summary>The New Player (anniversary handler's) event between its start and end.</summary>
     public static bool? NewPlayerEventRunning => Get("new player event", () => Within(H.AnniversaryEventHandler.anniversaryEvent));
 
+    // ---- Event challenges, as the cards show them: the bot's kind, done/target of the current tier, and
+    // whether a tier waits to be claimed.
+
+    private static Tasks.Events.ChallengeKind CalendarKind(CalendarEventChallenges code) => code switch
+    {
+        CalendarEventChallenges.EnlightenGuardians => Tasks.Events.ChallengeKind.EnlightenGuardians,
+        CalendarEventChallenges.ArcaneCrystalHits => Tasks.Events.ChallengeKind.CrystalHits,
+        CalendarEventChallenges.PlayTavern => Tasks.Events.ChallengeKind.TavernPlays,
+        _ => Tasks.Events.ChallengeKind.NotHandled
+    };
+
+    private static Tasks.Events.ChallengeKind MiniKind(ChallengeCode code) => code switch
+    {
+        ChallengeCode.DonateGuildCoins => Tasks.Events.ChallengeKind.GuildDonation,
+        ChallengeCode.OpenChests => Tasks.Events.ChallengeKind.OpenChests,
+        ChallengeCode.EnlightenGuardians => Tasks.Events.ChallengeKind.EnlightenGuardians,
+        ChallengeCode.CompleteMeteoriteResearches => Tasks.Events.ChallengeKind.MeteoriteResearches,
+        ChallengeCode.PlayTavern => Tasks.Events.ChallengeKind.TavernPlays,
+        ChallengeCode.PersonalToLUpgrades => Tasks.Events.ChallengeKind.TreeOfLifeUpgrades,
+        ChallengeCode.ExoticUpgrades => Tasks.Events.ChallengeKind.ExoticUpgrades,
+        ChallengeCode.ArcaneCrystalHits => Tasks.Events.ChallengeKind.CrystalHits,
+        ChallengeCode.ExoticMerchantSell => Tasks.Events.ChallengeKind.SellItems,
+        _ => Tasks.Events.ChallengeKind.NotHandled
+    };
+
+    /// <summary>The calendar event's challenges (Decorated Heroes, Trick or Treat): c tiers claimed of tiersPerChallenge.</summary>
+    public static List<(Tasks.Events.ChallengeKind Kind, int Done, int Target, bool Claimable)> CalendarChallenges => GetRef("calendar challenges", () =>
+    {
+
+        var list = new List<(Tasks.Events.ChallengeKind, int, int, bool)>();
+        foreach (var kv in H.CalendarEventsHandler.eventChallengesProgress)
+        {
+            var req = CalendarEventsDataHandler.challengeRequirements[kv.Key];
+            var tier = Math.Min(kv.Value.c, req.Length - 1);
+            var done = (int)kv.Value.p;
+            list.Add((CalendarKind(kv.Key), done, req[tier], kv.Value.c < req.Length && done >= req[tier]));
+        }
+
+        return list;
+    });
+
+    /// <summary>The mini-event's challenges, each its own requirement.</summary>
+    public static List<(Tasks.Events.ChallengeKind Kind, int Done, int Target, bool Claimable)> MiniChallenges => GetRef("mini challenges", () =>
+    {
+        var list = new List<(Tasks.Events.ChallengeKind, int, int, bool)>();
+        foreach (var m in H.MiniEventsHandler.activeChallenges)
+            if (!m.locked)
+                list.Add((MiniKind(m.challengeCode), m.currentProgress, m.requirement, m.completed && !m.claimed));
+        return list;
+    });
+
     // ---- Quests.
 
     /// <summary>Daily and weekly quests done and not claimed yet.</summary>

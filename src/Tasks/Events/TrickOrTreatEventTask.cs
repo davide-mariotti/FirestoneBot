@@ -17,6 +17,10 @@ public class TrickOrTreatEventTask : EventTask
 
     protected override bool? RunningFromGame => GameState.CalendarEventRunning(Il2Cpp.CalendarEvents.TrickOrTreat);
 
+    protected override List<(ChallengeKind Kind, int Done, int Target, bool Claimable)> ChallengesFromGame => GameState.CalendarChallenges;
+
+    protected override double? ShopCurrency => GameState.Currency(Il2Cpp.CurrencyCode.CalendarEventCur);
+
     // No challenges: exchange only.
     protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)
     {

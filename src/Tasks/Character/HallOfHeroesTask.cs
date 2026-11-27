@@ -121,12 +121,18 @@ public class HallOfHeroesTask : BotTask
             yield break;
         }
 
-        yield return Party.Open;
-        // ponytail: a formation of fewer than 5 waits the whole 8 s every run; read "Deployed: N/5" once
-        // it stops counting up if that ever matters.
-        yield return Poll.Until(() => Party.FormationNames().Count >= Party.FormationSize, 16);
-        var formation = Party.FormationNames();
-        yield return Party.Close;
+        // The heroes in battle from the game (Heroes.Read, the formation task's own source): the Party
+        // screen opened on every run for them before. The screen stays the fallback.
+        var formation = Heroes.Read()?.InBattle?.ToHashSet() ?? new HashSet<string>();
+        if (formation.Count == 0)
+        {
+            yield return Party.Open;
+            // ponytail: a formation of fewer than 5 waits the whole 8 s every run; read "Deployed: N/5" once
+            // it stops counting up if that ever matters.
+            yield return Poll.Until(() => Party.FormationNames().Count >= Party.FormationSize, 16);
+            formation = Party.FormationNames();
+            yield return Party.Close;
+        }
 
         _heroes = EnchantPlanner.Parse(_heroSnapshot.Value);
         if (formation.Count == 0)

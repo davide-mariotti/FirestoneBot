@@ -22,8 +22,11 @@ public static class ArenaOfKings
     public static int TokensAvailable => GameState.Get("arena tokens", () => Il2Cpp.GameInitialize.MenuLoader.ArenaOfKingsMech.battleTokensCurrent)
                                          ?? new GameText(Paths.ArenaOfKingsLoc.BattleTokensTxt).GetParsedLeadingInt();
 
+    // The game's own figure for the arena formation (WarMachineHandler), the text as the fallback.
     public static double MyPower =>
-        new GameText(Paths.ArenaOfKingsLoc.MyArenaPowerTxt).GetParsedDoubleAbbreviated();
+        GameState.Get("my arena power", () => GameState.H.WarMachineHandler.myFormationArenaPower) is > 0 and var power
+            ? power
+            : new GameText(Paths.ArenaOfKingsLoc.MyArenaPowerTxt).GetParsedDoubleAbbreviated();
 
     public static GameButton RerollBtn => new(Paths.ArenaOfKingsLoc.RerollBtn);
 

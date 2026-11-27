@@ -29,6 +29,11 @@ public class WarfrontCampaignLootTask : BotTask
 
         yield return WarfrontLoot.Claim;
         NextRunTime = WarfrontLoot.NextRunTime;
+        // The game's side (WFCampaignMissionHandler), next to the screen's countdown: what a gate from the
+        // data needs is the loot's interval, to be read off these lines before it replaces the visit.
+        Debug($"[INFO] Campaign loot from the game: claimed {GameState.Get("campaign loot claimed", () => GameState.H.WFCampaignMissionHandler.hasClaimedLoot)}, " +
+              $"last {(GameState.Get("campaign loot last", () => GameState.H.WFCampaignMissionHandler.lastLootClaimTimestamp) is { } last ? GameState.At(last)?.ToString("dd/MM HH:mm:ss") : "-")}, " +
+              $"screen next {NextRunTime:dd/MM HH:mm:ss}.");
 
         yield return WorldMap.Close;
     }

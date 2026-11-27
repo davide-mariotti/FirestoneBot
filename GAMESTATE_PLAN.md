@@ -119,6 +119,38 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
   che però vale 0 finché il negozio non è stato aperto: il bot ricorda quello visto all'ultima visita,
   quindi dopo ogni riavvio c'è una visita (13 s) per impararlo.
 
+**Fatto il 27/11 alle 15:00** (deploy su -27 e -28, tutto con lo schermo come riserva):
+- **Oracle Blessings** non apre se nessuna benedizione di `OracleHandler.blessings` ha `CanLevelUp` /
+  `hasAvailableUpgrade`;
+- **Pirate's Prize** non apre se `PirateShipHandler.GetPiratePrizeUnclaimedRewards()` è 0;
+- **Beer Exchange** non apre senza il badge BeerExchange letto dai dati, cioè il controllo del gioco
+  stesso (`NotificationHandler.BeerExchangeCheck`);
+- **Scarab Game, token gratuito**: `ScarabGameHandler.DailyFreePharaohTokenAvailable`;
+- **Daily Store Offers** non apre senza i badge CheckIn o MysteryBox letti dai dati;
+- **Free Pickaxes**: il conteggio da `GuildShopSuppliesSubmenu.freePickaxeState` (generati meno
+  riscossi) si confronta con il negozio a ogni visita; sotto la soglia salta l'apertura dopo una visita
+  che ha confermato la coincidenza;
+- **War Machines** (ferme fino all'albero a 50): non apre con meno di 500 Expedition Tokens;
+- **Arena of Kings**: anche la mia potenza dai dati (`WarMachineHandler.myFormationArenaPower`);
+- **Merchant Quest**: nome e quantità degli oggetti in vendita da `ExoticSellItemInteraction`
+  (`itemName`, `quantityOwned`), non dai testi; il click di vendita resta;
+- **Collector Quest**: le quantità per casella dai dati (`ChestOpening.CountFromGame`);
+- **stage dell'AutoRetreat**: `MainBattle.CurrentStageNumber`;
+- **sfide degli eventi**: i codici del gioco (`eventChallengesProgress` con
+  `CalendarEventsDataHandler.challengeRequirements`, `MiniEventsHandler.activeChallenges`) tradotti
+  nei tipi del bot (`GameState.CalendarChallenges` / `MiniChallenges`). A ogni visita si confrontano con
+  le carte; quando coincidono, senza sfide da riscuotere o da fare e senza valuta dell'evento in più
+  (Decorated Heroes, Trick or Treat), l'evento non si apre;
+- **Formation** apre Party solo per cambiare eroi (prima ogni giorno, anche in dry run), e **Hall of
+  Heroes** prende la formazione da `Heroes.Read()` invece di aprire Party a ogni giro;
+- **bottino della campagna Warfront**: per ora scrive i dati del gioco (`hasClaimedLoot`,
+  `lastLootClaimTimestamp`) accanto al conto alla rovescia dello schermo, per ricavare l'intervallo
+  prima di decidere dai dati.
+
+Già dai dati senza bisogno di modifiche: **Warfront Campaign** (potenza, missioni e requisiti dal
+gioco, apre solo per una missione da tentare o per cambiare l'equipaggio) e **Blueprints**
+(`BlueprintPlanner` dai dati, non apre senza niente da comprare).
+
 **Guardati e lasciati come sono:**
 - Seen Badges: i badge "visto" li riaccende ogni riavvio, perché il gioco tiene i flag solo in memoria, e
   scriverli è vietato; costa 3 s al riavvio;
@@ -132,12 +164,12 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
 - Frostfire, routine di push con le pergamene e vendita delle pergamene: in pausa per scelta
   dell'utente.
 
-## Stato (27/11 13:28, branch `game-state`)
+## Stato (27/11 15:01, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 13:28 (ultimo deploy)
-e finisce il 28/11 alle 01:28**, per la seconda serie di richieste dell'utente:
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:01 (ultimo deploy)
+e finisce il 28/11 alle 03:01**, per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
   e ogni ora si apriva la lista per scoprirlo: 22 s all'ora. Ora decide il gioco: `MiniEventsHandler`
   (evento in corso e non bloccato), la lista `calendarEvents` del calendario (dal 12:09: il solo

@@ -92,6 +92,9 @@ public class FormationTask : BotTask
         Debug("[INFO] Formation heroes (log10 offense/potential): " + string.Join(", ",
             read.Heroes.OrderByDescending(Value).Select(h => $"{h.Name} {h.Offense:0.00}/{h.Potential:0.00}")));
 
+        // The heroes and the formation above came from the game: the Party screen is only for the swaps.
+        if (!change || _dryRun.Value) yield break;
+
         yield return Party.Open;
         yield return Poll.Until(() => Party.FormationNames().Count >= Party.FormationSize, 16);
         // The deck fills in after the slots (Steam-15, 23/10: read empty right after them).
@@ -99,10 +102,9 @@ public class FormationTask : BotTask
         var deck = Party.DeckSlots();
         Debug($"[INFO] Formation deck: {string.Join(", ", deck.Select(d => d.Portrait + (d.Deployed ? "*" : "")))}.");
 
-        if (change && !_dryRun.Value) yield return Apply(read, best, deck);
+        yield return Apply(read, best, deck);
 
         yield return Party.Close;
-        if (!change || _dryRun.Value) yield break;
 
         Debug($"[INFO] Formation: screens after closing the Party: {Watchdog.DumpActiveScreens()}.");
         var after = Heroes.Read();

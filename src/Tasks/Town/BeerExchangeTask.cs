@@ -23,6 +23,15 @@ public class BeerExchangeTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The 2-hour check: the BeerExchange badge is the game's own "the beer pays an exchange"
+        // (NotificationHandler.BeerExchangeCheck), read from its data. Not lit, nothing to buy.
+        if (GameState.BadgeType(Paths.BattleLoc.NotificationsLoc.BeerExchange) is { } type && GameState.HasBadge(type) == false)
+        {
+            Debug($"[INFO] From the game: {GameState.Currency(Il2Cpp.CurrencyCode.Beer):0} beer, no exchange it pays - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.BeerExchange;
 
         yield return TownScreen.Open;

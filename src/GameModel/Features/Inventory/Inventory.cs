@@ -36,6 +36,27 @@ public static class Inventory
 /// <summary>Opens chests of one slot: preview popup, then x10/x1 batches on the results screen.</summary>
 public static class ChestOpening
 {
+    /// <summary>
+    ///     How many of the slot's chest the game holds: a slot is named after its chest code ("/Epic",
+    ///     "/Golden", "/mysteryBox"). Null for a name none of the chest kinds knows, or when unreadable.
+    /// </summary>
+    public static int? CountFromGame(string slotPath) => Firebot.GameModel.Shared.GameState.Get($"chest count {slotPath}", () =>
+    {
+        var name = slotPath.TrimStart('/');
+        var h = Il2Cpp.GameInitialize.HandlerLoader;
+        if (name.Equals("mysteryBox", StringComparison.OrdinalIgnoreCase))
+            return (int)h.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.MysteryBox).Amount;
+        if (name.Equals("oraclesGift", StringComparison.OrdinalIgnoreCase))
+            return (int)h.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.OraclesGift).Amount;
+        foreach (var kv in h.GearChestHandler.gearChests)
+            if (kv.Key.ToString() == name) return kv.Value.amount;
+        foreach (var kv in h.JewelChestHandler.jewelChests)
+            if (kv.Key.ToString() == name) return kv.Value.amount;
+        foreach (var kv in h.CelestialChestHandler.celestialChests)
+            if (kv.Key.ToString() == name) return kv.Value.amount;
+        throw new InvalidOperationException($"no chest kind named {name}");
+    });
+
     // The reveal animation (longer for rarer chests) outlasts the standard interaction delay: a Golden
     // x10 took ~8 s (01/10). The polls end as soon as a button or popup shows, so only a stall waits it out.
     private const int MaxChestTransitionPolls = 50;
@@ -55,7 +76,8 @@ public static class ChestOpening
         var quantityTxt = new GameText(slotPath + "/quantity", Inventory.Content);
         if (!slotClickable) yield break;
 
-        var remainingToOpen = Math.Min(quantityTxt.GetParsedInt() - targetRemaining, maxToOpen);
+        // The game's count of this chest, the slot's quantity text as the fallback.
+        var remainingToOpen = Math.Min((CountFromGame(slotPath) ?? quantityTxt.GetParsedInt()) - targetRemaining, maxToOpen);
         if (remainingToOpen <= 0) yield break;
 
         var totalToOpen = remainingToOpen;

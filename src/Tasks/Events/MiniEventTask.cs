@@ -25,6 +25,8 @@ public class MiniEventTask : EventTask
 
     protected override bool? RunningFromGame => GameState.MiniEventRunning;
 
+    protected override List<(ChallengeKind Kind, int Done, int Target, bool Claimable)> ChallengesFromGame => GameState.MiniChallenges;
+
     protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)
     {
         yield return MiniEvents.OpenChallengesTab;

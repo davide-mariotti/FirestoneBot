@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Events;
 using Firebot.GameModel.Primitives;
@@ -57,6 +58,20 @@ public abstract class EventTask : BotTask
     /// <summary>The game says whether this event runs for the account; null when it can't.</summary>
     protected abstract bool? RunningFromGame { get; }
 
+    /// <summary>The event's challenges from the game (GameState.CalendarChallenges / MiniChallenges); null for none or unreadable.</summary>
+    protected virtual List<(ChallengeKind Kind, int Done, int Target, bool Claimable)> ChallengesFromGame => null;
+
+    /// <summary>A currency the event's own shop spends, when it has one; growing means a visit has something to buy.</summary>
+    protected virtual double? ShopCurrency => null;
+
+    // The game's challenges matched the cards of a visit: from then on they decide alone.
+    private bool _challengesTrusted;
+    private double? _shopCurrencySeen;
+
+    // The handled challenges, as the cards and the data both give them: what the two are compared on.
+    private static string Key(IEnumerable<(ChallengeKind Kind, int Done, int Target)> challenges) => string.Join(", ",
+        challenges.Where(c => c.Kind != ChallengeKind.NotHandled).Select(c => $"{c.Kind} {c.Done}/{c.Target}").OrderBy(k => k, StringComparer.Ordinal));
+
     // A visit still happens this often with the game saying the event doesn't run, and once a session,
     // so a wrong read shows up as a mismatch instead of an event left unvisited.
     private static readonly TimeSpan NotRunningRecheck = TimeSpan.FromHours(6);
@@ -68,6 +83,16 @@ public abstract class EventTask : BotTask
         if (running == false && _lastVisit is { } last && DateTime.Now - last < NotRunningRecheck)
         {
             Debug("[INFO] From the game: not running for this account - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
+        // Nothing to claim, nothing the bot can do and no shop money in since the last visit: the game says so.
+        if (running != false && _challengesTrusted && ChallengesFromGame is { } fromGame &&
+            !fromGame.Any(c => c.Claimable) && !fromGame.Any(c => c.Kind != ChallengeKind.NotHandled && c.Done < c.Target) &&
+            !(ShopCurrency > _shopCurrencySeen))
+        {
+            Debug("[INFO] From the game: no challenge to claim or do, no new event currency - not opening.");
             NextRunTime = DateTime.Now + RecheckDelay;
             yield break;
         }
@@ -92,6 +117,17 @@ public abstract class EventTask : BotTask
             var challenges = new List<(string Text, string Progress)>();
             yield return Visit(challenges, t => title = t);
             if (title == null) yield break;
+
+            // The cards against the game's own challenges (read after the claims, as the cards are).
+            if (ChallengesFromGame is { } data)
+            {
+                var screen = Key(challenges.Select(c => ChallengeParser.Parse(c.Text, c.Progress)).Select(c => (c.Kind, c.Done, c.Target)));
+                var game = Key(data.Select(c => (c.Kind, c.Done, c.Target)));
+                _challengesTrusted = screen == game;
+                GameState.Compare($"event {GetType().Name} challenges", game, screen);
+            }
+
+            _shopCurrencySeen = ShopCurrency;
 
             // Screens closed: every action navigates on its own.
             var steps = 0;

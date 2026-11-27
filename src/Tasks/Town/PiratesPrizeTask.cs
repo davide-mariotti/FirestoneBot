@@ -33,6 +33,15 @@ public class PiratesPrizeTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The game counts the unclaimed rewards: none, and the ~20 tiers aren't walked.
+        if (!IsNotificationVisible() &&
+            GameState.Get("pirate's prize unclaimed", () => GameState.H.PirateShipHandler.GetPiratePrizeUnclaimedRewards()) == 0)
+        {
+            Debug("[INFO] From the game: no Pirate's Prize reward to claim - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.PiratesPrize;
 
         // No tab click: Pirate's Prize is already open, and clicking its tab resets the list's scroll.
