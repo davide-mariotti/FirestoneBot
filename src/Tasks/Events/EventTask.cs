@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Events;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.Tasks.Events;
@@ -46,8 +47,24 @@ public abstract class EventTask : BotTask
     // A round is ~15 s of event screens plus the actions (a crystal hit ~2 s, a tavern draw ~4 s).
     internal override float? MaxRuntimeSeconds => 600;
 
+    // The game's event state when the last visit had nothing to do (claims included, it's read after),
+    // and since when: an unchanged state means the same visit again, so it's skipped - though never for
+    // longer than MaxQuiet (event currency and StayOnline keep growing on their own).
+    private string _quietSignature;
+    private DateTime _quietSince;
+    private static readonly TimeSpan MaxQuiet = TimeSpan.FromHours(3);
+
     public override IEnumerator Execute()
     {
+        if (_quietSignature != null && GameState.EventsSignature == _quietSignature && DateTime.Now - _quietSince < MaxQuiet)
+        {
+            Debug("[INFO] The game's event state hasn't moved since a visit with nothing to do - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
+        _quietSignature = null;
+
         // The Done each kind must show after this run's own steps (progress counts on across tiers).
         // A card behind it is a read taken before the game caught up - acting on it would do the
         // same steps twice.
@@ -89,7 +106,13 @@ public abstract class EventTask : BotTask
                 steps += done;
             }
 
-            if (steps == 0) yield break;
+            if (steps == 0)
+            {
+                _quietSignature = GameState.EventsSignature;
+                _quietSince = DateTime.Now;
+                yield break;
+            }
+
             Debug($"[INFO] Event '{title}': {steps} step(s) done in round {round} - reopening to claim.");
         }
     }

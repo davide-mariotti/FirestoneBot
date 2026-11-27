@@ -26,10 +26,22 @@ public class SystemMailTask : BotTask
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
 
+    // The game's mailbox says when there is something to claim: mail turns up at any time, and every
+    // 6-hour run opened all of it (38-72 s on 26/11) to claim nothing most times.
+    public override bool IsNotificationVisible() => GameState.ClaimableMails is { } claimable
+        ? IsEnabled && MeetsLevelRequirement && claimable > 0
+        : base.IsNotificationVisible();
+
     private const int MaxIterations = 200;
 
     public override IEnumerator Execute()
     {
+        if (GameState.ClaimableMails == 0)
+        {
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return SystemMail.Open;
 
         var index = 0;
@@ -38,6 +50,7 @@ public class SystemMailTask : BotTask
         while (index < SystemMail.MailList.GetChildren().Count() && iterations < MaxIterations)
         {
             iterations++;
+            if (GameState.ClaimableMails == 0) break; // everything claimed: the rest need no click
             var mail = SystemMail.MailList.GetChild(index);
             if (mail == null) break;
 

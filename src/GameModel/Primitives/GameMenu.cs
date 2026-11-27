@@ -26,7 +26,17 @@ public static class GameMenu
         Clicks
     }
 
-    private static readonly Dictionary<MenuName, Way> Known = new();
+    // Neither game call opened these on Steam-27 (26-27/11, every session), so a restart doesn't pay
+    // for finding that out again. The game's navigation did open the Tavern, Exotic Merchant, World
+    // Map, Alchemist and Forbidden Knowledge.
+    private static readonly Dictionary<MenuName, Way> Known = new()
+    {
+        [MenuName.MagicQuarters] = Way.Clicks,
+        [MenuName.Library] = Way.Clicks,
+        [MenuName.TownGuild] = Way.Clicks,
+        [MenuName.Awakening] = Way.Clicks,
+        [MenuName.PirateShip] = Way.Clicks
+    };
 
     /// <summary>
     ///     Opens `menu` unless the game already has it open (a badge's shortcut often got there first):

@@ -167,6 +167,39 @@ public static class GameState
         return cheapest;
     });
 
+    // ---- Events.
+
+    /// <summary>
+    ///     A fingerprint of the events' challenge state (calendar events and mini-events): equal means
+    ///     nothing progressed or was claimed. StayOnline's progress is left out, as it moves every second.
+    /// </summary>
+    public static string EventsSignature => GetRef("events state", () =>
+    {
+        var sb = new System.Text.StringBuilder();
+        var calendar = H.CalendarEventsHandler;
+        foreach (var e in calendar.calendarEvents) sb.Append($"e{e.c}:{e.s}:{e.e}:{e.u};");
+        foreach (var kv in calendar.eventChallengesProgress)
+            sb.Append(kv.Key == CalendarEventChallenges.StayOnline ? $"c{kv.Key}:{kv.Value.c};" : $"c{kv.Key}:{kv.Value.p}:{kv.Value.c};");
+        sb.Append($"t{calendar.totalTokensCollected};");
+        foreach (var m in H.MiniEventsHandler.activeChallenges)
+            sb.Append($"m{m.challengeCode}:{m.currentProgress}:{m.completed}:{m.claimed};");
+        return sb.ToString();
+    });
+
+    // ---- Mail and Path of Glory.
+
+    /// <summary>Mails with a reward not claimed yet.</summary>
+    public static int? ClaimableMails => Get("system mail", () =>
+    {
+        var claimable = 0;
+        foreach (var kv in H.SystemMailHandler.systemMails)
+            if (!kv.Value.claimed && (kv.Value.rewards?.Count ?? 0) + (kv.Value.gameItems?.Count ?? 0) > 0)
+                claimable++;
+        return claimable;
+    });
+
+    public static int? BattlePassUnclaimed => Get("path of glory", () => H.BattlePassHandler.unclaimedRewards);
+
     // ---- Daily free claims: their handlers keep the last claim's server time.
 
     public static bool? OraclesGiftClaimable => Get("oracle's gift last claim", () => H.OraclesGiftDailyClaimHandler.lastClaim) is { } last
