@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Firebot.Core;
 using Firebot.Core.Tasks;
+using Firebot.GameModel.Shared;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Features.Inventory;
 using Firebot.GameModel.Features.Town;
@@ -74,7 +75,9 @@ public class EmblemMarketTask : BotTask
         yield return Poll.Until(() => ExoticMerchant.EmblemOffers(grid).Count > 0);
 
         var counter = new GameText(counterPath);
-        int Emblems() => (int)counter.GetParsedDoubleAbbreviated(-1);
+        // The game's own balance of the category's emblem, the counter (shown only with the category open) as the fallback.
+        var code = currency.Contains("Valor", StringComparison.OrdinalIgnoreCase) ? Il2Cpp.CurrencyCode.EmblemOfValor : Il2Cpp.CurrencyCode.EmblemOfCourage;
+        int Emblems() => (int)GameState.Balance(code, () => counter.GetParsedDoubleAbbreviated(-1));
 
         var offer = Rarest(grid);
         if (offer == null)

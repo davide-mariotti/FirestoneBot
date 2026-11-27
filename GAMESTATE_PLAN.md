@@ -11,6 +11,98 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
+## Per una nuova chat: come continuare
+
+Questa sezione basta per riprendere il lavoro senza la conversazione che l'ha prodotto. Il resto del
+file è la storia e il dettaglio.
+
+**Cosa si sta facendo.** Il branch `game-state` porta il bot a decidere dai dati del gioco (gli handler
+IL2CPP raggiungibili da `GameInitialize.HandlerLoader` e `GameInitialize.MenuLoader`) invece che
+leggendo testi e pulsanti dallo schermo. Lo schermo resta solo dove è indispensabile: il click
+dell'azione e, come riserva, quando un dato non si legge. La richiesta dell'utente: "quello che si può
+fare da codice facciamolo".
+
+**Regole che non cambiano** (dettaglio in "Regole" e "Cosa non fare"):
+- solo letture di dati e le stesse chiamate della UI del gioco: `NavigationControl.OpenMenu`,
+  `CloseLastOnMenuStack`, l'`onClick` dei suoi pulsanti, getter puri;
+- mai scrivere campi del gioco, mai chiamare funzioni di rete (`SocketAPI`, `ServerCalls`, `*AskServer`,
+  `*Callback`);
+- ogni lettura passa da `GameState.Get` / `GetRef`, che in caso di errore scrivono
+  `[GameState] fallback ...` una volta per sessione; il chiamante allora torna allo schermo;
+- un dato nuovo si confronta prima con lo schermo (`GameState.Compare` / `CompareTimes`, righe
+  `[GameState] mismatch ...`) e lo si usa solo quando coincide. Sigilli di Hall of Heroes e rarità degli
+  eroi lo fanno da soli, con una chiave in config (`seals_seen`, `rarity_checked`);
+- la spesa di una valuta si conta solo quando la valuta scende davvero (dato del gioco), e un'icona di
+  prezzo diversa da quella attesa ferma il click.
+
+**Dove gira.** PC-Guesly, istanze nelle box Sandboxie `C:\Sandbox\dmari\SteamB<N>`.
+- Il branch gira su **Steam-27** (dal 26/11) e su **Steam-28** (dal 27/11 12:01). **Steam-26 resta su
+  main** come confronto. Le DLL di main per tornare indietro sono in
+  `C:\Repos\FirestoneBot-test-backup\2026-11-26-steam27` e `...\2026-11-27-steam28`.
+- Finché il test non è chiuso, un deploy di main sulla flotta salta Steam-27 e Steam-28.
+- L'altro PC (DESKTOP-ADMIN) è tutto su main.
+
+**Comandi.**
+- Build contro gli assembly della box (il gioco di -27 e -28 è la stessa build, GameAssembly.dll del
+  06/11 11:27):
+  `$env:COMMON_DIR="C:\Program Files (x86)\Steam-17\steamapps\common"; dotnet build C:\Repos\FirestoneBot\src\firebot.csproj -c Release -p:Il2CppAssembliesDir="C:\Sandbox\dmari\SteamB27\drive\C\Program Files (x86)\Steam-27\steamapps\common\Firestone\MelonLoader\Il2CppAssemblies"`
+- Test dei pianificatori: `dotnet test tests\Firebot.TalentEngine.Tests` (96 al 27/11).
+- Deploy su un'istanza di test, con riavvio immediato (l'utente vuole sempre il riavvio fatto da noi,
+  mai lasciato al watchdog):
+  `powershell -File tools\Restart\deploy_test.ps1 -Instance 27`. Con
+  `-ResetTasks treeoflifetask,beaststask` i task elencati partono subito; con `-FullRead` anche la
+  lettura completa di Hall of Heroes.
+- Log: `C:\Sandbox\dmari\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\Latest.log`,
+  e `Logs\` per le sessioni precedenti. Il gioco li tiene aperti: vanno letti in condivisione.
+  - `[Task] X finished in Ns` dà la durata di ogni giro;
+  - `From the game: ... - not opening` è un giro deciso dai dati;
+  - `[GameState] mismatch` / `fallback` sono da guardare;
+  - lo stato salvato dei task è in `...\UserData\FirebotPreferences.cfg`, nella box.
+- Dump dell'API del gioco: `tests\GameApi\CoreASM.dll.api.txt` (e `SharedASM`), gitignored e non da
+  committare (il repo è pubblico). Ci sono nomi e tipi di campi e metodi, non i tipi delle proprietà:
+  per quelli si compila una riga di prova e si legge l'errore del compilatore. Un membro statico va
+  chiamato col nome del tipo, `Il2Cpp.X.membro` (il compilatore lo dice con CS0176).
+
+**Il test e il merge.** Si chiude con 12 ore senza problemi dall'ultimo deploy. I criteri sono in
+"Criteri per estendere alla flotta". Se passa, il punto 7 del piano: togliere `GameStateProbe`, merge
+`--no-ff` su main, deploy alla flotta su entrambi i PC, azzerare lo stato dei task cambiati (memoria
+`reset-task-state-on-rollout`: i `next_run_time_internal`; per `hallofheroestask` anche
+`seals_seen = "-"` e `rarity_checked = ""`), aggiornare README e TESTING.md. I controlli orari e la
+valutazione erano cron della sessione: una chat nuova li deve rifare, o controllare a mano.
+
+**Fatto e verificato dal vivo** (dettaglio e numeri in "Stato"):
+- badge, timer e navigazione dal gioco;
+- decidono dai dati: ricerche, esperimenti con l'accelerazione gratuita, spedizioni, missioni, Empower,
+  Oracle's Gift, mail, Path of Glory, eventi, Quests, Personal Tree, Forbidden Knowledge, Bestie
+  (livelli), guardiani (evoluzione, Holy, addestramento), Pharaoh's Vault, Awakening, War Machine
+  Rarity, Daily Missions;
+- Hall of Heroes: sigilli e lettura completa dai dati, 13 eroi su 13 identici allo schermo su -27 e
+  -28;
+- i saldi letti da `CurrencyHandler` invece che dai contatori.
+
+**Fatto il 27/11 pomeriggio, da verificare dal vivo:**
+- rarità delle Bestie con le Cobra Keys (`BeastsTask.RaiseRarities`);
+- upgrade degli artefatti: rarità con Golden Keys, livelli con Twilight Hourglass
+  (`AncientArtifactTask.Raise`);
+- rarità degli eroi saltata per gli eroi a cui i dati dicono che manca un requisito (`rarity_checked`);
+- quest giornaliere (Collector, Gamer, Merchant, Miner) dai dati (`CharacterScreen.DailyQuestFromGame`):
+  il primo giro vero è al reset del 28/11;
+- addestramento dei guardiani: timer e decisione di non aprire dai dati.
+
+**In corso: i soul stone** (eroi a livello 200). `HallOfHeroesTask.LookAtSoulstones` per ora guarda e
+basta, una volta per sessione. Scrive i soul stone di ogni eroe dal gioco, Soul Shards e Soul Stones in
+mano, e le righe della scheda Soulstones (pulsante, prezzo, icona). La spesa si scrive quando la valuta
+del prezzo è certa. Pezzi pronti: `HOHEnchantSubmenu.categorySoulstonesButton`,
+`soulstoneInteractionDict` (slot → `EnchantSoulstoneItemInteraction`, con `enchantSoulstoneItemButton`
+e `CanBeEnchanted()`) e `HeroServer.soulstoneDict`.
+
+**Prossimi candidati** (dati già trovati):
+- Chaos Rift: manca la valuta dei colpi;
+- il ritiro degli oggetti distribuiti dalla gilda (`ClaimMemberRewardsFromGuildItems`): da chiedere
+  all'utente se la sua gilda li distribuisce;
+- Frostfire, routine di push con le pergamene e vendita delle pergamene: in pausa per scelta
+  dell'utente.
+
 ## Stato (27/11 12:23, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a

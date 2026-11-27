@@ -33,7 +33,7 @@ public class BeastsTask : BotTask
     public override IEnumerator Execute()
     {
         // No beast to release (the badge) and no level the Soul Embers pay: nothing to open the screen for.
-        if (!IsNotificationVisible() && Beasts.FromGame is { } data && data.Embers < data.Cheapest)
+        if (!IsNotificationVisible() && Beasts.FromGame is { } data && data.Embers < data.Cheapest && Beasts.RarityReady is { Count: 0 })
         {
             Debug($"[INFO] From the game: {data.Embers} Soul Embers, {data.Owned.Count} owned, cheapest level " +
                   $"{(data.Cheapest == int.MaxValue ? "- (all maxed)" : data.Cheapest.ToString())} - not opening.");
@@ -117,10 +117,55 @@ public class BeastsTask : BotTask
 
         Debug($"[INFO] Beasts: {owned} owned ('{Beasts.CountText}'), {levels} level(s) bought.");
 
+        yield return RaiseRarities();
+
         yield return Beasts.Close;
         yield return ScarabGameScreen.Close;
         yield return TownScreen.Close;
 
         NextRunTime = DateTime.Now + RecheckDelay;
+    }
+
+    /// <summary>
+    ///     Rarity, paid in Cobra Keys (the user's request, 27/11): each beast the game says is ready, cheapest
+    ///     first, only while the popup's price is a Cobra Key and counted once the keys drop.
+    /// </summary>
+    private IEnumerator RaiseRarities()
+    {
+        var raised = 0;
+        for (var step = 0; step < 10 && Beasts.RarityReady is { Count: > 0 } ready; step++)
+        {
+            var (code, cost) = ready[0];
+            var index = Beasts.IndexOf(code);
+            if (index < 0 || !Beasts.TrySelect(index)) break;
+            yield return SelectDelay;
+            yield return Beasts.OpenRarityPopup;
+
+            var btn = BeastModify.ModifyBtn;
+            var icon = BeastModify.CostIcon;
+            var before = GameState.Currency(Il2Cpp.CurrencyCode.CobraKey) ?? -1;
+            // The Cobra Key's sprite is 'snakeKey64' (27/11).
+            if (!btn.IsClickable() || !icon.Contains("snakeKey", StringComparison.OrdinalIgnoreCase))
+            {
+                Debug($"[INFO] Beasts: {code} rarity not bought - button clickable={btn.IsClickable()}, price in '{icon}'.");
+                yield return BeastModify.Close;
+                break;
+            }
+
+            yield return btn.Click();
+            yield return Poll.Until(() => GameState.Currency(Il2Cpp.CurrencyCode.CobraKey) < before, 30, 0.2f);
+            var after = GameState.Currency(Il2Cpp.CurrencyCode.CobraKey) ?? -1;
+            yield return BeastModify.Close;
+            if (after >= before)
+            {
+                Debug($"[FAILED] Beasts: {code} rarity clicked ({cost} Cobra Keys) but the keys stayed at {before}.");
+                break;
+            }
+
+            raised++;
+            Debug($"[INFO] Beasts: {code} rarity raised, Cobra Keys {before} -> {after}.");
+        }
+
+        if (raised > 0) Debug($"[INFO] Beasts: {raised} rarity step(s).");
     }
 }

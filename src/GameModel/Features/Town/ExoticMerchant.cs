@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Firebot.Utilities;
 using Il2Cpp;
@@ -22,7 +23,7 @@ public static class ExoticMerchant
     public static GameElement UpgradesList => new(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradesListRoot);
 
     /// <summary>-1 when unreadable.</summary>
-    public static int CoinCount => (int)new GameText(Paths.ExoticMerchantLoc.CoinCountTxt).GetParsedDoubleAbbreviated(-1);
+    public static int CoinCount => (int)GameState.Balance(Il2Cpp.CurrencyCode.ExoticCoin, () => new GameText(Paths.ExoticMerchantLoc.CoinCountTxt).GetParsedDoubleAbbreviated(-1));
 
     /// <summary>
     ///     Every upgrade showing a price in Exotic Coins, affordable or not (maxed and level-locked ones

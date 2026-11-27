@@ -61,6 +61,9 @@ public class MeteoriteResearchTask : BotTask
     // Large balances show abbreviated ("12.5K").
     private static GameText MeteoriteBalanceTxt => new(Paths.MenusLoc.LibraryLoc.MeteoriteBalanceTxt);
 
+    // The game's balance, the Library's text as the fallback.
+    private static double MeteoriteBalance => GameState.Balance(Il2Cpp.CurrencyCode.Meteorite, () => MeteoriteBalanceTxt.GetParsedDoubleAbbreviated());
+
     public override IEnumerator Execute()
     {
         // The game says whether anything can be bought without opening the Library: on Steam-27 (26/11)
@@ -81,7 +84,7 @@ public class MeteoriteResearchTask : BotTask
         yield return Library.OpenMeteoriteResearchTab;
 
         var minReserve = _minMeteoriteReserve?.Value ?? 3000;
-        var balance = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
+        var balance = MeteoriteBalance;
         Debug($"[INFO] Meteorite balance {balance} ('{MeteoriteBalanceTxt.GetParsedText()}'), reserve {minReserve}.");
         if (minReserve > 0 && balance < minReserve)
             Debug("[INFO] Below the reserve - skipping research this run.");
@@ -93,7 +96,7 @@ public class MeteoriteResearchTask : BotTask
         if (minReserve <= 0 || balance >= minReserve)
         {
             yield return RunResearch(minReserve, MaxLevelsPerRun);
-            bought = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated() < balance;
+            bought = MeteoriteBalance < balance;
         }
 
         NextRunTime = DateTime.Now + (bought ? NextNodeDelay : TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60));
@@ -311,13 +314,13 @@ public class MeteoriteResearchTask : BotTask
         for (; researched < maxLevels; researched++)
         {
             var cost = MeteoriteResearchPreview.Cost;
-            var before = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
+            var before = MeteoriteBalance;
             if (!MeteoriteResearchPreview.IsUnlocked || cost <= 0 || before - cost < minReserve) break;
 
             yield return MeteoriteResearchPreview.Research;
-            yield return Poll.Until(() => MeteoriteBalanceTxt.GetParsedDoubleAbbreviated() < before);
+            yield return Poll.Until(() => MeteoriteBalance < before);
 
-            var after = MeteoriteBalanceTxt.GetParsedDoubleAbbreviated();
+            var after = MeteoriteBalance;
             Logger.Debug($"[INFO] Meteorite research '{MeteoriteResearchPreview.Name}' for {cost}: balance {before} -> {after}.");
             if (after >= before) break;
         }

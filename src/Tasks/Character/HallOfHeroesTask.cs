@@ -70,6 +70,13 @@ public class HallOfHeroesTask : BotTask
             "(auto-managed, don't edit) - when hero_snapshot was last fully rebuilt"
         );
 
+        _rarityChecked = category.CreateEntry(
+            "rarity_checked",
+            "",
+            "Rarity Checked",
+            "(auto-managed, don't edit) - 'ok' once the game's rarity requirements matched every hero's Rarity tab"
+        );
+
         _sealsSeen = category.CreateEntry(
             "seals_seen",
             "-",
@@ -79,6 +86,7 @@ public class HallOfHeroesTask : BotTask
     }
 
     private MelonPreferences_Entry<string> _sealsSeen;
+    private MelonPreferences_Entry<string> _rarityChecked;
 
     // "Name Slot/level asked", sorted: what the seals tabs and the game's data are compared on.
     private static string SealKeys(IEnumerable<HeroState> heroes) => string.Join(", ", heroes.SelectMany(h =>
@@ -182,6 +190,7 @@ public class HallOfHeroesTask : BotTask
         if (!_stop) yield return UnlockTiers(!fullRead || fromGame);
         if (!_stop && !_gearBlocked) yield return Spend(EnchantCategory.Gear);
         if (!_stop) yield return Spend(EnchantCategory.Jewels);
+        if (!_stop) yield return SpendSoulstones();
         if (!_stop) yield return UseSeals(_heroes.Where(EnchantPlanner.SealReached).ToList());
         // Last: its tab hides the counters the enchants read. Once a day, with the full read.
         if (!_stop && fullRead) yield return IncreaseRarity();
@@ -239,6 +248,9 @@ public class HallOfHeroesTask : BotTask
         if (EnchantPlanner.GatingOrder(heroes).Any(h => EnchantPlanner.NextGatingSlot(h) is { } s && s.Cost <= crystals)) return false;
         if (EnchantPlanner.Plan(heroes, EnchantCategory.Gear, (long)crystals).Count > 0) return false;
         if (EnchantPlanner.Plan(heroes, EnchantCategory.Jewels, (long)shards).Count > 0) return false;
+        var soulShards = GameState.Currency(Il2Cpp.CurrencyCode.SoulShard);
+        var soulstones = HallOfHeroesModel.SoulstoneCandidates(heroes.Select(h => h.Name));
+        if (soulShards == null || soulstones == null || soulstones.Any(c => c.Cost <= soulShards)) return false;
 
         why = $"{heroes.Count} heroes, no seal to use (waiting: {SealsWaiting(heroes)}), " +
               $"{crystals:0} Void Crystals and {shards:0} Ethereal Shards buy nothing";
@@ -735,11 +747,36 @@ public class HallOfHeroesTask : BotTask
         const int maxSteps = 6; // Common to Angel
 
         var target = FormationTask.Target;
-        foreach (var hero in _heroes.OrderBy(h => target.Contains(h.Name) ? 0 : h.InFormation ? 1 : 2).ToList())
+        // A hero the game says misses a requirement is skipped once its data matched every tab (one tab a
+        // hero, 1.6 s each, all 13 read "nothing bought" on 27/11); a mismatch goes back to reading them all.
+        var trusted = _rarityChecked.Value == "ok";
+        var matched = 0;
+        var mismatched = false;
+        var skipped = new List<string>();
+        var heroes = _heroes.OrderBy(h => target.Contains(h.Name) ? 0 : h.InFormation ? 1 : 2).ToList();
+        foreach (var hero in heroes)
         {
+            var fromGame = HallOfHeroesModel.RarityRequirementsFromGame(hero.Name);
+            if (trusted && fromGame != null && (fromGame == "max" || fromGame.Contains('-')))
+            {
+                skipped.Add(hero.Name);
+                continue;
+            }
+
             yield return SelectHero(hero);
             if (_stop) yield break;
             yield return HallOfHeroesModel.Rarity.Open();
+
+            var onScreen = HallOfHeroesModel.RarityRequirementsOnScreen(HallOfHeroesModel.Rarity.Requirements);
+            if (fromGame != null && fromGame != "max" && onScreen.Length > 0)
+            {
+                if (fromGame == onScreen) matched++;
+                else
+                {
+                    mismatched = true;
+                    GameState.Compare($"hero {hero.Name} rarity requirements", fromGame, onScreen);
+                }
+            }
 
             for (var step = 0; step < maxSteps; step++)
             {
@@ -782,6 +819,79 @@ public class HallOfHeroesTask : BotTask
                 if (to == from || to.Length == 0) break;
             }
         }
+
+        if (mismatched) _rarityChecked.Value = "";
+        else if (!trusted && matched == heroes.Count) _rarityChecked.Value = "ok";
+        if (skipped.Count > 0)
+            Debug($"[INFO] Hero rarity from the game, a requirement short: {string.Join(", ", skipped)} - their tabs not opened.");
+    }
+
+    private const int MaxSoulstoneEnchants = 40;
+
+    /// <summary>
+    ///     Soul Shards on soulstone enchants (heroes past level 200, the user's request 27/11): the lowest
+    ///     level first, the formation's at a tie, each while the shards cover it, clicked only when the
+    ///     game says the row can be enchanted with its price in Soul Shards, counted once they drop. On
+    ///     Steam-27 and -28 every stone was at 0, 30 shards a level, 2,600 shards in hand.
+    /// </summary>
+    private IEnumerator SpendSoulstones()
+    {
+        var bought = 0;
+        var refused = new HashSet<string>();
+        string open = null;
+        while (bought < MaxSoulstoneEnchants && !_stop)
+        {
+            var shards = GameState.Currency(Il2Cpp.CurrencyCode.SoulShard) ?? -1;
+            var next = HallOfHeroesModel.SoulstoneCandidates(_heroes.Select(h => h.Name))?
+                .Where(c => !refused.Contains($"{c.Hero} {c.Slot}"))
+                .OrderBy(c => c.Level).ThenByDescending(c => _heroes.First(h => h.Name == c.Hero).InFormation).ThenBy(c => c.Cost)
+                .FirstOrDefault();
+            if (next is not { Hero: not null } step || step.Cost > shards) break;
+
+            var hero = _heroes.First(h => h.Name == step.Hero);
+            if (open != hero.Name)
+            {
+                yield return SelectHero(hero);
+                if (_stop) yield break;
+                yield return HallOfHeroesModel.Enchanting.Open(false);
+                GameState.Get("soulstones tab", () =>
+                {
+                    Il2Cpp.GameInitialize.MenuLoader.HOHEnchantSubmenu.categorySoulstonesButton.onClick.Invoke();
+                    return true;
+                });
+                yield return Poll.AfterClick("soulstones tab");
+                open = hero.Name;
+            }
+
+            var clicked = GameState.Get("soulstone enchant", () =>
+            {
+                var row = Il2Cpp.GameInitialize.MenuLoader.HOHEnchantSubmenu.soulstoneInteractionDict[step.Slot];
+                var button = row.enchantSoulstoneItemButton;
+                var icon = button.GetComponentsInChildren<UnityEngine.UI.Image>(false).Any(i => i.sprite != null && i.sprite.name == "soulShard64");
+                if (!row.CanBeEnchanted() || !button.interactable || !icon) return false;
+                button.onClick.Invoke();
+                return true;
+            });
+            if (clicked != true)
+            {
+                Debug($"[INFO] Soulstone {hero.Name} {step.Slot} {step.Level}: not enchantable on screen - skipped this run.");
+                refused.Add($"{step.Hero} {step.Slot}");
+                continue;
+            }
+
+            yield return Poll.Until(() => GameState.Currency(Il2Cpp.CurrencyCode.SoulShard) < shards, 30, 0.2f);
+            var after = GameState.Currency(Il2Cpp.CurrencyCode.SoulShard) ?? -1;
+            if (after >= shards)
+            {
+                Debug($"[FAILED] Soulstone {hero.Name} {step.Slot}: clicked ({step.Cost:0} Soul Shards) but they stayed at {shards:0}.");
+                break;
+            }
+
+            bought++;
+            Debug($"[INFO] Soulstone {step.Slot} {hero.Name} {step.Level}->{step.Level + 1} ({step.Cost:0} Soul Shards), {shards:0} -> {after:0}.");
+        }
+
+        if (bought > 0) Debug($"[INFO] Soulstones: {bought} enchant(s).");
     }
 
     /// <summary>The counter at the top, -1 (and a [FAILED] line) when it doesn't read as a number.</summary>

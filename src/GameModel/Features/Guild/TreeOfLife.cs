@@ -89,7 +89,7 @@ public static class TreeOfLife
         (int)(GameState.Get("personal tree cost", () => u.Cost().GetDecrypted()) ?? 0));
 
     /// <summary>Expedition Tokens on hand ("1.107"), from the Personal tab's counter; -1 when it doesn't read.</summary>
-    public static int Tokens => (int)new GameText(Paths.TreeOfLifeLoc.TokenCountTxt).GetParsedDoubleAbbreviated(-1);
+    public static int Tokens => (int)GameState.Balance(CurrencyCode.ExpeditionToken, () => new GameText(Paths.TreeOfLifeLoc.TokenCountTxt).GetParsedDoubleAbbreviated(-1));
 
     public static int PersonalNodeLevel(int index) => (int?)Upgrade(index)?.level.GetDecrypted() ?? -1;
 

@@ -245,6 +245,12 @@ public static class GameState
 
     public static double? Currency(CurrencyCode code) => Get($"currency {code}", () => H.CurrencyHandler.GetCurrency(code).Amount);
 
+    /// <summary>
+    ///     A balance from the game, the counter's text only when the game can't say: exact, and never the
+    ///     abbreviated "12.5K" or the blank a counter reads while it redraws.
+    /// </summary>
+    public static double Balance(CurrencyCode code, Func<double> screen) => Currency(code) ?? screen();
+
     // ---- Mail and Path of Glory.
 
     /// <summary>Mails with a reward not claimed yet.</summary>

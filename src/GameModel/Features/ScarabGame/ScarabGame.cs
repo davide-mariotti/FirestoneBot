@@ -132,6 +132,37 @@ public static class Beasts
 
     public static IEnumerator OpenUpgradePopup => new GameButton(Paths.BeastsLoc.OpenUpgradePopupBtn).Click();
 
+    public static IEnumerator OpenRarityPopup => new GameButton(Paths.BeastsLoc.OpenIncreaseRarityPopupBtn).Click();
+
+    /// <summary>
+    ///     The owned beasts whose next rarity the game would give now, cheapest first: not at the top
+    ///     rarity, at the level it asks (RequiredLevelForRarity) and its Cobra Keys on hand. Null when unreadable.
+    /// </summary>
+    public static List<(Il2Cpp.BeastCode Code, int Keys)> RarityReady => GameState.GetRef("beast rarity", () =>
+    {
+        var h = GameState.H.BeastHandler;
+        var keys = GameState.H.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.CobraKey).Amount;
+        var ready = new List<(Il2Cpp.BeastCode, int)>();
+        foreach (var kv in h.dictBeast)
+        {
+            var b = kv.Value;
+            if (b.level <= 0 || b.IsMaxRarity()) continue;
+            var next = (Il2Cpp.Rarity)((int)b.rarity + 1);
+            var cost = Il2Cpp.BeastHandler.CalculateCobraKeysForRarity(next);
+            if (cost > 0 && b.level >= Il2Cpp.BeastHandler.RequiredLevelForRarity(next) && keys >= cost) ready.Add((kv.Key, cost));
+        }
+
+        return ready.OrderBy(r => r.Item2).ToList();
+    });
+
+    /// <summary>The list index whose avatar shows this beast; -1 when none does.</summary>
+    public static int IndexOf(Il2Cpp.BeastCode code)
+    {
+        for (var i = 0; i < Count; i++)
+            if (CodeAt(i) == code) return i;
+        return -1;
+    }
+
     public static string CountText => new GameText(Paths.BeastsLoc.BeastCountTxt).GetParsedText();
 
     /// <summary>The beast the list's index-th avatar shows; null when it can't be read.</summary>
@@ -169,7 +200,7 @@ public static class BeastModify
 
     public static string CostIcon => IconSprite.NameAt(Paths.BeastModifyLoc.ModifyCostIcon);
 
-    public static double SoulEmbers => new GameText(Paths.BeastModifyLoc.SoulEmbersTxt).GetParsedDoubleAbbreviated(-1);
+    public static double SoulEmbers => GameState.Balance(Il2Cpp.CurrencyCode.SoulEmber, () => new GameText(Paths.BeastModifyLoc.SoulEmbersTxt).GetParsedDoubleAbbreviated(-1));
 }
 
 /// <summary>The Scarab level reward track.</summary>

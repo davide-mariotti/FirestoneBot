@@ -127,6 +127,63 @@ public static class HallOfHeroes
         return heroes;
     });
 
+    /// <summary>
+    ///     The hero's next rarity requirements as the Rarity tab colours them, from the game:
+    ///     "Gear Items+ Jewels-" (Uncommon asks gear, Rare gear and jewels, Epic on soulstones too).
+    ///     "max" at the top rarity, null when it can't be read.
+    /// </summary>
+    public static string RarityRequirementsFromGame(string name) => GameState.GetRef($"hero rarity {name}", () =>
+    {
+        if (!System.Enum.TryParse<HeroCode>(name, out var code) || !GameState.H.HeroServerHandler.heroesDict.ContainsKey(code)) return null;
+        var h = GameState.H.HeroServerHandler.heroesDict[code];
+        var next = (int)h.heroRarity + 1;
+        if (next > (int)Il2Cpp.Rarity.Celestial) return "max";
+        var parts = new List<string> { "Gear Items" + ((int)h.GetMinimumGearRarity() >= next ? "+" : "-") };
+        if (next >= (int)Il2Cpp.Rarity.Rare) parts.Add("Jewels" + ((int)h.GetMinimumJewelRarity() >= next ? "+" : "-"));
+        if (next >= (int)Il2Cpp.Rarity.Epic) parts.Add("Soulstones" + ((int)h.GetMinimumSoulstoneRarity() >= next ? "+" : "-"));
+        return string.Join(" ", parts);
+    });
+
+    /// <summary>
+    ///     Soulstone enchants the game would allow, by hero: each slot with a stone, below its cap (as
+    ///     gear: enchantsPerRarity times the rarity's number), with its Soul Shard cost. Null when unreadable.
+    /// </summary>
+    public static List<(string Hero, SoulstoneSlot Slot, int Level, double Cost)> SoulstoneCandidates(IEnumerable<string> heroes) =>
+        GameState.GetRef("soulstone candidates", () =>
+        {
+            var list = new List<(string, SoulstoneSlot, int, double)>();
+            foreach (var name in heroes)
+            {
+                if (!System.Enum.TryParse<HeroCode>(name, out var code) || !GameState.H.HeroServerHandler.heroesDict.ContainsKey(code)) continue;
+                var h = GameState.H.HeroServerHandler.heroesDict[code];
+                if (h.soulstoneDict == null) continue;
+                foreach (var kv in h.soulstoneDict)
+                {
+                    var st = kv.Value;
+                    if (st == null || st.rarity == Il2Cpp.Rarity.None || st.enchantCost <= 0) continue;
+                    if (st.enchantLevel >= st.enchantsPerRarity * (int)st.rarity) continue;
+                    list.Add((name, kv.Key, st.enchantLevel, st.enchantCost));
+                }
+            }
+
+            return list;
+        });
+
+    /// <summary>The same from the tab's text: a requirement met is coloured #0FE607.</summary>
+    public static string RarityRequirementsOnScreen(string text)
+    {
+        var parts = new List<string>();
+        foreach (var item in new[] { "Gear Items", "Jewels", "Soulstones" })
+        {
+            var at = text?.IndexOf(item, System.StringComparison.Ordinal) ?? -1;
+            if (at < 0) continue;
+            var colour = text.LastIndexOf("<color=", at, System.StringComparison.Ordinal);
+            parts.Add(item + (colour >= 0 && text.Substring(colour, at - colour).Contains("0FE607") ? "+" : "-"));
+        }
+
+        return string.Join(" ", parts);
+    }
+
     public static IEnumerator Close => new GameButton(Paths.HallOfHeroesLoc.CloseBtn).Click();
 
     public static bool IsOpen => IsShown(Paths.HallOfHeroesLoc.CloseBtn);
@@ -318,7 +375,7 @@ public static class HallOfHeroes
 
         /// <summary>The Contracts counter, -1 when it doesn't read as a number.</summary>
         public static long Contracts =>
-            (long)new GameText(Paths.HallOfHeroesLoc.ContractsTxt).GetParsedDoubleAbbreviated(-1);
+            (long)GameState.Balance(CurrencyCode.Contract, () => new GameText(Paths.HallOfHeroesLoc.ContractsTxt).GetParsedDoubleAbbreviated(-1));
 
         /// <summary>"Common - Cirilo".</summary>
         public static string Current => new GameText(Paths.HallOfHeroesLoc.RaritySubmenuLoc.CurrentTitleTxt).GetParsedText();

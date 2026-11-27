@@ -32,6 +32,19 @@ public class GuardianTrainingTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The training badge lights for a moment after every start (Steam-27 and -28, 27/11: a 10 s run
+        // after each restart, the training hours from done). The game's timer and the dust say it all.
+        var keep = MagicQuarters.Unlocked?.Any(g => g.readyToEvole) == true ? int.MaxValue : _strangeDustReserve?.Value ?? 10000;
+        var perEnlighten = GameState.Get("enlightenment cost", () => (int)Info.enlightenmentDustReq);
+        if (MagicQuarters.TrainingEnd is { } end && end > DateTime.Now && perEnlighten > 0 &&
+            (keep == int.MaxValue || StrangeDust - perEnlighten < keep))
+        {
+            Debug($"[INFO] From the game: training ends {end:HH:mm:ss}, Strange Dust {StrangeDust:0} " +
+                  $"(reserve {(keep == int.MaxValue ? "kept for an evolution" : keep.ToString())}) - not opening.");
+            NextRunTime = end;
+            yield break;
+        }
+
         yield return Notifications.GuardianTraining;
 
         yield return TownScreen.Open;
@@ -52,9 +65,11 @@ public class GuardianTrainingTask : BotTask
                 Debug($"[INFO] Enlightened {target.Name} {done} times: Strange Dust {dust:0} -> {StrangeDust:0} (reserve {reserve}).");
         }
 
-        NextRunTime = MagicQuarters.NextRunTime;
-        // The game's timer, checked against the screen before it replaces it.
-        GameState.CompareTimes("guardian training next", MagicQuarters.TrainingEnd, NextRunTime);
+        // The game's timer (it matched the screen on every run on Steam-27 and -28, 27/11), the screen's as the fallback.
+        var fromScreen = MagicQuarters.NextRunTime;
+        var fromGame = MagicQuarters.TrainingEnd;
+        GameState.CompareTimes("guardian training next", fromGame, fromScreen);
+        NextRunTime = fromGame is { } g && g > DateTime.Now ? g : fromScreen;
 
         yield return MagicQuarters.CloseLockedPopup;
         yield return MagicQuarters.Close;

@@ -1,6 +1,7 @@
 using System.Collections;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town;
@@ -30,7 +31,7 @@ public static class Tavern
         yield return Poll.Until(() => PlayBtn.IsClickable(), MaxAnimationPolls, AnimationPollSeconds);
     }
 
-    public static int GameTokenCount => new GameText(Paths.MenusLoc.TavernLoc.GameTokenCountTxt).GetParsedInt();
+    public static int GameTokenCount => (int)GameState.Balance(Il2Cpp.CurrencyCode.GameToken, () => new GameText(Paths.MenusLoc.TavernLoc.GameTokenCountTxt).GetParsedInt());
 
     private static GameText PlayQuantityTxt => new(Paths.MenusLoc.TavernLoc.QuantityTxt);
 

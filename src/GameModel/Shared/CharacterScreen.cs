@@ -66,8 +66,19 @@ public static class CharacterScreen
     ///     ready, and closes the screen. Listed is false when the quest isn't there or the screen didn't
     ///     open; Done and Target are -1 when the progress text doesn't read.
     /// </summary>
-    public static IEnumerator CheckDailyQuest(string name, Action<(bool Listed, int Done, int Target)> onRead)
+    public static IEnumerator CheckDailyQuest(string name, Action<(bool Listed, int Done, int Target)> onRead, bool settle = false)
     {
+        // The game holds every quest's progress ("cat3/collector_(Daily)"): no screen, opened twice a run
+        // before. A finished quest is left for QuestsTask, which claims whatever the game says is done.
+        if (DailyQuestFromGame(name) is { Listed: true } fromGame)
+        {
+            // After the task's own work the count lands when the server answers.
+            if (settle && fromGame.Done < fromGame.Target)
+                yield return Poll.Until(() => DailyQuestFromGame(name) is { } r && r.Done >= r.Target, 50, 0.1f);
+            onRead(DailyQuestFromGame(name) ?? fromGame);
+            yield break;
+        }
+
         yield return Open();
         yield return OpenQuestsTab;
         yield return OpenDailyQuestsSubTab;
@@ -88,4 +99,21 @@ public static class CharacterScreen
         yield return Close;
         onRead(result);
     }
+
+    /// <summary>The named daily quest ("Collector" for "cat3/collector_(Daily)") from the game; null when unreadable.</summary>
+    public static (bool Listed, int Done, int Target)? DailyQuestFromGame(string name) => GameState.Get($"quest {name}", () =>
+    {
+        foreach (var entry in Il2Cpp.GameInitialize.HandlerLoader.QuestHandler.quests)
+        {
+            var q = entry.Value;
+            if (q.questResetType != Il2Cpp.QuestResetCode.Daily) continue;
+            var key = q.questName ?? "";
+            var start = key.IndexOf('/') + 1;
+            var end = key.IndexOf('_', start);
+            if ((end > start ? key[start..end] : key[start..]).Equals(name, StringComparison.OrdinalIgnoreCase))
+                return (true, q.questProgress, q.questRequirement);
+        }
+
+        return (false, -1, -1);
+    });
 }
