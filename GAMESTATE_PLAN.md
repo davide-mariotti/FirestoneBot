@@ -69,6 +69,18 @@ La sonda della fase 0 resta attiva per tutto il test, per la verifica; va tolta 
 **Velocità.** Steam-27 è passato da 9,7 a **3,43 min/h** di navigazione (23:22-02:09). Nelle stesse ore,
 con main, Steam-26 era a 5,24 e Steam-28 a 9,30.
 
+**Visto durante il test, non è del branch (non si tocca fino al merge):**
+- **Ricerca:** il bot torna nella Library 2-3 minuti prima della fine, ma l'accelerazione non è ancora
+  gratis. Seguono 1-2 giri vuoti da 4 s, finché la ricerca non finisce (Steam-27 alle 04:09 e 04:11;
+  succede anche su main, Steam-26 alle 01:45). Correzione dopo il merge: la finestra gratuita dal gioco
+  (`TimeCost.GetTimeCost(secondi) == 0`) invece dei 180 s di `free_speedup_seconds`.
+- **`FirestoneResearch.IsUnlocked`** lancia `KeyNotFound '0'` su un nodo. Il nodo viene scartato e la
+  scelta va avanti; c'è un `fallback research state` per sessione.
+- **Il badge di Oracle's Gift** resta acceso dopo la riscossione, come su main (Steam-26: doni 2 → 2).
+  Dopo ogni riavvio il bot fa una sola visita.
+- **Il rinnovo delle settimanali** segnala `mismatch`: lo schermo legge "5d 6h" come 5 giorni e 6 minuti,
+  il valore del gioco è giusto.
+
 **Rimandato (resa bassa, rischio non nullo):**
 - **Hall of Heroes dai dati.** I dati ci sono: `Hero.heroGearItems`, `HeroServer.heroGears` e
   `jewelsRaw`; poi `GearItem.EnchantLevel`, `enchantCost`, `enchantsPerRarity` e `itemRarity`; gli slot
