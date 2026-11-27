@@ -152,8 +152,9 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
   non dal conto alla rovescia dello schermo, che finiva qualche secondo prima: su -27 alle 12:45 e alle
   13:32 il bot ha aperto con il claim ancora spento ed è tornato 2 minuti dopo (13:32:14, fine vera
   13:32:15). Con una spedizione in corso non apre prima della fine (+2 s). Senza spedizioni il
-  rinnovo della lista resta quello dello schermo (17:13:02, il dato non c'è). Il ramo "in corso" è da
-  vedere dopo il rinnovo delle 17:13.
+  rinnovo della lista resta quello dello schermo (17:13:02, il dato non c'è). Al rinnovo: su -27 alle
+  17:13 ExploreTheCatacombs, fine del gioco 18:06:07 contro 18:06:08 dello schermo; su -28 alle 17:14
+  TrainTheRecruits, 18:14:11 tutti e due. Il claim a fine spedizione è da vedere alle 18:06 e 18:14.
 - **Badge GuardianTraining "non visto":** è il flag `guardianTrainingNotificationSeen` del gioco, in
   memoria, che ogni riavvio rimette a falso. Da quando Guardian Training decide dai dati (12:44) il
   badge restava acceso fino alla fine dell'addestramento: su -27 e -28 per tutta la sessione 13:29-14:56.
@@ -172,7 +173,20 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
 - **Map Missions, attesa dopo il click su una missione:** il secondo fisso è diventato l'attesa
   dell'anteprima di quella missione (`PreviewMissionPopup.mapMission`, menu `PreviewMission`) più 0,2 s.
   La sonda: 0,89 s la prima volta (caricamento), 0,10 s le successive. Su -28 alle 15:49: 1,19 s e
-  0,40 s; giro con uno speed-up e un avvio in 6,7 s, contro 7,3 s alle 15:43.
+  0,40 s; giro con uno speed-up e un avvio in 6,7 s, contro 7,3 s alle 15:43. Al rinnovo delle 17:13
+  su -27: 4 missioni avviate (squadre 6 → 0) in 7,2 s, attese 1,19 / 0,40 / 0,40 / 0,40 s.
+
+Minuti di task per ora dalle 15:48 alle 17:06 (78 minuti, senza deploy in mezzo): **-27 0,74, -28 1,73
+(8 giri di Map Missions, 56 s), -26 su main 6,16** (Meteorite 220 s, System Mail 74 s, Empower 73 s).
+Badge in quelle ore: su -27 solo TemplePrestige (16:17-16:25, la regola dell'Empower); su -28 i badge
+del riavvio spenti entro il minuto e TemplePrestige 15:48-15:58. Nessun task ripartito a ripetizione
+con il nuovo `BadgeCooldown`.
+
+Gli eventi non attivi (Mini, Trick or Treat, New Player su -27) e Decorated Heroes finito fanno una
+visita a sessione e poi una ogni 6 ore (`_lastVisit` in memoria), 7-8 s l'una: le visite delle 16:04
+venivano dai deploy delle 15:35-15:46, quelle delle 17:08 dal riavvio programmato delle 17:06, e alle
+17:04 su -27 il giro ha detto "not running - not opening" (0,1 s). Con un riavvio ogni 6 ore sono ~3,5
+s/h per account: lasciato com'è, è la verifica che il dato "non attivo" sia giusto.
 
 Dopo ogni riavvio Experiments fa un giro da 3,3 s senza niente da fare: il badge è il "non visto" degli
 slot fermi (`strangeDustExperimentSeen`, `exoticCoinExperimentSeen`; il bot usa solo il Dragon Blood),
