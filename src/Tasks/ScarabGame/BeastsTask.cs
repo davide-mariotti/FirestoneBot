@@ -32,6 +32,15 @@ public class BeastsTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // No beast to release (the badge) and no level the Soul Embers pay: nothing to open the screen for.
+        if (!IsNotificationVisible() && Beasts.FromGame is { } data && data.Embers < data.Cheapest)
+        {
+            Debug($"[INFO] From the game: {data.Embers} Soul Embers, {data.Owned.Count} owned, cheapest level " +
+                  $"{(data.Cheapest == int.MaxValue ? "- (all maxed)" : data.Cheapest.ToString())} - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.ScarabGameBeastRelease;
 
         yield return TownScreen.Open;
@@ -49,6 +58,15 @@ public class BeastsTask : BotTask
 
         // The list holds all 30 beasts and seems to re-sort after a level-up (30/09: a fresh beast's
         // saved index pointed elsewhere on the next round), so every round looks for the owned ones again.
+        // The game's data names them by each avatar's beast code, so only those get selected (selecting
+        // all 30 took 25-60 s for 3 owned, Steam-28 26/11); read after the release, which adds one.
+        var known = Beasts.FromGame?.Owned;
+        if (known != null && !Beasts.CountText.StartsWith($"{known.Count}/"))
+        {
+            GameState.Compare("beasts owned", $"{known.Count}", Beasts.CountText);
+            known = null;
+        }
+
         var owned = 0;
         var levels = 0;
         for (var round = 0; round < MaxRounds; round++)
@@ -57,6 +75,7 @@ public class BeastsTask : BotTask
             owned = 0;
             for (var i = 0; i < Beasts.Count; i++)
             {
+                if (known != null && (Beasts.CodeAt(i) is not { } code || !known.Contains(code))) continue;
                 if (!Beasts.TrySelect(i)) continue;
 
                 yield return SelectDelay;

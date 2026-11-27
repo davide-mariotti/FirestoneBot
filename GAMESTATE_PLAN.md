@@ -11,10 +11,19 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
-## Stato (27/11 07:19, branch `game-state`)
+## Stato (27/11 08:33, branch `game-state`)
 
-**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 07:19 (finisce alle 19:19)**, per il Personal
-Tree chiesto dall'utente. Ricontrollava ogni 6 ore, così alle 07:21 c'erano 1978 gettoni fermi da prima
+**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 08:33 (finisce alle 20:33)**, per Forbidden
+Knowledge e Beasts, chiesti dall'utente:
+- **Forbidden Knowledge** apriva l'anteprima di ogni nodo delle tre tavole: 40-80 s a giro per non
+  comprare niente. Ora legge dal gioco i tomi di ogni dio, i nodi sotto il tetto della tavola e il
+  costo (1 tomo). Apre solo le tavole dove c'è da comprare, e lì solo i nodi sotto il tetto. Alle 08:34
+  ha trovato 0 tomi per tutti e tre gli dei e ha fatto un giro da 0,1 s.
+- **Beasts** selezionava tutte e 30 le bestie: 25-60 s per 2-3 possedute. Ora le riconosce dal codice
+  di ogni avatar, legge le Soul Embers e il livello più economico, e senza niente da comprare né bestie
+  da liberare non apre. Alle 08:34 aveva 9 Soul Embers contro 10, quindi 0,1 s.
+
+Alle 07:19 era ripartito per il Personal Tree chiesto dall'utente. Ricontrollava ogni 6 ore, così alle 07:21 c'erano 1978 gettoni fermi da prima
 contro i 1700 del nodo successivo. Ora legge gettoni e costo dal gioco ogni 30 minuti e apre l'albero
 solo quando può comprare. L'ordine è prima i rami prioritari, poi il più economico: niente più scaglioni
 di 5. Dati del gioco alle 07:21: albero a 27, `upgradesAllowed` 15, prioritari tutti a 15/15. Costo

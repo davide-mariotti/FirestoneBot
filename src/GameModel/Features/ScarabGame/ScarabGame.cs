@@ -4,6 +4,7 @@ using System.Linq;
 using Firebot.Core;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using UnityEngine.UI;
 
@@ -132,6 +133,31 @@ public static class Beasts
     public static IEnumerator OpenUpgradePopup => new GameButton(Paths.BeastsLoc.OpenUpgradePopupBtn).Click();
 
     public static string CountText => new GameText(Paths.BeastsLoc.BeastCountTxt).GetParsedText();
+
+    /// <summary>The beast the list's index-th avatar shows; null when it can't be read.</summary>
+    public static Il2Cpp.BeastCode? CodeAt(int index) => GameState.Get("beast avatar", () =>
+    {
+        var list = GameElement.FindTransform(Paths.BeastsLoc.AvatarsRoot);
+        return list.GetChild(index).GetComponent<Il2Cpp.BeastOnListInteraction>().beastCode;
+    });
+
+    /// <summary>
+    ///     From the game's data, no screen: the owned beasts, the cheapest Soul Ember level among those
+    ///     not maxed (int.MaxValue for none), and the Soul Embers on hand. Null when it can't be read.
+    /// </summary>
+    public static (HashSet<Il2Cpp.BeastCode> Owned, int Cheapest, int Embers)? FromGame => GameState.Get("beasts", () =>
+    {
+        var owned = new HashSet<Il2Cpp.BeastCode>();
+        var cheapest = int.MaxValue;
+        foreach (var kv in GameState.H.BeastHandler.dictBeast)
+        {
+            if (kv.Value.level <= 0) continue;
+            owned.Add(kv.Key);
+            if (!kv.Value.IsMaxLevel()) cheapest = System.Math.Min(cheapest, kv.Value.GetLevelUpCost(1));
+        }
+
+        return (owned, cheapest, (int)GameState.H.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.SoulEmber).Amount);
+    });
 }
 
 /// <summary>The popup Beasts opens for a level-up (and, from its other button, for rarity).</summary>
