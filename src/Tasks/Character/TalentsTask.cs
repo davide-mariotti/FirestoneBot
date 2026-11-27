@@ -57,8 +57,9 @@ public class TalentsTask : BotTask
         // Runs only on the TalentAvailable badge, never on a timer.
         NextRunTime = DateTime.MaxValue;
 
-        // The badge can outlive the points (a start-up flash): the game holds the count.
-        if (GameState.Get("talent points", () => Il2Cpp.GameInitialize.HandlerLoader.TalentsHandler.availablePoints) is 0)
+        // The badge can outlive the points (a start-up flash): the game holds the count. The game's
+        // alone: with the tab closed the counter's fallback would read 0.
+        if (GameState.Get("talent points", () => GameState.H.TalentsHandler.availablePoints) is 0)
         {
             Debug("[INFO] From the game: no talent point to spend - not opening.");
             yield break;
@@ -83,7 +84,8 @@ public class TalentsTask : BotTask
         while (Talents.AvailablePoints > 0)
         {
             var available = Talents.AvailablePoints;
-            var spent = Talents.TotalPointsAwarded - available;
+            var spent = Talents.SpentPoints;
+            if (first) GameState.Compare("talent points", $"{available}/{spent}", Talents.Screen);
             // A save reaches the nodes' data a moment after the counter.
             yield return Poll.Until(() => Read(tree).Ranks?.Sum() == spent);
 

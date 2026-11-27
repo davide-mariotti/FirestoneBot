@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town.Oracle;
@@ -31,7 +32,10 @@ public static class OracleStore
 
     public static bool IsClaimed => RenewTxt.IsVisible();
 
-    public static int GiftCount => new GameText(Paths.MenusLoc.OracleStoreLoc.OraclesGiftCountTxt).GetParsedInt(-1);
+    /// <summary>Gifts owned: the game's currency (CollectorQuestTask counts the same), the counter as the fallback.</summary>
+    public static int GiftCount => (int)GameState.Balance(Il2Cpp.CurrencyCode.OraclesGift, () => GiftCountOnScreen);
+
+    public static int GiftCountOnScreen => new GameText(Paths.MenusLoc.OracleStoreLoc.OraclesGiftCountTxt).GetParsedInt(-1);
 
     public static DateTime NextRunTime => RenewTxt.Time;
 

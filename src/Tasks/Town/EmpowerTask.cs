@@ -109,6 +109,28 @@ public class EmpowerTask : BotTask
         return ((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall) || timePlayed >= maxDuration;
     }
 
+    // The growth rule (GAMESTATE_PLAN.md, "Flussi nuovi" 4), only logged until the user picks it. The
+    // Firestones found come from the run's gold, which keeps coming at the wall: on -27 (27/11 18:43-18:48)
+    // found grew 7-11%/min there, the bank 1.1%/min on average over the run. Empowering now multiplies the
+    // bank by 1 + found/owned over the run's minutes; waiting is worth it while the last check's growth
+    // beats that average.
+    private static double _lastGain = double.NaN, _lastMinutes, _lastOwned;
+
+    private string GrowthVerdict(double minutes, double found, double owned)
+    {
+        var gain = Math.Log(1 + Math.Pow(10, Math.Min(found - owned, 300)));
+        var average = minutes > 0 ? gain / minutes : 0;
+        var last = (_lastGain, _lastMinutes, _lastOwned);
+        (_lastGain, _lastMinutes, _lastOwned) = (gain, minutes, owned);
+        if (last._lastOwned != owned || double.IsNaN(last._lastGain) || minutes <= last._lastMinutes)
+            return $"run average {average * 100:0.00}%/min, no earlier check this run";
+
+        var now = (gain - last._lastGain) / (minutes - last._lastMinutes);
+        var ratioMet = Math.Pow(10, found - owned) >= (_minResetRatio?.Value ?? 1.0f);
+        return $"last {minutes - last._lastMinutes:0} min {now * 100:0.00}%/min vs run average {average * 100:0.00}%/min - " +
+               (!AutoRetreat.HitWall || !ratioMet ? "not at the wall with the ratio" : now < average ? "would empower" : "would wait");
+    }
+
     public override IEnumerator Execute()
     {
         // The game's own numbers decide without opening the Temple (38 openings in 5 h on Steam-27, 26/11);
@@ -123,7 +145,8 @@ public class EmpowerTask : BotTask
             var prestigeBadge = GameState.HasBadge(Il2Cpp.NotificationType.TemplePrestige);
             Logger.Info($"[Empower] curve: run {gameTime.Value.TotalMinutes:0} min, found 10^{gameFound:0.##}, " +
                         $"owned 10^{gameOwned:0.##}, stage {AutoRetreat.HitWall switch { true => "at the wall", false => "climbing" }}, " +
-                        $"TemplePrestige badge {prestigeBadge?.ToString() ?? "?"}");
+                        $"TemplePrestige badge {prestigeBadge?.ToString() ?? "?"}; growth rule: " +
+                        GrowthVerdict(gameTime.Value.TotalMinutes, gameFound.Value, gameOwned.Value));
 
             if (!ShouldEmpower(gameTime.Value, gameFound.Value, gameOwned.Value, out var later, out var reason))
             {

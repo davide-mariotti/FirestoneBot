@@ -42,6 +42,7 @@ public class OraclesGiftTask : BotTask
         yield return Poll.Until(() => OracleStore.IsGiftShown);
 
         var before = OracleStore.GiftCount;
+        GameState.Compare("oracle's gifts", $"{before}", $"{OracleStore.GiftCountOnScreen}");
         if (!OracleStore.IsClaimed)
         {
             yield return OracleStore.ClaimGift;

@@ -105,19 +105,29 @@ public class AncientArtifactTask : BotTask
         }
 
         var done = 0;
+        var again = 0;
+        var start = UnityEngine.Time.realtimeSinceStartup;
         for (var step = 0; step < MaxUpgrades && Ready() is { Count: > 0 } ready; step++)
         {
             var (code, kind, cost) = ready[0];
             var currency = kind == Upgrade.Rarity ? CurrencyCode.GoldenKey : CurrencyCode.TwilightHourglass;
             var before = GameState.Currency(currency) ?? -1;
 
-            var ok = false;
-            yield return UpgradeOnce(code, kind, r => ok = r);
+            // A level was ~2.6 s each (select, its button, the popup, confirm, close; -28 27/11, 25 levels).
+            // The popup still open on this same artifact and mode after the last one: one more press of
+            // its own button. Anything else closes it and goes the whole way.
+            var ok = Confirm(code, kind) == true;
+            if (ok) again++;
+            else
+            {
+                yield return CloseTop(MenuName.AAModify);
+                yield return UpgradeOnce(code, kind, r => ok = r);
+            }
+
             if (!ok) break;
 
             yield return Poll.Until(() => GameState.Currency(currency) < before, 30, 0.2f);
             var after = GameState.Currency(currency) ?? -1;
-            yield return CloseTop(MenuName.AAModify);
             if (after >= before)
             {
                 Debug($"[FAILED] Ancient Artifact: {code} {kind} clicked ({cost} {currency}) but it stayed at {before}.");
@@ -125,10 +135,11 @@ public class AncientArtifactTask : BotTask
             }
 
             done++;
-            Debug($"[INFO] Ancient Artifact: {code} {kind} up, {currency} {before} -> {after}.");
+            Debug($"[INFO] Ancient Artifact: {code} {kind} up, {currency} {before} -> {after}, popup still open {GameState.IsMenuOpen(MenuName.AAModify)}.");
         }
 
-        Debug($"[INFO] Ancient Artifact: {done} upgrade(s).");
+        yield return CloseTop(MenuName.AAModify);
+        Debug($"[INFO] Ancient Artifact: {done} upgrade(s), {again} of them in the popup left open, {UnityEngine.Time.realtimeSinceStartup - start:0.0} s.");
         yield return CloseTop(MenuName.AncientArtifacts);
         yield return Tavern.Close;
         yield return TownScreen.Close;
@@ -174,16 +185,7 @@ public class AncientArtifactTask : BotTask
         }
 
         yield return Poll.Until(() => GameState.IsMenuOpen(MenuName.AAModify) == true, 30, 0.1f);
-        var confirmed = GameState.Get("artifact modify", () =>
-        {
-            var popup = GameInitialize.MenuLoader.AAModifyPopup;
-            var mode = kind == Upgrade.Rarity ? AAModifyPopup.UpgradeMode.Rarity : AAModifyPopup.UpgradeMode.Level;
-            if (popup.artifactOnPreview == null || popup.artifactOnPreview.code != code || popup.upgradeMode != mode) return false;
-            var modify = Firebot.GameModel.Base.GameElement.FindTransform(Paths.MenusLoc.Root + "/popups/AAModify").GetComponentInChildren<AAModifyViewController>(true).modifyArtifactButton;
-            if (!modify.interactable) return false;
-            modify.onClick.Invoke();
-            return true;
-        });
+        var confirmed = Confirm(code, kind);
         if (confirmed != true)
         {
             Debug($"[INFO] Ancient Artifact: {code} {kind} popup not as expected - nothing bought.");
@@ -192,6 +194,19 @@ public class AncientArtifactTask : BotTask
 
         done(confirmed == true);
     }
+
+    // In the AAModify popup, open for this same artifact and mode, its upgrade button (the UI's own listener).
+    private static bool? Confirm(AncientArtifactCode code, Upgrade kind) => GameState.Get("artifact modify", () =>
+    {
+        if (GameState.IsMenuOpen(MenuName.AAModify) != true) return false;
+        var popup = GameInitialize.MenuLoader.AAModifyPopup;
+        var mode = kind == Upgrade.Rarity ? AAModifyPopup.UpgradeMode.Rarity : AAModifyPopup.UpgradeMode.Level;
+        if (popup.artifactOnPreview == null || popup.artifactOnPreview.code != code || popup.upgradeMode != mode) return false;
+        var modify = Firebot.GameModel.Base.GameElement.FindTransform(Paths.MenusLoc.Root + "/popups/AAModify").GetComponentInChildren<AAModifyViewController>(true).modifyArtifactButton;
+        if (!modify.interactable || !modify.gameObject.activeInHierarchy) return false;
+        modify.onClick.Invoke();
+        return true;
+    });
 
     private static IEnumerator CloseTop(MenuName menu)
     {

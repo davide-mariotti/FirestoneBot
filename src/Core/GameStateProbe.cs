@@ -19,6 +19,7 @@ internal static class GameStateProbe
     private static readonly TimeSpan Every = TimeSpan.FromMinutes(5);
     private static DateTime _next;
     private static bool _versionLogged;
+    private static string _skips;
 
     private static HandlerLoader H => GameInitialize.HandlerLoader;
     private static CoreFunctionalityLoader Core => GameInitialize.CoreFunctionality;
@@ -213,7 +214,38 @@ internal static class GameStateProbe
         Line("stage", () =>
         {
             var b = H.MainBattle;
-            return $"game={b.CurrentStageNumber}/{b.MaxStageNumber} wave={b.CurrentStageWave} ui={StageProgress.Current}";
+            return $"game={b.CurrentStageNumber}/{b.MaxStageNumber} wave={b.CurrentStageWave} ui={StageProgress.Current} farming={b.FarmingWave}";
         });
+
+        // The climb is ~137 min a run at ~7.5 stages a minute (-27 27/11): how much the skips give now,
+        // and what the Exotic Merchant's skip upgrades would add, before choosing what to buy.
+        string skipsNow;
+        try
+        {
+            var skips = new List<string>();
+            foreach (var tree in H.ExoticUpgradesHandler.exoticTrees)
+                foreach (var u in tree.Value)
+                    if (u.Key.ToString().StartsWith("Skip"))
+                        skips.Add($"{tree.Key}/{u.Key}@{u.Value.stage} lvl {u.Value.level}/{ExoticUpgrade.levelCap} effect {F(Heroes.Log(u.Value.effect))} " +
+                                  $"cost {u.Value.upgradeCostSingle} can {u.Value.CanUpgrade()}");
+            var research = new List<string>();
+            foreach (var tree in H.FirestoneResearchHandler.researchTrees)
+                foreach (var r in tree.Value)
+                    if (r.Key.ToString().StartsWith("Skip"))
+                        research.Add($"{tree.Key}/{r.Key} lvl {r.Value.level}/{r.Value.levelCap} effect {F(Heroes.Log(r.Value.effect))} unlocked {r.Value.IsUnlocked}");
+            var meteorite = new List<string>();
+            foreach (var tree in H.MeteoriteResearchHandler.researchTrees)
+                foreach (var r in tree.Value)
+                    if (r.Key.ToString().StartsWith("Skip"))
+                        meteorite.Add($"{tree.Key}/{r.Key} lvl {r.Value.level} effect {F(Heroes.Log(r.Value.currentEffect))} cost {F(r.Value.levelUpCost)} unlocked {r.Value.IsUnlocked()}");
+            skipsNow = $"starting stage {BattleMainStageManager.startingStage}; exotic (effect log10) {string.Join(", ", skips)}; " +
+                       $"firestone research {string.Join(", ", research)}; meteorite research {string.Join(", ", meteorite)}";
+        }
+        catch (Exception e)
+        {
+            skipsNow = $"ERR {e.GetType().Name}: {e.Message}";
+        }
+
+        if (skipsNow != _skips) Logger.Info($"[Probe] skips: {_skips = skipsNow}");
     }
 }

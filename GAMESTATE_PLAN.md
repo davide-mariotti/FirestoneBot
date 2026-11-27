@@ -202,6 +202,62 @@ solo il caso sbagliato davvero (dati "attivo" e carta assente). Per le sfide del
 dei livelli (`c` livelli riscossi su `challengeRequirements`) è ancora da confermare con il prossimo
 evento in corso: finché carte e dati non coincidono, le sfide non decidono niente.
 
+**Fatto il 27/11 alle 20:43** (deploy su -27 alle 20:42 e -28 alle 20:43, richieste dell'utente:
+Empower, Talents, Enlighten, Ancient Artifact, ordine delle missioni, addestramento, il resto dei testi):
+- **Talents:** punti disponibili e spesi da `TalentsHandler` (`availablePoints`, `usedTalentPoints`),
+  il contatore solo come riserva e come confronto al primo giro (`talent points`). Il probe di
+  `usedTalentPoints` coincideva con il "speso" del contatore su tutti i giri (-27 225/226, -28 223/224).
+- **Guardian Training:**
+  - Train solo senza addestramento in corso (`TrainingEnd`): prima un click a vuoto a ogni giro che
+    apriva per l'Enlighten;
+  - l'Enlighten in blocco prova solo i passi che la dust paga sopra la riserva (`enlightenmentDustReq` ×
+    passo) e che il gioco offre (`enlightQuantitiesAvailable`): su -28 alle 20:26 il giro non ha
+    illuminato niente e ha premuto il pulsante delle quantità per ~8 s;
+  - il prezzo mostrato viene dal gioco (`enlightenmentDustReq` × `currentEnlightQuantity`) dopo un
+    confronto col testo che coincide, nella stessa sessione (un prezzo sbagliato spende sotto la
+    riserva); fino ad allora il testo.
+- **Ancient Artifact:** se dopo un livello il popup AAModify resta aperto sullo stesso artefatto e
+  modo, il livello seguente è un altro click del suo pulsante (prima ~2,6 s a livello: seleziona,
+  pulsante, popup, conferma, chiudi). Se si chiude, tutto come prima. Il log dice quanti livelli sono
+  passati dal popup aperto e quanto è durato il giro.
+- **Map Missions:** l'ordine delle missioni da avviare viene dalla durata del gioco
+  (`MapMissionInteraction.mapMission.realTimeReq`), il testo del pin solo come riserva, confrontati
+  missione per missione (`map mission duration`). Lo stato di ogni pin (libera, in corso, finita) dai
+  dati (`missionState` e la fine) è per ora solo confrontato con le icone (`map mission state ...`):
+  sbagliarlo lascerebbe una squadra ferma.
+- **Oracle's Gift:** il numero di doni dalla valuta `OraclesGift` (come Collector Quest), il contatore
+  come riserva e confronto.
+- **Miner Quest:** la quantità per colpo del cristallo (`ArcaneCrystalMech.currentHitQuantity`) è solo
+  confrontata col testo, perché sbagliarla spende piccozze.
+- **Empower:** nessun cambio di regola. Il log `[Empower] curve` dice anche cosa farebbe la regola
+  "della crescita" (vedi sotto, "Empower: cosa dicono le curve").
+- **Probe `skips`** (una riga quando cambia): gli upgrade Skip dell'Exotic Merchant partono dallo
+  stage 1200 (Tree2), sopra il muro di -27 e -28 (~1031), quindi oggi non servono. Le ricerche:
+  Firestone Skip Wave 25/25 (25%) e Skip Stage 20/20 (6%), al massimo; Meteorite Skip Wave livello 10
+  (3%) e Skip Stage livello 10 (2%), 800 meteoriti a livello, ~0,2-0,3% a livello.
+
+**Empower: cosa dicono le curve** (`[Empower] curve` e `[Probe] stage` di -27 e -28, 27/11):
+- Una run è ~137 minuti di salita a ~7,5 stage al minuto dallo stage 1 al muro (1024 → 1027 → 1031 su
+  -27), poi il muro. Il ritmo è lo stesso dall'inizio alla fine: lo limita il gioco, non il danno.
+- I Firestones trovati vengono dall'oro della run (`Firestones.firestoneTotalGoldEarnings`,
+  `goldForTheFirstFirestone`). Durante la salita crescono di ~0,4 ordini di grandezza al minuto; al muro
+  l'oro continua ad arrivare e crescono ancora del 7-11% al minuto (-27: 10^219,38 → 10^219,52 dalle
+  18:43 alle 18:48, 10^218,70 → 10^218,93 dalle 16:22 alle 16:27).
+- Il bot fa l'Empower 3-5 minuti dopo il muro. In quel momento il "banco" cresce del 5-6% al minuto
+  (crescita dei trovati × trovati/(posseduti+trovati)), mentre la media della run è 1,1-3%: aspettare
+  al muro rende più che ripartire. Una stima con l'oro lineare al muro dà l'ottimo dopo ~30 minuti di
+  muro, con il banco che cresce ~25% più in fretta per ora; da verificare dal vivo.
+- Il rapporto all'Empower scende run dopo run (-27: 70 → 15 → 3,7; -28: 24 → 11,7), perché il muro
+  sale poco: presto sarà sotto 1, e con la regola di oggi (rapporto ≥ 1 al muro) il bot resterà fermo
+  al muro senza fare l'Empower.
+- In metà delle run i trovati partono già dal ~15-19% dei posseduti e restano fermi fino al minuto
+  ~105 (es. -27 18:53-20:24, 10^218,77); nelle altre partono da 10^164-169 e salgono subito. Al muro
+  le due curve si equivalgono: per la regola non cambia niente.
+- La regola "della crescita": al muro, Empower quando la crescita del banco nell'ultimo controllo
+  scende sotto la media della run (`ln(1 + trovati/posseduti) / minuti`). Si regola da sola e non ha
+  bisogno che il rapporto arrivi a 1. Il badge TemplePrestige resterebbe acceso più a lungo. Da
+  decidere con l'utente; finché non decide, la riga del log dice solo "would empower" / "would wait".
+
 Già dai dati senza bisogno di modifiche: **Warfront Campaign** (potenza, missioni e requisiti dal
 gioco, apre solo per una missione da tentare o per cambiare l'equipaggio) e **Blueprints**
 (`BlueprintPlanner` dai dati, non apre senza niente da comprare).
@@ -300,13 +356,14 @@ Guardati il 27/11 pomeriggio (dai log 11:28-15:20 di -27 e -28):
 - AutoRetreat: clicca `goBackStage` 5 volte di fila e 2 vanno a vuoto mentre lo stage cambia (-27 e -28
   dalle 15:46). Non l'ho toccato io e non costa niente.
 
-## Stato (27/11 15:47, branch `game-state`)
+## Stato (27/11 20:43, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:47 (ultimo
-deploy, -27 alle 15:46 e -28 alle 15:47) e finisce il 28/11 alle 03:47.** I deploy delle 15:35-15:47 sono
-descritti in "Fatto il 27/11 alle 15:47", in testa al file.
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 20:43 (ultimo
+deploy, -27 alle 20:42 e -28 alle 20:43) e finisce il 28/11 alle 08:43.** Il deploy delle 20:42 è
+descritto in "Fatto il 27/11 alle 20:43", quelli delle 15:35-15:47 in "Fatto il 27/11 alle 15:47", in
+testa al file.
 
 Alle 15:09 era ripartito per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,

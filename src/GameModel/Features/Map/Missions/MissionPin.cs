@@ -18,6 +18,33 @@ public class MissionPin : GameElement
 
     public DateTime TimeRequired => new GameText(Paths.MissionPinLoc.TimeReq, this).Time;
 
+    /// <summary>
+    ///     How long the mission takes, from the game's mission behind the pin (realTimeReq); the pin's
+    ///     text when that can't be read. Checked against the text (CompareDuration).
+    /// </summary>
+    public TimeSpan Duration => DurationFromGame ?? TimeRequired - DateTime.Now;
+
+    private TimeSpan? DurationFromGame => GameState.Get("map mission duration", () =>
+        TryGetComponent(out MapMissionInteraction pin) && pin.mapMission != null
+            ? TimeSpan.FromSeconds(pin.mapMission.realTimeReq)
+            : throw new InvalidOperationException("no mission behind the pin"));
+
+    /// <summary>The icons' state against the game's (missionState and the end time): only checked so far.</summary>
+    public void CompareState()
+    {
+        var game = GameState.GetRef("map mission state", () =>
+        {
+            if (!TryGetComponent(out MapMissionInteraction pin) || pin.mapMission == null) throw new InvalidOperationException("no mission behind the pin");
+            var m = pin.mapMission;
+            if (m.missionState != MissionsHandler.MissionState.Active) return "free";
+            return GameState.Ends(m.timeStarted, m.realTimeReq) is { } end && end <= DateTime.Now ? "done" : "active";
+        });
+        GameState.Compare($"map mission state {Name}", game, IsCompleted ? "done" : IsActive ? "active" : "free");
+    }
+
+    public void CompareDuration() =>
+        GameState.CompareTimes("map mission duration", DurationFromGame is { } d ? DateTime.Now + d : null, TimeRequired);
+
     public bool IsActive => new GameElement(Paths.MissionPinLoc.ActiveIcon, this).IsVisible();
 
     public bool IsCompleted => new GameElement(Paths.MissionPinLoc.Tick, this).IsVisible();

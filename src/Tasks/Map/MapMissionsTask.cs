@@ -61,6 +61,8 @@ public class MapMissionsTask : BotTask
         yield return WorldMap.Open;
         yield return WorldMap.OpenMapMissionsTab;
 
+        foreach (var pin in ScanMissions()) pin.CompareState();
+
         foreach (var mission in ScanMissions(m => m.IsActive))
         {
             if (mission.IsCompleted)
@@ -89,7 +91,8 @@ public class MapMissionsTask : BotTask
         // Missions take 1 or more squads by category: one that needs more than are free is skipped, and a
         // shorter one further down may still fit (Steam-0 03/10: 1 squad of 5 idle behind a 2-squad one).
         var toStart = ScanMissions(m => !m.IsActive && !m.IsCompleted, true).ToList();
-        var order = string.Join(", ", toStart.Select(m => $"{m.Name} {m.TimeRequired - DateTime.Now:hh\\:mm} x{m.SquadsRequired}"));
+        foreach (var m in toStart) m.CompareDuration();
+        var order = string.Join(", ", toStart.Select(m => $"{m.Name} {m.Duration:hh\\:mm} x{m.SquadsRequired}"));
         var free = MapMission.FreeSquads;
         var freeBefore = free;
         var started = 0;
@@ -150,10 +153,11 @@ public class MapMissionsTask : BotTask
             .Where(mission => filter == null || filter(mission))
             .ToList();
 
+        // By the game's duration, the pin's text only when unreadable.
         if (sortByTime)
             results = IsAscending()
-                ? results.OrderBy(m => m.TimeRequired).ToList()
-                : results.OrderByDescending(m => m.TimeRequired).ToList();
+                ? results.OrderBy(m => m.Duration).ToList()
+                : results.OrderByDescending(m => m.Duration).ToList();
 
         foreach (var mission in results) yield return mission;
     }

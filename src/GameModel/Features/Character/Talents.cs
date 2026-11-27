@@ -1,6 +1,7 @@
 using System.Collections;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Character;
@@ -11,10 +12,17 @@ namespace Firebot.GameModel.Features.Character;
 /// </summary>
 public static class Talents
 {
-    // The counter reads "available/total", where total is every point ever earned.
-    public static int AvailablePoints => new GameText(Paths.TalentsLoc.PointsLeftTxt).GetParsedLeadingInt();
+    // The game's counts (TalentsHandler: usedTalentPoints was the counter's total - available on every run
+    // of -27 and -28, 27/11); the counter "available/total" only when the game can't be read.
+    public static int AvailablePoints => GameState.Get("talent points", () => GameState.H.TalentsHandler.availablePoints) ?? ScreenAvailable;
 
-    public static int TotalPointsAwarded => new GameText(Paths.TalentsLoc.PointsLeftTxt).GetParsedTrailingInt();
+    public static int SpentPoints => GameState.Get("talent points used", () => GameState.H.TalentsHandler.usedTalentPoints) ??
+                                     new GameText(Paths.TalentsLoc.PointsLeftTxt).GetParsedTrailingInt() - ScreenAvailable;
+
+    /// <summary>The counter as the screen shows it, "available/spent", for the check against the game.</summary>
+    public static string Screen => $"{ScreenAvailable}/{new GameText(Paths.TalentsLoc.PointsLeftTxt).GetParsedTrailingInt() - ScreenAvailable}";
+
+    private static int ScreenAvailable => new GameText(Paths.TalentsLoc.PointsLeftTxt).GetParsedLeadingInt();
 
     public static IEnumerator Save => new GameButton(Paths.TalentsLoc.SaveBtn).Click();
 
