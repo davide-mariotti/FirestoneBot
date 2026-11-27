@@ -206,22 +206,18 @@ public class AncientArtifactTask : BotTask
 
     private IEnumerator ViaTavern()
     {
+        // A second OpenMenu call from inside the Tavern closed the Tavern too (27/11: the stack empty
+        // after it), so only the Tavern's own button.
         yield return TownScreen.Open;
         yield return TownScreen.OpenTavern;
-        GameState.Get("artifacts from the tavern", () =>
-        {
-            GameState.Core.NavigationControl.OpenMenu(MenuName.AncientArtifacts, 0, 0, default);
-            return true;
-        });
-        yield return Poll.Until(() => ArtifactsOpen, 50, 0.1f);
-        if (ArtifactsOpen) yield break;
+        yield return Poll.Until(() => GameState.IsMenuOpen(MenuName.Tavern) == true, 50, 0.1f);
 
         // The Tavern's own button, found by name next to the shop's (helpCanvas/actionButtons).
         var root = Firebot.GameModel.Base.GameElement.FindTransform(Paths.MenusLoc.Root + "/menus/Tavern/helpCanvas/actionButtons");
         var names = new List<string>();
         for (var i = 0; root != null && i < root.childCount; i++) names.Add(root.GetChild(i).name);
         var target = names.FirstOrDefault(n => n.IndexOf("rtifact", StringComparison.OrdinalIgnoreCase) >= 0);
-        Debug($"[INFO] Ancient Artifact: Tavern action buttons [{string.Join(", ", names)}], artifacts '{target ?? "-"}'.");
+        Debug($"[INFO] Ancient Artifact: Tavern action buttons [{string.Join(", ", names)}], artifacts '{target ?? "-"}', menus {GameState.MenuStack}.");
         if (target == null) yield break;
         var button = new GameButton(Paths.MenusLoc.Root + "/menus/Tavern/helpCanvas/actionButtons/" + target);
         yield return button.Click();

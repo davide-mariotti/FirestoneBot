@@ -80,21 +80,26 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
   -28;
 - i saldi letti da `CurrencyHandler` invece che dai contatori.
 
-**Fatto il 27/11 pomeriggio, da verificare dal vivo:**
-- rarità delle Bestie con le Cobra Keys (`BeastsTask.RaiseRarities`);
-- upgrade degli artefatti: rarità con Golden Keys, livelli con Twilight Hourglass
-  (`AncientArtifactTask.Raise`);
-- rarità degli eroi saltata per gli eroi a cui i dati dicono che manca un requisito (`rarity_checked`);
-- quest giornaliere (Collector, Gamer, Merchant, Miner) dai dati (`CharacterScreen.DailyQuestFromGame`):
-  il primo giro vero è al reset del 28/11;
-- addestramento dei guardiani: timer e decisione di non aprire dai dati.
+**Nuove funzioni del 27/11, già viste dal vivo su -27 e -28:**
+- **soul stone** (Hall of Heroes, `SpendSoulstones`): il prezzo è in Soul Shards (icona `soulShard64`),
+  30 al livello 1, tetto 2 × la rarità come per il gear. Al primo giro 40 incantesimi per istanza, il
+  massimo per giro: Soul Shards da 2620 a 1270 su -27 e da 2590 a 1270 su -28;
+- **rarità delle Bestie** con le Cobra Keys (`BeastsTask.RaiseRarities`; l'icona si chiama
+  `snakeKey64`): GoldenMonkey su -27, chiavi da 34 a 19;
+- **upgrade degli artefatti** (`AncientArtifactTask.Raise`): la rarità con le Golden Keys, i livelli con
+  le Twilight Hourglass, decisi da `CanIncreaseRarity` / `HaveTheKeysToRarityUp` / `CanIncreaseLevel` /
+  `HaveTheTwilightHourglassToLevelUp`. La schermata si apre solo dal pulsante `actionButtons/artifacts`
+  della Tavern: la navigazione del gioco non la apre, e chiamata dalla Tavern chiude la Tavern. Su -27
+  1 rarità e 14 livelli, su -28 2 rarità e 25 livelli (le valute finiscono quasi a zero: si spende
+  tutto quello che il gioco permette).
 
-**In corso: i soul stone** (eroi a livello 200). `HallOfHeroesTask.LookAtSoulstones` per ora guarda e
-basta, una volta per sessione. Scrive i soul stone di ogni eroe dal gioco, Soul Shards e Soul Stones in
-mano, e le righe della scheda Soulstones (pulsante, prezzo, icona). La spesa si scrive quando la valuta
-del prezzo è certa. Pezzi pronti: `HOHEnchantSubmenu.categorySoulstonesButton`,
-`soulstoneInteractionDict` (slot → `EnchantSoulstoneItemInteraction`, con `enchantSoulstoneItemButton`
-e `CanBeEnchanted()`) e `HeroServer.soulstoneDict`.
+**Fatto il 27/11, da vedere al prossimo giro vero:**
+- rarità degli eroi saltata per gli eroi a cui i dati dicono che manca un requisito (`rarity_checked`):
+  al giro delle 12:43 i requisiti dei dati coincidevano con le schede;
+- quest giornaliere (Collector, Gamer, Merchant, Miner) dai dati (`CharacterScreen.DailyQuestFromGame`):
+  il primo giro vero è al reset del 28/11; la riscossione resta a QuestsTask;
+- addestramento dei guardiani: decide dai dati se aprire (alle 12:44 non ha aperto su tutte e due,
+  addestramento in corso e Strange Dust alla riserva).
 
 **Prossimi candidati** (dati già trovati):
 - Chaos Rift: manca la valuta dei colpi;
@@ -103,12 +108,12 @@ e `CanBeEnchanted()`) e `HeroServer.soulstoneDict`.
 - Frostfire, routine di push con le pergamene e vendita delle pergamene: in pausa per scelta
   dell'utente.
 
-## Stato (27/11 12:23, branch `game-state`)
+## Stato (27/11 13:03, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 12:23 e
-finisce il 28/11 alle 00:23**, per la seconda serie di richieste dell'utente:
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 13:03 (ultimo deploy)
+e finisce il 28/11 alle 01:03**, per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
   e ogni ora si apriva la lista per scoprirlo: 22 s all'ora. Ora decide il gioco: `MiniEventsHandler`
   (evento in corso e non bloccato), la lista `calendarEvents` del calendario (dal 12:09: il solo
