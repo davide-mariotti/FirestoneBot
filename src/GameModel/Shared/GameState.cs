@@ -160,6 +160,9 @@ public static class GameState
 
     public static double? Meteorites => Get("meteorites", () => H.CurrencyHandler.GetCurrency(CurrencyCode.Meteorite).Amount);
 
+    /// <summary>What the Personal Tree (and War Machines) spend.</summary>
+    public static double? ExpeditionTokens => Get("expedition tokens", () => H.CurrencyHandler.GetCurrency(CurrencyCode.ExpeditionToken).Amount);
+
     /// <summary>The cheapest level any unlocked, unmaxed meteorite research costs now; +Infinity when none.</summary>
     public static double? CheapestMeteoriteResearch => Get("meteorite research costs", () =>
     {

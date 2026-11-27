@@ -11,10 +11,17 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
-## Stato (27/11 05:46, branch `game-state`)
+## Stato (27/11 07:19, branch `game-state`)
 
-**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 05:46 (finisce alle 17:46).** È ripartito una
-seconda volta (la prima era alle 04:01) perché i pulsanti degli slot di esperimenti e ricerche si
+**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 07:19 (finisce alle 19:19)**, per il Personal
+Tree chiesto dall'utente. Ricontrollava ogni 6 ore, così alle 07:21 c'erano 1978 gettoni fermi da prima
+contro i 1700 del nodo successivo. Ora legge gettoni e costo dal gioco ogni 30 minuti e apre l'albero
+solo quando può comprare. L'ordine è prima i rami prioritari, poi il più economico: niente più scaglioni
+di 5. Dati del gioco alle 07:21: albero a 27, `upgradesAllowed` 15, prioritari tutti a 15/15. Costo
+600 + 100 a livello, XP 100 + 10 a livello. Il più economico dà quindi anche più XP per gettone (210 per
+1700 contro 250 per 2100).
+
+Alle 05:46 era ripartito una seconda volta (la prima era alle 04:01) perché i pulsanti degli slot di esperimenti e ricerche si
 aggiornano un momento dopo l'apertura della schermata. Letti subito, mostravano ancora il prezzo in
 gemme dentro la finestra gratuita: esperimento a 2m50s e a 44 s dalla fine, ricerca a 59 s, con giri a
 vuoto ogni 2 minuti fino al badge. Prima l'attesa fissa di 3 s lo nascondeva. Ora, quando i dati dicono
