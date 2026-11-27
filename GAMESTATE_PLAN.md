@@ -249,15 +249,33 @@ Il metodo usato il 26-27/11, passo per passo.
      spesa.
    - Ogni deploy fa ripartire la finestra di 12 ore: va scritto in "Stato".
 
-Idee da guardare (non ancora studiate):
-- la Tavern (Gamer Quest, artefatti): legge ancora il campanello "crea artefatto" dallo schermo;
-- Oracle Rituals: quale rituale parte lo decide l'ordine della griglia, non un dato;
-- Map Missions: l'ordine delle missioni da avviare viene dai testi della mappa (nome e durata),
-  mentre `MissionsHandler` ha missioni e squadre;
-- Expeditions e Map Missions: un'attesa breve dentro il giro, quando la prossima finisce entro pochi
-  secondi, al posto di un nuovo giro;
-- i testi rimasti in `src/GameModel/Features` (Talents, Engineer, Rituals, Tavern, MapMission,
-  MissionPreview, Temple): per ognuno, è ancora una decisione o solo una riserva?
+7. **Il censimento dei badge.** Dopo ogni deploy, per ogni sessione, i badge rimasti accesi a lungo
+   nelle righe `[Rail] Lit` (la memoria `rail-must-be-empty`: un badge acceso a lungo è un bug). Un task
+   che decide dai dati e non apre lascia acceso un badge "non visto" (i flag `*Seen` di
+   `NotificationHandler`, rimessi a falso da ogni riavvio): è così che è saltato fuori GuardianTraining
+   acceso per ore. Anche un giro che non apre fa partire il `BadgeCooldown`, quindi va guardato quanto
+   aspetta un badge che si accende subito dopo.
+
+Guardati il 27/11 pomeriggio (dai log 11:28-15:20 di -27 e -28):
+- il tempo dei task è ~1-1,5 min/h su -27 e -28; quello che resta è quasi tutto azione: Map Missions
+  (speed-up e avvii, ~2 s a missione), soul stone e artefatti (spese vere), Experiments e ricerche;
+- Chaos Rift ed eventi non fanno una visita a ogni riavvio, come diceva questo file: il `NextRunTime`
+  è salvato nel cfg (Chaos Rift 2 giri e gli eventi 3-4 su 9 riavvii dalle 11:28). Non c'è da guadagnare;
+- Oracle Rituals: parte il primo rituale della griglia. Sceglierlo dai dati (premi) è una scelta di gioco,
+  da chiedere all'utente;
+- Map Missions: l'ordine delle missioni viene ancora dai testi dei pin (durata), ma la lettura è
+  istantanea; i dati (`missionsOnMap`: `realTimeReq`, `squadsReq`, `missionInteraction`) basterebbero,
+  il guadagno sarebbe solo di robustezza;
+- testi ancora letti per decidere, senza costo di navigazione: i punti dei Talents (il contatore, c'è
+  `TalentsHandler.availablePoints`/`usedTalentPoints`), il costo dell'Enlighten
+  (`MagicQuartersInfoSubmenu.enlightenmentDustReq` × `currentEnlightQuantity`), i nomi degli oggetti nei
+  negozi degli eventi;
+- Ancient Artifact: ogni livello costa 2,6 s (seleziona, apre AAModify, conferma, chiude); se il popup
+  restasse aperto dopo un livello, i livelli seguenti costerebbero un click. Da provare con una sonda,
+  le Twilight Hourglass arrivano di rado;
+- GuardianHolyUpgrade ha anche lui un flag "non visto" (`guardianHolyUpgradeNotificationSeen`) e il task
+  decide dai dati senza aprire. Su -27 e -28 il badge non si accende mai; su -26 (main) si spegne quando
+  si apre Magic Quarters. Al rollout va guardato nel censimento.
 
 ## Stato (27/11 15:47, branch `game-state`)
 
