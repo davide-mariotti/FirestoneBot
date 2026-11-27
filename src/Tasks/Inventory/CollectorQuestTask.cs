@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using Firebot.GameModel.Shared;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using MelonLoader;
@@ -54,6 +56,14 @@ public class CollectorQuestTask : DailyQuestTask
 
     protected override IEnumerator Work(int missing)
     {
+        // The quest done and no chest past what's kept: the bag has nothing for this task (the game counts them).
+        var reserve0 = _reserve?.Value ?? 10;
+        if (missing == 0 && ChestsToOpen(reserve0) is { } extra && extra.Count == 0)
+        {
+            Debug($"[INFO] From the game: the quest is done and no chest is past the reserve of {reserve0} - not opening.");
+            yield break;
+        }
+
         yield return OpenChestsTab();
 
         var questOpened = 0;
@@ -71,6 +81,28 @@ public class CollectorQuestTask : DailyQuestTask
 
         yield return InventoryScreen.Close;
     }
+
+    /// <summary>
+    ///     Chests the run would open, from the game's counts: the quest's rarities past the reserve, every
+    ///     other gear, jewel and celestial chest, Mystery Boxes and Oracle's Gifts. Null when unreadable.
+    /// </summary>
+    private static List<string> ChestsToOpen(int reserve) => GameState.GetRef("chest counts", () =>
+    {
+        var h = Il2Cpp.GameInitialize.HandlerLoader;
+        var kept = new[] { "Wooden", "Iron", "Common", "Uncommon", "Rare", "Epic", "Legendary" };
+        var list = new List<string>();
+        void Add(string name, int amount)
+        {
+            if (amount > (kept.Contains(name) ? reserve : 0)) list.Add($"{name} {amount}");
+        }
+
+        foreach (var kv in h.GearChestHandler.gearChests) Add(kv.Key.ToString(), kv.Value.amount);
+        foreach (var kv in h.JewelChestHandler.jewelChests) Add(kv.Key.ToString(), kv.Value.amount);
+        foreach (var kv in h.CelestialChestHandler.celestialChests) Add(kv.Key.ToString(), kv.Value.amount);
+        Add("MysteryBox", (int)h.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.MysteryBox).Amount);
+        Add("OraclesGift", (int)h.CurrencyHandler.GetCurrency(Il2Cpp.CurrencyCode.OraclesGift).Amount);
+        return list;
+    });
 
     /// <summary>An event challenge's chests (EventChallengeActions): up to `count`, cheapest first.</summary>
     public static IEnumerator OpenChests(int count, Action<int> onOpened)

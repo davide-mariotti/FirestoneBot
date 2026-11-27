@@ -18,8 +18,9 @@ public static class ArenaOfKings
 {
     private const int OpponentCount = 3;
 
-    // "current/max", e.g. "5/5".
-    public static int TokensAvailable => new GameText(Paths.ArenaOfKingsLoc.BattleTokensTxt).GetParsedLeadingInt();
+    // The arena's own count (ArenaOfKingsMech, set while the arena is open), the "current/max" text as the fallback.
+    public static int TokensAvailable => GameState.Get("arena tokens", () => Il2Cpp.GameInitialize.MenuLoader.ArenaOfKingsMech.battleTokensCurrent)
+                                         ?? new GameText(Paths.ArenaOfKingsLoc.BattleTokensTxt).GetParsedLeadingInt();
 
     public static double MyPower =>
         new GameText(Paths.ArenaOfKingsLoc.MyArenaPowerTxt).GetParsedDoubleAbbreviated();

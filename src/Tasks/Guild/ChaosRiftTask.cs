@@ -34,6 +34,23 @@ public class ChaosRiftTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // No badge, the god not attackable now or no token to hit with (the game's own checks), and the
+        // Dark Runes short of a Tome of Power: Chaos Rift has nothing for this task.
+        var canHit = GameState.Get("chaos rift hit", () =>
+            GameState.H.ChaosRiftHandler.CanAttackGod && Il2Cpp.GameInitialize.MenuLoader.ChaosRiftMech.CanAttack(1));
+        var runes = GameState.Currency(Il2Cpp.CurrencyCode.DarkRune);
+        // The shop's price of a tome (it grows with each one bought): the game's own figure reads 0 until the
+        // shop has been shown (27/11, 17839 once open), so the last one seen there stands in.
+        var now = GameState.Get("tome of power cost", () => (double)Il2Cpp.ChaosRiftShopSuppliesInteraction.GetTomeExchangeCostMultiple());
+        double? tome = now > 0 ? now : _lastTomeCost;
+        if (!IsNotificationVisible() && canHit == false && runes < tome)
+        {
+            Debug($"[INFO] From the game: no hit to make, {runes:0} Dark Runes for a {tome:0} tome - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
+
         yield return Notifications.ChaosRift;
         yield return Notifications.ChaosRiftSupplies;
 
@@ -69,7 +86,15 @@ public class ChaosRiftTask : BotTask
             yield return ChaosRiftShop.OpenSuppliesTab;
 
             // Tomes of Power only - never Eclipse Stones (a standing rule of the user's).
+            var before = GameState.Currency(Il2Cpp.CurrencyCode.DarkRune);
+            var shopCost = GameState.Get("tome shop cost", () =>
+                Il2Cpp.ChaosRiftShopSuppliesInteraction.GetTomeExchangeCostMultiple());
             yield return BuyWhileAffordable(ChaosRiftShop.TomeOfPowerBuyBtn);
+            Debug($"[INFO] Chaos Rift shop: a tome costs {shopCost?.ToString() ?? "-"}, Dark Runes {before:0} -> " +
+                  $"{GameState.Currency(Il2Cpp.CurrencyCode.DarkRune):0}.");
+            // What the next visit is weighed against, read again after any purchase.
+            if (GameState.Get("tome shop cost", () => Il2Cpp.ChaosRiftShopSuppliesInteraction.GetTomeExchangeCostMultiple()) is > 0 and var cost)
+                _lastTomeCost = cost;
 
             yield return ChaosRiftShop.Close;
         }
@@ -79,6 +104,8 @@ public class ChaosRiftTask : BotTask
 
         NextRunTime = DateTime.Now + RecheckDelay;
     }
+
+    private static double? _lastTomeCost;
 
     private static IEnumerator BuyWhileAffordable(GameButton buyBtn)
     {

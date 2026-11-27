@@ -26,6 +26,22 @@ public class MapMissionsTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // No squad free and no mission done or inside its free window: the map holds nothing to do.
+        var ends = GameState.GetRef("map missions in progress", () =>
+        {
+            var list = new List<DateTime>();
+            foreach (var m in GameState.H.MissionsHandler.missionsInProgress)
+                list.Add(GameState.Ends(m.timeStarted, m.realTimeReq) ?? DateTime.MinValue);
+            return list;
+        });
+        if (!IsNotificationVisible() && MapMission.FreeSquads == 0 && ends is { Count: > 0 } &&
+            ends.All(e => e != DateTime.MinValue && SpeedUpButton.FreeFrom(e) > DateTime.Now))
+        {
+            NextRunTime = EarliestEndFromGame() ?? DateTime.Now.AddMinutes(30);
+            Debug($"[INFO] From the game: no free squad, {ends.Count} missions running, the first free at {NextRunTime:HH:mm:ss} - not opening.");
+            yield break;
+        }
+
         yield return Notifications.MapMissions;
 
         yield return WorldMap.Open;
@@ -149,7 +165,13 @@ public class MapMissionsTask : BotTask
                     list.Add(end);
             return list;
         });
-        return ends is { Count: > 0 } ? SpeedUpButton.FreeFrom(ends.Min()) : null;
+        if (ends is not { Count: > 0 }) return null;
+
+        // A later free window that opens before the first mission ends catches both in one visit: two
+        // missions 2 minutes apart cost two 7 s visits (Steam-27 27/11: 12:33 and 12:35, 12:45 and 12:47).
+        // The first one then waits at most the window, done or still free to speed up.
+        var firstEnd = ends.Min();
+        return ends.Select(SpeedUpButton.FreeFrom).Where(w => w <= firstEnd.AddSeconds(-20)).DefaultIfEmpty(SpeedUpButton.FreeFrom(firstEnd)).Max();
     }
 
     private IEnumerator FindEarliestMissionProgress(Action<DateTime?> setEarliest)

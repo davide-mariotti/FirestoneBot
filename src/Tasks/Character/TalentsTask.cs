@@ -57,6 +57,13 @@ public class TalentsTask : BotTask
         // Runs only on the TalentAvailable badge, never on a timer.
         NextRunTime = DateTime.MaxValue;
 
+        // The badge can outlive the points (a start-up flash): the game holds the count.
+        if (GameState.Get("talent points", () => Il2Cpp.GameInitialize.HandlerLoader.TalentsHandler.availablePoints) is 0)
+        {
+            Debug("[INFO] From the game: no talent point to spend - not opening.");
+            yield break;
+        }
+
         yield return Notifications.TalentAvailable;
 
         yield return CharacterScreen.Open();
