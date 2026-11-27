@@ -32,7 +32,10 @@ public class OracleRitualsTask : BotTask
         yield return Poll.Until(rituals.IsVisible);
         yield return rituals.Claim();
         yield return rituals.Start();
-        NextRunTime = rituals.CurrentRunTime();
+        var fromScreen = rituals.CurrentRunTime();
+        var fromGame = GameState.RitualEnd;
+        GameState.CompareTimes("oracle ritual end", fromGame, fromScreen);
+        NextRunTime = fromGame ?? fromScreen;
         Debug($"[INFO] Oracle rituals: claimed {rituals.Claimed}, started {rituals.Started}, next run {NextRunTime:g}.");
 
         yield return Oracle.Close;

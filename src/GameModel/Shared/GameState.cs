@@ -97,6 +97,60 @@ public static class GameState
     public static TimeSpan? AdventureTime => Get("adventure time", () =>
         TimeSpan.FromSeconds(H.SpecialGameStatistics.save.timePlayedThisRun.GetDecrypted()));
 
+    // ---- Timers, each checked on 26/11 against the bot's own Next read off the screen (within seconds).
+
+    /// <summary>The earliest of some end times, null when none (or unreadable).</summary>
+    private static DateTime? Earliest(string what, Func<List<DateTime>> ends) =>
+        GetRef(what, ends) is { Count: > 0 } list ? list.Min() : null;
+
+    /// <summary>When the first experiment in progress ends.</summary>
+    public static DateTime? ExperimentsEnd => Earliest("experiments end", () =>
+    {
+        var ends = new List<DateTime>();
+        foreach (var slot in H.AlchemyExperimentHandler.experimentSlot)
+            if (slot.Value.ExperimentState == ExperimentState.InProgress && Ends(slot.Value.timeStarted, slot.Value.timeRequired) is { } end)
+                ends.Add(end);
+        return ends;
+    });
+
+    /// <summary>When the first Firestone research in progress ends; null too when a slot is free.</summary>
+    public static DateTime? FirestoneResearchEnd => Earliest("firestone research end", () =>
+    {
+        var ends = new List<DateTime>();
+        foreach (var slot in H.FirestoneResearchHandler.firestoneResearchSlots)
+        {
+            if (!slot.researchOnProgress || slot.firestoneResearch == null) return new List<DateTime>();
+            if (Ends(slot.timeStarted, slot.firestoneResearch.realTimeRequired) is { } end) ends.Add(end);
+        }
+
+        return ends;
+    });
+
+    /// <summary>When the Engineer's tools are next ready (every WarMachineHandler.timeReq, 6 h).</summary>
+    public static DateTime? EngineerToolsReady => Get("engineer tools", () => H.WarMachineHandler.lastClaimedTime) is { } last && last > 0
+        ? At(last + WarMachineHandler.timeReq)
+        : null;
+
+    /// <summary>When the running Oracle ritual ends (OracleHandler.ritualDuration, 40 min).</summary>
+    public static DateTime? RitualEnd => GetRef("oracle ritual", () => H.OracleHandler.activeRitual) is { } ritual &&
+                                         Get("oracle ritual state", () => ritual.state == OracleRitual.State.Running) == true
+        ? Ends(ritual.timeStarted, OracleHandler.ritualDuration)
+        : null;
+
+    // ---- Research. The data's names are keys ("cat1/mana_heroes_" for "Mana heroes", 27/11), so
+    // nodes are matched by the preview popup's own research object, and named through KeyName.
+
+    /// <summary>"cat1/mana_heroes_" -> "mana heroes": a research key as words, for the name-based priorities.</summary>
+    public static string KeyName(string key) =>
+        key == null ? "" : key[(key.LastIndexOf('/') + 1)..].Trim('_').Replace('_', ' ');
+
+    /// <summary>The research the Firestone preview popup shows; null when it can't be read.</summary>
+    public static FirestoneResearch FirestoneResearchPreviewed => GetRef("firestone research preview",
+        () => GameInitialize.MenuLoader.FirestoneResearchPreviewPopup.firestoneResearch);
+
+    public static MeteoriteResearch MeteoriteResearchPreviewed => GetRef("meteorite research preview",
+        () => GameInitialize.MenuLoader.MeteoriteResearchPreviewPopup.meteoriteResearch);
+
     // ---- Meteorite research.
 
     public static double? Meteorites => Get("meteorites", () => H.CurrencyHandler.GetCurrency(CurrencyCode.Meteorite).Amount);

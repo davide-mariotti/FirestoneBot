@@ -131,6 +131,15 @@ public class MeteoriteResearchTask : BotTask
         return int.MaxValue;
     }
 
+    // The data's names are keys, so the three types the game names differently go by type.
+    private static int DataRank(Il2Cpp.MeteoriteResearch research) => research.meteoriteResearchType switch
+    {
+        Il2Cpp.MeteoriteResearchType.RainingGold => PriorityRank("Raining Gold"),
+        Il2Cpp.MeteoriteResearchType.Prestigious => PriorityRank("Firestone Finder"),
+        Il2Cpp.MeteoriteResearchType.FirestoneEffect => PriorityRank("Firestone Effect"),
+        _ => PriorityRank(GameState.KeyName(research.name))
+    };
+
     // A safety bound on one run's purchases, not a pacing choice: the reserve is what stops it.
     private const int MaxLevelsPerRun = 30;
 
@@ -151,7 +160,7 @@ public class MeteoriteResearchTask : BotTask
         var picked = node.ReadNodes(NodeCount)?
             .Where(n => GameState.Get("meteorite node state", () =>
                 n.Research.IsUnlocked() && !n.Research.IsMaxLevel() && n.Research.levelUpCost.GetDecrypted() > 0) == true)
-            .Select(n => (n.Tree, n.Index, n.Research, Rank: PriorityRank(n.Research.name), Cost: n.Research.levelUpCost.GetDecrypted()))
+            .Select(n => (n.Tree, n.Index, n.Research, Rank: DataRank(n.Research), Cost: n.Research.levelUpCost.GetDecrypted()))
             .OrderBy(n => n.Rank).ThenBy(n => n.Cost).ThenBy(n => n.Tree).ThenBy(n => n.Index)
             .Select(n => ((int, int, Il2Cpp.MeteoriteResearch, int, double)?)n)
             .FirstOrDefault();
@@ -172,7 +181,7 @@ public class MeteoriteResearchTask : BotTask
                 bestIndex = pIndex;
                 bestTreeOffset = 0;
                 bestPriorityRank = pRank;
-                Logger.Debug($"[INFO] From the game: meteorite research '{pResearch.name}' ({pResearch.meteoriteResearchType}) tree {pTree} #{pIndex}, " +
+                Logger.Debug($"[INFO] From the game: meteorite research '{GameState.KeyName(pResearch.name)}' ({pResearch.meteoriteResearchType}) tree {pTree} #{pIndex}, " +
                              $"level {pResearch.level}/{pResearch.maxLevel}, cost {pCost:0}.");
             }
             else
@@ -270,11 +279,15 @@ public class MeteoriteResearchTask : BotTask
         }
         else
         {
-            // Check the preview is the node the data named before buying from it.
+            // Check the preview is the node the data named before buying from it - by the preview's own
+            // research object: the data names are keys (27/11).
             yield return node.Select(bestIndex.Value);
-            if (!string.Equals(MeteoriteResearchPreview.Name, picked.Value.Item3.name, StringComparison.OrdinalIgnoreCase))
+            var shown = GameState.MeteoriteResearchPreviewed;
+            var wanted = picked.Value.Item3;
+            if (shown == null || shown.meteoriteResearchType != wanted.meteoriteResearchType || shown.researchTree != wanted.researchTree)
             {
-                GameState.Compare("meteorite pick", picked.Value.Item3.name, MeteoriteResearchPreview.Name);
+                GameState.Compare("meteorite pick", $"{wanted.meteoriteResearchType} {wanted.researchTree}",
+                    $"{shown?.meteoriteResearchType.ToString() ?? "-"} {shown?.researchTree.ToString() ?? "-"} '{MeteoriteResearchPreview.Name}'");
                 yield return MeteoriteResearchPreview.Close;
                 yield break;
             }

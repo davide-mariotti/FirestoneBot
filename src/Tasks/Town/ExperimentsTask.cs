@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town.Alchemist;
+using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using MelonLoader;
@@ -28,14 +29,18 @@ public class ExperimentsTask : BotTask
         yield return TownScreen.Open;
         yield return TownScreen.OpenAlchemist;
 
-        yield return new WaitForSeconds(3);
+        // The game says when the Alchemist is done loading (the fixed 3 s wait before).
+        yield return Poll.Until(() => GameState.Busy == false, 30, 0.1f);
         var resources = GetResourceTypes();
         var experiments = new Experiments();
         // Collecting is free, so it isn't limited to resource_type - only starting one spends anything.
         yield return experiments.Claim();
         yield return new WaitForSeconds(1);
         yield return experiments.Start(resources);
-        NextRunTime = experiments.NextRunTime();
+        var fromScreen = experiments.NextRunTime();
+        var fromGame = GameState.ExperimentsEnd is { } end ? SpeedUpButton.FreeFrom(end) : (DateTime?)null;
+        GameState.CompareTimes("experiments next", fromGame, fromScreen);
+        NextRunTime = fromGame ?? fromScreen;
 
         yield return Alchemist.Close;
         yield return TownScreen.Close;
