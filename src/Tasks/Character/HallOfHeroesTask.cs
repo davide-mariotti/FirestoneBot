@@ -154,11 +154,16 @@ public class HallOfHeroesTask : BotTask
         var fresh = DateTime.TryParse(_heroSnapshotTime.Value, out var readAt) && DateTime.Now - readAt < FullScanInterval;
 
         var fullRead = _heroes == null || _heroes.Count != heroCount || !fresh;
+        var fromGame = false;
         if (fullRead)
         {
             Debug($"[INFO] Full read of {heroCount} heroes: " + (_heroes == null ? "no snapshot."
                 : _heroes.Count != heroCount ? $"the snapshot has {_heroes.Count}." : "snapshot older than 24 h."));
-            yield return FullRead(heroCount, formation);
+            // The same heroes as the snapshot: their rows come from the game (13/13 as the screen read them on
+            // Steam-27 and -28, 27/11), in the snapshot's grid order. A new hero still needs the screen's order.
+            fromGame = _heroes != null && _heroes.Count == heroCount && GameMatches(_heroes);
+            if (fromGame) FullReadFromGame(formation);
+            else yield return FullRead(heroCount, formation);
         }
         else
             _heroes = _heroes.Select(h => h with { InFormation = formation.Contains(h.Name) }).ToList();
@@ -173,7 +178,8 @@ public class HallOfHeroesTask : BotTask
         }
         else if (!_stop) yield return UseSeals(_heroes);
 
-        if (!_stop) yield return UnlockTiers(!fullRead);
+        // A full read from the screen has just tried each unlock; one from the game hasn't.
+        if (!_stop) yield return UnlockTiers(!fullRead || fromGame);
         if (!_stop && !_gearBlocked) yield return Spend(EnchantCategory.Gear);
         if (!_stop) yield return Spend(EnchantCategory.Jewels);
         if (!_stop) yield return UseSeals(_heroes.Where(EnchantPlanner.SealReached).ToList());
@@ -277,6 +283,19 @@ public class HallOfHeroesTask : BotTask
         Debug($"[INFO] Hall of Heroes, {_heroes.Count} heroes ('*' = formation or target; level('badge'/'cost'), " +
               "M = empty or needs a higher rarity, L = tier locked):\n" + string.Join("\n", table));
         CompareWithGame();
+    }
+
+    private void FullReadFromGame(HashSet<string> formation)
+    {
+        _heroes = _heroes.Select(h =>
+        {
+            var data = _fromGame[h.Name];
+            return new HeroState(h.Name, formation.Contains(h.Name), data.GearPower, (int[])data.GearLine.Clone(), (int[])data.JewelLine.Clone());
+        }).ToList();
+        _heroSnapshotTime.Value = DateTime.Now.ToString("O");
+        _heroSnapshot.Value = EnchantPlanner.Format(_heroes);
+        Debug($"[INFO] Hall of Heroes from the game, {_heroes.Count} heroes:\n" +
+              string.Join("\n", _heroes.Select(h => $"  {h.Name}{(h.InFormation ? "*" : "")} power {h.GearPower} {_fromGame[h.Name].Levels}")));
     }
 
     // The free check before the data replaces the full read: gear power and every gear level the screen gave a number for.

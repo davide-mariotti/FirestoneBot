@@ -30,10 +30,16 @@ public static class HallOfHeroes
 
         /// <summary>Each slot's raw level/enchantsPerRarity/enchantCost/rarity, for the log while Levels is checked.</summary>
         public string Raw { get; init; }
+
+        /// <summary>The same levels as numbers, Locked/Unavailable included: the full read's rows.</summary>
+        public int[] GearLine { get; init; }
+
+        public int[] JewelLine { get; init; }
     }
 
     // The full read's level for a row: L for a locked tier, M for an empty slot, a level the item's rarity
-    // caps or a cost off the table; else the level.
+    // caps or a cost off the table; else the level. The cap is enchantsPerRarity (2) times the rarity's
+    // number: the screen's M on a Rare at 6, an Uncommon at 4, a Common at 2 (27/11, Steam-27 and -28).
     private static int Level(Tasks.Character.EnchantCategory category, int slot, bool locked, int? level, int? cap, double cost)
     {
         if (locked) return Tasks.Character.HeroState.Locked;
@@ -98,7 +104,7 @@ public static class HallOfHeroes
             {
                 var item = items[slot];
                 gearLine[slot] = Level(Tasks.Character.EnchantCategory.Gear, slot, Tasks.Character.EnchantPlanner.GearTier(slot) > tier,
-                    item?.EnchantLevel, item == null ? null : (int)item.enchantsPerRarity, item == null ? 0 : (double)item.enchantCost);
+                    item?.EnchantLevel, item == null ? null : (int)item.enchantsPerRarity * (int)item.itemRarity, item == null ? 0 : (double)item.enchantCost);
                 raw.Add(item == null ? "-" : $"{item.EnchantLevel}/{(int)item.enchantsPerRarity}/{(double)item.enchantCost:0}/{item.itemRarity}");
             }
 
@@ -107,12 +113,15 @@ public static class HallOfHeroes
             {
                 var jewel = h.jewelDict.ContainsKey((JewelSlot)slot) ? h.jewelDict[(JewelSlot)slot] : null;
                 jewelLine[slot] = Level(Tasks.Character.EnchantCategory.Jewels, slot, Tasks.Character.EnchantPlanner.JewelTier(slot) > tier,
-                    jewel?.enchantLevel, jewel?.enchantsPerRarity, jewel?.enchantCost ?? 0);
+                    jewel?.enchantLevel, jewel == null ? null : jewel.enchantsPerRarity * (int)jewel.rarity, jewel?.enchantCost ?? 0);
                 raw.Add(jewel == null ? "-" : $"{jewel.enchantLevel}/{jewel.enchantsPerRarity}/{jewel.enchantCost:0}/{jewel.rarity}");
             }
 
             heroes[kv.Key.ToString()] = new HeroData((int)h.gearPower, levels, gearSeals, jewelSeals, ready, string.Join(" ", held))
-                { Levels = $"t{tier} " + Tasks.Character.EnchantPlanner.Levels(gearLine, jewelLine), Raw = string.Join(" ", raw) };
+                {
+                    Levels = $"t{tier} " + Tasks.Character.EnchantPlanner.Levels(gearLine, jewelLine), Raw = string.Join(" ", raw),
+                    GearLine = gearLine, JewelLine = jewelLine
+                };
         }
 
         return heroes;

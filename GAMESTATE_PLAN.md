@@ -11,10 +11,32 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
-## Stato (27/11 11:28, branch `game-state`)
+## Stato (27/11 12:23, branch `game-state`)
 
-**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 11:28 (finisce alle 23:28)**, per le richieste
-dell'utente su guardiani, Arena of Kings e Hall of Heroes:
+**Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
+me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 12:23 e
+finisce il 28/11 alle 00:23**, per la seconda serie di richieste dell'utente:
+- **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
+  e ogni ora si apriva la lista per scoprirlo: 22 s all'ora. Ora decide il gioco: `MiniEventsHandler`
+  (evento in corso e non bloccato), la lista `calendarEvents` del calendario (dal 12:09: il solo
+  `currentCalendarEvent` diceva di no per Decorated Heroes, che c'era) e `AnniversaryEventHandler`.
+  Con "non attivo" passa ancora una volta ogni 6 ore e dopo ogni avvio, e confronta il proprio dato
+  con la carta trovata.
+- **Quests** non apre le schede senza una quest completata e non riscossa (`QuestHandler`), a meno
+  che il badge sia acceso.
+- **Oracle's Gift** non rifà la visita dopo ogni riavvio: il NextRunTime salvato è già il prossimo reset.
+- **Pharaoh's Vault** (token da girare, Ancient Coins contro `pharaohsVaultCost`), **Awakening**
+  (Arcane Crystals contro `AwakeningMech.awakenCostBasic`) e **War Machine Rarity**
+  (`CanAnyWarmachineRarityUpgrade`, il controllo del gioco stesso) non aprono senza niente da fare.
+- **Hall of Heroes, lettura completa dai dati.** Prima confrontata con lo schermo: 13 eroi su 13 uguali,
+  slot per slot, su Steam-27 e -28. Il tetto di un incantesimo è `enchantsPerRarity` (2) × il numero
+  della rarità (Rare 6, Uncommon 4); `gearTier` conta da 0. Ora la lettura di ogni 24 ore viene dai
+  dati, nell'ordine dell'istantanea; lo schermo resta per un eroe nuovo. Il giro completo è passato da
+  3-5 minuti a 27 s, che sono la rarità degli eroi.
+- Chaos Rift non è toccato: non ho trovato con certezza la valuta dei colpi.
+
+Alle 11:28 era ripartito per le richieste dell'utente su guardiani, Arena of Kings e Hall of Heroes:
 - **Guardian Evolution** non apre Magic Quarters se il gioco (`GuardianDeck`) non ha guardiani pronti
   a evolvere; se ce ne sono, clicca solo quelli. Prima erano 10-15 s a giro per trovarne nessuno. Alle
   11:10 aveva Vermilion all'evoluzione 4 e Grace all'1, come legge lo schermo, quindi 0,1 s.
