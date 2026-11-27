@@ -20,9 +20,13 @@ public class OraclesGiftTask : BotTask
 
     // The badge stays lit after the claim (since 22/10) and the countdown can read empty, which made
     // this run every 2 minutes (14 runs in 5 h on Steam-27, 26/11). The game's last claim time says it.
+    // The last claim time can also read before today with the gift already taken (Steam-27, 27/11 from
+    // 03:25: a run every 30 min, gifts 6 -> 6), so it's one look per game day; NextRunTime the next.
     public override bool IsNotificationVisible() => GameState.OraclesGiftClaimable is { } claimable
-        ? IsEnabled && MeetsLevelRequirement && claimable
+        ? IsEnabled && MeetsLevelRequirement && claimable && !RanThisGameDay
         : base.IsNotificationVisible();
+
+    private bool RanThisGameDay => LastRunTime is { } last && GameState.NextGameDay is { } next && last > next.AddDays(-1);
 
     public override IEnumerator Execute()
     {

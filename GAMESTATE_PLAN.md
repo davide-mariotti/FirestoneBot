@@ -11,10 +11,17 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
-## Stato (27/11 02:25, branch `game-state`)
+## Stato (27/11 04:01, branch `game-state`)
 
-**Il test di 12 ore su Steam-27 è partito il 27/11 alle 02:25, con il commit `b239ace`.** La sonda della
-fase 0 resta attiva per tutto il test, per la verifica; va tolta prima del merge.
+**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 04:01 (finisce alle 16:01).** La prima
+partenza era delle 02:25 con il commit `b239ace`. È ripartito per due correzioni:
+- `OpenMenu(Alchemist, 0, …)` apriva Transmute, cioè il sottomenu 0 dell'enum. Gli slot degli
+  esperimenti non c'erano e il task ripartiva ogni 2 minuti, finché non si accendeva il badge. Ora la
+  navigazione passa `SubmenuNum.Experiments`.
+- Oracle's Gift: dalle 03:25 l'ultimo claim risultava "prima di oggi" anche con il dono già preso (6 → 6),
+  e il task ripartiva ogni 30 minuti. Ora fa una sola visita per giornata di gioco.
+
+La sonda della fase 0 resta attiva per tutto il test, per la verifica; va tolta prima del merge.
 
 **Fatto e verificato su Steam-27:**
 - **A, badge dal gioco.** `HasNotification` coincide con la barra badge per badge, e `[Rail] Lit` ora

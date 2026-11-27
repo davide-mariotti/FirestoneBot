@@ -28,8 +28,8 @@ public static class Town
         yield return clicks();
     }
 
-    private static IEnumerator Building(MenuName menu, Action open, Func<IEnumerator> clicks) =>
-        GameMenu.OpenOrClick(menu, open, () => ViaTown(clicks));
+    private static IEnumerator Building(MenuName menu, Action open, Func<IEnumerator> clicks, int submenu = 0) =>
+        GameMenu.OpenOrClick(menu, open, () => ViaTown(clicks), submenu);
 
     private static IEnumerator Click(string path) => new GameButton(path).Click();
 
@@ -60,7 +60,7 @@ public static class Town
 
     public static IEnumerator OpenAlchemist => Building(MenuName.Alchemist,
         () => GameMenu.Adventure.OpenAlchemist(AlchemistMech.SubmenuNum.Experiments),
-        () => Click(Paths.MenusLoc.TownIrongardLoc.AlchemistBtn));
+        () => Click(Paths.MenusLoc.TownIrongardLoc.AlchemistBtn), (int)AlchemistMech.SubmenuNum.Experiments);
 
     public static IEnumerator OpenLibrary => Building(MenuName.Library,
         () => GameMenu.Adventure.OpenLibrary(LibraryMech.SubmenuNum.FirestoneResearch),

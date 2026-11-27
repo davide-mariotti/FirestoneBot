@@ -41,8 +41,10 @@ public static class GameMenu
     /// <summary>
     ///     Opens `menu` unless the game already has it open (a badge's shortcut often got there first):
     ///     the remembered way, else each way in turn. `hud` is the HUD's call for it (null if none).
+    ///     `submenu` is the screen's tab for the game's navigation: 0 is the enum's first, which for the
+    ///     Alchemist is Transmute, not Experiments (27/11: the slots weren't there, a rerun every 2 min).
     /// </summary>
-    public static IEnumerator OpenOrClick(MenuName menu, Action hud, Func<IEnumerator> viaClicks)
+    public static IEnumerator OpenOrClick(MenuName menu, Action hud, Func<IEnumerator> viaClicks, int submenu = 0)
     {
         if (GameState.IsMenuOpen(menu) == true) yield break;
 
@@ -50,7 +52,7 @@ public static class GameMenu
         if (!known || way == Way.Navigation)
         {
             var opened = false;
-            yield return Try(menu, "navigation", () => GameState.Core.NavigationControl.OpenMenu(menu, 0, 0, default), ok => opened = ok);
+            yield return Try(menu, "navigation", () => GameState.Core.NavigationControl.OpenMenu(menu, submenu, 0, default), ok => opened = ok);
             if (opened)
             {
                 Remember(menu, Way.Navigation);
