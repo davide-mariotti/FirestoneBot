@@ -60,17 +60,14 @@ public class MissionPin : GameElement
         else
             Debug($"[FAILED] MissionPin found but MapMissionInteraction component is missing. Path: {Path}");
 
-        // Probe for the fixed wait: when the game shows the preview and goes idle, within the same delay.
+        // The preview shows 0.1 s after the click, 0.9 s the first time it loads (Steam-28 27/11): the game's
+        // own state instead of a fixed second each. Anything else (a reward, nothing) waits the second as before.
         var start = Time.realtimeSinceStartup;
-        float? shown = null, idle = null;
-        while (Time.realtimeSinceStartup - start < InteractionDelay)
-        {
-            yield return new WaitForSeconds(0.05f);
-            var t = Time.realtimeSinceStartup - start;
-            if (shown == null && GameState.IsMenuOpen(MenuName.PreviewMission) == true) shown = t;
-            if (shown != null && idle == null && GameState.Busy == false) idle = t;
-        }
-
-        Debug($"[Probe] mission pin: preview shown {shown?.ToString("0.00") ?? "-"} s, idle {idle?.ToString("0.00") ?? "-"} s, menus {GameState.MenuStack}.");
+        var type = interaction?.missionType;
+        bool Shown() => GameState.IsMenuOpen(MenuName.PreviewMission) == true &&
+                        GameState.Get("mission preview", () => GameInitialize.MenuLoader.PreviewMissionPopup.mapMission.missionType == type) == true;
+        yield return Poll.Until(() => Shown() && GameState.Busy == false, (int)(InteractionDelay / 0.05f), 0.05f);
+        if (Shown()) yield return new WaitForSeconds(0.2f);
+        Debug($"[INFO] Mission pin: waited {Time.realtimeSinceStartup - start:0.00} s, menus {GameState.MenuStack}.");
     }
 }

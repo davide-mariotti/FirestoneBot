@@ -147,6 +147,37 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
   (`WFCampaignMissionHandler.lastLootClaimTimestamp` + 6 h coincideva al secondo con il conto alla
   rovescia dello schermo, su -27 e -28): prima di quell'ora non apre.
 
+**Fatto il 27/11 alle 15:47** (deploy su -27 e -28 alle 15:35-15:47, misurato sui log 11:28-15:20):
+- **Spedizioni:** la fine viene dal gioco (`expeditionData.activeExpeditionStartTime` + `activeExpedition.timeReq`),
+  non dal conto alla rovescia dello schermo, che finiva qualche secondo prima: su -27 alle 12:45 e alle
+  13:32 il bot ha aperto con il claim ancora spento ed è tornato 2 minuti dopo (13:32:14, fine vera
+  13:32:15). Con una spedizione in corso non apre prima della fine (+2 s). Senza spedizioni il
+  rinnovo della lista resta quello dello schermo (17:13:02, il dato non c'è). Il ramo "in corso" è da
+  vedere dopo il rinnovo delle 17:13.
+- **Badge GuardianTraining "non visto":** è il flag `guardianTrainingNotificationSeen` del gioco, in
+  memoria, che ogni riavvio rimette a falso. Da quando Guardian Training decide dai dati (12:44) il
+  badge restava acceso fino alla fine dell'addestramento: su -27 e -28 per tutta la sessione 13:29-14:56.
+  Ora, se il badge è acceso solo per quello, il task usa la scorciatoia del badge e chiude (come Seen
+  Badges, senza cliccare niente dentro): 1,6 s, badge spento, alle 15:39, 15:47 su -27 e 15:48 su -28.
+  Il giro completo di prima costava 10,8 s.
+- **BadgeCooldown:** i 30 minuti valgono solo se il badge del gioco era ancora acceso alla fine del
+  giro; un badge che si accende dopo aspetta 2 minuti. Su -27 Quests aveva deciso "niente da
+  riscuotere" alle 13:33:55, una quest si è completata subito dopo e il badge è rimasto acceso fino alle
+  14:04. Per i badge che il gioco non sa dire (posta, Path of Glory, eventi) resta tutto come prima.
+- **Map Missions, mappa vuota:** non apre se nessuna missione in corso è finita o nella finestra
+  gratuita e le squadre libere non hanno missioni da avviare (`missionsOnMap` con `squadsReq` ≤ libere;
+  il conteggio coincideva con lo schermo su 5 giri, 12/10/8/6/1). Torna al primo tra fine missione e
+  rinnovo (`TimeLeftForNewMissions`: 17:13:07 contro 17:13:03 dello schermo). Su -27 alle 15:48: 6
+  squadre libere, mappa vuota, 0,1 s invece di 2,6 s.
+- **Map Missions, attesa dopo il click su una missione:** il secondo fisso è diventato l'attesa
+  dell'anteprima di quella missione (`PreviewMissionPopup.mapMission`, menu `PreviewMission`) più 0,2 s.
+  La sonda: 0,89 s la prima volta (caricamento), 0,10 s le successive. Su -28 alle 15:49: 1,19 s e
+  0,40 s; giro con uno speed-up e un avvio in 6,7 s, contro 7,3 s alle 15:43.
+
+Dopo ogni riavvio Experiments fa un giro da 3,3 s senza niente da fare: il badge è il "non visto" degli
+slot fermi (`strangeDustExperimentSeen`, `exoticCoinExperimentSeen`; il bot usa solo il Dragon Blood),
+e aprire l'Alchemist è il modo di spegnerlo. Costa quanto una visita di Seen Badges: lasciato com'è.
+
 Un evento del calendario finito (Decorated Heroes alle 10:00 del 27/11) tiene la carta aperta per il
 suo negozio: i dati dicono "non attivo" e non ha più sfide, quindi lo si visita ogni 6 ore per spendere
 la valuta rimasta. Il confronto delle sfide si fa solo a evento in corso, e quello di "attivo" segnala
@@ -228,13 +259,13 @@ Idee da guardare (non ancora studiate):
 - i testi rimasti in `src/GameModel/Features` (Talents, Engineer, Rituals, Tavern, MapMission,
   MissionPreview, Temple): per ognuno, è ancora una decisione o solo una riserva?
 
-## Stato (27/11 15:39, branch `game-state`)
+## Stato (27/11 15:47, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:39 (ultimo
-deploy, -27 alle 15:38 e -28 alle 15:39) e finisce il 28/11 alle 03:39.** Il deploy delle 15:35-15:39 è
-descritto in "Fatto il 27/11 alle 15:39" qui sotto.
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:47 (ultimo
+deploy, -27 alle 15:46 e -28 alle 15:47) e finisce il 28/11 alle 03:47.** I deploy delle 15:35-15:47 sono
+descritti in "Fatto il 27/11 alle 15:47", in testa al file.
 
 Alle 15:09 era ripartito per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,

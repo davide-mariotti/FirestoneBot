@@ -26,7 +26,10 @@ public class MapMissionsTask : BotTask
 
     public override IEnumerator Execute()
     {
-        // No squad free and no mission done or inside its free window: the map holds nothing to do.
+        // Nothing the free squads can start (none free, or the map has no mission they fit: missionsOnMap
+        // matched the screen's count on every run, 27/11) and no mission done or inside its free window:
+        // the map holds nothing to do. Steam-27 27/11 15:02 and 15:40: 6 squads free, the map empty until
+        // its 17:13 refresh, opened anyway.
         var ends = GameState.GetRef("map missions in progress", () =>
         {
             var list = new List<DateTime>();
@@ -34,11 +37,22 @@ public class MapMissionsTask : BotTask
                 list.Add(GameState.Ends(m.timeStarted, m.realTimeReq) ?? DateTime.MinValue);
             return list;
         });
-        if (!IsNotificationVisible() && MapMission.FreeSquads == 0 && ends is { Count: > 0 } &&
+        var freeSquads = MapMission.FreeSquads;
+        var startable = GameState.Get("map missions startable", () =>
+        {
+            var n = 0;
+            foreach (var m in GameState.H.MissionsHandler.missionsOnMap)
+                if (m.squadsReq <= freeSquads) n++;
+            return n;
+        });
+        if (!IsNotificationVisible() && freeSquads >= 0 && (freeSquads == 0 || startable == 0) && ends != null &&
             ends.All(e => e != DateTime.MinValue && SpeedUpButton.FreeFrom(e) > DateTime.Now))
         {
-            NextRunTime = EarliestEndFromGame() ?? DateTime.Now.AddMinutes(30);
-            Debug($"[INFO] From the game: no free squad, {ends.Count} missions running, the first free at {NextRunTime:HH:mm:ss} - not opening.");
+            var next = EarliestEndFromGame();
+            if (freeSquads > 0 && NewMissionsFromGame() is { } newIn && (next == null || newIn < next)) next = newIn;
+            NextRunTime = next ?? DateTime.Now.AddMinutes(30);
+            Debug($"[INFO] From the game: {freeSquads} free squads, {startable} missions they can start, {ends.Count} running, " +
+                  $"next at {NextRunTime:HH:mm:ss} - not opening.");
             yield break;
         }
 
@@ -104,6 +118,10 @@ public class MapMissionsTask : BotTask
 
         DateTime? earliest = EarliestEndFromGame();
         if (earliest == null) yield return FindEarliestMissionProgress(value => earliest = value);
+        // With none running the screen's countdown is the map's refresh; squads left free wait for it too.
+        var refresh = NewMissionsFromGame();
+        if (earliest == null) GameState.CompareTimes("map missions refresh", refresh, MapMission.NextRunTime);
+        if (MapMission.FreeSquads > 0 && refresh is { } r && (earliest == null || r < earliest)) earliest = r;
         NextRunTime = earliest ?? MapMission.NextRunTime;
 
         yield return WorldMap.Close;
@@ -173,6 +191,10 @@ public class MapMissionsTask : BotTask
         var firstEnd = ends.Min();
         return ends.Select(SpeedUpButton.FreeFrom).Where(w => w <= firstEnd.AddSeconds(-20)).DefaultIfEmpty(SpeedUpButton.FreeFrom(firstEnd)).Max();
     }
+
+    /// <summary>When the map gets its new missions, from the game; null when unreadable.</summary>
+    private static DateTime? NewMissionsFromGame() => GameState.Get("map missions refresh",
+        () => DateTime.Now.AddSeconds(GameState.H.MissionsHandler.TimeLeftForNewMissions));
 
     private IEnumerator FindEarliestMissionProgress(Action<DateTime?> setEarliest)
     {
