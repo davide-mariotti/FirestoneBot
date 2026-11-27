@@ -81,6 +81,11 @@ public static class GameState
     /// <summary>The game's next daily reset, local time.</summary>
     public static DateTime? NextGameDay => SecondsToNextGameDay is { } left ? DateTime.Now.AddSeconds(left) : null;
 
+    /// <summary>The game's next weekly reset, local time.</summary>
+    public static DateTime? NextGameWeek => Get("next game week", () => Core.ServerUpdate.timeLeftForNextGameWeek) is { } left
+        ? DateTime.Now.AddSeconds(left)
+        : null;
+
     /// <summary>Whether a server timestamp falls before today's game day began (a daily claim not done today).</summary>
     public static bool? BeforeToday(double serverTime) =>
         ServerNow is { } now && SecondsToNextGameDay is { } left ? serverTime < now + left - 86400 : null;

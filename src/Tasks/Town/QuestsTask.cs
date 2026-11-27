@@ -30,13 +30,18 @@ public class QuestsTask : BotTask
         var daily = CharacterScreen.DailyQuestClaimButtons();
         foreach (var claimButton in daily)
             yield return claimButton.Click();
+        // The quests renew at the game's resets; the countdown on screen is the fallback and the check.
         var dailyRenewTime = CharacterScreen.QuestsRenewTime;
+        GameState.CompareTimes("daily quests renew", GameState.NextGameDay, dailyRenewTime);
+        dailyRenewTime = GameState.NextGameDay ?? dailyRenewTime;
 
         yield return CharacterScreen.OpenWeeklyQuestsSubTab;
         var weekly = CharacterScreen.WeeklyQuestClaimButtons();
         foreach (var claimButton in weekly)
             yield return claimButton.Click();
         var weeklyRenewTime = CharacterScreen.QuestsRenewTime;
+        GameState.CompareTimes("weekly quests renew", GameState.NextGameWeek, weeklyRenewTime);
+        weeklyRenewTime = GameState.NextGameWeek ?? weeklyRenewTime;
 
         yield return CharacterScreen.Close;
         Debug($"[INFO] Quests: claimed {daily.Count} daily, {weekly.Count} weekly.");
