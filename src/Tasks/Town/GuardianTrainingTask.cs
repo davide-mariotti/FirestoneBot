@@ -47,7 +47,7 @@ public class GuardianTrainingTask : BotTask
             var reserve = evolutionDue ? int.MaxValue : _strangeDustReserve?.Value ?? 10000;
             var dust = StrangeDust;
             var done = 0;
-            yield return EnlightenSelected(_ => StrangeDust - EnlightenmentCost >= reserve, d => done = d);
+            yield return EnlightenSelected(_ => StrangeDust - EnlightenmentCost >= reserve, d => done = d, true);
             if (done > 0)
                 Debug($"[INFO] Enlightened {target.Name} {done} times: Strange Dust {dust:0} -> {StrangeDust:0} (reserve {reserve}).");
         }
@@ -136,9 +136,51 @@ public class GuardianTrainingTask : BotTask
     ///     Strange Dust. Stops at the first click the dust doesn't confirm, or at level 10, where the
     ///     button turns off until the evolution (Grace after 41 clicks, Steam-17 26/11).
     /// </summary>
-    private static IEnumerator EnlightenSelected(Func<int, bool> more, Action<int> onDone)
+    private static IEnumerator EnlightenSelected(Func<int, bool> more, Action<int> onDone, bool bulk = false)
     {
+        // In bulk the game's own quantity button goes x20, then x10, x5 and x1 as the dust runs short
+        // or a bigger step is refused: 78 single clicks took 56 s on Steam-27 (27/11). EnlightenmentCost
+        // is the shown price, the quantity's, so more() keeps the reserve. An event's exact count stays
+        // at x1, and the button is left at x1.
         var done = 0;
+        foreach (var quantity in bulk ? new[] { 20, 10, 5, 1 } : new[] { 1 })
+        {
+            var set = false;
+            yield return SetQuantity(quantity, ok => set = ok);
+            if (!set && quantity != 1) continue;
+            var step = set ? quantity : 1;
+
+            yield return EnlightenAt(step, more, () => done, d => done = d);
+        }
+
+        yield return SetQuantity(1, _ => { });
+        onDone(done);
+    }
+
+    private static Il2Cpp.MagicQuartersInfoSubmenu Info => GameInitialize.MenuLoader.MagicQuartersInfoSubmenu;
+
+    private static int? Quantity => GameState.Get("enlighten quantity", () => Info.currentEnlightQuantity);
+
+    /// <summary>Presses the game's quantity button until it reads `wanted`; false when it can't.</summary>
+    private static IEnumerator SetQuantity(int wanted, Action<bool> done)
+    {
+        for (var i = 0; i < 5 && Quantity is { } current && current != wanted; i++)
+        {
+            if (GameState.Get("enlighten quantity button", () =>
+                {
+                    Info.changeQuantityButton.onClick.Invoke();
+                    return true;
+                }) != true)
+                break;
+            yield return Poll.AfterClick("enlighten quantity");
+        }
+
+        done(Quantity == wanted);
+    }
+
+    private static IEnumerator EnlightenAt(int step, Func<int, bool> more, Func<int> getDone, Action<int> setDone)
+    {
+        var done = getDone();
         var button = MagicQuarters.EnlightenmentBtn;
         while (more(done) && button.IsClickable())
         {
@@ -157,12 +199,12 @@ public class GuardianTrainingTask : BotTask
                 break;
             }
 
-            done++;
+            // Counted before it's confirmed, as always: a missed click never turns into an extra one.
+            done += step;
+            setDone(done);
             yield return Poll.Until(() => StrangeDust < before);
             if (StrangeDust >= before) break;
         }
-
-        onDone(done);
     }
 
     private int GetGuardianIndex()
