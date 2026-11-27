@@ -161,15 +161,72 @@ gioco, apre solo per una missione da tentare o per cambiare l'equipaggio) e **Bl
 **Guardati e lasciati come sono:**
 - Seen Badges: i badge "visto" li riaccende ogni riavvio, perché il gioco tiene i flag solo in memoria, e
   scriverli è vietato; costa 3 s al riavvio;
-- token gratuito dello Scarab Game, bottino della campagna Warfront, picconi gratuiti: girano di rado;
-  i dati per decidere ci sono (`ScarabGameHandler.DailyFreePharaohTokenAvailable`,
-  `WFCampaignMissionHandler.lastLootClaimTimestamp` / `hasClaimedLoot`, `FreePickaxeState`).
+- Expeditions, Experiments, Research, Map Missions, Oracle Rituals, Quests: decidono già dai dati;
+  quando aprono è per l'azione, che resta un click.
 
 **Prossimi candidati** (dati già trovati):
-- il ritiro degli oggetti distribuiti dalla gilda (`ClaimMemberRewardsFromGuildItems`): da chiedere
-  all'utente se la sua gilda li distribuisce;
+- il ritiro degli oggetti distribuiti dalla gilda (`ClaimMemberRewardsFromGuildItems`, Banca di Gilda →
+  Tesoreria): l'utente deve ancora dire se la sua gilda li distribuisce, non toccarlo prima;
+- la regola dei livelli delle sfide del calendario (`CalendarEventChallengeData.c`), da confermare col
+  prossimo evento in corso: oggi le carte e i dati non sono mai stati confrontati a evento attivo;
 - Frostfire, routine di push con le pergamene e vendita delle pergamene: in pausa per scelta
   dell'utente.
+
+## Come cercare altre ottimizzazioni
+
+Il metodo usato il 26-27/11, passo per passo.
+
+1. **Dove va il tempo.** Dai log delle istanze di test (Steam-27, Steam-28) e di Steam-26 su main, la
+   durata di ogni `[Task] X finished in Ns`, raggruppata per task: numero di giri, totale, media. I giri
+   da 0,1 s sono già decisi dai dati. Contano quelli che aprono una schermata e poi non fanno niente, o
+   che leggono molti testi.
+2. **Cosa legge dallo schermo.** Nel codice del task e del suo modello (`src/GameModel/Features/...`):
+   `new GameText(...)` (testi), `IsVisible()` / `IsClickable()` usati per decidere, scansioni di liste
+   sullo schermo. `grep -rn "new GameText(" src` le trova tutte (73 al 27/11, molte ora solo riserva).
+3. **Il dato del gioco.** In `tests\GameApi\CoreASM.dll.api.txt` (e `SharedASM` per gli enum):
+   - `grep -n "^type NomeTipo$"` dà campi e metodi;
+   - `HandlerLoader` (`GameInitialize.HandlerLoader`, in codice `GameState.H`) e `MenuLoader`
+     (`GameInitialize.MenuLoader`) espongono gli handler e i menu come `prop`;
+   - le valute sono `CurrencyCode` (`GameState.Currency(code)`);
+   - i badge sono `NotificationType` (`GameState.HasBadge`).
+
+   Il dump non ha i tipi delle proprietà: si compila una riga di prova (`int x = H.Qualcosa.prop;`) e
+   l'errore del compilatore dice il tipo, poi si toglie la riga. Un membro statico va scritto
+   `Il2Cpp.Tipo.membro` (errore CS0176 altrimenti).
+4. **REA, se il nome non basta.** REA (npm `rea-agents`, skill `reverse-engineer-anything`, MCP `rea`)
+   rifà il dump dopo un aggiornamento del gioco:
+   `rea inspect-il2cpp-metadata <box>\Firestone_Data\il2cpp_data\Metadata\global-metadata.dat --binary <box>\GameAssembly.dll`,
+   poi `python tests\GameApi\dump_api.py` (istruzioni in testa al file). Va lanciato da PowerShell,
+   perché da Git Bash rovina i percorsi. Per capire cosa fa un metodo (una formula di costo, quando un
+   flag cambia) si può decompilarne il corpo con REA e Ghidra. Più rapido di solito: scrivere il valore
+   nel log accanto a quello dello schermo e guardarli.
+5. **Scrivere la modifica.**
+   - Ogni lettura in `GameState.Get` / `GetRef`; se il dato non si legge, si torna allo schermo.
+   - Il dato nuovo prima si confronta con lo schermo (`GameState.Compare`, o una riga di log con
+     tutti e due).
+   - Lo si usa solo quando coincide. Se può sbagliare in modo costoso (una spesa saltata o doppia),
+     il task si fida dei dati solo dopo una visita in cui coincidevano. Esempi: `seals_seen` e
+     `rarity_checked` in Hall of Heroes, `_trusted` in Free Pickaxes, `_challengesTrusted` negli
+     eventi.
+   - Una spesa si conta solo quando la valuta scende, e il click si ferma se l'icona del prezzo non è
+     quella attesa.
+   - Le righe di log hanno la forma `From the game: ... - not opening.` quando si salta l'apertura.
+6. **Provare.**
+   - Build contro gli assembly della box, poi `tools\Restart\deploy_test.ps1` con `-ResetTasks`
+     (e `-FullRead` per Hall of Heroes), così i task toccati partono subito.
+   - Verifica nei `Latest.log`: `From the game`, `mismatch`, `fallback`, `[FAILED] Task` e le righe di
+     spesa.
+   - Ogni deploy fa ripartire la finestra di 12 ore: va scritto in "Stato".
+
+Idee da guardare (non ancora studiate):
+- la Tavern (Gamer Quest, artefatti): legge ancora il campanello "crea artefatto" dallo schermo;
+- Oracle Rituals: quale rituale parte lo decide l'ordine della griglia, non un dato;
+- Map Missions: l'ordine delle missioni da avviare viene dai testi della mappa (nome e durata),
+  mentre `MissionsHandler` ha missioni e squadre;
+- Expeditions e Map Missions: un'attesa breve dentro il giro, quando la prossima finisce entro pochi
+  secondi, al posto di un nuovo giro;
+- i testi rimasti in `src/GameModel/Features` (Talents, Engineer, Rituals, Tavern, MapMission,
+  MissionPreview, Temple): per ognuno, è ancora una decisione o solo una riserva?
 
 ## Stato (27/11 15:09, branch `game-state`)
 
