@@ -154,7 +154,10 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
   13:32:15). Con una spedizione in corso non apre prima della fine (+2 s). Senza spedizioni il
   rinnovo della lista resta quello dello schermo (17:13:02, il dato non c'è). Al rinnovo: su -27 alle
   17:13 ExploreTheCatacombs, fine del gioco 18:06:07 contro 18:06:08 dello schermo; su -28 alle 17:14
-  TrainTheRecruits, 18:14:11 tutti e due. Il claim a fine spedizione è da vedere alle 18:06 e 18:14.
+  TrainTheRecruits, 18:14:11 tutti e due. Il claim a fine spedizione, visto dal vivo: -27 alle 18:06:12
+  ha riscosso ExploreTheCatacombs e avviato CraftABow (fine 18:53:14 sia dal gioco che dallo schermo),
+  -28 alle 18:14:16 TrainTheRecruits e avviato ExploreTheCatacombs (19:07:18 dal gioco, 19:07:19 dallo
+  schermo). 3,1 s ognuno, nessun "Click ignored", nessun giro a vuoto dopo.
 - **Badge GuardianTraining "non visto":** è il flag `guardianTrainingNotificationSeen` del gioco, in
   memoria, che ogni riavvio rimette a falso. Da quando Guardian Training decide dai dati (12:44) il
   badge restava acceso fino alla fine dell'addestramento: su -27 e -28 per tutta la sessione 13:29-14:56.
@@ -289,7 +292,13 @@ Guardati il 27/11 pomeriggio (dai log 11:28-15:20 di -27 e -28):
   le Twilight Hourglass arrivano di rado;
 - GuardianHolyUpgrade ha anche lui un flag "non visto" (`guardianHolyUpgradeNotificationSeen`) e il task
   decide dai dati senza aprire. Su -27 e -28 il badge non si accende mai; su -26 (main) si spegne quando
-  si apre Magic Quarters. Al rollout va guardato nel censimento.
+  si apre Magic Quarters. Al rollout va guardato nel censimento;
+- Guardian Training: quando apre per l'Enlighten (dust sopra la riserva) clicca Train anche con un
+  addestramento in corso, e il click va a vuoto (un "Click ignored" sul `trainButton` al primo giro di
+  ogni sessione: -27 15:35, -28 15:39 e 17:07). Non spende niente: saltare il click quando
+  `MagicQuarters.TrainingEnd` è nel futuro, al prossimo deploy che serve comunque;
+- AutoRetreat: clicca `goBackStage` 5 volte di fila e 2 vanno a vuoto mentre lo stage cambia (-27 e -28
+  dalle 15:46). Non l'ho toccato io e non costa niente.
 
 ## Stato (27/11 15:47, branch `game-state`)
 
