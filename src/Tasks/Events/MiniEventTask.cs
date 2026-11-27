@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Firebot.GameModel.Features.Events;
+using Firebot.GameModel.Shared;
 
 namespace Firebot.Tasks.Events;
 
@@ -21,6 +22,8 @@ public class MiniEventTask : EventTask
     };
 
     protected override bool IsScreenVisible => MiniEvents.IsVisible;
+
+    protected override bool? RunningFromGame => GameState.MiniEventRunning;
 
     protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)
     {

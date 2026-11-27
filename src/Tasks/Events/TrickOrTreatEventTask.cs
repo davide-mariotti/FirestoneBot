@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Firebot.GameModel.Features.Events;
+using Firebot.GameModel.Shared;
 
 namespace Firebot.Tasks.Events;
 
@@ -13,6 +14,8 @@ public class TrickOrTreatEventTask : EventTask
     protected override string[] EventNames => new[] { "Trick or treat" };
 
     protected override bool IsScreenVisible => TrickOrTreatShop.IsVisible;
+
+    protected override bool? RunningFromGame => GameState.CalendarEventRunning(Il2Cpp.CalendarEvents.TrickOrTreat);
 
     // No challenges: exchange only.
     protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)

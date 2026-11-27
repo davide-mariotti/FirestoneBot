@@ -194,6 +194,57 @@ public static class GameState
         return sb.ToString();
     });
 
+    // Which events run for this account, so the Events list isn't opened every hour to find out
+    // (Steam-27, 27/11: three events locked or not listed, 7-8 s each, every hour).
+
+    /// <summary>A mini-event on, and not locked by level.</summary>
+    public static bool? MiniEventRunning => Get("mini event", () =>
+        H.MiniEventsHandler.hasEvent && H.MiniEventsHandler.CurrentMiniEvent is { } e && !e.levelLocked);
+
+    private static bool Within(CalendarEventsHandler.EventData e) =>
+        e != null && ServerNow is { } now && now >= e.s && now <= e.e;
+
+    /// <summary>
+    ///     This calendar event is the current one or in the calendar's list, between its start and end.
+    ///     27/11: Decorated Heroes ran with the current-event check alone saying no.
+    /// </summary>
+    public static bool? CalendarEventRunning(CalendarEvents code) => Get($"calendar event {code}", () =>
+    {
+        foreach (var e in H.CalendarEventsHandler.calendarEvents)
+            if (e.c == (int)code && Within(e))
+                return true;
+        return H.CalendarEventsHandler.currentCalendarEvent is { } cur && cur.c == (int)code && Within(cur);
+    });
+
+    /// <summary>The calendar as the game holds it, for the log: code:start-end:u, server time first.</summary>
+    public static string CalendarDescribe => GetRef("calendar describe", () =>
+    {
+        var h = H.CalendarEventsHandler;
+        var cur = h.currentCalendarEvent;
+        var list = new List<string>();
+        foreach (var e in h.calendarEvents) list.Add($"{e.c}:{e.s:0}-{e.e:0}:{e.u}");
+        return $"now {ServerNow:0}, current {(cur == null ? "-" : $"{cur.c}:{cur.s:0}-{cur.e:0}:{cur.u}")}, list {string.Join(" ", list)}";
+    });
+
+    /// <summary>The New Player (anniversary handler's) event between its start and end.</summary>
+    public static bool? NewPlayerEventRunning => Get("new player event", () => Within(H.AnniversaryEventHandler.anniversaryEvent));
+
+    // ---- Quests.
+
+    /// <summary>Daily and weekly quests done and not claimed yet.</summary>
+    public static int? ClaimableQuests => Get("quests claimable", () =>
+    {
+        var claimable = 0;
+        foreach (var entry in H.QuestHandler.quests)
+            if (!entry.Value.hasClaimed && entry.Value.questProgress >= entry.Value.questRequirement)
+                claimable++;
+        return claimable;
+    });
+
+    // ---- Currencies, by the game's code.
+
+    public static double? Currency(CurrencyCode code) => Get($"currency {code}", () => H.CurrencyHandler.GetCurrency(code).Amount);
+
     // ---- Mail and Path of Glory.
 
     /// <summary>Mails with a reward not claimed yet.</summary>

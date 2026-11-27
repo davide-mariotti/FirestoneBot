@@ -26,7 +26,10 @@ public class OraclesGiftTask : BotTask
         ? IsEnabled && MeetsLevelRequirement && claimable && !RanThisGameDay
         : base.IsNotificationVisible();
 
-    private bool RanThisGameDay => LastRunTime is { } last && GameState.NextGameDay is { } next && last > next.AddDays(-1);
+    // The saved NextRunTime is the next reset once today's look is done, and it survives a restart:
+    // LastRunTime alone didn't, so every restart cost a visit (15-19 s, Steam-27 27/11).
+    private bool RanThisGameDay => GameState.NextGameDay is { } next &&
+                                   (LastRunTime is { } last && last > next.AddDays(-1) || NextRunTime > next.AddHours(-1));
 
     public override IEnumerator Execute()
     {

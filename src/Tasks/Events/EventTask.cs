@@ -54,8 +54,24 @@ public abstract class EventTask : BotTask
     private DateTime _quietSince;
     private static readonly TimeSpan MaxQuiet = TimeSpan.FromHours(3);
 
+    /// <summary>The game says whether this event runs for the account; null when it can't.</summary>
+    protected abstract bool? RunningFromGame { get; }
+
+    // A visit still happens this often with the game saying the event doesn't run, and once a session,
+    // so a wrong read shows up as a mismatch instead of an event left unvisited.
+    private static readonly TimeSpan NotRunningRecheck = TimeSpan.FromHours(6);
+    private DateTime? _lastVisit;
+
     public override IEnumerator Execute()
     {
+        var running = RunningFromGame;
+        if (running == false && _lastVisit is { } last && DateTime.Now - last < NotRunningRecheck)
+        {
+            Debug("[INFO] From the game: not running for this account - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         if (_quietSignature != null && GameState.EventsSignature == _quietSignature && DateTime.Now - _quietSince < MaxQuiet)
         {
             Debug("[INFO] The game's event state hasn't moved since a visit with nothing to do - not opening.");
@@ -125,6 +141,12 @@ public abstract class EventTask : BotTask
         string title = null;
         yield return EventManager.OpenEvent(EventNames, t => title = t);
         yield return Poll.Until(() => IsScreenVisible);
+
+        _lastVisit = DateTime.Now;
+        // The free check of the game's word: a card that opened is a running event.
+        var game = RunningFromGame;
+        GameState.Compare($"event {GetType().Name} running", game?.ToString(), (title != null).ToString());
+        if (game != null && game != (title != null)) Debug($"[INFO] Events from the game: {GameState.CalendarDescribe}.");
 
         if (IsScreenVisible)
         {

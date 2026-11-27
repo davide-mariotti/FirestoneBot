@@ -289,15 +289,22 @@ public class HallOfHeroesTask : BotTask
             return;
         }
 
+        var same = 0;
         foreach (var hero in _heroes)
         {
             var data = _fromGame[hero.Name];
-            var levels = Enumerable.Range(0, hero.Gear.Length).Where(s => hero.Gear[s] >= 0).ToList();
-            GameState.Compare($"hero {hero.Name} gear", string.Join(",", levels.Select(s => data.GearLevels[s])),
-                string.Join(",", levels.Select(s => hero.Gear[s])));
+            var game = data.Levels[(data.Levels.IndexOf(' ') + 1)..];
+            if (game == EnchantPlanner.Levels(hero.Gear, hero.Jewels)) same++;
+            else
+            {
+                GameState.Compare($"hero {hero.Name} levels", data.Levels, EnchantPlanner.Levels(hero.Gear, hero.Jewels));
+                Debug($"[INFO] {hero.Name} from the game, level/cap/cost/rarity per slot: {data.Raw}.");
+            }
             if (Math.Abs(data.GearPower - hero.GearPower) > Math.Max(1, hero.GearPower * 0.01))
                 GameState.Compare($"hero {hero.Name} gear power", $"{data.GearPower}", $"{hero.GearPower}");
         }
+
+        Debug($"[INFO] Hall of Heroes from the game: {same}/{_heroes.Count} heroes' levels as the screen read them.");
     }
 
     private static string SealsWaiting(IEnumerable<HeroState> heroes)

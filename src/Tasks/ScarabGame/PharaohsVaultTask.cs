@@ -32,6 +32,17 @@ public class PharaohsVaultTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // No badge, no token to spin and the coins short of a vault: the screens hold nothing (28 s a run).
+        var tokens = GameState.Currency(Il2Cpp.CurrencyCode.NoblesToken) + GameState.Currency(Il2Cpp.CurrencyCode.PharaohsToken);
+        var coins = GameState.Currency(Il2Cpp.CurrencyCode.AncientCoin);
+        var vault = GameState.Get("pharaoh's vault cost", () => Il2Cpp.ScarabGameHandler.pharaohsVaultCost);
+        if (!IsNotificationVisible() && tokens < 1 && coins < vault)
+        {
+            Debug($"[INFO] From the game: {tokens:0} tokens to spin, {coins:0} Ancient Coins of {vault} a vault - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.ScarabGame;
         yield return Notifications.ScarabGameMilestones;
 

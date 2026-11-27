@@ -22,6 +22,17 @@ public class QuestsTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The hourly check opened the Quests tabs to claim nothing (4-5 s, Steam-27 27/11): the game
+        // holds every quest's progress. A lit badge still opens them, the game's own word.
+        if (!IsNotificationVisible() && GameState.ClaimableQuests == 0)
+        {
+            Debug("[INFO] From the game: no quest to claim - not opening.");
+            var next = DateTime.Now + MaxRecheckDelay;
+            if (GameState.NextGameDay is { } day && day < next) next = day;
+            NextRunTime = next;
+            yield break;
+        }
+
         yield return Notifications.Quests;
         yield return CharacterScreen.Open();
         yield return CharacterScreen.OpenQuestsTab;

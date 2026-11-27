@@ -23,7 +23,25 @@ public static class HallOfHeroes
     ///     level (-1 for an empty slot), the level each slot's Seal of Power in hand asks (0 without one,
     ///     as the Seals tab gives it), and whether a seal can be used now.
     /// </summary>
-    public sealed record HeroData(int GearPower, int[] GearLevels, int[] GearSeals, int[] JewelSeals, bool SealReady, string SealsHeld);
+    public sealed record HeroData(int GearPower, int[] GearLevels, int[] GearSeals, int[] JewelSeals, bool SealReady, string SealsHeld)
+    {
+        /// <summary>The snapshot's levels from the game, L and M as the full read writes them: what the full read is checked on.</summary>
+        public string Levels { get; init; }
+
+        /// <summary>Each slot's raw level/enchantsPerRarity/enchantCost/rarity, for the log while Levels is checked.</summary>
+        public string Raw { get; init; }
+    }
+
+    // The full read's level for a row: L for a locked tier, M for an empty slot, a level the item's rarity
+    // caps or a cost off the table; else the level.
+    private static int Level(Tasks.Character.EnchantCategory category, int slot, bool locked, int? level, int? cap, double cost)
+    {
+        if (locked) return Tasks.Character.HeroState.Locked;
+        if (level is not { } l || cap is not { } c || l >= c && l < Tasks.Character.EnchantPlanner.MaxLevel)
+            return Tasks.Character.HeroState.Unavailable;
+        if (l >= Tasks.Character.EnchantPlanner.MaxLevel) return l;
+        return (long)cost == Tasks.Character.EnchantPlanner.Cost(category, slot, l) ? l : Tasks.Character.HeroState.Unavailable;
+    }
 
     /// <summary>Every hero by name (HeroCode's names are the screen's); null when it can't be read.</summary>
     public static Dictionary<string, HeroData> FromGame => GameState.GetRef("hall of heroes", () =>
@@ -72,7 +90,29 @@ public static class HallOfHeroes
                 ready |= jewel.enchantLevel >= need;
             }
 
-            heroes[kv.Key.ToString()] = new HeroData((int)h.gearPower, levels, gearSeals, jewelSeals, ready, string.Join(" ", held));
+            // gearTier counts from 0 (GearTier.Tier1): 2 with tier 3's rows shown (27/11, every hero).
+            var tier = h.gearTier + 1;
+            var raw = new List<string>();
+            var gearLine = new int[levels.Length];
+            for (var slot = 0; slot < gearLine.Length; slot++)
+            {
+                var item = items[slot];
+                gearLine[slot] = Level(Tasks.Character.EnchantCategory.Gear, slot, Tasks.Character.EnchantPlanner.GearTier(slot) > tier,
+                    item?.EnchantLevel, item == null ? null : (int)item.enchantsPerRarity, item == null ? 0 : (double)item.enchantCost);
+                raw.Add(item == null ? "-" : $"{item.EnchantLevel}/{(int)item.enchantsPerRarity}/{(double)item.enchantCost:0}/{item.itemRarity}");
+            }
+
+            var jewelLine = new int[jewelSeals.Length];
+            for (var slot = 0; slot < jewelLine.Length; slot++)
+            {
+                var jewel = h.jewelDict.ContainsKey((JewelSlot)slot) ? h.jewelDict[(JewelSlot)slot] : null;
+                jewelLine[slot] = Level(Tasks.Character.EnchantCategory.Jewels, slot, Tasks.Character.EnchantPlanner.JewelTier(slot) > tier,
+                    jewel?.enchantLevel, jewel?.enchantsPerRarity, jewel?.enchantCost ?? 0);
+                raw.Add(jewel == null ? "-" : $"{jewel.enchantLevel}/{jewel.enchantsPerRarity}/{jewel.enchantCost:0}/{jewel.rarity}");
+            }
+
+            heroes[kv.Key.ToString()] = new HeroData((int)h.gearPower, levels, gearSeals, jewelSeals, ready, string.Join(" ", held))
+                { Levels = $"t{tier} " + Tasks.Character.EnchantPlanner.Levels(gearLine, jewelLine), Raw = string.Join(" ", raw) };
         }
 
         return heroes;
