@@ -190,7 +190,7 @@ public static class BotManager
                     Logger.Info($"[Probe] task {readyTask.SectionTitle} starts: menus={GameStateProbe.MenuStack()}");
 
                     yield return RunSafe(readyTask.Execute(), $"Task {readyTask.SectionTitle}", readyTask.MaxRuntimeSeconds);
-                    readyTask.LastRunTime = DateTime.Now;
+                    readyTask.MarkRun();
                     readyTask.EnsureMinimumNextRun(IdleRetryDelay);
                     readyTask.PersistNextRunTime();
 

@@ -23,6 +23,18 @@ public static class Expedition
     public static IEnumerator Start => new GameButton(Paths.MenusLoc.ExpeditionsLoc.StartBtn).Click();
 
     /// <summary>
+    ///     When the running expedition ends, local time, from the game (its start + timeReq);
+    ///     DateTime.MinValue when none runs, null when unreadable.
+    /// </summary>
+    public static DateTime? EndFromGame => GameState.Get("expedition end", () =>
+    {
+        var d = GameState.H.GuildManagement.expeditionData;
+        if (d.activeExpedition == null) return DateTime.MinValue;
+        return GameState.Ends(d.activeExpeditionStartTime, d.activeExpedition.timeReq.GetDecrypted()) ??
+               throw new InvalidOperationException("no server time");
+    });
+
+    /// <summary>
     ///     Starts the pending expedition with the most Expedition Tokens per hour, then the most guild
     ///     coins (decided 26/11: the tokens hold the Personal Tree, and the War Machines behind it), by
     ///     its own start button. The first one's button, as before, when the game can't be read.
@@ -66,5 +78,7 @@ public static class Expedition
         Core.Logger.Debug($"[INFO] Expedition from the game: {best.expedition.expeditionType}, of {listing}.");
         best.startButton.onClick.Invoke();
         yield return Poll.AfterClick("expedition start");
+        // The running expedition lands in the game's data with the server's answer.
+        yield return Poll.Until(() => EndFromGame != DateTime.MinValue, 20, 0.1f);
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Il2Cpp;
 using UnityEngine;
@@ -59,6 +60,17 @@ public class MissionPin : GameElement
         else
             Debug($"[FAILED] MissionPin found but MapMissionInteraction component is missing. Path: {Path}");
 
-        yield return new WaitForSeconds(InteractionDelay);
+        // Probe for the fixed wait: when the game shows the preview and goes idle, within the same delay.
+        var start = Time.realtimeSinceStartup;
+        float? shown = null, idle = null;
+        while (Time.realtimeSinceStartup - start < InteractionDelay)
+        {
+            yield return new WaitForSeconds(0.05f);
+            var t = Time.realtimeSinceStartup - start;
+            if (shown == null && GameState.IsMenuOpen(MenuName.PreviewMission) == true) shown = t;
+            if (shown != null && idle == null && GameState.Busy == false) idle = t;
+        }
+
+        Debug($"[Probe] mission pin: preview shown {shown?.ToString("0.00") ?? "-"} s, idle {idle?.ToString("0.00") ?? "-"} s, menus {GameState.MenuStack}.");
     }
 }

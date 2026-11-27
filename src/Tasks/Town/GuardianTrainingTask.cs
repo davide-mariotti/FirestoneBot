@@ -39,6 +39,16 @@ public class GuardianTrainingTask : BotTask
         if (MagicQuarters.TrainingEnd is { } end && end > DateTime.Now && perEnlighten > 0 &&
             (keep == int.MaxValue || StrangeDust - perEnlighten < keep))
         {
+            // That badge is the game's "not seen since the restart" (guardianTrainingNotificationSeen, in
+            // memory only): left alone it stayed lit for hours (27/11, -27 and -28, 13:29-14:56). Its own
+            // shortcut opens Magic Quarters, which marks it seen; nothing is clicked in there.
+            if (IsNotificationVisible() && TrainingUnseen == true)
+            {
+                yield return Notifications.GuardianTraining;
+                yield return Firebot.Core.Watchdog.ForceClearAll();
+                Debug($"[INFO] Guardian training badge was only unseen: seen now {TrainingUnseen == false}, badge lit {IsNotificationVisible()}.");
+            }
+
             Debug($"[INFO] From the game: training ends {end:HH:mm:ss}, Strange Dust {StrangeDust:0} " +
                   $"(reserve {(keep == int.MaxValue ? "kept for an evolution" : keep.ToString())}) - not opening.");
             NextRunTime = end;
@@ -122,6 +132,9 @@ public class GuardianTrainingTask : BotTask
         !g.Unlocked ? $"{g.Name} locked" : $"{g.Name} evolution {g.Evolution} level {g.Level}{(g.ReadyToEvolve ? " ready to evolve" : "")}";
 
     private static double StrangeDust => GameInitialize.HandlerLoader.CurrencyHandler.GetCurrency(CurrencyCode.StrangeDust).Amount;
+
+    private static bool? TrainingUnseen => GameState.Get("guardian training seen",
+        () => !GameInitialize.HandlerLoader.NotificationHandler.guardianTrainingNotificationSeen.GetDecrypted());
 
     // "20" a click (Steam-0, 30/09); infinite when unreadable, which no reserve check passes.
     private static double EnlightenmentCost =>

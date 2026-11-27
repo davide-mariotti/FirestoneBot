@@ -228,12 +228,15 @@ Idee da guardare (non ancora studiate):
 - i testi rimasti in `src/GameModel/Features` (Talents, Engineer, Rituals, Tavern, MapMission,
   MissionPreview, Temple): per ognuno, è ancora una decisione o solo una riserva?
 
-## Stato (27/11 15:09, branch `game-state`)
+## Stato (27/11 15:39, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:09 (ultimo deploy)
-e finisce il 28/11 alle 03:09**, per la seconda serie di richieste dell'utente:
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:39 (ultimo
+deploy, -27 alle 15:38 e -28 alle 15:39) e finisce il 28/11 alle 03:39.** Il deploy delle 15:35-15:39 è
+descritto in "Fatto il 27/11 alle 15:39" qui sotto.
+
+Alle 15:09 era ripartito per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
   e ogni ora si apriva la lista per scoprirlo: 22 s all'ora. Ora decide il gioco: `MiniEventsHandler`
   (evento in corso e non bloccato), la lista `calendarEvents` del calendario (dal 12:09: il solo
