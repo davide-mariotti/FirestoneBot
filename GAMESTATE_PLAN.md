@@ -11,6 +11,67 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
+## Stato (27/11 02:25, branch `game-state`)
+
+**Il test di 12 ore su Steam-27 è partito il 27/11 alle 02:25, con il commit `b239ace`.** La sonda della
+fase 0 resta attiva per tutto il test, per la verifica; va tolta prima del merge.
+
+**Fatto e verificato su Steam-27:**
+- **A, badge dal gioco.** `HasNotification` coincide con la barra badge per badge, e `[Rail] Lit` ora
+  viene dal gioco. In 3 ore nessun mismatch.
+- **B, timer dal gioco.** Spedizioni, missioni, esperimenti, ricerca, Engineer, rituale e rinnovo delle
+  quest, tutti confrontati con lo schermo (vedi "Fase 0, risultati").
+- **C, decisioni dai dati:**
+  - Oracle's Gift decide dall'ultimo claim;
+  - Empower decide senza aprire il Temple e registra la curva (`[Empower] curve`);
+  - Meteorite non apre la Library se non c'è niente da comprare;
+  - le due ricerche scelgono il nodo dai dati di ogni nodo, senza aprire anteprime;
+  - le spedizioni scelgono per token all'ora;
+  - Map Missions apre solo le missioni finite o accelerabili gratis;
+  - System Mail parte solo con mail da riscuotere;
+  - Path of Glory non si apre se il gioco conta 0 premi;
+  - gli eventi non si visitano se lo stato delle sfide non è cambiato (al massimo 3 ore);
+  - Enlighten a ×20/×10/×5/×1 col pulsante quantità del gioco.
+- **D, navigazione.** Prima `NavigationControl.OpenMenu`, poi la chiamata HUD, poi i click, e il bot
+  ricorda per ogni menu cosa ha funzionato:
+  - **le chiamate HUD (`AdventureScreen.Open*`) non hanno mai aperto niente;**
+  - `OpenMenu` apre Tavern, ExoticMerchant, WorldMap, Alchemist e ForbiddenKnowledge;
+  - MagicQuarters, Library, TownGuild, Awakening e PirateShip vanno ai click.
+
+  La città e la gilda si aprono solo se servono.
+- **E, attese.** Dopo un click il bot aspetta finché il blocco attività del gioco è spento e la pila
+  dei menu è ferma, da 0,5 a 2 s; se il click non avviene non aspetta.
+- **F, connessione.** **G, errori del server** (Harmony, solo log): nessun errore in 3 ore. **H, build
+  del gioco** all'avvio, con WARNING se cambia.
+- **Watchdog:** chiude con `CloseToMainScreen` quello che resta nella pila dei menu (menus/Achievements
+  sopra Magic Quarters aveva nascosto il HUD per un minuto).
+
+**Fase 0, risultati:**
+- `serverTimeNow` è in secondi Unix (7 s di differenza dall'ora del PC); tutti i timestamp sono in
+  quella unità.
+- I `timeLeft` sono in secondi e si aggiornano anche a schermata chiusa.
+- `HasNotification` e `IsNotificationActive` dicono la stessa cosa. `IsNotificationActive` è statico, e
+  `HasNotification` lancia un'eccezione per un tipo non registrato (`PartyManagement`).
+- I nomi delle ricerche nei dati sono chiavi (`cat1/mana_heroes_`). Il nodo si riconosce dall'oggetto
+  del popup di anteprima (`FirestoneResearchPreviewPopup.firestoneResearch`), e ogni nodo a schermo ha il
+  suo (`FirestoneResearchInteraction.firestoneResearch`).
+- Tutte le spedizioni rendono 0,1 token al secondo; lo spareggio sulle monete prende la più lunga.
+- Dopo i click, l'apertura di un menu tiene attivi i blocchi `MenuInitialization` e `Addressables` per
+  0,7-1,2 s; un click dentro una schermata si assesta in 0,1-0,2 s.
+
+**Velocità.** Steam-27 è passato da 9,7 a **3,43 min/h** di navigazione (23:22-02:09). Nelle stesse ore,
+con main, Steam-26 era a 5,24 e Steam-28 a 9,30.
+
+**Rimandato (resa bassa, rischio non nullo):**
+- **Hall of Heroes dai dati.** I dati ci sono: `Hero.heroGearItems`, `HeroServer.heroGears` e
+  `jewelsRaw`; poi `GearItem.EnchantLevel`, `enchantCost`, `enchantsPerRarity` e `itemRarity`; gli slot
+  si chiamano come gli enum `GearSlot` e `JewelSlot`. Manca la potenza del gear per eroe e i blocchi
+  dei tier. La lettura completa avviene una volta ogni 24 ore, e ogni click viene già verificato sullo
+  schermo.
+- **Costi letti come testo** (Awakening, Evolution, rarità delle War Machines, quantità di Free
+  Pickaxes): non costano navigazione.
+- **Stage di AutoRetreat dai dati:** gioco e barra coincidono sempre, e la barra non costa niente.
+
 ## Perché: la misura di partenza (Steam-27, 26/11 17:08-22:03)
 
 In 4 ore e 55 minuti ci sono state 163 esecuzioni di task e **47,6 minuti passati a navigare**
