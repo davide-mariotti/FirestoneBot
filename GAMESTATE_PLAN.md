@@ -49,7 +49,8 @@ fare da codice facciamolo".
 - Test dei pianificatori: `dotnet test tests\Firebot.TalentEngine.Tests` (96 al 27/11).
 - Deploy su un'istanza di test, con riavvio immediato (l'utente vuole sempre il riavvio fatto da noi,
   mai lasciato al watchdog):
-  `powershell -File tools\Restart\deploy_test.ps1 -Instance 27`. Con
+  `powershell -ExecutionPolicy Bypass -File tools\Restart\deploy_test.ps1 -Instance 27` (senza
+  `-ExecutionPolicy Bypass` Windows blocca lo script). Con
   `-ResetTasks treeoflifetask,beaststask` i task elencati partono subito; con `-FullRead` anche la
   lettura completa di Hall of Heroes.
 - Log: `C:\Sandbox\dmari\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\Latest.log`,
@@ -101,19 +102,42 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
 - addestramento dei guardiani: decide dai dati se aprire (alle 12:44 non ha aperto su tutte e due,
   addestramento in corso e Strange Dust alla riserva).
 
+**Fatto il 27/11 alle 13:28** (deploy su -27 e -28):
+- **Map Missions:** un giro raccoglie tutte le missioni le cui finestre gratuite si sovrappongono. Prima
+  due missioni a 2 minuti l'una dall'altra costavano due giri da 7 s. Senza squadre libere e senza
+  missioni nella finestra non apre la mappa (alle 13:25, 0,1 s);
+- **Collector Quest:** conta i forzieri dai dati (`GearChestHandler`, `JewelChestHandler`,
+  `CelestialChestHandler`, più Mystery Box e Oracle's Gift come valute). A quest fatta e senza niente
+  oltre la riserva non apre l'inventario;
+- **Arena of Kings:** i token da `ArenaOfKingsMech.battleTokensCurrent` (la mia potenza resta letta dal
+  testo: non ho trovato un dato pulito);
+- **Talenti:** non apre se `TalentsHandler.availablePoints` è 0. Il livello del personaggio, che ogni
+  task controlla a ogni giro, viene da `HandlerLoader.CharacterLevel.level`;
+- **Chaos Rift:** non apre se il dio non si può colpire (`ChaosRiftHandler.CanAttackGod` e
+  `ChaosRiftMech.CanAttack(1)`) e se le Dark Runes non bastano per un tomo. Il prezzo vero del tomo
+  (17839, cresce con ogni tomo comprato) lo dà `ChaosRiftShopSuppliesInteraction.GetTomeExchangeCostMultiple()`,
+  che però vale 0 finché il negozio non è stato aperto: il bot ricorda quello visto all'ultima visita,
+  quindi dopo ogni riavvio c'è una visita (13 s) per impararlo.
+
+**Guardati e lasciati come sono:**
+- Seen Badges: i badge "visto" li riaccende ogni riavvio, perché il gioco tiene i flag solo in memoria, e
+  scriverli è vietato; costa 3 s al riavvio;
+- token gratuito dello Scarab Game, bottino della campagna Warfront, picconi gratuiti: girano di rado;
+  i dati per decidere ci sono (`ScarabGameHandler.DailyFreePharaohTokenAvailable`,
+  `WFCampaignMissionHandler.lastLootClaimTimestamp` / `hasClaimedLoot`, `FreePickaxeState`).
+
 **Prossimi candidati** (dati già trovati):
-- Chaos Rift: manca la valuta dei colpi;
 - il ritiro degli oggetti distribuiti dalla gilda (`ClaimMemberRewardsFromGuildItems`): da chiedere
   all'utente se la sua gilda li distribuisce;
 - Frostfire, routine di push con le pergamene e vendita delle pergamene: in pausa per scelta
   dell'utente.
 
-## Stato (27/11 13:03, branch `game-state`)
+## Stato (27/11 13:28, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 13:03 (ultimo deploy)
-e finisce il 28/11 alle 01:03**, per la seconda serie di richieste dell'utente:
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 13:28 (ultimo deploy)
+e finisce il 28/11 alle 01:28**, per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
   e ogni ora si apriva la lista per scoprirlo: 22 s all'ora. Ora decide il gioco: `MiniEventsHandler`
   (evento in corso e non bloccato), la lista `calendarEvents` del calendario (dal 12:09: il solo
