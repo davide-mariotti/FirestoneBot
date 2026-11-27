@@ -143,9 +143,16 @@ valutazione erano cron della sessione: una chat nuova li deve rifare, o controll
   (Decorated Heroes, Trick or Treat), l'evento non si apre;
 - **Formation** apre Party solo per cambiare eroi (prima ogni giorno, anche in dry run), e **Hall of
   Heroes** prende la formazione da `Heroes.Read()` invece di aprire Party a ogni giro;
-- **bottino della campagna Warfront**: per ora scrive i dati del gioco (`hasClaimedLoot`,
-  `lastLootClaimTimestamp`) accanto al conto alla rovescia dello schermo, per ricavare l'intervallo
-  prima di decidere dai dati.
+- **bottino della campagna Warfront**: si riscuote ogni 6 ore dall'ultima riscossione
+  (`WFCampaignMissionHandler.lastLootClaimTimestamp` + 6 h coincideva al secondo con il conto alla
+  rovescia dello schermo, su -27 e -28): prima di quell'ora non apre.
+
+Un evento del calendario finito (Decorated Heroes alle 10:00 del 27/11) tiene la carta aperta per il
+suo negozio: i dati dicono "non attivo" e non ha più sfide, quindi lo si visita ogni 6 ore per spendere
+la valuta rimasta. Il confronto delle sfide si fa solo a evento in corso, e quello di "attivo" segnala
+solo il caso sbagliato davvero (dati "attivo" e carta assente). Per le sfide del calendario la regola
+dei livelli (`c` livelli riscossi su `challengeRequirements`) è ancora da confermare con il prossimo
+evento in corso: finché carte e dati non coincidono, le sfide non decidono niente.
 
 Già dai dati senza bisogno di modifiche: **Warfront Campaign** (potenza, missioni e requisiti dal
 gioco, apre solo per una missione da tentare o per cambiare l'equipaggio) e **Blueprints**
@@ -164,12 +171,12 @@ gioco, apre solo per una missione da tentare o per cambiare l'equipaggio) e **Bl
 - Frostfire, routine di push con le pergamene e vendita delle pergamene: in pausa per scelta
   dell'utente.
 
-## Stato (27/11 15:01, branch `game-state`)
+## Stato (27/11 15:09, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:01 (ultimo deploy)
-e finisce il 28/11 alle 03:01**, per la seconda serie di richieste dell'utente:
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 15:09 (ultimo deploy)
+e finisce il 28/11 alle 03:09**, per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
   e ogni ora si apriva la lista per scoprirlo: 22 s all'ora. Ora decide il gioco: `MiniEventsHandler`
   (evento in corso e non bloccato), la lista `calendarEvents` del calendario (dal 12:09: il solo

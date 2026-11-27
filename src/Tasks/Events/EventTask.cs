@@ -66,6 +66,7 @@ public abstract class EventTask : BotTask
 
     // The game's challenges matched the cards of a visit: from then on they decide alone.
     private bool _challengesTrusted;
+    private bool? _running;
     private double? _shopCurrencySeen;
 
     // The handled challenges, as the cards and the data both give them: what the two are compared on.
@@ -118,8 +119,9 @@ public abstract class EventTask : BotTask
             yield return Visit(challenges, t => title = t);
             if (title == null) yield break;
 
-            // The cards against the game's own challenges (read after the claims, as the cards are).
-            if (ChallengesFromGame is { } data)
+            // The cards against the game's own challenges (read after the claims, as the cards are),
+            // only while the event runs: a finished one shows no challenge, its data still lists them.
+            if (_running == true && ChallengesFromGame is { } data)
             {
                 var screen = Key(challenges.Select(c => ChallengeParser.Parse(c.Text, c.Progress)).Select(c => (c.Kind, c.Done, c.Target)));
                 var game = Key(data.Select(c => (c.Kind, c.Done, c.Target)));
@@ -180,9 +182,15 @@ public abstract class EventTask : BotTask
 
         _lastVisit = DateTime.Now;
         // The free check of the game's word: a card that opened is a running event.
+        // A card the game says isn't running is a finished event's shop, kept open to spend what's left
+        // (Decorated Heroes past its 10:00 end, 27/11): only a running event without its card is wrong.
         var game = RunningFromGame;
-        GameState.Compare($"event {GetType().Name} running", game?.ToString(), (title != null).ToString());
-        if (game != null && game != (title != null)) Debug($"[INFO] Events from the game: {GameState.CalendarDescribe}.");
+        _running = game;
+        if (game == true && title == null)
+        {
+            GameState.Compare($"event {GetType().Name} running", "True", "False");
+            Debug($"[INFO] Events from the game: {GameState.CalendarDescribe}.");
+        }
 
         if (IsScreenVisible)
         {
