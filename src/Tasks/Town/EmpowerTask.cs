@@ -31,6 +31,7 @@ public class EmpowerTask : BotTask
     private MelonPreferences_Entry<float> _minResetRatio;
     private MelonPreferences_Entry<int> _minAdventureMinutes;
     private MelonPreferences_Entry<int> _maxAdventureMinutes;
+    private MelonPreferences_Entry<string> _rule;
 
     // The TemplePrestige badge is only used as a navigation shortcut, not for scheduling: whether it
     // reflects this task's own threshold is unknown.
@@ -63,6 +64,16 @@ public class EmpowerTask : BotTask
             "Once the current adventure has run for this many minutes, the bot empowers regardless of " +
             "the ratio above. Set to 0 to disable (only the ratio decides). Default: 0 - a time-based " +
             "override would empower below the ratio, which the F2P guide rules out."
+        );
+
+        _rule = category.CreateEntry(
+            "empower_rule",
+            "ratio",
+            "Empower Rule",
+            "'ratio' (default): empowers at the wall once the ratio above is met. 'growth': at the wall with " +
+            "that ratio, keeps farming while the bank still grows faster than the run's average (the found " +
+            "Firestones come from the run's gold, which keeps coming at the wall); the TemplePrestige badge " +
+            "stays lit meanwhile. The [Empower] curve line says what 'growth' would do either way."
         );
     }
 
@@ -97,8 +108,11 @@ public class EmpowerTask : BotTask
         // the ratio passed 400 and the bot sat 5 stages under its wall (17-18/10).
         var timeKnown = timePlayed > TimeSpan.Zero;
 
+        // empower_rule = growth: at the wall with the ratio, also wait while the bank grows faster than the run's average.
+        var growthHolds = GrowthRule && _growthWait == true;
+
         why = $"ratio {ratio:0.##} (need {minRatio:0.##} after {minDuration} at the wall, or force empower after {maxDuration}), " +
-              $"at the wall: {atWall}";
+              $"at the wall: {atWall}{(growthHolds ? ", the growth rule waits" : "")}";
 
         // No point checking again before the minimum adventure time has passed - unless nothing read
         // (the Temple never opened, e.g. behind the start-up popups): then its 0 time means nothing,
@@ -106,7 +120,7 @@ public class EmpowerTask : BotTask
         var timeUntilMinDuration = ownedRead ? minDuration - timePlayed : TimeSpan.Zero;
         next = DateTime.Now + (timeUntilMinDuration > RetryDelay ? timeUntilMinDuration : RetryDelay);
 
-        return ((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall) || timePlayed >= maxDuration;
+        return ((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall && !growthHolds) || timePlayed >= maxDuration;
     }
 
     // The growth rule (GAMESTATE_PLAN.md, "Flussi nuovi" 4), only logged until the user picks it. The
@@ -116,19 +130,30 @@ public class EmpowerTask : BotTask
     // beats that average.
     private static double _lastGain = double.NaN, _lastMinutes, _lastOwned;
 
+    // The growth rule's word at the wall with the ratio met: true to wait, false to empower; null elsewhere.
+    private static bool? _growthWait;
+
+    private bool GrowthRule => string.Equals(_rule?.Value?.Trim(), "growth", StringComparison.OrdinalIgnoreCase);
+
     private string GrowthVerdict(double minutes, double found, double owned)
     {
         var gain = Math.Log(1 + Math.Pow(10, Math.Min(found - owned, 300)));
         var average = minutes > 0 ? gain / minutes : 0;
         var last = (_lastGain, _lastMinutes, _lastOwned);
         (_lastGain, _lastMinutes, _lastOwned) = (gain, minutes, owned);
+        var deciding = AutoRetreat.HitWall && Math.Pow(10, found - owned) >= (_minResetRatio?.Value ?? 1.0f);
         if (last._lastOwned != owned || double.IsNaN(last._lastGain) || minutes <= last._lastMinutes)
-            return $"run average {average * 100:0.00}%/min, no earlier check this run";
+        {
+            // One more check gives it a growth to compare: a restart at the wall waits RetryDelay.
+            _growthWait = deciding ? true : null;
+            return $"run average {average * 100:0.00}%/min, no earlier check this run{(deciding ? " - would wait for one" : "")}";
+        }
 
         var now = (gain - last._lastGain) / (minutes - last._lastMinutes);
-        var ratioMet = Math.Pow(10, found - owned) >= (_minResetRatio?.Value ?? 1.0f);
+        _growthWait = deciding ? now >= average : null;
         return $"last {minutes - last._lastMinutes:0} min {now * 100:0.00}%/min vs run average {average * 100:0.00}%/min - " +
-               (!AutoRetreat.HitWall || !ratioMet ? "not at the wall with the ratio" : now < average ? "would empower" : "would wait");
+               (!deciding ? "not at the wall with the ratio" : now < average ? "would empower" : "would wait") +
+               (GrowthRule ? "" : " (rule off)");
     }
 
     public override IEnumerator Execute()
@@ -140,6 +165,7 @@ public class EmpowerTask : BotTask
         var gameFound = GameState.FirestonesFoundLog10;
         var gameOwned = GameState.FirestonesOwnedLog10;
         var fromGame = gameTime != null && gameFound != null && gameOwned != null;
+        _growthWait = null;
         if (fromGame)
         {
             var prestigeBadge = GameState.HasBadge(Il2Cpp.NotificationType.TemplePrestige);

@@ -29,25 +29,31 @@ public class MissionPin : GameElement
             ? TimeSpan.FromSeconds(pin.mapMission.realTimeReq)
             : throw new InvalidOperationException("no mission behind the pin"));
 
-    /// <summary>The icons' state against the game's (missionState and the end time): only checked so far.</summary>
-    public void CompareState()
+    // "free", "active" or "done", from the game's mission behind the pin (missionState and its end);
+    // null when unreadable. It matched the icons on every pin of -27 at 21:06 and -28 at 21:33 (27/11).
+    private string StateFromGame => GameState.GetRef("map mission state", () =>
     {
-        var game = GameState.GetRef("map mission state", () =>
-        {
-            if (!TryGetComponent(out MapMissionInteraction pin) || pin.mapMission == null) throw new InvalidOperationException("no mission behind the pin");
-            var m = pin.mapMission;
-            if (m.missionState != MissionsHandler.MissionState.Active) return "free";
-            return GameState.Ends(m.timeStarted, m.realTimeReq) is { } end && end <= DateTime.Now ? "done" : "active";
-        });
-        GameState.Compare($"map mission state {Name}", game, IsCompleted ? "done" : IsActive ? "active" : "free");
-    }
+        if (!TryGetComponent(out MapMissionInteraction pin) || pin.mapMission == null) throw new InvalidOperationException("no mission behind the pin");
+        var m = pin.mapMission;
+        if (m.missionState != MissionsHandler.MissionState.Active) return "free";
+        return GameState.Ends(m.timeStarted, m.realTimeReq) is { } end && end <= DateTime.Now ? "done" : "active";
+    });
+
+    private string StateOnScreen => TickShown ? "done" : ActiveIconShown ? "active" : "free";
+
+    public void CompareState() => GameState.Compare($"map mission state {Name}", StateFromGame, StateOnScreen);
 
     public void CompareDuration() =>
         GameState.CompareTimes("map mission duration", DurationFromGame is { } d ? DateTime.Now + d : null, TimeRequired);
 
-    public bool IsActive => new GameElement(Paths.MissionPinLoc.ActiveIcon, this).IsVisible();
+    /// <summary>In progress or done (a done one keeps its active icon until claimed); the icons when the game can't say.</summary>
+    public bool IsActive => (StateFromGame ?? StateOnScreen) != "free";
 
-    public bool IsCompleted => new GameElement(Paths.MissionPinLoc.Tick, this).IsVisible();
+    public bool IsCompleted => (StateFromGame ?? StateOnScreen) == "done";
+
+    private bool ActiveIconShown => new GameElement(Paths.MissionPinLoc.ActiveIcon, this).IsVisible();
+
+    private bool TickShown => new GameElement(Paths.MissionPinLoc.Tick, this).IsVisible();
 
     /// <summary>The squads this mission takes (the game's squadsReq, set by its category); 1 when unreadable.</summary>
     public int SquadsRequired

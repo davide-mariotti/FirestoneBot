@@ -20,6 +20,7 @@ internal static class GameStateProbe
     private static DateTime _next;
     private static bool _versionLogged;
     private static string _skips;
+    private static string _abilities;
 
     private static HandlerLoader H => GameInitialize.HandlerLoader;
     private static CoreFunctionalityLoader Core => GameInitialize.CoreFunctionality;
@@ -193,7 +194,9 @@ internal static class GameStateProbe
             return $"lastClaimedTime={F(w.lastClaimedTime)} timeReq={F(WarMachineHandler.timeReq)} timePassed={F(w.timePassed)}";
         });
 
-        Line("empower", () => $"earnedThisRun log10={F(Heroes.Log(H.Firestones.firestonesEarnedThisRun))}");
+        // The found Firestones come from the run's gold: how fast the gold comes at the wall says what farming there is worth.
+        Line("empower", () => $"earnedThisRun log10={F(Heroes.Log(H.Firestones.firestonesEarnedThisRun))} " +
+                              $"runGold log10={F(Heroes.Log(H.Firestones.firestoneTotalGoldEarnings))} firstFirestoneGold log10={F(Math.Log10(Firestones.goldForTheFirstFirestone))}");
 
         Line("talents", () =>
         {
@@ -247,5 +250,31 @@ internal static class GameStateProbe
         }
 
         if (skipsNow != _skips) Logger.Info($"[Probe] skips: {_skips = skipsNow}");
+
+        // The formation's damage is ~all one hero's (-27 Talia, -28 Muriel as leader, 27/11): the other
+        // slots count for their buffs and debuffs. The deployed heroes' abilities as the game has them,
+        // to score those (FORMATION_PLAN.md 4.2).
+        string abilitiesNow;
+        try
+        {
+            var battle = UnityEngine.Object.FindObjectOfType<HeroBattleLogic>()?.battleHero?.BattleHeroManager;
+            var heroes = new List<string>();
+            foreach (var bh in battle.battleHeroesInBattle)
+            {
+                var list = new List<string>();
+                foreach (var a in bh.abilities)
+                    if (a != null)
+                        list.Add($"{a.name} [{a.abilityType}] cost {F(a.cost)} dur {F(a.duration)} cd {F(a.cooldownDuration)} '{a.description}'");
+                heroes.Add($"{bh.hero.characterName}: {string.Join(" | ", list)}");
+            }
+
+            abilitiesNow = string.Join(" || ", heroes);
+        }
+        catch (Exception e)
+        {
+            abilitiesNow = $"ERR {e.GetType().Name}: {e.Message}";
+        }
+
+        if (abilitiesNow != _abilities) Logger.Info($"[Probe] abilities: {_abilities = abilitiesNow}");
     }
 }

@@ -247,9 +247,13 @@ Empower, Talents, Enlighten, Ancient Artifact, ordine delle missioni, addestrame
   (crescita dei trovati × trovati/(posseduti+trovati)), mentre la media della run è 1,1-3%: aspettare
   al muro rende più che ripartire. Una stima con l'oro lineare al muro dà l'ottimo dopo ~30 minuti di
   muro, con il banco che cresce ~25% più in fretta per ora; da verificare dal vivo.
-- Il rapporto all'Empower scende run dopo run (-27: 70 → 15 → 3,7; -28: 24 → 11,7), perché il muro
-  sale poco: presto sarà sotto 1, e con la regola di oggi (rapporto ≥ 1 al muro) il bot resterà fermo
-  al muro senza fare l'Empower.
+- Visto dal vivo con la riga nuova, -27 alle 21:15 (muro a 1032, stallo alle 21:11:54): trovati da
+  10^219,75 a 10^219,98 in 5 minuti, "last 5 min 6.82%/min vs run average 0.83%/min - would wait". Il
+  bot ha fatto l'Empower lo stesso, con rapporto 2,27, 3 minuti dopo lo stallo. Dopo il ritiro il gioco
+  è in modalità farm (`MainBattle.FarmingWave` True allo stage 1028).
+- Il rapporto all'Empower scende run dopo run (-27: 70 → 15 → 3,7 → 2,3; -28: 24 → 11,7), perché il
+  muro sale poco (1024 → 1027 → 1031 → 1032). Sotto 1 la regola di oggi aspetta al muro che l'oro della
+  farm porti i trovati ai posseduti: allunga da sola il muro, ma solo quando il rapporto è basso.
 - In metà delle run i trovati partono già dal ~15-19% dei posseduti e restano fermi fino al minuto
   ~105 (es. -27 18:53-20:24, 10^218,77); nelle altre partono da 10^164-169 e salgono subito. Al muro
   le due curve si equivalgono: per la regola non cambia niente.
@@ -257,6 +261,33 @@ Empower, Talents, Enlighten, Ancient Artifact, ordine delle missioni, addestrame
   scende sotto la media della run (`ln(1 + trovati/posseduti) / minuti`). Si regola da sola e non ha
   bisogno che il rapporto arrivi a 1. Il badge TemplePrestige resterebbe acceso più a lungo. Da
   decidere con l'utente; finché non decide, la riga del log dice solo "would empower" / "would wait".
+
+**Fatto il 27/11 alle 21:36** (deploy su -27 alle 21:35 e -28 alle 21:36):
+- **Map Missions:** lo stato dei pin (libera, in corso, finita) viene dal gioco, le icone come riserva e
+  confronto. Coincidevano su tutti i pin dei 5 giri delle 21:06-21:33 (4 su -27, 1 su -28), e così le
+  durate: l'ordine 41 → 17 minuti su -27, 50 → 17 su -28.
+- **Empower:** la regola "della crescita" c'è, spenta: `[empowertask] empower_rule = "ratio"` (oggi) o
+  `"growth"`. Con `growth`, al muro e col rapporto raggiunto, il bot aspetta (un controllo ogni 5
+  minuti) finché la crescita dell'ultimo controllo batte la media della run; dopo un riavvio al muro
+  aspetta un controllo per avere il confronto. La riga `[Empower] curve` la valuta comunque.
+- **Probe:** `empower` ha anche l'oro della run (`runGold`, da cui vengono i trovati); `abilities` le
+  abilità degli eroi schierati (nome, risorsa, durata, ricarica, descrizione del gioco), una riga
+  quando cambiano.
+
+**Formazione: cosa dicono i dati** (`Formation heroes` e `[Probe] abilities`, 27/11):
+- Il danno è quasi tutto di un eroe. -27: Talia 10^184,49 (leader, +0,13), Boris 10^183,38 (~5%), gli
+  altri tre ~10^181,3, 0,05% l'uno. -28: Muriel leader con fattore 10^2,81, gli altri quattro insieme
+  ~0,1%.
+- Quindi negli slot che non sono il "carry" conta solo quello che l'eroe fa alla squadra o al boss,
+  non il suo danno. Il planner sceglie i 5 col danno più alto, le abilità non sono nel modello
+  (FORMATION_PLAN.md, "Stato").
+- Le abilità dal gioco: Boris "Anger" +50% al danno della squadra per 25 s, ricarica 25 s; Talia
+  "Annihilation" +60% danni subiti dal bersaglio per 8 s ogni 15 s; Astrid "Devastating Shot" +60% per
+  7 s, ricarica 1,84 s; Muriel "Rally" +15% velocità d'attacco della squadra. -27 ha già Boris, Talia e
+  Astrid. -28 ha Muriel, Cirilo, Luana e Benedictus (healer) e Burt, con Boris, Talia e Astrid in
+  panchina: con i loro buff il danno sul boss sarebbe circa ×3 (stima, uptime e cumulo da verificare).
+- Proposta per l'utente: tenere il carry (e il leader) per danno e scegliere gli altri slot per i
+  moltiplicatori che danno, dalle abilità del gioco (durata/ricarica). È una scelta di gioco.
 
 Già dai dati senza bisogno di modifiche: **Warfront Campaign** (potenza, missioni e requisiti dal
 gioco, apre solo per una missione da tentare o per cambiare l'equipaggio) e **Blueprints**
@@ -356,14 +387,14 @@ Guardati il 27/11 pomeriggio (dai log 11:28-15:20 di -27 e -28):
 - AutoRetreat: clicca `goBackStage` 5 volte di fila e 2 vanno a vuoto mentre lo stage cambia (-27 e -28
   dalle 15:46). Non l'ho toccato io e non costa niente.
 
-## Stato (27/11 20:43, branch `game-state`)
+## Stato (27/11 21:36, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 20:43 (ultimo
-deploy, -27 alle 20:42 e -28 alle 20:43) e finisce il 28/11 alle 08:43.** Il deploy delle 20:42 è
-descritto in "Fatto il 27/11 alle 20:43", quelli delle 15:35-15:47 in "Fatto il 27/11 alle 15:47", in
-testa al file.
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 21:36 (ultimo
+deploy, -27 alle 21:35 e -28 alle 21:36) e finisce il 28/11 alle 09:36.** I deploy della sera sono
+descritti in "Fatto il 27/11 alle 20:43" e "alle 21:36", quelli delle 15:35-15:47 in "Fatto il 27/11
+alle 15:47", in testa al file.
 
 Alle 15:09 era ripartito per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
