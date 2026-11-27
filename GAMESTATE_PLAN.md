@@ -11,10 +11,17 @@
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
 
-## Stato (27/11 04:01, branch `game-state`)
+## Stato (27/11 05:46, branch `game-state`)
 
-**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 04:01 (finisce alle 16:01).** La prima
-partenza era delle 02:25 con il commit `b239ace`. È ripartito per due correzioni:
+**Il test di 12 ore su Steam-27 è ripartito il 27/11 alle 05:46 (finisce alle 17:46).** È ripartito una
+seconda volta (la prima era alle 04:01) perché i pulsanti degli slot di esperimenti e ricerche si
+aggiornano un momento dopo l'apertura della schermata. Letti subito, mostravano ancora il prezzo in
+gemme dentro la finestra gratuita: esperimento a 2m50s e a 44 s dalla fine, ricerca a 59 s, con giri a
+vuoto ogni 2 minuti fino al badge. Prima l'attesa fissa di 3 s lo nascondeva. Ora, quando i dati dicono
+che uno slot è nella finestra, il bot aspetta (al massimo 5 s) che il pulsante mostri Free o Claim.
+
+La prima partenza era delle 02:25 con il commit `b239ace`. La ripartenza delle 04:01 era per due
+correzioni:
 - `OpenMenu(Alchemist, 0, …)` apriva Transmute, cioè il sottomenu 0 dell'enum. Gli slot degli
   esperimenti non c'erano e il task ripartiva ogni 2 minuti, finché non si accendeva il badge. Ora la
   navigazione passa `SubmenuNum.Experiments`.
@@ -70,10 +77,6 @@ La sonda della fase 0 resta attiva per tutto il test, per la verifica; va tolta 
 con main, Steam-26 era a 5,24 e Steam-28 a 9,30.
 
 **Visto durante il test, non è del branch (non si tocca fino al merge):**
-- **Ricerca:** il bot torna nella Library 2-3 minuti prima della fine, ma l'accelerazione non è ancora
-  gratis. Seguono 1-2 giri vuoti da 4 s, finché la ricerca non finisce (Steam-27 alle 04:09 e 04:11;
-  succede anche su main, Steam-26 alle 01:45). Correzione dopo il merge: la finestra gratuita dal gioco
-  (`TimeCost.GetTimeCost(secondi) == 0`) invece dei 180 s di `free_speedup_seconds`.
 - **`FirestoneResearch.IsUnlocked`** lancia `KeyNotFound '0'` su un nodo. Il nodo viene scartato e la
   scelta va avanti; c'è un `fallback research state` per sessione.
 - **Il badge di Oracle's Gift** resta acceso dopo la riscossione, come su main (Steam-26: doni 2 → 2).

@@ -30,6 +30,11 @@ public class FirestoneResearchTask : BotTask
         yield return Library.OpenFirestoneResearchTab;
 
         var panel = new ResearchPanel();
+        // The slots' buttons refresh a moment after the screen shows (SpeedUpButton.AnySlotReady).
+        if (GameState.FirestoneResearchEnd is { } due && SpeedUpButton.FreeFrom(due) <= DateTime.Now)
+            yield return Poll.Until(() => SpeedUpButton.AnySlotReady(Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.Root,
+                "researchSlot", Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.SpeedupBtn,
+                Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.ClaimBtn), 50, 0.1f);
         yield return panel.Claim();
 
         // Disabled - a no-op - while no slot is left to buy or the meteorites don't cover it.

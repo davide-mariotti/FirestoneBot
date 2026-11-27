@@ -31,6 +31,10 @@ public class ExperimentsTask : BotTask
 
         // The game says when the Alchemist is done loading (the fixed 3 s wait before).
         yield return Poll.Until(() => GameState.Busy == false, 30, 0.1f);
+        if (GameState.ExperimentsEnd is { } due && SpeedUpButton.FreeFrom(due) <= DateTime.Now)
+            yield return Poll.Until(() => SpeedUpButton.AnySlotReady(Paths.MenusLoc.AlchemistLoc.ExperimentsLoc.Root,
+                "alchExperimentSlot", Paths.MenusLoc.AlchemistLoc.ExperimentsLoc.SpeedupBtn,
+                Paths.MenusLoc.AlchemistLoc.ExperimentsLoc.ClaimBtn), 50, 0.1f);
         var resources = GetResourceTypes();
         var experiments = new Experiments();
         // Collecting is free, so it isn't limited to resource_type - only starting one spends anything.
