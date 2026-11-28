@@ -32,6 +32,7 @@ public class FormationTask : BotTask
 
     private MelonPreferences_Entry<bool> _dryRun;
     private MelonPreferences_Entry<string> _target;
+    private MelonPreferences_Entry<string> _scoring;
 
     /// <summary>The saved target's heroes, which HallOfHeroesTask invests in first. Empty until the first run.</summary>
     public static HashSet<string> Target { get; private set; } = new();
@@ -42,6 +43,10 @@ public class FormationTask : BotTask
 
         _dryRun = category.CreateEntry("dry_run", true, "Dry Run",
             "Only logs the best formation and the target. Set false to let the bot change heroes and leader. Default: true.");
+
+        _scoring = category.CreateEntry("scoring", "damage", "Scoring",
+            "'damage' (default): the five with the most damage. 'abilities': the damage plus what each hero's " +
+            "abilities multiply the team's damage by (party buffs, boss debuffs), over every set of five.");
 
         _target = category.CreateEntry("target", "", "Target",
             "(auto-managed, don't edit) - the target team, \"name, name, ... | leader\"; replaced only by one 20% better.");
@@ -66,8 +71,12 @@ public class FormationTask : BotTask
         }
 
         double Value(HeroStats h) => h.Offense;
-        var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio);
-        var now = FormationPlanner.Score(read.Heroes, read.InBattle, read.Leader, Value, read.LeaderRatio);
+        // scoring = abilities: the heroes' buffs and debuffs count too (on trial on Steam-28 from 28/11).
+        Func<HeroStats, double> support = string.Equals(_scoring.Value?.Trim(), "abilities", StringComparison.OrdinalIgnoreCase)
+            ? FormationPlanner.AbilitySupport
+            : null;
+        var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio, support);
+        var now = FormationPlanner.Score(read.Heroes, read.InBattle, read.Leader, Value, read.LeaderRatio, support);
         var target = FormationPlanner.Best(read.Heroes, h => h.Potential, read.LeaderRatio);
         var change = FormationPlanner.Beats(best.Score, now, MinGain);
 
@@ -109,7 +118,7 @@ public class FormationTask : BotTask
         Debug($"[INFO] Formation: screens after closing the Party: {Watchdog.DumpActiveScreens()}.");
         var after = Heroes.Read();
         var score = after == null ? double.NaN
-            : FormationPlanner.Score(after.Heroes, after.InBattle, after.Leader, Value, after.LeaderRatio);
+            : FormationPlanner.Score(after.Heroes, after.InBattle, after.Leader, Value, after.LeaderRatio, support);
         Debug(after == null
             ? "[FAILED] Formation: the heroes didn't read after the change."
             : $"[INFO] Formation: after {string.Join(", ", after.InBattle)} (leader {after.Leader}, score {score:0.00}, " +

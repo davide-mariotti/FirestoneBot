@@ -68,12 +68,12 @@ public class EmpowerTask : BotTask
 
         _rule = category.CreateEntry(
             "empower_rule",
-            "ratio",
+            "growth",
             "Empower Rule",
-            "'ratio' (default): empowers at the wall once the ratio above is met. 'growth': at the wall with " +
-            "that ratio, keeps farming while the bank still grows faster than the run's average (the found " +
-            "Firestones come from the run's gold, which keeps coming at the wall); the TemplePrestige badge " +
-            "stays lit meanwhile. The [Empower] curve line says what 'growth' would do either way."
+            "'growth' (default, chosen by the user 28/11): at the wall with the ratio above, keeps farming while " +
+            "the bank still grows faster than the run's average (the found Firestones come from the run's gold, " +
+            "which keeps coming at the wall), 90 minutes at most; the TemplePrestige badge stays lit meanwhile. " +
+            "'ratio': empowers at the wall as soon as the ratio is met."
         );
     }
 
@@ -123,7 +123,7 @@ public class EmpowerTask : BotTask
         return ((!timeKnown || timePlayed >= minDuration) && ratio >= minRatio && atWall && !growthHolds) || timePlayed >= maxDuration;
     }
 
-    // The growth rule (GAMESTATE_PLAN.md, "Flussi nuovi" 4), only logged until the user picks it. The
+    // The growth rule (GAMESTATE_PLAN.md, "Flussi nuovi" 4), the default since the user chose it (28/11). The
     // Firestones found come from the run's gold, which keeps coming at the wall: on -27 (27/11 18:43-18:48)
     // found grew 7-11%/min there, the bank 1.1%/min on average over the run. Empowering now multiplies the
     // bank by 1 + found/owned over the run's minutes; waiting is worth it while the last check's growth
@@ -132,6 +132,8 @@ public class EmpowerTask : BotTask
 
     // The growth rule's word at the wall with the ratio met: true to wait, false to empower; null elsewhere.
     private static bool? _growthWait;
+
+    private static readonly TimeSpan MaxWallWait = TimeSpan.FromMinutes(90);
 
     private bool GrowthRule => string.Equals(_rule?.Value?.Trim(), "growth", StringComparison.OrdinalIgnoreCase);
 
@@ -142,17 +144,21 @@ public class EmpowerTask : BotTask
         var last = (_lastGain, _lastMinutes, _lastOwned);
         (_lastGain, _lastMinutes, _lastOwned) = (gain, minutes, owned);
         var deciding = AutoRetreat.HitWall && Math.Pow(10, found - owned) >= (_minResetRatio?.Value ?? 1.0f);
+        // A safety cap: the wait ends MaxWallWait after the wall whatever the growth says.
+        var capped = AutoRetreat.WallSince is { } wall && DateTime.Now - wall > MaxWallWait;
         if (last._lastOwned != owned || double.IsNaN(last._lastGain) || minutes <= last._lastMinutes)
         {
             // One more check gives it a growth to compare: a restart at the wall waits RetryDelay.
-            _growthWait = deciding ? true : null;
+            _growthWait = deciding ? !capped : null;
             return $"run average {average * 100:0.00}%/min, no earlier check this run{(deciding ? " - would wait for one" : "")}";
         }
 
         var now = (gain - last._lastGain) / (minutes - last._lastMinutes);
-        _growthWait = deciding ? now >= average : null;
+        // While AutoRetreat measures farm stages the growth swings with them: it waits for the pick.
+        _growthWait = deciding ? !capped && (now >= average || AutoRetreat.FarmSearching) : null;
         return $"last {minutes - last._lastMinutes:0} min {now * 100:0.00}%/min vs run average {average * 100:0.00}%/min - " +
-               (!deciding ? "not at the wall with the ratio" : now < average ? "would empower" : "would wait") +
+               (!deciding ? "not at the wall with the ratio" : _growthWait == true ? "would wait" : "would empower") +
+               (AutoRetreat.FarmSearching ? " (farm search running)" : "") + (capped ? $" (past {MaxWallWait.TotalMinutes:0} min at the wall)" : "") +
                (GrowthRule ? "" : " (rule off)");
     }
 

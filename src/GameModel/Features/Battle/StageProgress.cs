@@ -14,7 +14,16 @@ public static class StageProgress
         ? stage
         : new GameText(Paths.BattleLoc.StageProgressionLoc.CurrentStageNumTxt).GetParsedInt(-1);
 
-    public static IEnumerator GoBack => new GameButton(Paths.BattleLoc.StageProgressionLoc.GoBackBtn).Click();
+    public static IEnumerator GoBack => GoBackBtn.Click();
+
+    public static GameButton GoBackBtn => new(Paths.BattleLoc.StageProgressionLoc.GoBackBtn);
+
+    /// <summary>
+    ///     The gold earned this run (SpecialGameStatistics, kept up as gold drops), log10; null when
+    ///     unreadable. The found Firestones come from it, and its pace is what a farm stage is worth.
+    /// </summary>
+    public static double? RunGoldLog10 => GameState.Get("run gold", () =>
+        Character.Heroes.Log(GameState.H.SpecialGameStatistics.save.totalGoldThisRun));
 
     public static GameButton GoForthBtn => new(Paths.BattleLoc.StageProgressionLoc.GoForthBtn);
 
