@@ -1,5 +1,70 @@
 # Piano: il bot legge e naviga dal codice del gioco, non dallo schermo
 
+## LEGGI PRIMA: prompt per una nuova chat (aggiornato il 28/11 mattina)
+
+Se l'utente scrive "LEGGI GAMESTATE_PLAN.md", parti da qui. Scrivi all'utente **sempre in italiano**.
+
+**Il lavoro.** Repo `C:\Repos\FirestoneBot`, branch `game-state` (non è stato fatto il merge su main). Il
+bot decide dai dati del gioco (handler IL2CPP da `GameInitialize.HandlerLoader` / `MenuLoader`, in
+codice `GameState.H`) invece di leggere lo schermo. Fai commit e push dopo ogni passo verificato, e
+aggiorna questo file con quello che fai e coi numeri visti nei log.
+
+**Regole che non cambiano:**
+- solo letture di dati e le stesse chiamate della UI del gioco (`OpenMenu`, `CloseLastOnMenuStack`,
+  l'`onClick` dei suoi pulsanti, getter puri); mai scrivere campi del gioco, mai funzioni di rete o
+  `*Callback` / `*AskServer`;
+- ogni lettura passa da `GameState.Get` / `GetRef`, con lo schermo come riserva;
+- un dato nuovo prima si confronta con lo schermo e lo si usa solo quando coincide; se un errore costa
+  una spesa, il task si fida dei dati solo dopo una visita in cui coincidevano;
+- una spesa conta solo quando la valuta (o la quantità) scende, e un'icona di prezzo diversa ferma il
+  click;
+- non toccare: i doni di gilda (`ClaimMemberRewardsFromGuildItems`, l'utente deve ancora rispondere),
+  Frostfire;
+- scelte di gioco dell'utente (28/11): **Midas Touch** è scarso e prezioso (il Merchant non lo vende più,
+  si usa solo dove serve davvero); **Strange Dust** solo per guardiani ed eroi, **niente Alchimista**;
+  Meteorite Research resta com'è; l'Empower segue la regola della crescita.
+
+**Dove gira.** Dal 28/11 alle 03:53-04:11 il branch gira su **tutte le istanze Steam-17..31 di
+PC-Guesly** (questo PC, box Sandboxie `C:\Sandbox\dmari\SteamB<N>`), su richiesta dell'utente.
+DESKTOP-ADMIN e main non sono stati toccati: un deploy di main deve saltare 17-31. DLL di main per
+tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
+- Build: `$env:COMMON_DIR="C:\Program Files (x86)\Steam-17\steamapps\common"; dotnet build C:\Repos\FirestoneBot\src\firebot.csproj -c Release -p:Il2CppAssembliesDir="C:\Sandbox\dmari\SteamB27\drive\C\Program Files (x86)\Steam-27\steamapps\common\Firestone\MelonLoader\Il2CppAssemblies"`;
+  test: `dotnet test tests\Firebot.TalentEngine.Tests` (97 al 28/11).
+- Deploy di un'istanza, che la riavvia da solo (controlla sempre che dica "up"):
+  `powershell -ExecutionPolicy Bypass -File tools\Restart\deploy_test.ps1 -Instance N`, con
+  `-ResetTasks a,b` per far ripartire subito dei task e `-Set "sezione.chiave=valore"` per scrivere voci
+  del cfg a gioco fermo (aggiunge sezione e voce se mancano). Per la flotta: un'istanza alla volta.
+- Log: `C:\Sandbox\dmari\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\Latest.log`
+  (e `Logs\`), da leggere in condivisione (`[IO.File]::Open(p,'Open','Read','ReadWrite')`). Da
+  guardare: `[Task] X finished in`, `[FAILED] Task`, `[GameState] mismatch` / `fallback` (noti e
+  innocui: `research state` KeyNotFound '0', `weekly quests renew`, i sigilli di Hall of Heroes al primo
+  giro di un'istanza), le due eccezioni di MelonLoader a ogni avvio ("Unable to get process modules",
+  "SetAsLastSibling").
+
+**Cosa è nuovo dal 28/11 notte e va verificato** (dettaglio più sotto in "Fatto il 28/11"):
+1. **Empower, regola della crescita** (default `[empowertask] empower_rule = "growth"`): al muro, col
+   rapporto raggiunto, aspetta finché la crescita del banco degli ultimi 5 minuti batte la media della
+   run; al massimo 90 minuti dopo il muro. Primi Empower veri: -22 alle 04:19, -20 alle 04:25, -28 alle
+   04:32 ("0.40%/min vs 0.41% - would empower"). Da misurare: durata delle run e crescita del banco
+   per ora, rispetto alla regola vecchia.
+2. **Stage di farm al muro** (AutoRetreat): misura l'oro della run al minuto
+   (`SpecialGameStatistics.save.totalGoldThisRun`) 2 minuti per stage dal muro in giù e farma il
+   migliore. -27 alle 04:25: 1037 10^547,71, 1036 10^547,99, **1035 10^548,17**, 1034 10^548,16. Righe
+   `[AutoRetreat] Farm sample` / `Farming stage`.
+3. **Prova della squadra su -28** (`[formationtask] scoring = "abilities"` solo lì, dalle 02:55): Muriel
+   leader con Boris, Talia, Solaine e Astrid al posto di Cirilo, Luana, Benedictus e Burt. Muri di -28
+   prima: 999, 1005, 1006, 1006, 1007, 1011; con la squadra nuova entrata a metà run: 1012. Il
+   confronto vero sono le run intere dopo le 04:32. Se il muro sale chiaramente più del solito (+0-6 a
+   run), applicarla alla flotta (`-Set formationtask.scoring=abilities`, poi `-ResetTasks formationtask`)
+   e far investire Hall of Heroes sul carry, non sui buffer.
+4. **Push giornaliero** (`DailyPushTask`, spento di default, acceso solo su -27): stato in "Push
+   giornaliero: stato" qui sotto.
+5. **Merchant:** non vende più Midas' Touch.
+
+**Push giornaliero: stato** (28/11 04:40): vedi la sezione "Fatto il 28/11 alle 04:40" più sotto.
+
+---
+
 > Scritto il 2026-11-26 da un'analisi con REA della build del 06/11 (metadata IL2CPP v31), rivisto lo
 > stesso giorno su richiesta dell'utente:
 > - tutte le chiamate migliorabili, non solo i timer: lo scopo è un bot leggerissimo e velocissimo;

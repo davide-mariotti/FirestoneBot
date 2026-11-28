@@ -165,6 +165,22 @@ public static class AutoRetreat
 
             if (_suppressedUntilReset)
             {
+                // DailyPush's scrolls and items are up: to the top now and the boss at once, while they last.
+                if (_pushRequested && stage >= 0)
+                {
+                    _pushRequested = false;
+                    yield return ClimbBack(stage, "the daily push");
+                    if (StageProgress.FightBossBtn.IsClickable())
+                    {
+                        _bossTriedOn = StageProgress.Current;
+                        Logger.Info($"[AutoRetreat] Daily push: fighting the boss of stage {StageProgress.Current}.");
+                        yield return StageProgress.FightBossBtn.Click();
+                    }
+
+                    yield return PollWait;
+                    continue;
+                }
+
                 if (stage >= 0 && RetryMinutes > 0 && DateTime.Now - _retreatTime >= TimeSpan.FromMinutes(RetryMinutes))
                     yield return ClimbBack(stage);
 
@@ -208,6 +224,11 @@ public static class AutoRetreat
             yield return PollWait;
         }
     }
+
+    private static bool _pushRequested;
+
+    /// <summary>DailyPush's buffs are up: the next poll climbs to the top and fights the boss.</summary>
+    public static void RequestPush() => _pushRequested = true;
 
     /// <summary>A farm search is measuring (EmpowerTask's growth rule waits for it).</summary>
     public static bool FarmSearching { get; private set; }
@@ -296,9 +317,11 @@ public static class AutoRetreat
 
     // Forward until the stage stops changing (the furthest stage reached), then stall detection
     // decides again whether it's still a wall.
-    private static IEnumerator ClimbBack(int from)
+    private static IEnumerator ClimbBack(int from, string why = null)
     {
         var stage = from;
+        // The forth arrow hides for a while during a wave (-28 28/11 03:48): up to a minute for it first.
+        yield return Poll.Until(() => StageProgress.GoForthBtn.IsClickable(), 240, 0.25f);
         for (var i = 0; i < MaxClimbClicks && StageProgress.GoForthBtn.IsClickable(); i++)
         {
             yield return StageProgress.GoForthBtn.Click();
@@ -309,7 +332,7 @@ public static class AutoRetreat
             stage = now;
         }
 
-        Logger.Info($"[AutoRetreat] Retrying the wall after {RetryMinutes:0.#} min: stage {from} -> {stage}.");
+        Logger.Info($"[AutoRetreat] Retrying the wall ({why ?? $"after {RetryMinutes:0.#} min"}): stage {from} -> {stage}.");
         _suppressedUntilReset = false;
         _lastSeenStage = -1;
     }

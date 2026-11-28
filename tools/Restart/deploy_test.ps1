@@ -7,7 +7,8 @@
 #
 # -ResetTasks: config sections whose next_run_time_internal is emptied (the task runs on the first scan).
 # -FullRead: also empties hallofheroestask's hero_snapshot_time, so its daily full read runs now.
-# -Set: config entries to write, "empowertask.empower_rule=growth" (string values, added when missing).
+# -Set: config entries to write, "empowertask.empower_rule=growth" or "dailypushtask.enabled=true"
+#   (true/false/numbers unquoted; the entry, and its section, added when missing).
 param(
     [Parameter(Mandatory)][int]$Instance,
     [string[]]$ResetTasks = @(),
@@ -45,9 +46,15 @@ if ($Set.Count -gt 0 -and (Test-Path $cfg)) {
     foreach ($entry in $Set) {
         if ($entry -notmatch '^([^.=]+)\.([^=]+)=(.*)$') { Write-Output "bad -Set '$entry'"; continue }
         $section, $key, $value = $Matches[1], $Matches[2], $Matches[3]
+        # Booleans and numbers as they are, anything else quoted.
+        $line = if ($value -match '^(true|false|-?\d+(\.\d+)?)$') { "$key = $value" } else { "$key = `"$value`"" }
         $m = [regex]::Match($text, "(?s)\[$section\]\r?\n(.*?)(?=\r?\n\[|\z)")
-        if (-not $m.Success) { Write-Output "[$section] not in the config"; continue }
-        $line = "$key = `"$value`""
+        if (-not $m.Success) {
+            # A task the game hasn't run yet: its section, read when the task creates its entries.
+            $text = $text.TrimEnd() + "`r`n`r`n[$section]`r`n$line`r`n"
+            Write-Output "[$section] (new) $line"
+            continue
+        }
         $body = $m.Groups[1].Value
         $body = if ($body -match "(?m)^$key = .*$") { $body -replace "(?m)^$key = .*$", $line } else { "$line`r`n$body" }
         $text = $text.Remove($m.Groups[1].Index, $m.Groups[1].Length).Insert($m.Groups[1].Index, $body)

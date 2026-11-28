@@ -154,11 +154,12 @@ public class EmpowerTask : BotTask
         }
 
         var now = (gain - last._lastGain) / (minutes - last._lastMinutes);
-        // While AutoRetreat measures farm stages the growth swings with them: it waits for the pick.
-        _growthWait = deciding ? !capped && (now >= average || AutoRetreat.FarmSearching) : null;
+        // While AutoRetreat measures farm stages the growth swings with them: it waits for the pick. And
+        // for today's push, which comes after the pick (DailyPushTask).
+        _growthWait = deciding ? !capped && (now >= average || AutoRetreat.FarmSearching || DailyPushTask.Waiting) : null;
         return $"last {minutes - last._lastMinutes:0} min {now * 100:0.00}%/min vs run average {average * 100:0.00}%/min - " +
                (!deciding ? "not at the wall with the ratio" : _growthWait == true ? "would wait" : "would empower") +
-               (AutoRetreat.FarmSearching ? " (farm search running)" : "") + (capped ? $" (past {MaxWallWait.TotalMinutes:0} min at the wall)" : "") +
+               (AutoRetreat.FarmSearching ? " (farm search running)" : "") + (DailyPushTask.Waiting ? " (daily push to come)" : "") + (capped ? $" (past {MaxWallWait.TotalMinutes:0} min at the wall)" : "") +
                (GrowthRule ? "" : " (rule off)");
     }
 
