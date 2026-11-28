@@ -59,17 +59,21 @@ public class FormationTask : BotTask
 
     private MelonPreferences_Entry<string> _forced;
 
-    // A mini-event challenge that wants kills from one hero ("Kill N enemies with Valerius", Steam-27
-    // 28/11), once its cards confirmed the game's hero; null otherwise.
-    private static string Wanted => Tasks.Events.MiniEventTask.KillHeroTrusted ? GameState.MiniEventKillHero : null;
+    // The hero an unfinished mini-event challenge wants kills from ("Kill 100 enemies with Luana", Steam-27
+    // 28/11): the game's, once a card named the same hero this session or when it's the one already put in
+    // (a restart, before the visit). None when the game has no such challenge: done, or no event - the
+    // forced hero then comes out (Steam-27 28/11: Luana's done and claimed before the 11:17 restart).
+    private string Wanted => GameState.MiniEventKillHero is { } hero &&
+                             (hero == Tasks.Events.MiniEventTask.KillHeroConfirmed || hero == _forced?.Value)
+        ? hero
+        : null;
 
     // The Wanted the last run decided on (null before the first run of a session: the saved forced hero).
     private string _handled;
 
     // The formation follows such a challenge when it appears and when it's done, not at the daily run.
     public override bool IsNotificationVisible() => base.IsNotificationVisible() ||
-        (IsEnabled && MeetsLevelRequirement && _forced != null && Tasks.Events.MiniEventTask.KillHeroTrusted &&
-         (Wanted ?? "") != (_handled ?? _forced.Value));
+        (IsEnabled && MeetsLevelRequirement && _forced != null && (Wanted ?? "") != (_handled ?? _forced.Value));
 
     private static HashSet<string> TargetNames(string saved) =>
         saved.Split('|')[0].Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToHashSet();
@@ -94,10 +98,9 @@ public class FormationTask : BotTask
             ? FormationPlanner.AbilitySupport
             : null;
         // The challenge's hero goes in (Best keeps the other four as good as they can be); when it's done the
-        // hero put in for it comes out even for less than MinGain. Until the cards confirm the game's
-        // challenges (after a restart), the forced hero stays.
+        // hero put in for it comes out even for less than MinGain.
         var forcedBefore = _forced.Value;
-        var wanted = Tasks.Events.MiniEventTask.KillHeroTrusted ? Wanted : forcedBefore.Length > 0 ? forcedBefore : null;
+        var wanted = Wanted;
         _handled = wanted ?? "";
         var required = wanted != null && read.Heroes.Any(h => h.Name == wanted) ? wanted : null;
         var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio, support, required);

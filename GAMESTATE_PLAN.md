@@ -98,7 +98,7 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
 - **Sfida "uccidi N nemici con un eroe"** (Stardust su -27): nei dati è `ChallengeCode.KillEnemies` con
   `MiniEventChallenge.heroCode` (il gioco ha `questToHero` e `CheckHeroOnChallenge`).
   `GameState.MiniEventKillHero` la legge; `MiniEventTask` la confronta con il testo delle carte e solo
-  se una carta nomina lo stesso eroe (`KillHeroTrusted`) FormationTask la segue: mette l'eroe al posto
+  se una carta nomina lo stesso eroe (`KillHeroConfirmed`) FormationTask la segue: mette l'eroe al posto
   del più debole dei cinque (`FormationPlanner.Best(..., required)`), lo salva in
   `[formationtask] forced_hero`, e quando la sfida è fatta torna alla squadra migliore anche sotto il
   10% di guadagno. FormationTask parte quando la sfida compare o finisce, non solo alle 10:32.

@@ -316,12 +316,12 @@ public static class GameState
         return list;
     });
 
-    /// <summary>The mini-event's challenges, each its own requirement.</summary>
+    /// <summary>The mini-event's challenges, each its own requirement; a claimed one has no card (Steam-17 28/11).</summary>
     public static List<(Tasks.Events.ChallengeKind Kind, int Done, int Target, bool Claimable)> MiniChallenges => GetRef("mini challenges", () =>
     {
         var list = new List<(Tasks.Events.ChallengeKind, int, int, bool)>();
         foreach (var m in H.MiniEventsHandler.activeChallenges)
-            if (!m.locked)
+            if (!m.locked && !m.claimed)
                 list.Add((MiniKind(m.challengeCode), m.currentProgress, m.requirement, m.completed && !m.claimed));
         return list;
     });

@@ -28,8 +28,8 @@ public class MiniEventTask : EventTask
 
     protected override string Describe => GameState.MiniEventDescribe;
 
-    /// <summary>The game's kill-challenge hero matched a card at a visit this session (FormationTask).</summary>
-    public static bool KillHeroTrusted { get; private set; }
+    /// <summary>The game's kill-challenge hero a card named at a visit this session (FormationTask); null before.</summary>
+    public static string KillHeroConfirmed { get; private set; }
 
     protected override List<(ChallengeKind Kind, int Done, int Target, bool Claimable)> ChallengesFromGame => GameState.MiniChallenges;
 
@@ -44,8 +44,9 @@ public class MiniEventTask : EventTask
         // a card names the same hero (a hero-less kill challenge's code could read as the first hero).
         if (GameState.MiniEventKillHero is { } hero)
         {
-            KillHeroTrusted = challenges.Any(c => c.Text.IndexOf(hero, System.StringComparison.OrdinalIgnoreCase) >= 0);
-            Debug($"[INFO] Mini-event kill challenge for {hero}: {(KillHeroTrusted ? "a card names it" : "no card names it - not followed")}.");
+            var named = challenges.Any(c => c.Text.IndexOf(hero, System.StringComparison.OrdinalIgnoreCase) >= 0);
+            if (named) KillHeroConfirmed = hero;
+            Debug($"[INFO] Mini-event kill challenge for {hero}: {(named ? "a card names it" : "no card names it - not followed")}.");
         }
 
         yield return MiniEvents.Close;
