@@ -61,7 +61,41 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
    giornaliero: stato" qui sotto.
 5. **Merchant:** non vende più Midas' Touch.
 
-**Push giornaliero: stato** (28/11 04:40): vedi la sezione "Fatto il 28/11 alle 04:40" più sotto.
+**Push giornaliero: stato** (28/11 05:10): vedi la sezione "Fatto il 28/11 alle 05:10" più sotto.
+
+**Fatto il 28/11 alle 05:10** (notte, mentre l'utente dormiva):
+- **Rollout:** build del branch su Steam-17..31 alle 03:53-04:11, un'istanza alla volta, tutte "up" e con
+  la stessa DLL; nella prima ora nessun `[FAILED] Task`, solo i fallback noti.
+- **Regola della crescita, primi Empower veri:** -22 alle 04:19, -20 alle 04:25, -28 alle 04:32, -27 alle
+  04:52 (rapporto 3,4), ognuno quando la crescita degli ultimi 5 minuti è scesa sotto la media della
+  run.
+- **Stage di farm:** il confronto si fa sull'oro della run al minuto. I trovati crescono come l'oro
+  alla ~0,4, quindi il loro ritmo cala campione dopo campione anche a parità di oro, e sceglierebbero
+  uno stage troppo alto (-28 alle 03:40-03:48: oro su fino a 1008, trovati al massimo a 1010-1009).
+  -27: 1035 sia alle 04:25 sia alle 04:52 (muro 1037): **2 stage sotto il muro**. La freccia "avanti"
+  si nasconde durante un'ondata: fino a 60 s di attesa, nel tentativo del muro ogni 30 minuti come
+  nella ricerca.
+- **Merchant:** non vende più Midas' Touch (scelta dell'utente).
+- **Probe `items`:** scorte enormi su -27 / -28: 372 / 387 Speed, 354 / 325 Damage, 162 / 164 Health,
+  ~200-270 per ognuno di Pouch, Bucket, Crate, Pile of Gold, Drums of War, Dragon Armor, Guardian's
+  Rune e i due Totem; Midas Touch 1 / 3. Durate del gioco: pergamene 600 s, oggetti 300 s,
+  consumabili d'oro 5 / 15 / 30 / 60 minuti di oro.
+- **Push giornaliero** (`DailyPushTask`, `[dailypushtask] enabled = false` di default, `mode`):
+  - `dry`: apre l'inventario (schede `inventoryItems`, `scrolls`, `chests`, `currencies`) e scrive gli
+    slot e i loro pulsanti;
+  - `test`: una Speed e un Drums of War, visto su -27 alle 05:08 (372 → 371, 201 → 200, attive tutte e
+    due, 5,5 s);
+  - `on` (acceso solo su -27 dalle 05:10): una volta per giorno di gioco, al muro dopo la ricerca dello
+    stage, tre pergamene, Drums of War, Dragon Armor, Guardian's Rune, i due Totem e un consumabile
+    d'oro per tipo dal più piccolo; poi AutoRetreat sale al massimo e attacca subito il boss. Mai
+    Midas Touch. La regola della crescita aspetta il push del giorno (alle 04:52 -27 aveva fatto
+    l'Empower 20 s dopo la ricerca).
+  - Gli slot sono celle riciclate col Button senza listener: il click è quello simulato (eventi del
+    puntatore, `GameButton.ClickSimulated`), come per i forzieri; l'`onClick.Invoke` non faceva niente
+    (-27 alle 04:32, "Speed: 372 -> 372").
+  - Da vedere al primo push vero su -27 (prossimo muro verso le 07:15): le righe `[DailyPush]`, lo
+    stage massimo raggiunto con i buff (`[AutoRetreat] Retrying the wall (the daily push)`, poi
+    `Stage N stalled`) contro il muro di prima (1037), e i trovati prima dell'Empower.
 
 ---
 
