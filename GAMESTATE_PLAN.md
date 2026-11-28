@@ -4,7 +4,8 @@
 
 Se l'utente scrive "LEGGI GAMESTATE_PLAN.md", parti da qui. Scrivi all'utente **sempre in italiano**.
 
-**Il lavoro.** Repo `C:\Repos\FirestoneBot`, branch `game-state` (non è stato fatto il merge su main). Il
+**Il lavoro.** Repo `C:\Repos\FirestoneBot`, branch **main**: il 28/11 alle 12:38 `game-state` è stato
+unito a main (c6ab45a, `--no-ff`) su richiesta dell'utente, e si lavora su main. Il
 bot decide dai dati del gioco (handler IL2CPP da `GameInitialize.HandlerLoader` / `MenuLoader`, in
 codice `GameState.H`) invece di leggere lo schermo. Fai commit e push dopo ogni passo verificato, e
 aggiorna questo file con quello che fai e coi numeri visti nei log.
@@ -24,10 +25,16 @@ aggiorna questo file con quello che fai e coi numeri visti nei log.
   si usa solo dove serve davvero); **Strange Dust** solo per guardiani ed eroi, **niente Alchimista**;
   Meteorite Research resta com'è; l'Empower segue la regola della crescita.
 
-**Dove gira.** Dal 28/11 alle 03:53-04:11 il branch gira su **tutte le istanze Steam-17..31 di
-PC-Guesly** (questo PC, box Sandboxie `C:\Sandbox\dmari\SteamB<N>`), su richiesta dell'utente.
-DESKTOP-ADMIN e main non sono stati toccati: un deploy di main deve saltare 17-31. DLL di main per
-tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
+**Dove gira.** Dal 28/11 alle 12:40 su **tutte le 32 istanze**: Steam-17..31 su PC-Guesly (questo PC,
+box Sandboxie `C:\Sandbox\dmari\SteamB<N>`) e Steam-0..16 su DESKTOP-ADMIN (192.168.1.11, WinRM con
+`$HOME\desktop-admin.cred`; box `C:\Sandbox\Admin\SteamB<N>`, ognuna col suo `Mods` oltre a quello
+reale; Steam-0 fuori box). Stessa build del gioco ovunque (GameAssembly.dll 77.980.160 byte del 06/11).
+DLL di main di prima per tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`
+qui, `C:\Repos\FirestoneBot-test-backup\2026-11-28-admin-main` su DESKTOP-ADMIN.
+- Deploy su DESKTOP-ADMIN (niente build là): stage delle DLL con `Copy-Item -ToSession`, stop con
+  `restart_fleet.ps1 -From 0 -To 16 -Stop` (con `TEMP`/`USERNAME` di Admin), copia nei Mods reali e delle
+  box, cfg delle box, poi togliere `restart_fleet.paused` e `Start-ScheduledTask Firestone_Riavvio`
+  (dettaglio in MULTI_INSTANCE_SETUP.md, 3.1).
 - Build: `$env:COMMON_DIR="C:\Program Files (x86)\Steam-17\steamapps\common"; dotnet build C:\Repos\FirestoneBot\src\firebot.csproj -c Release -p:Il2CppAssembliesDir="C:\Sandbox\dmari\SteamB27\drive\C\Program Files (x86)\Steam-27\steamapps\common\Firestone\MelonLoader\Il2CppAssemblies"`;
   test: `dotnet test tests\Firebot.TalentEngine.Tests` (97 al 28/11).
 - Deploy di un'istanza, che la riavvia da solo (controlla sempre che dica "up"):
