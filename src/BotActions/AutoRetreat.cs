@@ -170,6 +170,8 @@ public static class AutoRetreat
                 {
                     _pushRequested = false;
                     yield return ClimbBack(stage, "the daily push");
+                    // The boss button shows a while after the climb: at 07:25 on -27 it came 3 min later, buffs ticking.
+                    yield return Poll.Until(() => StageProgress.FightBossBtn.IsClickable(), 120, 0.25f);
                     if (StageProgress.FightBossBtn.IsClickable())
                     {
                         _bossTriedOn = StageProgress.Current;
@@ -320,12 +322,16 @@ public static class AutoRetreat
     private static IEnumerator ClimbBack(int from, string why = null)
     {
         var stage = from;
-        // The forth arrow hides for a while during a wave (-28 28/11 03:48): up to a minute for it first.
-        yield return Poll.Until(() => StageProgress.GoForthBtn.IsClickable(), 240, 0.25f);
-        for (var i = 0; i < MaxClimbClicks && StageProgress.GoForthBtn.IsClickable(); i++)
+        // The forth arrow hides for a while during a wave and after each step (-28 28/11 03:48; -27 07:25
+        // climbed one stage of four): up to a minute for it first, 10 s after each step, and each step
+        // waits for the stage to move.
+        for (var i = 0; i < MaxClimbClicks; i++)
         {
+            yield return Poll.Until(() => StageProgress.GoForthBtn.IsClickable(), i == 0 ? 240 : 40, 0.25f);
+            if (!StageProgress.GoForthBtn.IsClickable()) break;
             yield return StageProgress.GoForthBtn.Click();
-            yield return RetreatClickDelayWait;
+            var before = stage;
+            yield return Poll.Until(() => StageProgress.Current > before, 20, 0.25f);
 
             var now = StageProgress.Current;
             if (now <= stage) break;

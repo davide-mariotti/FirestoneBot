@@ -93,9 +93,20 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
   - Gli slot sono celle riciclate col Button senza listener: il click è quello simulato (eventi del
     puntatore, `GameButton.ClickSimulated`), come per i forzieri; l'`onClick.Invoke` non faceva niente
     (-27 alle 04:32, "Speed: 372 -> 372").
-  - Da vedere al primo push vero su -27 (prossimo muro verso le 07:15): le righe `[DailyPush]`, lo
-    stage massimo raggiunto con i buff (`[AutoRetreat] Retrying the wall (the daily push)`, poi
-    `Stage N stalled`) contro il muro di prima (1037), e i trovati prima dell'Empower.
+  - **Primo push vero, -27 alle 07:25** (dopo la ricerca: farm a 1033, muro 1037): 12 usi su 12
+    confermati in 12,9 s (Speed 371 → 370, Damage 354 → 353, Health 162 → 161, uno per ognuno dei cinque
+    oggetti e dei quattro consumabili d'oro), tutto attivo, Midas non toccato. **Trovati da 10^221,37
+    (07:19) a 10^222,25 (07:29), ×7,6 in 10 minuti** ("24.56%/min"): il rapporto è passato da 0,76 a 5,8.
+    **Muro da 1037 a 1044** (07:32). Difetto: la salita dopo il push ha fatto un solo stage (1033 →
+    1034) e il pulsante del boss è arrivato 3 minuti dopo, coi buff che scorrevano; corretto alle 07:37
+    (a ogni passo aspetta la freccia e lo stage, il boss fino a 30 s).
+- **Prova della squadra su -28:** primo muro di una run intera con la squadra delle abilità alle 06:49:
+  **1012**, come il precedente (1012, cambio a metà run) e +1 sul 1011 di prima; le run prima avevano
+  +0-6 ciascuna. Nessun salto: **non estesa alla flotta**, la prova resta su -28 per altre run. Il muro
+  è poco sensibile al danno (su -27 un banco ×4,6 ha dato +1 stage), quindi conta anche l'oro al minuto
+  della farm: su -28 alle 06:51-06:59 da 10^534,39 (1012) a 10^535,27 (1008), sempre in salita fino al
+  limite di 5 stage (`retreat_stages`): lì lo stage migliore potrebbe essere più in basso.
+- **Rollout della build delle 07:37 su 17-31** dalle 07:38, un'istanza alla volta.
 
 ---
 
