@@ -53,15 +53,19 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
    `[AutoRetreat] Farm sample` / `Farming stage`.
 3. **Prova della squadra su -28** (`[formationtask] scoring = "abilities"` solo lì, dalle 02:55): Muriel
    leader con Boris, Talia, Solaine e Astrid al posto di Cirilo, Luana, Benedictus e Burt. Muri di -28
-   prima: 999, 1005, 1006, 1006, 1007, 1011; con la squadra nuova entrata a metà run: 1012. Il
-   confronto vero sono le run intere dopo le 04:32. Se il muro sale chiaramente più del solito (+0-6 a
-   run), applicarla alla flotta (`-Set formationtask.scoring=abilities`, poi `-ResetTasks formationtask`)
-   e far investire Hall of Heroes sul carry, non sui buffer.
-4. **Push giornaliero** (`DailyPushTask`, spento di default, acceso solo su -27): stato in "Push
-   giornaliero: stato" qui sotto.
+   prima: 999, 1005, 1006, 1006, 1007, 1011; con la squadra nuova: 1012 (a metà run) e **1012 alla
+   prima run intera (06:49): nessun salto**, quindi non estesa. Continuare a guardare i muri delle run
+   successive; se dopo 3-4 run non c'è guadagno, tornare a `damage` su -28 (`-Set
+   formationtask.scoring=damage -ResetTasks formationtask`). Se c'è, estenderla e far investire Hall of
+   Heroes sul carry, non sui buffer.
+4. **Push giornaliero** (`DailyPushTask`, spento di default, `enabled = true` e `mode = "on"` solo su
+   -27): **funziona**. Alle 07:25 su -27: 12 usi su 12, trovati ×7,6 in 10 minuti, muro 1037 → 1044.
+   Da fare se l'utente è d'accordo: accenderlo sulla flotta (`-Set
+   "dailypushtask.enabled=true,dailypushtask.mode=on"`), e decidere quanti consumabili d'oro per push
+   (oggi uno per tipo: le scorte sono ~200-270 per tipo per account).
 5. **Merchant:** non vende più Midas' Touch.
 
-**Push giornaliero: stato** (28/11 05:10): vedi la sezione "Fatto il 28/11 alle 05:10" più sotto.
+**Dettagli e numeri della notte:** sezione "Fatto il 28/11 alle 05:10" qui sotto.
 
 **Fatto il 28/11 alle 05:10** (notte, mentre l'utente dormiva):
 - **Rollout:** build del branch su Steam-17..31 alle 03:53-04:11, un'istanza alla volta, tutte "up" e con
@@ -106,7 +110,13 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
   è poco sensibile al danno (su -27 un banco ×4,6 ha dato +1 stage), quindi conta anche l'oro al minuto
   della farm: su -28 alle 06:51-06:59 da 10^534,39 (1012) a 10^535,27 (1008), sempre in salita fino al
   limite di 5 stage (`retreat_stages`): lì lo stage migliore potrebbe essere più in basso.
-- **Rollout della build delle 07:37 su 17-31** dalle 07:38, un'istanza alla volta.
+- **Empower di -27 dopo il push:** alle 07:39 con **rapporto 5,9** (banco da 10^221,49 a 10^222,33,
+  ×6,9); senza il push al muro era 0,76. Nella ricerca dopo il push un campione a 1043 ha dato oro e
+  trovati fermi per 2 minuti ("not moving"): la ricerca si è fermata al muro (1044) e la regola della
+  crescita ha fatto l'Empower (crescita 0,01% contro 1,25%). Da capire se capita ancora (squadra morta
+  a buff finiti?).
+- **Rollout della build delle 07:37 su 17-31** alle 07:37-07:53, un'istanza alla volta: tutte "up" e
+  con la stessa DLL, nessun `[FAILED] Task`.
 
 ---
 
