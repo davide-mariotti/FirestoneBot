@@ -21,6 +21,15 @@ internal static class GameStateProbe
     private static bool _versionLogged;
     private static string _skips;
     private static string _abilities;
+    private static string _items;
+    private static DateTime _itemsLogged = DateTime.MinValue;
+
+    private static string PathOf(UnityEngine.Transform t)
+    {
+        var names = new List<string>();
+        for (; t != null; t = t.parent) names.Insert(0, t.name);
+        return string.Join("/", names);
+    }
 
     private static HandlerLoader H => GameInitialize.HandlerLoader;
     private static CoreFunctionalityLoader Core => GameInitialize.CoreFunctionality;
@@ -241,8 +250,14 @@ internal static class GameStateProbe
                 foreach (var r in tree.Value)
                     if (r.Key.ToString().StartsWith("Skip"))
                         meteorite.Add($"{tree.Key}/{r.Key} lvl {r.Value.level} effect {F(Heroes.Log(r.Value.currentEffect))} cost {F(r.Value.levelUpCost)} unlocked {r.Value.IsUnlocked()}");
+            var alchemy = new List<string>();
+            foreach (var tree in H.AlchemyExperimentHandler.researchTrees)
+                foreach (var r in tree.Value)
+                    if (r.Key.ToString().StartsWith("Skip"))
+                        alchemy.Add($"{tree.Key}/{r.Key} lvl {r.Value.level}/{r.Value.levelCap} effect {F(Heroes.Log(r.Value.effect))}");
             skipsNow = $"starting stage {BattleMainStageManager.startingStage}; exotic (effect log10) {string.Join(", ", skips)}; " +
-                       $"firestone research {string.Join(", ", research)}; meteorite research {string.Join(", ", meteorite)}";
+                       $"firestone research {string.Join(", ", research)}; meteorite research {string.Join(", ", meteorite)}; " +
+                       $"alchemy (current tree {H.AlchemyExperimentHandler.currentTree}) {string.Join(", ", alchemy)}";
         }
         catch (Exception e)
         {
@@ -276,5 +291,34 @@ internal static class GameStateProbe
         }
 
         if (abilitiesNow != _abilities) Logger.Info($"[Probe] abilities: {_abilities = abilitiesNow}");
+
+        // For the daily push at the wall (the user's idea, 28/11, and the F2P guide's routine): what the
+        // account holds, how long each lasts, and where the game's own use buttons are. Read only.
+        string itemsNow;
+        try
+        {
+            var parts = new List<string>();
+            foreach (var kv in H.ScrollsHandler.scrollItems)
+                parts.Add($"{kv.Key} x{kv.Value.amount} dur {F(ScrollItem.itemDuration)} passed {F(kv.Value.timePassed)} active {kv.Value.IsActive()}");
+            foreach (var kv in H.InventoryItemsHandler.inventoryItems)
+                parts.Add($"{kv.Key} x{kv.Value.amount} dur {F(kv.Value.effectDuration)} offline {F(kv.Value.offlineTime)} unlocked {kv.Value.isUnlocked.GetDecrypted()} active {kv.Value.IsActive()}");
+            var ui = new List<string>();
+            foreach (var s in UnityEngine.Object.FindObjectsOfType<ScrollInteraction>())
+                ui.Add($"scroll {s.scroll?.scrollItemType} at {PathOf(s.transform)}");
+            foreach (var i in UnityEngine.Object.FindObjectsOfType<InventoryItemInteraction>())
+                ui.Add($"item {i.inventoryItem?.inventoryItemType} at {PathOf(i.transform)} use {(i.itemUseButton == null ? "-" : i.itemUseButton.interactable.ToString())}");
+            itemsNow = $"{string.Join(", ", parts)}; ui: {(ui.Count == 0 ? "none on screen" : string.Join(", ", ui))}";
+        }
+        catch (Exception e)
+        {
+            itemsNow = $"ERR {e.GetType().Name}: {e.Message}";
+        }
+
+        // The amounts move with the missions: logged once an hour at most, or when the UI shows up.
+        if (itemsNow != _items && (DateTime.Now - _itemsLogged > TimeSpan.FromHours(1) || itemsNow.Contains(" at ") != (_items?.Contains(" at ") ?? false)))
+        {
+            _itemsLogged = DateTime.Now;
+            Logger.Info($"[Probe] items: {_items = itemsNow}");
+        }
     }
 }

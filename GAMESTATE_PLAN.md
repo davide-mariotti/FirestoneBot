@@ -274,6 +274,34 @@ Empower, Talents, Enlighten, Ancient Artifact, ordine delle missioni, addestrame
   abilità degli eroi schierati (nome, risorsa, durata, ricarica, descrizione del gioco), una riga
   quando cambiano.
 
+**Visto nella notte 27-28/11** (dal deploy delle 21:36):
+- Enlighten in blocco (23:07 su -27 e -28): 4 illuminazioni in 5,5 s contro 12,8 s, prezzo del gioco
+  uguale al testo; i giri di solo Train delle 01:13 / 01:24 3,3-3,5 s.
+- Talents (-28 alle 00:54): 1 punto investito, punti del gioco uguali al contatore.
+- Empower: -27 alle 23:32 e 01:53 (muro 1033 tutte e due), -28 alle 01:23 (muro 1011); ogni volta
+  "would wait" (al muro 2,3-5,8%/min contro 0,54-0,59% di media). Il rapporto all'Empower di -27 è
+  sceso a 1,05 e 1,29.
+- Nessun task fallito; solo il fallback noto `research state`.
+
+**Fatto il 28/11 alle 02:53** (deploy su -27 alle 02:52 e -28 alle 02:53, richieste dell'utente):
+- **Empower:** la regola della crescita è quella di default (`empower_rule = "growth"`, scelta
+  dall'utente; su -27 e -28 scritta nel cfg con `deploy_test.ps1 -Set`). Aspetta anche mentre AutoRetreat
+  misura gli stage di farm, e al massimo 90 minuti dopo il muro.
+- **Muro, stage di farm:** al posto dei 5 stage fissi AutoRetreat misura l'oro al minuto (l'oro della
+  run, `SpecialGameStatistics.save.totalGoldThisRun`) per 2 minuti al muro, poi uno stage sotto alla
+  volta finché rende di più (al massimo `retreat_stages`), e torna al migliore. È quello che l'utente
+  fa a mano col tooltip del Barrel of Gold: il gioco ne calcola il valore con
+  `OfflineCalculations.CalculateInventoryItemGold` (oro dell'ondata / tempo per passarla), ma solo
+  per lo stage attuale e non è una lettura pura, quindi si misura.
+- **Formazione, prova su -28:** `[formationtask] scoring = "abilities"` aggiunge al danno quello che le
+  abilità di ogni eroe moltiplicano il danno della squadra (buff di squadra, debuff sul boss: tabella in
+  `FormationPlanner.AbilitySupport`), cercando tra tutte le squadre da 5. Il default resta `damage`.
+  Alle 02:55 su -28: Cirilo, Luana, Benedictus, Burt → Boris, Talia, Solaine, Astrid, leader Muriel,
+  "as planned", ×3,55 su quel punteggio. I muri di -28 prima: 999, 1005, 1006, 1006, 1007, 1011 (+0-6
+  a run); quelli di -27: 1027, 1031, 1032, 1033, 1033. Il cambio è a metà run (minuto 92): gli eroi
+  nuovi partono con meno livelli d'oro.
+- `deploy_test.ps1 -Set "sezione.chiave=valore"` scrive voci del cfg a gioco fermo.
+
 **Formazione: cosa dicono i dati** (`Formation heroes` e `[Probe] abilities`, 27/11):
 - Il danno è quasi tutto di un eroe. -27: Talia 10^184,49 (leader, +0,13), Boris 10^183,38 (~5%), gli
   altri tre ~10^181,3, 0,05% l'uno. -28: Muriel leader con fattore 10^2,81, gli altri quattro insieme
@@ -387,14 +415,15 @@ Guardati il 27/11 pomeriggio (dai log 11:28-15:20 di -27 e -28):
 - AutoRetreat: clicca `goBackStage` 5 volte di fila e 2 vanno a vuoto mentre lo stage cambia (-27 e -28
   dalle 15:46). Non l'ho toccato io e non costa niente.
 
-## Stato (27/11 21:36, branch `game-state`)
+## Stato (28/11 02:53, branch `game-state`)
 
 **Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
 me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
-di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`). **È ripartito alle 21:36 (ultimo
-deploy, -27 alle 21:35 e -28 alle 21:36) e finisce il 28/11 alle 09:36.** I deploy della sera sono
-descritti in "Fatto il 27/11 alle 20:43" e "alle 21:36", quelli delle 15:35-15:47 in "Fatto il 27/11
-alle 15:47", in testa al file.
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`, di main per la flotta in
+`...\2026-11-28-fleet-main`). **È ripartito alle 02:53 (ultimo deploy, -27 alle 02:52 e -28 alle
+02:53) e finisce il 28/11 alle 14:53.** I deploy sono descritti in "Fatto il 28/11 alle 02:53", "Fatto
+il 27/11 alle 20:43" e "alle 21:36", quelli delle 15:35-15:47 in "Fatto il 27/11 alle 15:47", in testa
+al file.
 
 Alle 15:09 era ripartito per la seconda serie di richieste dell'utente:
 - **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,

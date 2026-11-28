@@ -141,12 +141,13 @@ public static class AutoRetreat
     /// <summary>Called by EmpowerTask right after a successful empower so stall detection re-arms.</summary>
     public static void OnAdventureReset()
     {
+        // Always: an Empower during a wall retry (the flag off) must not leave the old run's wall time.
+        WallSince = null;
         if (!_suppressedUntilReset) return;
 
         _suppressedUntilReset = false;
         _lastSeenStage = -1;
         _lastProgressTime = DateTime.MinValue;
-        WallSince = null;
         Logger.Info("[AutoRetreat] Adventure reset detected. Stall detection re-armed.");
     }
 
@@ -216,23 +217,33 @@ public static class AutoRetreat
 
     private const float MeasureSeconds = 120f;
 
-    /// <summary>Gold per minute over MeasureSeconds at the stage being farmed, log10; null when unreadable or interrupted.</summary>
+    /// <summary>
+    ///     What the stage being farmed pays a minute over MeasureSeconds, log10: the found Firestones,
+    ///     what the Empower banks (they grew between every 5-minute probe on 27-28/11); the run's gold,
+    ///     which they come from, when they don't move. Null when neither moves or the run was reset.
+    /// </summary>
     private static IEnumerator MeasureGold(Action<double?> done)
     {
-        var start = StageProgress.RunGoldLog10;
+        var (found0, gold0) = (Firebot.GameModel.Shared.GameState.FirestonesFoundLog10, StageProgress.RunGoldLog10);
         var since = DateTime.Now;
         yield return new WaitForSeconds(MeasureSeconds);
-        var end = StageProgress.RunGoldLog10;
-        if (!_suppressedUntilReset || start is not { } a || end is not { } b || b <= a)
-        {
-            done(null);
-            yield break;
-        }
-
-        done(a + Math.Log10(Math.Pow(10, Math.Min(b - a, 300)) - 1) - Math.Log10((DateTime.Now - since).TotalMinutes));
+        var (found1, gold1) = (Firebot.GameModel.Shared.GameState.FirestonesFoundLog10, StageProgress.RunGoldLog10);
+        var minutes = (DateTime.Now - since).TotalMinutes;
+        var foundRate = PerMinute(found0, found1, minutes);
+        var goldRate = PerMinute(gold0, gold1, minutes);
+        Logger.Info($"[AutoRetreat] Farm sample at stage {StageProgress.Current}: found {Rate(foundRate)}, gold {Rate(goldRate)}.");
+        _measuredByGold = foundRate == null;
+        done(!_suppressedUntilReset ? null : foundRate ?? goldRate);
     }
 
-    private static string Rate(double? log10) => log10 is { } r ? $"10^{r:0.00} gold/min" : "gold unreadable";
+    private static bool _measuredByGold;
+
+    private static double? PerMinute(double? from, double? to, double minutes) =>
+        from is { } a && to is { } b && b > a && minutes > 0
+            ? a + Math.Log10(Math.Pow(10, Math.Min(b - a, 300)) - 1) - Math.Log10(minutes)
+            : null;
+
+    private static string Rate(double? log10) => log10 is { } r ? $"10^{r:0.00}/min" : "not moving";
 
     /// <summary>
     ///     The farm stage that pays most, measured: the gold a minute at the wall (the game farms its
@@ -269,13 +280,15 @@ public static class AutoRetreat
 
         for (var i = 0; i < MaxClimbClicks && _suppressedUntilReset && StageProgress.Current is var now && now >= 0 && now < bestStage; i++)
         {
-            yield return Poll.Until(() => StageProgress.GoForthBtn.IsClickable(), 20, 0.25f);
+            // The forth arrow hides for a while during a wave: 5 s weren't enough on -28 (28/11 03:48, stayed 1008 for 1009).
+            yield return Poll.Until(() => StageProgress.GoForthBtn.IsClickable(), 240, 0.25f);
             if (!StageProgress.GoForthBtn.IsClickable()) break;
             yield return StageProgress.GoForthBtn.Click();
             yield return Poll.Until(() => StageProgress.Current > now, 20, 0.25f);
         }
 
-        Logger.Info($"[AutoRetreat] Farming stage {StageProgress.Current}, the best measured {bestStage} ({Rate(bestRate)}), wall {wall}.");
+        Logger.Info($"[AutoRetreat] Farming stage {StageProgress.Current}, the best measured {bestStage} " +
+                    $"({Rate(bestRate)} {(_measuredByGold ? "gold" : "found")}), wall {wall}.");
         FarmSearching = false;
     }
 
