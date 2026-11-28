@@ -218,9 +218,11 @@ public static class AutoRetreat
     private const float MeasureSeconds = 120f;
 
     /// <summary>
-    ///     What the stage being farmed pays a minute over MeasureSeconds, log10: the found Firestones,
-    ///     what the Empower banks (they grew between every 5-minute probe on 27-28/11); the run's gold,
-    ///     which they come from, when they don't move. Null when neither moves or the run was reset.
+    ///     What the stage being farmed pays a minute over MeasureSeconds, log10: the run's gold. The found
+    ///     Firestones come from it, about as its 0.4th power, so their own pace falls sample after sample
+    ///     for the same gold a minute (-28 28/11 03:40-03:48: gold a minute up every stage down to 1008,
+    ///     found a minute peaking at 1010-1009): the gold compares stages, the found only when the gold
+    ///     doesn't move. Null when neither moves or the run was reset.
     /// </summary>
     private static IEnumerator MeasureGold(Action<double?> done)
     {
@@ -232,11 +234,11 @@ public static class AutoRetreat
         var foundRate = PerMinute(found0, found1, minutes);
         var goldRate = PerMinute(gold0, gold1, minutes);
         Logger.Info($"[AutoRetreat] Farm sample at stage {StageProgress.Current}: found {Rate(foundRate)}, gold {Rate(goldRate)}.");
-        _measuredByGold = foundRate == null;
-        done(!_suppressedUntilReset ? null : foundRate ?? goldRate);
+        _measuredByFound = goldRate == null;
+        done(!_suppressedUntilReset ? null : goldRate ?? foundRate);
     }
 
-    private static bool _measuredByGold;
+    private static bool _measuredByFound;
 
     private static double? PerMinute(double? from, double? to, double minutes) =>
         from is { } a && to is { } b && b > a && minutes > 0
@@ -288,7 +290,7 @@ public static class AutoRetreat
         }
 
         Logger.Info($"[AutoRetreat] Farming stage {StageProgress.Current}, the best measured {bestStage} " +
-                    $"({Rate(bestRate)} {(_measuredByGold ? "gold" : "found")}), wall {wall}.");
+                    $"({Rate(bestRate)} {(_measuredByFound ? "found" : "gold")}), wall {wall}.");
         FarmSearching = false;
     }
 

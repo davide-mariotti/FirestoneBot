@@ -943,6 +943,31 @@ Sono cose che il bot oggi non fa. Ognuna va decisa con l'utente prima di scriver
    - **Momento naturale:** quando AutoRetreat riprova il muro (ogni 30 min), prima di risalire. Si usa
      il bottone "usa" dell'oggetto (`ScrollInteraction` / `InventoryItemInteraction`), mai
      `UseTheItemAskServer`.
+   - **Richiesta dell'utente del 28/11:** almeno una volta al giorno, al muro, un push al massimo stage
+     con le tre pergamene (Speed, Damage, Health) e i cinque oggetti (Drums of War, Dragon Armor,
+     Guardian's Rune, Totem of Agony, Totem of Annihilation); poi usare in modo mirato Pouch, Bucket,
+     Crate, Barrel of Gold e Midas Touch, che oggi si accumulano. Vincoli dell'utente: **Midas Touch
+     scarso e prezioso** (con parsimonia, solo quando serve: dal 28/11 il Merchant non lo vende più);
+     **Strange Dust solo per guardiani ed eroi, niente Alchimista**.
+   - **Cosa dicono le guide** (`docs/firestone_guida_F2P.md` "Consumabili di gold, pergamene e routine
+     di push", "Empower e Temple of Eternals"; `docs/guida_steam_completa.md` "Items & Scrolls"):
+     - routine prima dell'Empower (F2P, V5): al massimo, le tre pergamene, spingi ancora e upgrade, un
+       Pouch finché durano, poi Empower;
+     - consumabili d'oro = 5 / 15 / ~30 / 60 minuti di oro allo stage attuale; solo con le pergamene
+       attive, sullo stage ottimale, dal più piccolo (il Pouch sblocca gli special upgrade, il Barrel
+       per ultimo); Drums of War aumenta l'oro dei consumabili;
+     - la guida Steam: i consumabili accorciano il tempo per il muro ma non lo spostano, meglio
+       venderli per upgrade permanenti; la F2P: vendere Barrel e Crate, tenere Pouch e Bucket;
+     - Scroll of Speed ~triplica l'oro dello stage per 60 s; un talento triplica il danno con tutte e
+       tre attive; i totem "da F2P non usarli, o solo al tetto di progressione".
+   - **Cosa dicono i dati** (28/11): i trovati crescono come l'oro della run alla ~0,4
+     (`SpecialGameStatistics.save.totalGoldThisRun`): al muro l'oro arriva lineare, quindi minuti
+     d'oro in più (consumabili, pergamene) fanno crescere i trovati prima dell'Empower; per lo stesso
+     motivo lo stage di farm si sceglie sull'oro al minuto, non sui trovati.
+   - **Stato:** il probe `items` (dal 28/11 04:00) dice quantità, durate e dove sono i pulsanti "usa";
+     il push non c'è ancora. Proposta: un push al giorno al muro, solo su -27/-28 per la prova, ogni
+     consumo confermato dalla quantità che scende; i consumabili d'oro dal Pouch, con le pergamene
+     attive e allo stage di farm scelto; Midas solo se la prova mostra che alza i trovati.
 3. **Premi che il bot non chiede mai.** Nel catalogo delle richieste al server (`SocketFunctions`, 250
    metodi) ci sono claim che nessun task fa:
    - `ClaimMemberRewardsFromGuildItems`: oggetti distribuiti dalla gilda ai membri, menu
