@@ -28,16 +28,19 @@ public static class FormationPlanner
     ///     Melee in front, ranged behind; inside each zone the most valuable last, where it's hit least.
     /// </summary>
     public static Formation Best(IEnumerable<HeroStats> heroes, Func<HeroStats, double> value, double leaderRatio,
-        Func<HeroStats, double>? support = null)
+        Func<HeroStats, double>? support = null, string? required = null)
     {
         var all = heroes.OrderByDescending(value).ToList();
         if (all.Count == 0) return new Formation(Array.Empty<string>(), "", double.NegativeInfinity);
+        if (required != null && all.All(h => h.Name != required)) required = null;
 
         // With support (log10 of what a hero's abilities multiply the team's damage by), every set of
         // five: the damage of one or two heroes is ~all the team's (Steam-27/-28, 27/11), so the others
-        // count for their buffs and debuffs, which the damage alone never picks.
+        // count for their buffs and debuffs, which the damage alone never picks. A required hero (a
+        // mini-event challenge's) is in every set: the best five around it.
         // ponytail: exhaustive, C(n,5); fine to ~40 heroes.
-        var five = support == null ? all.Take(Size).ToList() : Combinations(all, Math.Min(Size, all.Count))
+        var five = support == null && required == null ? all.Take(Size).ToList() : Combinations(all, Math.Min(Size, all.Count))
+            .Where(f => required == null || f.Any(h => h.Name == required))
             .OrderByDescending(f => Evaluate(f, value, leaderRatio, support).Score).First();
         var (leader, score) = Evaluate(five, value, leaderRatio, support);
         double Worth(HeroStats h) => value(h) + (h == leader ? leaderRatio : 0);

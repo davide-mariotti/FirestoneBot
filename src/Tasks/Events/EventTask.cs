@@ -58,6 +58,9 @@ public abstract class EventTask : BotTask
     /// <summary>The game says whether this event runs for the account; null when it can't.</summary>
     protected abstract bool? RunningFromGame { get; }
 
+    /// <summary>What RunningFromGame is read from, for the log; null when there's nothing more to say.</summary>
+    protected virtual string Describe => null;
+
     /// <summary>The event's challenges from the game (GameState.CalendarChallenges / MiniChallenges); null for none or unreadable.</summary>
     protected virtual List<(ChallengeKind Kind, int Done, int Target, bool Claimable)> ChallengesFromGame => null;
 
@@ -83,7 +86,7 @@ public abstract class EventTask : BotTask
         var running = RunningFromGame;
         if (running == false && _lastVisit is { } last && DateTime.Now - last < NotRunningRecheck)
         {
-            Debug("[INFO] From the game: not running for this account - not opening.");
+            Debug($"[INFO] From the game: not running for this account - not opening.{(Describe is { } d ? $" ({d})" : "")}");
             NextRunTime = DateTime.Now + RecheckDelay;
             yield break;
         }

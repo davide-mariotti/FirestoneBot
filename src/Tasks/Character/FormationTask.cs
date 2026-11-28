@@ -6,6 +6,7 @@ using Firebot.Core;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Character;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Utilities;
 using MelonLoader;
 
@@ -51,7 +52,24 @@ public class FormationTask : BotTask
         _target = category.CreateEntry("target", "", "Target",
             "(auto-managed, don't edit) - the target team, \"name, name, ... | leader\"; replaced only by one 20% better.");
         Target = TargetNames(_target.Value);
+
+        _forced = category.CreateEntry("forced_hero", "", "Forced Hero",
+            "(auto-managed, don't edit) - the hero put in for a mini-event challenge, taken out when it's done.");
     }
+
+    private MelonPreferences_Entry<string> _forced;
+
+    // A mini-event challenge that wants kills from one hero ("Kill N enemies with Valerius", Steam-27
+    // 28/11), once its cards confirmed the game's hero; null otherwise.
+    private static string Wanted => Tasks.Events.MiniEventTask.KillHeroTrusted ? GameState.MiniEventKillHero : null;
+
+    // The Wanted the last run decided on (null before the first run of a session: the saved forced hero).
+    private string _handled;
+
+    // The formation follows such a challenge when it appears and when it's done, not at the daily run.
+    public override bool IsNotificationVisible() => base.IsNotificationVisible() ||
+        (IsEnabled && MeetsLevelRequirement && _forced != null && Tasks.Events.MiniEventTask.KillHeroTrusted &&
+         (Wanted ?? "") != (_handled ?? _forced.Value));
 
     private static HashSet<string> TargetNames(string saved) =>
         saved.Split('|')[0].Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToHashSet();
@@ -75,10 +93,24 @@ public class FormationTask : BotTask
         Func<HeroStats, double> support = string.Equals(_scoring.Value?.Trim(), "abilities", StringComparison.OrdinalIgnoreCase)
             ? FormationPlanner.AbilitySupport
             : null;
-        var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio, support);
+        // The challenge's hero goes in (Best keeps the other four as good as they can be); when it's done the
+        // hero put in for it comes out even for less than MinGain. Until the cards confirm the game's
+        // challenges (after a restart), the forced hero stays.
+        var forcedBefore = _forced.Value;
+        var wanted = Tasks.Events.MiniEventTask.KillHeroTrusted ? Wanted : forcedBefore.Length > 0 ? forcedBefore : null;
+        _handled = wanted ?? "";
+        var required = wanted != null && read.Heroes.Any(h => h.Name == wanted) ? wanted : null;
+        var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio, support, required);
         var now = FormationPlanner.Score(read.Heroes, read.InBattle, read.Leader, Value, read.LeaderRatio, support);
         var target = FormationPlanner.Best(read.Heroes, h => h.Potential, read.LeaderRatio);
-        var change = FormationPlanner.Beats(best.Score, now, MinGain);
+        var change = required != null
+            ? !read.InBattle.Contains(required)
+            : (forcedBefore.Length > 0 && read.InBattle.Contains(forcedBefore) && !best.Slots.Contains(forcedBefore)) ||
+              FormationPlanner.Beats(best.Score, now, MinGain);
+        _forced.Value = required ?? "";
+        if (required != null || forcedBefore.Length > 0)
+            Debug($"[INFO] Formation: mini-event hero {wanted ?? "-"}{(wanted != null && required == null ? " (not owned)" : "")}, " +
+                  $"forced before {(forcedBefore.Length > 0 ? forcedBefore : "-")}.");
 
         // The saved target stays unless the new one beats it by TargetMinGain on potential.
         var saved = _target.Value.Split('|');

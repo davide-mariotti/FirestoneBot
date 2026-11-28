@@ -67,6 +67,42 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
 
 **Dettagli e numeri della notte:** sezione "Fatto il 28/11 alle 05:10" qui sotto.
 
+**Fatto il 28/11 alle 10:45** (controllo della flotta chiesto dall'utente, build del branch delle 07:37 su 17-31):
+- **Errori:** nessun `[FAILED] Task` su 17-31 dalle 07:37. Solo i noti (`research state`, `weekly quests
+  renew`, sigilli di Hall of Heroes) e uno nuovo innocuo: `arena opponent power` NullReference alle
+  10:00 su 17, 19, 21, 26, 30, alla prima lettura subito dopo l'apertura dell'Arena (le carte degli
+  avversari non ci sono ancora); il giro va avanti dallo schermo e trova il bersaglio 5 s dopo.
+- **Stardust non riscosso:** l'evento parte alle 10:00 e il badge Events si accende su tutte le
+  istanze, ma `MiniEventRunning` (`hasEvent && CurrentMiniEvent`) diceva "not running" e, con la
+  visita delle 08:12 (carta "locked", in arrivo), il bot non avrebbe riaperto fino alle 14:12. Dal
+  codice del gioco (REA + capstone su GameAssembly.dll): `CurrentMiniEvent` è una proprietà automatica
+  (offset 0x10), `hasEvent` (0x20) viene da `Boolean.Parse` della risposta del server nel callback di
+  caricamento, e il gioco ricarica solo quando `UpdateNextEvent` vede un evento di `NextMiniEvents`
+  dentro le sue date (`TimeLibrary.GetDateNowLocal`, `startDate` 0x18, `endDate` 0x20, `levelLocked`
+  0x38) e lancia `WaitForServerCountDown` → `SocketFunctions.LoadMiniEvent`. Ora "attivo" è anche un
+  evento corrente o prossimo dentro le sue date e non bloccato, come lo vede `UpdateNextEvent`; il
+  "not running" scrive lo stato del gioco (`MiniEventDescribe`), e così ogni visita.
+- **Badge rimasti accesi** (censimento delle 10:30): ScarabGameMilestones su 20-24 e 27, PharaohsVault
+  su 26 e 28, OracleBlessing su 18, 25, 27; TemplePrestige è la regola della crescita, WarMachines e
+  WarmachineUnlocked (-30) restano per scelta dell'utente.
+  - Scarab: il vault del giro raggiunge una milestone, che si accende *dopo* il click del badge a inizio
+    giro (l'unica entrata del popup), e la milestone dà monete per un altro vault: un passo ogni 30
+    minuti di `BadgeCooldown` (-22: vault 10:01, milestone 10:31, poi PharaohsVault). Ora il giro si
+    ripete (al massimo 3) finché il gioco dice milestone accesa o monete per un vault.
+  - Oracle Blessings: un livello per benedizione a giro, e se le glyph ne pagano un altro il badge
+    resta acceso 30 minuti (-18: 5 alle 10:12, l'ultimo alle 10:43). Ora ripete finché il gioco dice che
+    ce n'è ancora uno pagabile (al massimo 10 passate, si ferma se una passata non compra niente).
+- **Mail:** il bot apriva la posta solo per i premi; una mail senza premi non letta lasciava il badge
+  acceso. Ora conta anche le non lette (`SystemMail.seen`); se un giro non riesce a segnarle lette,
+  non le riconta finché non ne arrivano altre.
+- **Sfida "uccidi N nemici con un eroe"** (Stardust su -27): nei dati è `ChallengeCode.KillEnemies` con
+  `MiniEventChallenge.heroCode` (il gioco ha `questToHero` e `CheckHeroOnChallenge`).
+  `GameState.MiniEventKillHero` la legge; `MiniEventTask` la confronta con il testo delle carte e solo
+  se una carta nomina lo stesso eroe (`KillHeroTrusted`) FormationTask la segue: mette l'eroe al posto
+  del più debole dei cinque (`FormationPlanner.Best(..., required)`), lo salva in
+  `[formationtask] forced_hero`, e quando la sfida è fatta torna alla squadra migliore anche sotto il
+  10% di guadagno. FormationTask parte quando la sfida compare o finisce, non solo alle 10:32.
+
 **Fatto il 28/11 alle 05:10** (notte, mentre l'utente dormiva):
 - **Rollout:** build del branch su Steam-17..31 alle 03:53-04:11, un'istanza alla volta, tutte "up" e con
   la stessa DLL; nella prima ora nessun `[FAILED] Task`, solo i fallback noti.

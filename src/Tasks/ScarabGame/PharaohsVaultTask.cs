@@ -43,6 +43,26 @@ public class PharaohsVaultTask : BotTask
             yield break;
         }
 
+        // The vault's coins reach a milestone and a milestone's coins buy another vault, each lit only
+        // after its step: one more round for them, as the next run would come 30 minutes later
+        // (28/11: ScarabGameMilestones lit after the 10:00 runs on 20-24 and 27, PharaohsVault on 26, 28).
+        for (var round = 1; round <= MaxRounds; round++)
+        {
+            if (round > 1 && GameState.HasBadge(Il2Cpp.NotificationType.ScarabGameMilestones) != true &&
+                !(GameState.Currency(Il2Cpp.CurrencyCode.AncientCoin) >= vault))
+                break;
+
+            if (round > 1) Debug($"[INFO] Scarab round {round}: a milestone or a vault the last round lit.");
+            yield return Round();
+        }
+
+        NextRunTime = DateTime.Now + RecheckDelay;
+    }
+
+    private const int MaxRounds = 3;
+
+    private static IEnumerator Round()
+    {
         yield return Notifications.ScarabGame;
         yield return Notifications.ScarabGameMilestones;
 
@@ -67,7 +87,5 @@ public class PharaohsVaultTask : BotTask
 
         yield return ScarabGameScreen.Close;
         yield return TownScreen.Close;
-
-        NextRunTime = DateTime.Now + RecheckDelay;
     }
 }

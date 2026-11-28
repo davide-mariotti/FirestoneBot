@@ -46,6 +46,19 @@ public class FormationPlannerTests
     }
 
     [Fact]
+    public void Best_WithARequiredHero_SwapsOutTheWeakestOfTheFive()
+    {
+        // A mini-event's "Kill N enemies with Valerius": he takes Boris's place (the weakest of the
+        // five), Talia still leads; an unknown name changes nothing.
+        var best = FormationPlanner.Best(Steam0, h => h.Offense, Steam0LeaderRatio, required: "Valerius");
+
+        Assert.Equal(new[] { "Muriel", "Talia", "Valerius", "Solaine", "Cirilo" }.OrderBy(n => n), best.Slots.OrderBy(n => n));
+        Assert.Equal("Talia", best.Leader);
+        Assert.Equal(FormationPlanner.Best(Steam0, h => h.Offense, Steam0LeaderRatio).Slots,
+            FormationPlanner.Best(Steam0, h => h.Offense, Steam0LeaderRatio, required: "Nobody").Slots);
+    }
+
+    [Fact]
     public void Best_WithTeamBonusAboveLeadership_LeadsWithTheWeakest()
     {
         var best = FormationPlanner.Best(Steam0, h => h.Offense, -0.5);

@@ -197,9 +197,55 @@ public static class GameState
     // Which events run for this account, so the Events list isn't opened every hour to find out
     // (Steam-27, 27/11: three events locked or not listed, 7-8 s each, every hour).
 
-    /// <summary>A mini-event on, and not locked by level.</summary>
+    // A mini-event within its dates, by the game's own clock and test (UpdateNextEvent), and not locked by level.
+    private static bool MiniOn(MiniEvent e, Il2CppSystem.DateTime now) =>
+        e != null && e.code != MiniEventCode.None && !e.levelLocked && now >= e.startDate && now < e.endDate;
+
+    /// <summary>
+    ///     A mini-event on, and not locked by level: the current one, or one of the next ones whose dates
+    ///     have come. hasEvent is the server's word at the last load, and the game reloads only once the
+    ///     next event's start has passed (UpdateNextEvent -> WaitForServerCountDown): 28/11, Stardust from
+    ///     10:00, the Events badge lit on all of 17-31, and hasEvent alone said no for half an hour.
+    /// </summary>
     public static bool? MiniEventRunning => Get("mini event", () =>
-        H.MiniEventsHandler.hasEvent && H.MiniEventsHandler.CurrentMiniEvent is { } e && !e.levelLocked);
+    {
+        var h = H.MiniEventsHandler;
+        if (h.hasEvent && h.CurrentMiniEvent is { } e && !e.levelLocked) return true;
+        var now = TimeLibrary.GetDateNowLocal();
+        if (MiniOn(h.CurrentMiniEvent, now)) return true;
+        foreach (var next in h.NextMiniEvents)
+            if (MiniOn(next, now)) return true;
+        return false;
+    });
+
+    /// <summary>The mini-events as the game holds them, for the log.</summary>
+    public static string MiniEventDescribe => GetRef("mini event describe", () =>
+    {
+        var h = H.MiniEventsHandler;
+        string D(MiniEvent e) => e == null ? "-" : $"{e.code} {e.startDate.ToString("dd/MM HH:mm")}-{e.endDate.ToString("dd/MM HH:mm")} lvl {e.unlockLevel}{(e.levelLocked ? " locked" : "")}";
+        var next = new List<string>();
+        foreach (var e in h.NextMiniEvents) next.Add(D(e));
+        var challenges = new List<string>();
+        foreach (var m in h.activeChallenges)
+            challenges.Add($"{m.challengeCode} hero {m.heroCode} {m.currentProgress}/{m.requirement}" +
+                           $"{(m.locked ? " locked" : "")}{(m.completed ? " done" : "")}{(m.claimed ? " claimed" : "")}");
+        return $"hasEvent {h.hasEvent}, waiting {h.WaitingServerReply}, now {TimeLibrary.GetDateNowLocal().ToString("dd/MM HH:mm")}, " +
+               $"current {D(h.CurrentMiniEvent)}, next {string.Join("; ", next)}, challenges {string.Join(", ", challenges)}";
+    });
+
+    /// <summary>
+    ///     The hero an unlocked, unfinished mini-event challenge wants kills from ("Kill N enemies with
+    ///     Talia": KillEnemies with a heroCode), when the account has it; null for none or unreadable.
+    /// </summary>
+    public static string MiniEventKillHero => GetRef("mini event kill hero", () =>
+    {
+        if (MiniEventRunning != true) return null;
+        foreach (var m in H.MiniEventsHandler.activeChallenges)
+            if (m.challengeCode == ChallengeCode.KillEnemies && !m.locked && !m.completed &&
+                Enum.IsDefined(typeof(HeroCode), m.heroCode) && H.HeroServerHandler.heroesDict.ContainsKey((HeroCode)m.heroCode))
+                return ((HeroCode)m.heroCode).ToString();
+        return null;
+    });
 
     private static bool Within(CalendarEventsHandler.EventData e) =>
         e != null && ServerNow is { } now && now >= e.s && now <= e.e;
@@ -312,6 +358,16 @@ public static class GameState
             if (!kv.Value.claimed && (kv.Value.rewards?.Count ?? 0) + (kv.Value.gameItems?.Count ?? 0) > 0)
                 claimable++;
         return claimable;
+    });
+
+    /// <summary>Mails not opened yet: the mail badge stays lit for them, rewards or not.</summary>
+    public static int? UnseenMails => Get("system mail seen", () =>
+    {
+        var unseen = 0;
+        foreach (var kv in H.SystemMailHandler.systemMails)
+            if (!kv.Value.seen)
+                unseen++;
+        return unseen;
     });
 
     public static int? BattlePassUnclaimed => Get("path of glory", () => H.BattlePassHandler.unclaimedRewards);

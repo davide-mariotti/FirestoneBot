@@ -23,17 +23,22 @@ public class OracleBlessingsTask : BotTask
     // Without it the scheduler's 2-minute retry ran the task with the badge off (22/10, Steam-0).
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(6);
 
+    private const int MaxPasses = 10;
+
+    // The game's own word on each blessing (OracleHandler.blessings): how many the glyphs level now.
+    private static int? Ready() => GameState.Get("oracle blessings", () =>
+    {
+        var n = 0;
+        foreach (var kv in GameState.H.OracleHandler.blessings)
+            if (kv.Value != null && !kv.Value.IsMaxLevel() && (kv.Value.hasAvailableUpgrade || kv.Value.CanLevelUp()))
+                n++;
+        return n;
+    });
+
     public override IEnumerator Execute()
     {
-        // The game's own word on each blessing (OracleHandler.blessings): none to level, no Oracle to open.
-        var ready = GameState.Get("oracle blessings", () =>
-        {
-            var n = 0;
-            foreach (var kv in GameState.H.OracleHandler.blessings)
-                if (kv.Value != null && !kv.Value.IsMaxLevel() && (kv.Value.hasAvailableUpgrade || kv.Value.CanLevelUp()))
-                    n++;
-            return n;
-        });
+        // None to level, no Oracle to open.
+        var ready = Ready();
         if (!IsNotificationVisible() && ready == 0)
         {
             Debug("[INFO] From the game: no blessing the glyphs pay for - not opening.");
@@ -49,7 +54,15 @@ public class OracleBlessingsTask : BotTask
 
         var blessings = new Blessings();
         yield return Poll.Until(blessings.IsVisible);
-        yield return blessings.UpgradeLit();
+        // A pass is one level a lit blessing: again while the game says the glyphs pay for more, instead of
+        // the badge's next run 30 minutes later (Steam-18 28/11: 5 at 10:12, the last one at 10:43).
+        for (var pass = 0; pass < MaxPasses; pass++)
+        {
+            var before = blessings.Upgraded;
+            yield return blessings.UpgradeLit();
+            if (blessings.Upgraded == before || !(Ready() > 0)) break;
+        }
+
         Debug($"[INFO] Oracle blessings: upgraded {blessings.Upgraded}.");
         NextRunTime = DateTime.Now + RecheckDelay;
 
