@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Il2Cpp;
 
@@ -54,7 +55,7 @@ public static class WarMachines
     public static string RarityCostIcon => IconSprite.NameAt(Paths.WarMachinesLoc.RarityCostIcon);
 
     // '.'-grouped ("7.476"). Built with the rarity tab: missing before it's opened (Steam-0, 30/09).
-    public static double Tools => new GameText(Paths.WarMachinesLoc.ToolsTxt).GetParsedDoubleAbbreviated(-1);
+    public static double Tools => GameState.Balance(Il2Cpp.CurrencyCode.Tools, () => new GameText(Paths.WarMachinesLoc.ToolsTxt).GetParsedDoubleAbbreviated(-1));
 
     public static IEnumerator OpenBlueprintTab => new GameButton(Paths.WarMachinesLoc.BlueprintTabBtn).Click();
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Firebot.Core.Tasks;
+using Firebot.GameModel.Shared;
 using Firebot.GameModel.Primitives;
 using Firebot.Infrastructure;
 using MelonLoader;
@@ -42,6 +43,13 @@ public class PathOfGloryTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // Only a 0 is trusted: whether the count includes the Golden track without the pass isn't known.
+        if (GameState.BattlePassUnclaimed == 0)
+        {
+            NextRunTime = DateTime.Now + TimeSpan.FromMinutes(_recheckIntervalMinutes?.Value ?? 60);
+            yield break;
+        }
+
         yield return PathOfGlory.Open;
         yield return PathOfGlory.OpenRewardsTab;
 

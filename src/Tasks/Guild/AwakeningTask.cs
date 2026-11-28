@@ -27,6 +27,16 @@ public class AwakeningTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The cheapest awakening (x1) against the Arcane Crystals, before opening the guild for it.
+        var crystals = GameState.Currency(Il2Cpp.CurrencyCode.ArcaneCrystal);
+        var cost = GameState.Get("awakening cost", () => Il2Cpp.AwakeningMech.awakenCostBasic);
+        if (!IsNotificationVisible() && cost > 0 && crystals < cost)
+        {
+            Debug($"[INFO] From the game: {crystals:0} Arcane Crystals, an awakening costs {cost} - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.Awakening;
 
         yield return TownGuild.Open;

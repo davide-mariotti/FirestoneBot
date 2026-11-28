@@ -21,6 +21,33 @@ public static class SpeedUpButton
     }
 
     /// <summary>
+    ///     Some slot under `slotsRoot` shows a free speed-up or its claim button. Quiet, for polling:
+    ///     the slots' buttons refresh on the game's slot timer a moment after the screen shows, and read
+    ///     at once they still had the gem price inside the free window (Steam-27, 27/11: an experiment
+    ///     at 2m50s and 44 s from the end, a research at 44 s; the fixed 3 s wait before hid it).
+    /// </summary>
+    public static bool AnySlotReady(string slotsRoot, string slotPrefix, string speedUpPath, string claimPath)
+    {
+        var root = GameElement.FindTransform(slotsRoot);
+        if (root == null) return false;
+        for (var i = 0; i < root.childCount; i++)
+        {
+            var slot = root.GetChild(i);
+            if (!slot.gameObject.activeInHierarchy || !slot.name.StartsWith(slotPrefix)) continue;
+
+            var claim = slot.Find(claimPath.TrimStart('/'));
+            if (claim != null && claim.gameObject.activeInHierarchy) return true;
+
+            var speedUp = slot.Find(speedUpPath.TrimStart('/'));
+            var icon = speedUp == null ? null : speedUp.Find("currencyIcon");
+            if (speedUp != null && speedUp.gameObject.activeInHierarchy && icon != null && !icon.gameObject.activeInHierarchy)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
     ///     When a countdown ending at end enters the free window. DateTime.MinValue (the text showed no
     ///     countdown, e.g. a slot started a moment ago) stays MinValue: subtracting from it throws.
     /// </summary>

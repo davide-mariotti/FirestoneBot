@@ -43,6 +43,11 @@ public class MinerQuestTask : DailyQuestTask
         var pickaxes = ArcaneCrystal.PickaxeCount;
         Logger.Debug($"[INFO] Arcane Crystal: {hits} hit(s) to do, {pickaxes} pickaxe(s), cost per hit {ArcaneCrystal.HitCost}.");
 
+        // The game's quantity per click, only checked for now: a wrong one spends pickaxes.
+        GameState.Compare("arcane crystal hit quantity",
+            GameState.Get("arcane crystal hit quantity", () => Il2Cpp.GameInitialize.MenuLoader.ArcaneCrystalMech.currentHitQuantity)?.ToString(),
+            ArcaneCrystal.HitCost.ToString());
+
         var landed = 0;
         var hit = ArcaneCrystal.HitCost == 1;
         for (var i = 0; i < Math.Min(hits, pickaxes) && hit; i++)

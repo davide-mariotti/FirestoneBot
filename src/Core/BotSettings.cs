@@ -14,6 +14,7 @@ public static class BotSettings
     private static MelonPreferences_Entry<float> _interactionDelay;
     private static MelonPreferences_Entry<float> _maxTaskRuntime;
     private static MelonPreferences_Entry<bool> _debugMode;
+    private static MelonPreferences_Entry<string> _lastGameBuild;
     private static MelonPreferences_Entry<KeyCode> _shortcutKey;
     private static MelonPreferences_Entry<float> _freeSpeedupSeconds;
     private static MelonPreferences_Entry<bool> _lowResourceMode;
@@ -45,6 +46,21 @@ public static class BotSettings
     public static float MaxTaskRuntime => Mathf.Clamp(_maxTaskRuntime.Value, 10.0f, 3600.0f);
     public static bool DebugMode => _debugMode?.Value ?? false;
 
+    /// <summary>Logs the game build once a session, as a WARNING when it differs from the last one seen.</summary>
+    public static void CheckGameBuild(string build)
+    {
+        if (_lastGameBuild.Value == build)
+        {
+            Logger.Info($"[GameState] game build: {build}");
+            return;
+        }
+
+        Logger.Warning($"[GameState] game build changed: '{_lastGameBuild.Value}' -> '{build}'. A build can change " +
+                       "the game's rules with no API diff: check the bot against it.");
+        _lastGameBuild.Value = build;
+        _category.SaveToFile(false);
+    }
+
     public static KeyCode ShortcutKey =>
         Enum.IsDefined(typeof(KeyCode), _shortcutKey.Value) && _shortcutKey.Value != KeyCode.None
             ? _shortcutKey.Value
@@ -75,6 +91,10 @@ public static class BotSettings
         _maxTaskRuntime = _category.CreateEntry("max_task_runtime", 120.0f, "Max Task Runtime",
             "Maximum time (in seconds) a single task is allowed to run before it is aborted." +
             "\nClamped between 10.0 and 3600.0 seconds.");
+
+        _lastGameBuild = _category.CreateEntry("last_game_build", "", "Last Game Build",
+            "(auto-managed, don't edit) - the game build the bot last ran against; a change is logged " +
+            "as a WARNING, since a build can change the game's rules with no visible version change.");
 
         _debugMode = _category.CreateEntry("debug_mode", false, "Enable Debug Mode",
             "Enables verbose logging and StackTrace display in the console for easier bug identification.");

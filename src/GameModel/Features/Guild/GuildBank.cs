@@ -1,6 +1,7 @@
 using System.Collections;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Guild;
@@ -14,7 +15,7 @@ public static class GuildBank
 
     /// <summary>The player's own guild coins ("You have").</summary>
     public static int CoinCount =>
-        (int)new GameText(Paths.MenusLoc.GuildBankLoc.YourCoinsTxt).GetParsedDoubleAbbreviated();
+        (int)GameState.Balance(Il2Cpp.CurrencyCode.GuildCoin, () => new GameText(Paths.MenusLoc.GuildBankLoc.YourCoinsTxt).GetParsedDoubleAbbreviated());
 
     public static string CoinIcon => IconSprite.NameAt(Paths.MenusLoc.GuildBankLoc.YourCoinsIcon);
 

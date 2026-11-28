@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Firebot.GameModel.Features.Events;
+using Firebot.GameModel.Shared;
 
 namespace Firebot.Tasks.Events;
 
@@ -14,6 +15,8 @@ public class NewPlayerEventTask : EventTask
     protected override string[] EventNames => new[] { "New Player Event" };
 
     protected override bool IsScreenVisible => AnniversaryShop.IsVisible;
+
+    protected override bool? RunningFromGame => GameState.NewPlayerEventRunning;
 
     // No challenges: check-in and time-online milestones only.
     protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)

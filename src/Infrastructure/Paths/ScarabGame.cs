@@ -89,9 +89,11 @@ public static partial class Paths
         // "BeastAvatar (N)", one per beast owned.
         public const string AvatarsRoot = Root + "/beastList/beastScrollView/Viewport/Content";
 
-        // Opens BeastModifyLoc as "Beast Upgrade" (Soul Embers). Its sibling openIncreaseRarityPopupButton
-        // opens it as "Beast Rarity" (Cobra Keys), which the bot leaves alone.
+        // Opens BeastModifyLoc as "Beast Upgrade" (Soul Embers). Its sibling opens it as "Beast Rarity"
+        // (Cobra Keys), spent since 27/11 at the user's request.
         public const string OpenUpgradePopupBtn = Root + "/openUpgradePopupButton";
+
+        public const string OpenIncreaseRarityPopupBtn = Root + "/openIncreaseRarityPopupButton";
 
         // "1/30": owned of all.
         public const string BeastCountTxt = Root + "/counters/beastCounter/beastNum";

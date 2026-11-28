@@ -30,10 +30,12 @@ public class GameButton : GameElement
 
     public virtual IEnumerator Click()
     {
+        var clicked = false;
         if (IsClickable(out var button))
             try
             {
                 button.onClick.Invoke();
+                clicked = true;
             }
             catch (Exception e)
             {
@@ -45,7 +47,8 @@ public class GameButton : GameElement
                 Debug($"[FAILED] Click ignored: Button disabled/non-interactable. Path: {Path}");
         }
 
-        yield return new WaitForSeconds(InteractionDelay);
+        // Nothing clicked, nothing to wait for: one frame, so a caller's loop still yields.
+        yield return clicked ? Poll.AfterClick(Path) : null;
     }
 
     /// <summary>
@@ -60,27 +63,29 @@ public class GameButton : GameElement
         if (target == null || !IsVisible())
         {
             Debug($"[FAILED] ClickSimulated skipped: element not visible. Path: {Path}");
-            yield return new WaitForSeconds(InteractionDelay);
+            yield return null;
             yield break;
         }
 
         if (EventSystem.current == null)
         {
             Debug($"[FAILED] ClickSimulated skipped: no EventSystem in scene. Path: {Path}");
-            yield return new WaitForSeconds(InteractionDelay);
+            yield return null;
             yield break;
         }
 
+        var clicked = false;
         try
         {
             DispatchPointerClick(target.gameObject);
+            clicked = true;
         }
         catch (Exception e)
         {
             Debug($"[FAILED] ClickSimulated threw exception: {e.Message}. Path: {Path}");
         }
 
-        yield return new WaitForSeconds(InteractionDelay);
+        yield return clicked ? Poll.AfterClick(Path) : null;
     }
 
     /// <summary>

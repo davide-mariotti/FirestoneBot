@@ -46,6 +46,19 @@ public class FormationPlannerTests
     }
 
     [Fact]
+    public void Best_WithARequiredHero_SwapsOutTheWeakestOfTheFive()
+    {
+        // A mini-event's "Kill N enemies with Valerius": he takes Boris's place (the weakest of the
+        // five), Talia still leads; an unknown name changes nothing.
+        var best = FormationPlanner.Best(Steam0, h => h.Offense, Steam0LeaderRatio, required: "Valerius");
+
+        Assert.Equal(new[] { "Muriel", "Talia", "Valerius", "Solaine", "Cirilo" }.OrderBy(n => n), best.Slots.OrderBy(n => n));
+        Assert.Equal("Talia", best.Leader);
+        Assert.Equal(FormationPlanner.Best(Steam0, h => h.Offense, Steam0LeaderRatio).Slots,
+            FormationPlanner.Best(Steam0, h => h.Offense, Steam0LeaderRatio, required: "Nobody").Slots);
+    }
+
+    [Fact]
     public void Best_WithTeamBonusAboveLeadership_LeadsWithTheWeakest()
     {
         var best = FormationPlanner.Best(Steam0, h => h.Offense, -0.5);
@@ -77,5 +90,30 @@ public class FormationPlannerTests
         Assert.True(FormationPlanner.Beats(100.05, 100, 0.10)); // +12%
         Assert.True(FormationPlanner.Beats(1, double.NegativeInfinity, 0.10));
         Assert.Empty(FormationPlanner.Best(Enumerable.Empty<HeroStats>(), h => h.Offense, 1).Slots);
+    }
+
+    // Steam-28 on 27/11 at 15:03 (Formation heroes, log10 offense/potential), leader ratio 2.81.
+    private static readonly HeroStats[] Steam28 =
+    {
+        new("Muriel", true, 176.90, 23.56), new("Burt", false, 176.34, 23.15), new("Cirilo", false, 175.48, 23.16),
+        new("Luana", false, 175.21, 22.15), new("Benedictus", false, 175.17, 22.16), new("Talia", true, 174.38, 21.75),
+        new("Astrid", false, 173.68, 23.16), new("Boris", true, 173.65, 21.55), new("Leo", true, 173.65, 21.27),
+        new("Solaine", false, 172.24, 20.07), new("Ina", false, 172.06, 23.14), new("Valerius", true, 171.99, 21.21),
+        new("Blaze", false, 170.91, 20.08)
+    };
+
+    [Fact]
+    public void Best_WithAbilities_Steam28_KeepsTheCarryAndFillsWithBuffers()
+    {
+        var damageOnly = FormationPlanner.Best(Steam28, h => h.Offense, 2.81);
+        Assert.Equal(new[] { "Muriel", "Benedictus", "Luana", "Cirilo", "Burt" }, damageOnly.Slots);
+
+        // Muriel as leader is ~all the damage: the other four slots go to the party buff and the boss debuffs.
+        var best = FormationPlanner.Best(Steam28, h => h.Offense, 2.81, FormationPlanner.AbilitySupport);
+        Assert.Equal("Muriel", best.Leader);
+        Assert.Equal(new[] { "Boris", "Talia", "Muriel", "Solaine", "Astrid" }, best.Slots);
+
+        var now = FormationPlanner.Score(Steam28, damageOnly.Slots, "Muriel", h => h.Offense, 2.81, FormationPlanner.AbilitySupport);
+        Assert.InRange(best.Score - now, 0.5, 0.6);
     }
 }

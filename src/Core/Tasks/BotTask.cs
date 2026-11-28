@@ -78,6 +78,16 @@ public abstract class BotTask
 
     public DateTime? LastRunTime { get; set; }
 
+    // Whether the game still showed the task's badge when its last run ended; true when it can't say.
+    private bool _badgeLitAfterRun = true;
+
+    /// <summary>Called when a run ends: the time, and whether its badge outlived it (BadgeCooldown).</summary>
+    public void MarkRun()
+    {
+        LastRunTime = DateTime.Now;
+        _badgeLitAfterRun = GameBadgeLit() ?? true;
+    }
+
     /// <summary>A badge on the notification rail (a NotificationsLoc name) that makes this task ready.</summary>
     protected virtual string NotificationBadgeName => null;
 
@@ -132,6 +142,47 @@ public abstract class BotTask
         }
     }
 
+    private Il2Cpp.NotificationType[] _gameBadges;
+    private bool _gameBadgesResolved;
+
+    /// <summary>
+    ///     The game's badge types behind this task's rail badges, from their names. Null when any of
+    ///     them isn't a rail badge with a game type (the mail and Path of Glory badges, the events button):
+    ///     those tasks keep reading the screen.
+    /// </summary>
+    private Il2Cpp.NotificationType[] GameBadges
+    {
+        get
+        {
+            if (_gameBadgesResolved) return _gameBadges;
+            _gameBadgesResolved = true;
+
+            var railRoots = new[] { Paths.BattleLoc.NotificationsLoc.Root + "/", Paths.BattleLoc.NotificationsLoc.FallbackRoot + "/" };
+            var names = !string.IsNullOrEmpty(NotificationBadgeName)
+                ? new[] { NotificationBadgeName }
+                : NotificationPaths?.Select(p => railRoots.FirstOrDefault(p.StartsWith) is { } root ? p[root.Length..] : null).Distinct().ToArray();
+            if (names == null || names.Length == 0 || names.Any(n => n == null)) return null;
+
+            var types = names.Select(GameState.BadgeType).ToArray();
+            _gameBadges = types.All(t => t != null) ? types.Select(t => t.Value).ToArray() : null;
+            return _gameBadges;
+        }
+    }
+
+    /// <summary>Any of the task's badges lit, as the game says; null when it can't, and the rail decides.</summary>
+    private bool? GameBadgeLit()
+    {
+        if (GameBadges == null) return null;
+        foreach (var type in GameBadges)
+            switch (GameState.HasBadge(type))
+            {
+                case null: return null;
+                case true: return true;
+            }
+
+        return false;
+    }
+
     public void InitializeConfig(string configPath)
     {
         if (_enabledEntry != null) return;
@@ -172,7 +223,12 @@ public abstract class BotTask
     // A badge that stays lit after the task's own run would otherwise make it ready on every scan:
     // Chaos Rift and Awakening ran every 40-50 s that way (106 minutes in the 26-29/09 logs). Only the
     // badge waits - NextRunTime, and with it the short retry after a failed run, is unaffected.
+    // Only a badge that was still lit when the run ended waits: one the game lights afterwards is news
+    // (Steam-27 27/11: Quests decided "nothing to claim" at 13:33:55, a quest finished a moment later, and
+    // its badge waited out the 30 minutes, to 14:04). Even that waits a little, should a badge go off at
+    // every run's end and come back.
     private static readonly TimeSpan BadgeCooldown = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan NewBadgeCooldown = TimeSpan.FromMinutes(2);
 
     /// <summary>
     ///     Takes the badge state the caller already computed. A visible badge already implies the
@@ -180,7 +236,7 @@ public abstract class BotTask
     /// </summary>
     public bool IsReady(bool notificationVisible)
         => IsEnabled && MeetsLevelRequirement &&
-           ((notificationVisible && (LastRunTime == null || DateTime.Now - LastRunTime >= BadgeCooldown)) ||
+           ((notificationVisible && (LastRunTime == null || DateTime.Now - LastRunTime >= (_badgeLitAfterRun ? BadgeCooldown : NewBadgeCooldown))) ||
             DateTime.Now >= NextRunTime);
 
     /// <summary>
@@ -188,8 +244,8 @@ public abstract class BotTask
     ///     BadgeCooldown only spaces those runs out, an override can rule them out.
     /// </summary>
     public virtual bool IsNotificationVisible()
-        => IsEnabled && MeetsLevelRequirement && NotificationElements != null &&
-           UiVariantButton.AnyVisible(NotificationElements);
+        => IsEnabled && MeetsLevelRequirement && (GameBadgeLit() ??
+           (NotificationElements != null && UiVariantButton.AnyVisible(NotificationElements)));
 
     public abstract IEnumerator Execute();
 

@@ -50,6 +50,14 @@ public class WarMachinesTask : BotTask
             yield break;
         }
 
+        // A level costs 500 Expedition Tokens (100 xp): short of them, the Workshop has nothing to sell.
+        if (!IsNotificationVisible() && GameState.ExpeditionTokens < 500)
+        {
+            Logger.Debug($"[WarMachinesTask] [INFO] From the game: {GameState.ExpeditionTokens:0} Expedition Tokens, a level costs 500 - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.Warmachines;
 
         yield return TownScreen.Open;

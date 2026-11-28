@@ -27,25 +27,78 @@ public static class FormationPlanner
     ///     Steam-0). Above 0 the strongest leads; below it the weakest of the five, who loses the least.
     ///     Melee in front, ranged behind; inside each zone the most valuable last, where it's hit least.
     /// </summary>
-    public static Formation Best(IEnumerable<HeroStats> heroes, Func<HeroStats, double> value, double leaderRatio)
+    public static Formation Best(IEnumerable<HeroStats> heroes, Func<HeroStats, double> value, double leaderRatio,
+        Func<HeroStats, double>? support = null, string? required = null)
     {
-        var five = heroes.OrderByDescending(value).Take(Size).ToList();
-        if (five.Count == 0) return new Formation(Array.Empty<string>(), "", double.NegativeInfinity);
+        var all = heroes.OrderByDescending(value).ToList();
+        if (all.Count == 0) return new Formation(Array.Empty<string>(), "", double.NegativeInfinity);
+        if (required != null && all.All(h => h.Name != required)) required = null;
 
-        var leader = leaderRatio >= 0 ? five[0] : five[^1];
+        // With support (log10 of what a hero's abilities multiply the team's damage by), every set of
+        // five: the damage of one or two heroes is ~all the team's (Steam-27/-28, 27/11), so the others
+        // count for their buffs and debuffs, which the damage alone never picks. A required hero (a
+        // mini-event challenge's) is in every set: the best five around it.
+        // ponytail: exhaustive, C(n,5); fine to ~40 heroes.
+        var five = support == null && required == null ? all.Take(Size).ToList() : Combinations(all, Math.Min(Size, all.Count))
+            .Where(f => required == null || f.Any(h => h.Name == required))
+            .OrderByDescending(f => Evaluate(f, value, leaderRatio, support).Score).First();
+        var (leader, score) = Evaluate(five, value, leaderRatio, support);
         double Worth(HeroStats h) => value(h) + (h == leader ? leaderRatio : 0);
         var slots = five.OrderBy(h => h.Melee ? 0 : 1).ThenBy(Worth).Select(h => h.Name).ToList();
-        return new Formation(slots, leader.Name, LogSum(five.Select(Worth)));
+        return new Formation(slots, leader.Name, score);
+    }
+
+    // The leader by the rule above (on damage), and the five's score: the damage's log-sum plus the support.
+    private static (HeroStats Leader, double Score) Evaluate(List<HeroStats> five, Func<HeroStats, double> value, double leaderRatio,
+        Func<HeroStats, double>? support)
+    {
+        var byValue = five.OrderByDescending(value).ToList();
+        var leader = leaderRatio >= 0 ? byValue[0] : byValue[^1];
+        return (leader, LogSum(five.Select(h => value(h) + (h == leader ? leaderRatio : 0))) + (support == null ? 0 : five.Sum(support)));
+    }
+
+    private static IEnumerable<List<HeroStats>> Combinations(List<HeroStats> items, int k, int start = 0)
+    {
+        if (k == 0)
+        {
+            yield return new List<HeroStats>();
+            yield break;
+        }
+
+        for (var i = start; i <= items.Count - k; i++)
+            foreach (var rest in Combinations(items, k - 1, i + 1))
+            {
+                rest.Insert(0, items[i]);
+                yield return rest;
+            }
     }
 
     /// <summary>The score of a given formation, to compare the one in battle with the best.</summary>
     public static double Score(IEnumerable<HeroStats> heroes, IEnumerable<string> names, string leader,
-        Func<HeroStats, double> value, double leaderRatio)
+        Func<HeroStats, double> value, double leaderRatio, Func<HeroStats, double>? support = null)
     {
         var set = names.ToHashSet();
-        return LogSum(heroes.Where(h => set.Contains(h.Name))
-            .Select(h => value(h) + (h.Name == leader ? leaderRatio : 0)));
+        var five = heroes.Where(h => set.Contains(h.Name)).ToList();
+        return LogSum(five.Select(h => value(h) + (h.Name == leader ? leaderRatio : 0))) + (support == null ? 0 : five.Sum(support));
     }
+
+    // What a hero's own abilities multiply the team's damage by, as 1 + effect × a guessed uptime. The
+    // effects are the game's descriptions ([Probe] abilities, Steam-27/-28 27/11) and FORMATION_PLAN.md 4.2.
+    // ponytail: fixed uptime guesses; from the abilities' cooldowns and resources if the -28 trial holds.
+    private static readonly Dictionary<string, double> SupportMultipliers = new()
+    {
+        ["Boris"] = 1 + 0.50 * 0.8,    // Anger: party damage +50% for 25 s, cooldown 25 s
+        ["Astrid"] = 1 + 0.60 * 0.8,   // Devastating Shot: the target takes +60% for 7 s, cooldown 1.8 s
+        ["Talia"] = 1 + 0.60 * 0.5,    // Annihilation: the target takes +60% for 8 s, cooldown 15 s
+        ["Solaine"] = 1 + 0.80 * 0.4,  // Freeze: the target takes +80% for 8 s every 20 s
+        ["Valerius"] = 1 + 0.25 * 0.6, // party damage +25% for 20 s
+        ["Muriel"] = 1 + 0.15 * 0.8,   // Rally: party attack speed +15% for 6 s a combo point
+        ["Blaze"] = 1 + 0.40 * 0.3     // the target takes +40% for 5 s
+    };
+
+    /// <summary>log10 of what this hero's abilities multiply the team's damage by; 0 for a hero without such an ability.</summary>
+    public static double AbilitySupport(HeroStats hero) =>
+        SupportMultipliers.TryGetValue(hero.Name, out var m) ? Math.Log10(m) : 0;
 
     /// <summary>True when the new score beats the old one by minGain (0.10 = 10%), both in log10.</summary>
     public static bool Beats(double score, double current, double minGain) =>

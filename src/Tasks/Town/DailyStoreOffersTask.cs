@@ -41,6 +41,15 @@ public class DailyStoreOffersTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // Its two badges are the game's own CheckIn and MysteryBox notifications: both off from the game's
+        // data, nothing in the Store is free yet.
+        if (GameState.HasBadge(Il2Cpp.NotificationType.CheckIn) == false && GameState.HasBadge(Il2Cpp.NotificationType.MysteryBox) == false)
+        {
+            Debug("[INFO] From the game: no check-in or free box to claim - not opening.");
+            NextRunTime = GameDay.NextReset();
+            yield break;
+        }
+
         yield return Notifications.CheckIn;
         yield return Notifications.MysteryBox;
 

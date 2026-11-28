@@ -15,10 +15,12 @@ public class GameNotificationButton : GameButton
 
     public override IEnumerator Click()
     {
+        var clicked = false;
         if (TryGetComponent(out NotificationInteraction interaction))
             try
             {
                 interaction.notificationButton.onClick.Invoke();
+                clicked = true;
                 Debug($"[QUICK ACCESS] Triggered via NotificationInteraction. Path: {Path}");
             }
             catch (Exception e)
@@ -29,6 +31,7 @@ public class GameNotificationButton : GameButton
             try
             {
                 button.onClick.Invoke();
+                clicked = true;
                 Debug($"[QUICK ACCESS] Triggered via UI.Button Invoke. Path: {Path}");
             }
             catch (Exception e)
@@ -38,6 +41,6 @@ public class GameNotificationButton : GameButton
         else
             Debug($"[QUICK ACCESS] FAILED: No valid interaction component found. Path: {Path}");
 
-        yield return new WaitForSeconds(InteractionDelay);
+        yield return clicked ? Poll.AfterClick(Path) : null;
     }
 }

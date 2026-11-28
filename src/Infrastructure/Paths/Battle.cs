@@ -115,6 +115,9 @@ public static partial class Paths
             // Opens Magic Quarters on its Chaos Rift (holy damage) tab.
             public const string GuardianHolyUpgrade = "GuardianHolyUpgrade";
 
+            // Lit once a guardian's evolution and the Contracts allow its next rarity (Steam-19, 28/11).
+            public const string GuardianRarity = "GuardianRarity";
+
             // The next three were only seen in the rail dump, never lit yet.
             public const string GuardianEvolution = "GuardianEvolution";
 

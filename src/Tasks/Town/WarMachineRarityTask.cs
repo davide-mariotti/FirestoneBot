@@ -27,6 +27,15 @@ public class WarMachineRarityTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The game's own check, Tools and level requirement both (WarMachineHandler); 18 s a run to see it.
+        if (GameState.Get("war machine rarity", () => GameState.H.WarMachineHandler.CanAnyWarmachineRarityUpgrade()) == false)
+        {
+            Debug($"[INFO] From the game: no war machine can rise in rarity " +
+                  $"({GameState.Currency(Il2Cpp.CurrencyCode.Tools):0} Tools) - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.WarMachinesRarity;
 
         yield return TownScreen.Open;

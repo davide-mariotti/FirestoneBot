@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Primitives;
 using Firebot.GameModel.Shared;
@@ -10,8 +11,8 @@ using TownScreen = Firebot.GameModel.Features.Town.Town;
 namespace Firebot.Tasks.Town;
 
 /// <summary>
-///     Evolves every guardian that can be: Magic Quarters -> evolution tab. The button turns clickable
-///     once the guardian reaches the level the next evolution needs and the Strange Dust is there.
+///     Evolves every guardian that can be: Magic Quarters -> evolution tab. The game's data says which
+///     guardians are ready to evolve, so only those are clicked, and with none the screen stays closed.
 /// </summary>
 public class GuardianEvolutionTask : BotTask
 {
@@ -23,22 +24,29 @@ public class GuardianEvolutionTask : BotTask
 
     private static readonly TimeSpan RecheckDelay = TimeSpan.FromHours(12);
 
-    // Vermilion, Grace, Ankaa, Azhar.
-    private const int GuardianCount = 4;
-
     public override IEnumerator Execute()
     {
+        // 10-15 s a run before, clicking all four guardians to find none ready (Steam-27, 27/11).
+        var guardians = MagicQuartersScreen.Unlocked;
+        if (guardians != null && !guardians.Any(g => g.readyToEvole))
+        {
+            Debug($"[INFO] From the game: no guardian ready to evolve " +
+                  $"({string.Join(", ", guardians.Select(g => $"{g.guardianName} evolution {g.evolutionStage + 1} level {g.level}"))}) - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.GuardianEvolution;
 
         yield return TownScreen.Open;
         yield return TownScreen.OpenMagicQuarters;
 
-        for (var i = 0; i < GuardianCount; i++)
+        // The game's own flag on each square; every unlocked one when it can't be read.
+        var squares = MagicQuartersScreen.Squares().Where(s => s.guardian.IsUnlocked && (guardians == null || s.guardian.readyToEvole)).ToList();
+        foreach (var square in squares)
         {
-            var guardianBtn = new GameButton($"{Paths.MenusLoc.MagicQuartersLoc.GuardiansRoot}/guardian ({i})");
-            if (!guardianBtn.IsClickable()) continue;
-
-            yield return guardianBtn.Click();
+            var name = square.guardian.guardianName;
+            yield return new GameButton(transform: square.transform).Click();
             yield return MagicQuartersScreen.OpenEvolutionTab;
 
             var evolveBtn = MagicQuartersScreen.EvolveBtn;
@@ -49,7 +57,7 @@ public class GuardianEvolutionTask : BotTask
             var icon = MagicQuartersScreen.EvolveCostIcon;
             if (icon != "strangeDust64")
             {
-                Debug($"[INFO] Guardian {i}: evolution costs '{cost}' in '{icon}', not Strange Dust - skipped.");
+                Debug($"[INFO] Guardian {name}: evolution costs '{cost}' in '{icon}', not Strange Dust - skipped.");
                 continue;
             }
 
@@ -58,8 +66,8 @@ public class GuardianEvolutionTask : BotTask
 
             var evolved = !evolveBtn.IsClickable() || MagicQuartersScreen.EvolveCost != cost;
             Debug(evolved
-                ? $"[INFO] Guardian {i} evolved for {cost} Strange Dust."
-                : $"[FAILED] Guardian {i}: evolve clicked ({cost} Strange Dust) but the button didn't change.");
+                ? $"[INFO] Guardian {name} evolved for {cost} Strange Dust."
+                : $"[FAILED] Guardian {name}: evolve clicked ({cost} Strange Dust) but the button didn't change.");
         }
 
         // A locked guardian's click opens LockedGuardian.

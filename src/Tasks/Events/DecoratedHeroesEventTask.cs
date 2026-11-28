@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Firebot.GameModel.Features.Events;
+using Firebot.GameModel.Shared;
 
 namespace Firebot.Tasks.Events;
 
@@ -13,6 +14,12 @@ public class DecoratedHeroesEventTask : EventTask
     protected override string[] EventNames => new[] { "Decorated heroes" };
 
     protected override bool IsScreenVisible => DecoratedHeroesShop.IsVisible;
+
+    protected override bool? RunningFromGame => GameState.CalendarEventRunning(Il2Cpp.CalendarEvents.DecoratedHeroes);
+
+    protected override List<(ChallengeKind Kind, int Done, int Target, bool Claimable)> ChallengesFromGame => GameState.CalendarChallenges;
+
+    protected override double? ShopCurrency => GameState.Currency(Il2Cpp.CurrencyCode.CalendarEventCur);
 
     protected override IEnumerator RunEvent(List<(string Text, string Progress)> challenges)
     {

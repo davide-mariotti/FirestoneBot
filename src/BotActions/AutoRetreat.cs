@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Firebot.Core;
 using Firebot.GameModel.Features.Battle;
+using Firebot.GameModel.Primitives;
 using Firebot.Utilities;
 using MelonLoader;
 using UnityEngine;
@@ -11,9 +12,9 @@ namespace Firebot.BotActions;
 
 /// <summary>
 ///     When the stage stops advancing for stall_minutes, fights the boss if the game is waiting for
-///     that; a stage that still doesn't move is a wall the team can't clear, so it steps back
-///     retreat_stages stages to farm one that clears quickly, and climbs back to retry the wall every
-///     retry_minutes until the next Empower.
+///     that; a stage that still doesn't move is a wall the team can't clear, so it farms the stage
+///     that pays most gold a minute (measured, at most retreat_stages down), and climbs back to retry
+///     the wall every retry_minutes until the next Empower.
 /// </summary>
 public static class AutoRetreat
 {
@@ -85,16 +86,17 @@ public static class AutoRetreat
             "stall_minutes",
             3f,
             "Stall Threshold (minutes)",
-            "When the current stage stops advancing for this long (a difficulty wall), clicks the in-battle " +
-            "'go back stage' arrow retreat_stages times to drop to an easier stage that clears quickly, then " +
-            "retries the wall every retry_minutes. Clamped between 1 and 180 minutes. Default: 3."
+            "When the current stage stops advancing for this long (a difficulty wall), looks for the farm stage " +
+            "that pays most gold a minute (up to retreat_stages down), then retries the wall every retry_minutes. " +
+            "Clamped between 1 and 180 minutes. Default: 3."
         );
 
         _retreatStages = section.CreateEntry(
             "retreat_stages",
             5,
             "Retreat Stages",
-            "How many stages to step back (one click each) once a wall is detected. Clamped between 1 and 50. Default: 5."
+            "At a wall the bot measures the gold a minute at the wall and one stage down at a time, while that " +
+            "pays more, and farms the best: this is how far down it goes at most. Clamped between 1 and 50. Default: 5."
         );
 
         _retryMinutes = section.CreateEntry(
@@ -139,6 +141,8 @@ public static class AutoRetreat
     /// <summary>Called by EmpowerTask right after a successful empower so stall detection re-arms.</summary>
     public static void OnAdventureReset()
     {
+        // Always: an Empower during a wall retry (the flag off) must not leave the old run's wall time.
+        WallSince = null;
         if (!_suppressedUntilReset) return;
 
         _suppressedUntilReset = false;
@@ -161,6 +165,24 @@ public static class AutoRetreat
 
             if (_suppressedUntilReset)
             {
+                // DailyPush's scrolls and items are up: to the top now and the boss at once, while they last.
+                if (_pushRequested && stage >= 0)
+                {
+                    _pushRequested = false;
+                    yield return ClimbBack(stage, "the daily push");
+                    // The boss button shows a while after the climb: at 07:25 on -27 it came 3 min later, buffs ticking.
+                    yield return Poll.Until(() => StageProgress.FightBossBtn.IsClickable(), 120, 0.25f);
+                    if (StageProgress.FightBossBtn.IsClickable())
+                    {
+                        _bossTriedOn = StageProgress.Current;
+                        Logger.Info($"[AutoRetreat] Daily push: fighting the boss of stage {StageProgress.Current}.");
+                        yield return StageProgress.FightBossBtn.Click();
+                    }
+
+                    yield return PollWait;
+                    continue;
+                }
+
                 if (stage >= 0 && RetryMinutes > 0 && DateTime.Now - _retreatTime >= TimeSpan.FromMinutes(RetryMinutes))
                     yield return ClimbBack(stage);
 
@@ -192,16 +214,11 @@ public static class AutoRetreat
                     continue;
                 }
 
-                Logger.Info(
-                    $"[AutoRetreat] Stage {stage} stalled for {StallMinutes:0.#} min. Retreating {RetreatStages} stage(s).");
-
-                for (var i = 0; i < RetreatStages; i++)
-                {
-                    yield return StageProgress.GoBack;
-                    yield return RetreatClickDelayWait;
-                }
-
+                Logger.Info($"[AutoRetreat] Stage {stage} stalled for {StallMinutes:0.#} min: looking for the farm stage that pays most.");
+                if (WallSince == null) WallSince = DateTime.Now;
                 _suppressedUntilReset = true;
+                yield return FarmBest(stage);
+
                 _retreatTime = DateTime.Now;
                 _bossTriedOn = -1;
             }
@@ -210,22 +227,118 @@ public static class AutoRetreat
         }
     }
 
+    private static bool _pushRequested;
+
+    /// <summary>DailyPush's buffs are up: the next poll climbs to the top and fights the boss.</summary>
+    public static void RequestPush() => _pushRequested = true;
+
+    /// <summary>A farm search is measuring (EmpowerTask's growth rule waits for it).</summary>
+    public static bool FarmSearching { get; private set; }
+
+    /// <summary>When this adventure first stalled at its wall; null before (and after the Empower).</summary>
+    public static DateTime? WallSince { get; private set; }
+
+    private const float MeasureSeconds = 120f;
+
+    /// <summary>
+    ///     What the stage being farmed pays a minute over MeasureSeconds, log10: the run's gold. The found
+    ///     Firestones come from it, about as its 0.4th power, so their own pace falls sample after sample
+    ///     for the same gold a minute (-28 28/11 03:40-03:48: gold a minute up every stage down to 1008,
+    ///     found a minute peaking at 1010-1009): the gold compares stages, the found only when the gold
+    ///     doesn't move. Null when neither moves or the run was reset.
+    /// </summary>
+    private static IEnumerator MeasureGold(Action<double?> done)
+    {
+        var (found0, gold0) = (Firebot.GameModel.Shared.GameState.FirestonesFoundLog10, StageProgress.RunGoldLog10);
+        var since = DateTime.Now;
+        yield return new WaitForSeconds(MeasureSeconds);
+        var (found1, gold1) = (Firebot.GameModel.Shared.GameState.FirestonesFoundLog10, StageProgress.RunGoldLog10);
+        var minutes = (DateTime.Now - since).TotalMinutes;
+        var foundRate = PerMinute(found0, found1, minutes);
+        var goldRate = PerMinute(gold0, gold1, minutes);
+        Logger.Info($"[AutoRetreat] Farm sample at stage {StageProgress.Current}: found {Rate(foundRate)}, gold {Rate(goldRate)}.");
+        _measuredByFound = goldRate == null;
+        done(!_suppressedUntilReset ? null : goldRate ?? foundRate);
+    }
+
+    private static bool _measuredByFound;
+
+    private static double? PerMinute(double? from, double? to, double minutes) =>
+        from is { } a && to is { } b && b > a && minutes > 0
+            ? a + Math.Log10(Math.Pow(10, Math.Min(b - a, 300)) - 1) - Math.Log10(minutes)
+            : null;
+
+    private static string Rate(double? log10) => log10 is { } r ? $"10^{r:0.00}/min" : "not moving";
+
+    /// <summary>
+    ///     The farm stage that pays most, measured: the gold a minute at the wall (the game farms its
+    ///     last wave there), then one stage down at a time while that pays more, at most retreat_stages
+    ///     down, back up to the best. A higher stage's waves give more gold but take longer to clear, so
+    ///     it's the measured pace that picks (the user reads the same off the Barrel of Gold's tooltip;
+    ///     the game's own CalculateInventoryItemGold isn't a plain read). Before 28/11 it went a fixed 5
+    ///     stages down.
+    /// </summary>
+    private static IEnumerator FarmBest(int wall)
+    {
+        // ponytail: one 2-minute sample per stage, so a dragon's gold in it can tip a close call; two samples if that shows up.
+        FarmSearching = true;
+        double? rate = null;
+        yield return MeasureGold(r => rate = r);
+        var (bestStage, bestRate) = (StageProgress.Current, rate);
+        Logger.Info($"[AutoRetreat] Farm search: stage {bestStage} {Rate(rate)}.");
+
+        for (var step = 0; step < RetreatStages && _suppressedUntilReset && bestRate != null; step++)
+        {
+            var from = StageProgress.Current;
+            // The arrow is off for a moment while the stage changes (2 of 5 clicks ignored, -27 and -28 27/11).
+            yield return Poll.Until(() => StageProgress.GoBackBtn.IsClickable(), 20, 0.25f);
+            yield return StageProgress.GoBack;
+            yield return Poll.Until(() => StageProgress.Current < from, 20, 0.25f);
+            var at = StageProgress.Current;
+            if (at < 0 || at >= from) break;
+
+            yield return MeasureGold(r => rate = r);
+            Logger.Info($"[AutoRetreat] Farm search: stage {at} {Rate(rate)}.");
+            if (rate == null || rate <= bestRate) break;
+            (bestStage, bestRate) = (at, rate);
+        }
+
+        for (var i = 0; i < MaxClimbClicks && _suppressedUntilReset && StageProgress.Current is var now && now >= 0 && now < bestStage; i++)
+        {
+            // The forth arrow hides for a while during a wave: 5 s weren't enough on -28 (28/11 03:48, stayed 1008 for 1009).
+            yield return Poll.Until(() => StageProgress.GoForthBtn.IsClickable(), 240, 0.25f);
+            if (!StageProgress.GoForthBtn.IsClickable()) break;
+            yield return StageProgress.GoForthBtn.Click();
+            yield return Poll.Until(() => StageProgress.Current > now, 20, 0.25f);
+        }
+
+        Logger.Info($"[AutoRetreat] Farming stage {StageProgress.Current}, the best measured {bestStage} " +
+                    $"({Rate(bestRate)} {(_measuredByFound ? "found" : "gold")}), wall {wall}.");
+        FarmSearching = false;
+    }
+
     // Forward until the stage stops changing (the furthest stage reached), then stall detection
     // decides again whether it's still a wall.
-    private static IEnumerator ClimbBack(int from)
+    private static IEnumerator ClimbBack(int from, string why = null)
     {
         var stage = from;
-        for (var i = 0; i < MaxClimbClicks && StageProgress.GoForthBtn.IsClickable(); i++)
+        // The forth arrow hides for a while during a wave and after each step (-28 28/11 03:48; -27 07:25
+        // climbed one stage of four): up to a minute for it first, 10 s after each step, and each step
+        // waits for the stage to move.
+        for (var i = 0; i < MaxClimbClicks; i++)
         {
+            yield return Poll.Until(() => StageProgress.GoForthBtn.IsClickable(), i == 0 ? 240 : 40, 0.25f);
+            if (!StageProgress.GoForthBtn.IsClickable()) break;
             yield return StageProgress.GoForthBtn.Click();
-            yield return RetreatClickDelayWait;
+            var before = stage;
+            yield return Poll.Until(() => StageProgress.Current > before, 20, 0.25f);
 
             var now = StageProgress.Current;
             if (now <= stage) break;
             stage = now;
         }
 
-        Logger.Info($"[AutoRetreat] Retrying the wall after {RetryMinutes:0.#} min: stage {from} -> {stage}.");
+        Logger.Info($"[AutoRetreat] Retrying the wall ({why ?? $"after {RetryMinutes:0.#} min"}): stage {from} -> {stage}.");
         _suppressedUntilReset = false;
         _lastSeenStage = -1;
     }

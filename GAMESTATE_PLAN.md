@@ -1,5 +1,203 @@
 # Piano: il bot legge e naviga dal codice del gioco, non dallo schermo
 
+## LEGGI PRIMA: prompt per una nuova chat (aggiornato il 28/11 mattina)
+
+Se l'utente scrive "LEGGI GAMESTATE_PLAN.md", parti da qui. Scrivi all'utente **sempre in italiano**.
+
+**Il lavoro.** Repo `C:\Repos\FirestoneBot`, branch `game-state` (non è stato fatto il merge su main). Il
+bot decide dai dati del gioco (handler IL2CPP da `GameInitialize.HandlerLoader` / `MenuLoader`, in
+codice `GameState.H`) invece di leggere lo schermo. Fai commit e push dopo ogni passo verificato, e
+aggiorna questo file con quello che fai e coi numeri visti nei log.
+
+**Regole che non cambiano:**
+- solo letture di dati e le stesse chiamate della UI del gioco (`OpenMenu`, `CloseLastOnMenuStack`,
+  l'`onClick` dei suoi pulsanti, getter puri); mai scrivere campi del gioco, mai funzioni di rete o
+  `*Callback` / `*AskServer`;
+- ogni lettura passa da `GameState.Get` / `GetRef`, con lo schermo come riserva;
+- un dato nuovo prima si confronta con lo schermo e lo si usa solo quando coincide; se un errore costa
+  una spesa, il task si fida dei dati solo dopo una visita in cui coincidevano;
+- una spesa conta solo quando la valuta (o la quantità) scende, e un'icona di prezzo diversa ferma il
+  click;
+- non toccare: i doni di gilda (`ClaimMemberRewardsFromGuildItems`, l'utente deve ancora rispondere),
+  Frostfire;
+- scelte di gioco dell'utente (28/11): **Midas Touch** è scarso e prezioso (il Merchant non lo vende più,
+  si usa solo dove serve davvero); **Strange Dust** solo per guardiani ed eroi, **niente Alchimista**;
+  Meteorite Research resta com'è; l'Empower segue la regola della crescita.
+
+**Dove gira.** Dal 28/11 alle 03:53-04:11 il branch gira su **tutte le istanze Steam-17..31 di
+PC-Guesly** (questo PC, box Sandboxie `C:\Sandbox\dmari\SteamB<N>`), su richiesta dell'utente.
+DESKTOP-ADMIN e main non sono stati toccati: un deploy di main deve saltare 17-31. DLL di main per
+tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
+- Build: `$env:COMMON_DIR="C:\Program Files (x86)\Steam-17\steamapps\common"; dotnet build C:\Repos\FirestoneBot\src\firebot.csproj -c Release -p:Il2CppAssembliesDir="C:\Sandbox\dmari\SteamB27\drive\C\Program Files (x86)\Steam-27\steamapps\common\Firestone\MelonLoader\Il2CppAssemblies"`;
+  test: `dotnet test tests\Firebot.TalentEngine.Tests` (97 al 28/11).
+- Deploy di un'istanza, che la riavvia da solo (controlla sempre che dica "up"):
+  `powershell -ExecutionPolicy Bypass -File tools\Restart\deploy_test.ps1 -Instance N`, con
+  `-ResetTasks a,b` per far ripartire subito dei task e `-Set "sezione.chiave=valore"` per scrivere voci
+  del cfg a gioco fermo (aggiunge sezione e voce se mancano). Per la flotta: un'istanza alla volta.
+- Log: `C:\Sandbox\dmari\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\Latest.log`
+  (e `Logs\`), da leggere in condivisione (`[IO.File]::Open(p,'Open','Read','ReadWrite')`). Da
+  guardare: `[Task] X finished in`, `[FAILED] Task`, `[GameState] mismatch` / `fallback` (noti e
+  innocui: `research state` KeyNotFound '0', `weekly quests renew`, i sigilli di Hall of Heroes al primo
+  giro di un'istanza), le due eccezioni di MelonLoader a ogni avvio ("Unable to get process modules",
+  "SetAsLastSibling").
+
+**Cosa è nuovo dal 28/11 notte e va verificato** (dettaglio più sotto in "Fatto il 28/11"):
+1. **Empower, regola della crescita** (default `[empowertask] empower_rule = "growth"`): al muro, col
+   rapporto raggiunto, aspetta finché la crescita del banco degli ultimi 5 minuti batte la media della
+   run; al massimo 90 minuti dopo il muro. Primi Empower veri: -22 alle 04:19, -20 alle 04:25, -28 alle
+   04:32 ("0.40%/min vs 0.41% - would empower"). Da misurare: durata delle run e crescita del banco
+   per ora, rispetto alla regola vecchia.
+2. **Stage di farm al muro** (AutoRetreat): misura l'oro della run al minuto
+   (`SpecialGameStatistics.save.totalGoldThisRun`) 2 minuti per stage dal muro in giù e farma il
+   migliore. -27 alle 04:25: 1037 10^547,71, 1036 10^547,99, **1035 10^548,17**, 1034 10^548,16. Righe
+   `[AutoRetreat] Farm sample` / `Farming stage`.
+3. **Prova della squadra su -28** (`[formationtask] scoring = "abilities"` solo lì, dalle 02:55): Muriel
+   leader con Boris, Talia, Solaine e Astrid al posto di Cirilo, Luana, Benedictus e Burt. Muri di -28
+   prima: 999, 1005, 1006, 1006, 1007, 1011; con la squadra nuova: 1012 (a metà run) e **1012 alla
+   prima run intera (06:49): nessun salto**, quindi non estesa. Continuare a guardare i muri delle run
+   successive; se dopo 3-4 run non c'è guadagno, tornare a `damage` su -28 (`-Set
+   formationtask.scoring=damage -ResetTasks formationtask`). Se c'è, estenderla e far investire Hall of
+   Heroes sul carry, non sui buffer.
+4. **Push giornaliero** (`DailyPushTask`, spento di default, `enabled = true` e `mode = "on"` solo su
+   -27): **funziona**. Alle 07:25 su -27: 12 usi su 12, trovati ×7,6 in 10 minuti, muro 1037 → 1044.
+   Da fare se l'utente è d'accordo: accenderlo sulla flotta (`-Set
+   "dailypushtask.enabled=true,dailypushtask.mode=on"`), e decidere quanti consumabili d'oro per push
+   (oggi uno per tipo: le scorte sono ~200-270 per tipo per account).
+5. **Merchant:** non vende più Midas' Touch.
+6. **Dal 28/11 alle 11:31** (sezione "Fatto il 28/11 alle 10:45"): mini-evento attivo dalle date (Stardust
+   fino all'01/12 10:00), sfida "uccidi N nemici con un eroe" seguita dalla squadra (righe `Formation:
+   mini-event hero`), mail non lette, giri ripetuti di Scarab e Oracle Blessings. Da guardare: che a ogni
+   sfida a eroe finita torni la squadra migliore. Dalle 12:20 anche `GuardianRarityTask` (rarità dei
+   guardiani coi contratti): da vedere l'attesa dell'animazione (riga "rarity animation waited").
+
+**Dettagli e numeri della notte:** sezione "Fatto il 28/11 alle 05:10" qui sotto.
+
+**Fatto il 28/11 alle 10:45** (controllo della flotta chiesto dall'utente, build del branch delle 07:37 su 17-31):
+- **Errori:** nessun `[FAILED] Task` su 17-31 dalle 07:37. Solo i noti (`research state`, `weekly quests
+  renew`, sigilli di Hall of Heroes) e uno nuovo innocuo: `arena opponent power` NullReference alle
+  10:00 su 17, 19, 21, 26, 30, alla prima lettura subito dopo l'apertura dell'Arena (le carte degli
+  avversari non ci sono ancora); il giro va avanti dallo schermo e trova il bersaglio 5 s dopo.
+- **Stardust non riscosso:** l'evento parte alle 10:00 e il badge Events si accende su tutte le
+  istanze, ma `MiniEventRunning` (`hasEvent && CurrentMiniEvent`) diceva "not running" e, con la
+  visita delle 08:12 (carta "locked", in arrivo), il bot non avrebbe riaperto fino alle 14:12. Dal
+  codice del gioco (REA + capstone su GameAssembly.dll): `CurrentMiniEvent` è una proprietà automatica
+  (offset 0x10), `hasEvent` (0x20) viene da `Boolean.Parse` della risposta del server nel callback di
+  caricamento, e il gioco ricarica solo quando `UpdateNextEvent` vede un evento di `NextMiniEvents`
+  dentro le sue date (`TimeLibrary.GetDateNowLocal`, `startDate` 0x18, `endDate` 0x20, `levelLocked`
+  0x38) e lancia `WaitForServerCountDown` → `SocketFunctions.LoadMiniEvent`. Ora "attivo" è anche un
+  evento corrente o prossimo dentro le sue date e non bloccato, come lo vede `UpdateNextEvent`; il
+  "not running" scrive lo stato del gioco (`MiniEventDescribe`), e così ogni visita. **Visto dal vivo
+  dopo il deploy:** anche a caricamento pulito `hasEvent` è False con Stardust corrente (28/11 10:00 →
+  01/12 10:00, livello 30) su tutte le istanze: non vuol dire "evento attivo", la lettura vecchia era
+  sbagliata sempre (il primo evento con la regola dei dati è questo). Ora `running True` ovunque e
+  Stardust si apre; -20 e -21 hanno riscosso la sfida del giorno alla prima visita.
+- **Riavvio di -27 alle 10:43** (il secondo in 4 minuti): il gioco è rimasto sulla schermata di
+  caricamento ("off the server"), il bot l'ha chiuso dopo 5 minuti e alle 10:50 è ripartito bene.
+  Alle 11:00 il riavvio programmato della flotta ha riavviato 17-21 durante il rollout: nessun danno.
+- **Badge rimasti accesi** (censimento delle 10:30): ScarabGameMilestones su 20-24 e 27, PharaohsVault
+  su 26 e 28, OracleBlessing su 18, 25, 27; TemplePrestige è la regola della crescita, WarMachines e
+  WarmachineUnlocked (-30) restano per scelta dell'utente.
+  - Scarab: il vault del giro raggiunge una milestone, che si accende *dopo* il click del badge a inizio
+    giro (l'unica entrata del popup), e la milestone dà monete per un altro vault: un passo ogni 30
+    minuti di `BadgeCooldown` (-22: vault 10:01, milestone 10:31, poi PharaohsVault). Ora il giro si
+    ripete (al massimo 3) finché il gioco dice milestone accesa o monete per un vault.
+  - Oracle Blessings: un livello per benedizione a giro, e se le glyph ne pagano un altro il badge
+    resta acceso 30 minuti (-18: 5 alle 10:12, l'ultimo alle 10:43). Ora ripete finché il gioco dice che
+    ce n'è ancora uno pagabile (al massimo 10 passate, si ferma se una passata non compra niente).
+- **Mail:** il bot apriva la posta solo per i premi; una mail senza premi non letta lasciava il badge
+  acceso. Ora conta anche le non lette (`SystemMail.seen`); se un giro non riesce a segnarle lette,
+  non le riconta finché non ne arrivano altre.
+- **Sfida "uccidi N nemici con un eroe"** (Stardust su -27): nei dati è `ChallengeCode.KillEnemies` con
+  `MiniEventChallenge.heroCode` (il gioco ha `questToHero` e `CheckHeroOnChallenge`).
+  `GameState.MiniEventKillHero` la legge; `MiniEventTask` la confronta con il testo delle carte e solo
+  se una carta nomina lo stesso eroe (`KillHeroConfirmed`) FormationTask la segue: mette l'eroe al posto
+  del più debole dei cinque (`FormationPlanner.Best(..., required)`), lo salva in
+  `[formationtask] forced_hero`, e quando la sfida è fatta torna alla squadra migliore anche sotto il
+  10% di guadagno. FormationTask parte quando la sfida compare o finisce, non solo alle 10:32.
+  - `heroCode` è il valore di `HeroCode` (Boris 0, Talia 2, Blaze 6, Luana 7, Cirilo 24): le carte
+    coincidevano su -27 (7, Luana), -24 (24, Cirilo) e -29 (0, Boris). Le sfide senza eroe hanno
+    anch'esse 0 (o -1): per questo serve la carta.
+  - Visto dal vivo: -27 alle 10:53 Burt → Luana (danno ×1,00), sfida 100/100 fatta prima delle 11:17;
+    -24 alle 11:13 Luana → Cirilo e Blaze → Boris (la migliore con Cirilo dentro; leader Cirilo, perché
+    con leader ratio -1,80 guida il più debole), ×1,00. Il ripristino dopo un riavvio non partiva (la
+    conferma della carta non c'era più, la sfida era finita): ora "il gioco non ha più una sfida a eroe"
+    basta per togliere l'eroe forzato. -27 alle 11:32: "forced before Luana", Luana → Leo, "as planned".
+  - Le sfide a eroe dei giorni dopo (bloccate alle 11:05): -17 Talia, -18 Boris, -21 Blaze, -22 hero 21.
+  - Le uccisioni contano per chi dà il colpo finale: al muro il danno è del carry (-24: Talia 10^179,3,
+    Cirilo 10^171,2) e Cirilo è rimasto a 0/100 dalle 11:13 alle 11:48, stage 998 in farm; Luana su -27
+    ha fatto 100 in meno di mezz'ora a stage ~150, dove tutti uccidono in un colpo. Quindi una sfida a
+    eroe presa al muro si chiude nei primi stage della run dopo l'Empower: va bene finché l'evento
+    dura 3 giorni. Se serve prima, la regola sarebbe forzare l'eroe solo dopo l'Empower.
+- **Guardiani:** -19 ha evoluto Vermilion (800 Strange Dust) alle 10:54, un minuto dopo il badge.
+  L'evoluzione 5 accende **GuardianRarity** (da -19 alle 11:04). **Nuovo `GuardianRarityTask`**
+  (chiesto dall'utente alle 12:00): la rarità costa contratti (`CurrencyCode.Contract`, 30 / 70 / 150
+  / 200 / 250 / 300 / 350) e il tetto viene dall'evoluzione (Uncommon a 5, Rare a 10, ...); Uncommon dà
+  danno del guardiano ×61 e aura ×51 (wiki). Decide con il test del gioco
+  (`MagicQuartersRaritySubmenu.CanUpgrade`, puro, rifatto sui dati: rarità + 1 ≤ Celestial e ≤
+  `GetMaxRarityThatCanUpgradeTo()`, contratti ≥ `ContractRequirements[rarità + 1]`); i pulsanti vengono
+  dagli oggetti del gioco (`MagicQuartersMech.submenusButtonList[Rarity]`,
+  `MagicQuartersRaritySubmenu.rarityButton`), il click solo con un'icona "contract" sotto il pulsante e
+  il guardiano giusto nel sottomenu (`guardianOnPreview`), la spesa contata quando rarità e contratti
+  si muovono. -19 alle 12:16: **Vermilion Common → Uncommon per 30 contratti (260 → 230)**, 5,1 s.
+  L'animazione della rarità nasconde il pulsante di chiusura e il watchdog ha chiuso Magic Quarters:
+  ora si aspetta `MagicQuartersMech.playingRarityUpAnimation`. I contratti servono anche alla rarità
+  degli eroi di Hall of Heroes: li spende chi gira prima.
+- **Sfide del mini-evento dai dati:** contavano anche quelle già riscosse, che non hanno carta (-17
+  alle 11:04, `game=CrystalHits 4/4 ui=`): ora le saltano, e il confronto con le carte può coincidere.
+
+**Fatto il 28/11 alle 05:10** (notte, mentre l'utente dormiva):
+- **Rollout:** build del branch su Steam-17..31 alle 03:53-04:11, un'istanza alla volta, tutte "up" e con
+  la stessa DLL; nella prima ora nessun `[FAILED] Task`, solo i fallback noti.
+- **Regola della crescita, primi Empower veri:** -22 alle 04:19, -20 alle 04:25, -28 alle 04:32, -27 alle
+  04:52 (rapporto 3,4), ognuno quando la crescita degli ultimi 5 minuti è scesa sotto la media della
+  run.
+- **Stage di farm:** il confronto si fa sull'oro della run al minuto. I trovati crescono come l'oro
+  alla ~0,4, quindi il loro ritmo cala campione dopo campione anche a parità di oro, e sceglierebbero
+  uno stage troppo alto (-28 alle 03:40-03:48: oro su fino a 1008, trovati al massimo a 1010-1009).
+  -27: 1035 sia alle 04:25 sia alle 04:52 (muro 1037): **2 stage sotto il muro**. La freccia "avanti"
+  si nasconde durante un'ondata: fino a 60 s di attesa, nel tentativo del muro ogni 30 minuti come
+  nella ricerca.
+- **Merchant:** non vende più Midas' Touch (scelta dell'utente).
+- **Probe `items`:** scorte enormi su -27 / -28: 372 / 387 Speed, 354 / 325 Damage, 162 / 164 Health,
+  ~200-270 per ognuno di Pouch, Bucket, Crate, Pile of Gold, Drums of War, Dragon Armor, Guardian's
+  Rune e i due Totem; Midas Touch 1 / 3. Durate del gioco: pergamene 600 s, oggetti 300 s,
+  consumabili d'oro 5 / 15 / 30 / 60 minuti di oro.
+- **Push giornaliero** (`DailyPushTask`, `[dailypushtask] enabled = false` di default, `mode`):
+  - `dry`: apre l'inventario (schede `inventoryItems`, `scrolls`, `chests`, `currencies`) e scrive gli
+    slot e i loro pulsanti;
+  - `test`: una Speed e un Drums of War, visto su -27 alle 05:08 (372 → 371, 201 → 200, attive tutte e
+    due, 5,5 s);
+  - `on` (acceso solo su -27 dalle 05:10): una volta per giorno di gioco, al muro dopo la ricerca dello
+    stage, tre pergamene, Drums of War, Dragon Armor, Guardian's Rune, i due Totem e un consumabile
+    d'oro per tipo dal più piccolo; poi AutoRetreat sale al massimo e attacca subito il boss. Mai
+    Midas Touch. La regola della crescita aspetta il push del giorno (alle 04:52 -27 aveva fatto
+    l'Empower 20 s dopo la ricerca).
+  - Gli slot sono celle riciclate col Button senza listener: il click è quello simulato (eventi del
+    puntatore, `GameButton.ClickSimulated`), come per i forzieri; l'`onClick.Invoke` non faceva niente
+    (-27 alle 04:32, "Speed: 372 -> 372").
+  - **Primo push vero, -27 alle 07:25** (dopo la ricerca: farm a 1033, muro 1037): 12 usi su 12
+    confermati in 12,9 s (Speed 371 → 370, Damage 354 → 353, Health 162 → 161, uno per ognuno dei cinque
+    oggetti e dei quattro consumabili d'oro), tutto attivo, Midas non toccato. **Trovati da 10^221,37
+    (07:19) a 10^222,25 (07:29), ×7,6 in 10 minuti** ("24.56%/min"): il rapporto è passato da 0,76 a 5,8.
+    **Muro da 1037 a 1044** (07:32). Difetto: la salita dopo il push ha fatto un solo stage (1033 →
+    1034) e il pulsante del boss è arrivato 3 minuti dopo, coi buff che scorrevano; corretto alle 07:37
+    (a ogni passo aspetta la freccia e lo stage, il boss fino a 30 s).
+- **Prova della squadra su -28:** primo muro di una run intera con la squadra delle abilità alle 06:49:
+  **1012**, come il precedente (1012, cambio a metà run) e +1 sul 1011 di prima; le run prima avevano
+  +0-6 ciascuna. Nessun salto: **non estesa alla flotta**, la prova resta su -28 per altre run. Il muro
+  è poco sensibile al danno (su -27 un banco ×4,6 ha dato +1 stage), quindi conta anche l'oro al minuto
+  della farm: su -28 alle 06:51-06:59 da 10^534,39 (1012) a 10^535,27 (1008), sempre in salita fino al
+  limite di 5 stage (`retreat_stages`): lì lo stage migliore potrebbe essere più in basso.
+- **Empower di -27 dopo il push:** alle 07:39 con **rapporto 5,9** (banco da 10^221,49 a 10^222,33,
+  ×6,9); senza il push al muro era 0,76. Nella ricerca dopo il push un campione a 1043 ha dato oro e
+  trovati fermi per 2 minuti ("not moving"): la ricerca si è fermata al muro (1044) e la regola della
+  crescita ha fatto l'Empower (crescita 0,01% contro 1,25%). Da capire se capita ancora (squadra morta
+  a buff finiti?).
+- **Rollout della build delle 07:37 su 17-31** alle 07:37-07:53, un'istanza alla volta: tutte "up" e
+  con la stessa DLL, nessun `[FAILED] Task`.
+
+---
+
 > Scritto il 2026-11-26 da un'analisi con REA della build del 06/11 (metadata IL2CPP v31), rivisto lo
 > stesso giorno su richiesta dell'utente:
 > - tutte le chiamate migliorabili, non solo i timer: lo scopo è un bot leggerissimo e velocissimo;
@@ -10,6 +208,560 @@
 > I nomi e i tipi dei campi e dei metodi sono **osservati** nei metadata. Il significato (unità dei
 > timer, quando si aggiornano, quale menu apre un numero di sottomenu) è **dedotto dai nomi**: la
 > fase 0 lo verifica prima di scrivere il resto.
+
+## Per una nuova chat: come continuare
+
+Questa sezione basta per riprendere il lavoro senza la conversazione che l'ha prodotto. Il resto del
+file è la storia e il dettaglio.
+
+**Cosa si sta facendo.** Il branch `game-state` porta il bot a decidere dai dati del gioco (gli handler
+IL2CPP raggiungibili da `GameInitialize.HandlerLoader` e `GameInitialize.MenuLoader`) invece che
+leggendo testi e pulsanti dallo schermo. Lo schermo resta solo dove è indispensabile: il click
+dell'azione e, come riserva, quando un dato non si legge. La richiesta dell'utente: "quello che si può
+fare da codice facciamolo".
+
+**Regole che non cambiano** (dettaglio in "Regole" e "Cosa non fare"):
+- solo letture di dati e le stesse chiamate della UI del gioco: `NavigationControl.OpenMenu`,
+  `CloseLastOnMenuStack`, l'`onClick` dei suoi pulsanti, getter puri;
+- mai scrivere campi del gioco, mai chiamare funzioni di rete (`SocketAPI`, `ServerCalls`, `*AskServer`,
+  `*Callback`);
+- ogni lettura passa da `GameState.Get` / `GetRef`, che in caso di errore scrivono
+  `[GameState] fallback ...` una volta per sessione; il chiamante allora torna allo schermo;
+- un dato nuovo si confronta prima con lo schermo (`GameState.Compare` / `CompareTimes`, righe
+  `[GameState] mismatch ...`) e lo si usa solo quando coincide. Sigilli di Hall of Heroes e rarità degli
+  eroi lo fanno da soli, con una chiave in config (`seals_seen`, `rarity_checked`);
+- la spesa di una valuta si conta solo quando la valuta scende davvero (dato del gioco), e un'icona di
+  prezzo diversa da quella attesa ferma il click.
+
+**Dove gira.** PC-Guesly, istanze nelle box Sandboxie `C:\Sandbox\dmari\SteamB<N>`.
+- Il branch gira su **Steam-27** (dal 26/11) e su **Steam-28** (dal 27/11 12:01). **Steam-26 resta su
+  main** come confronto. Le DLL di main per tornare indietro sono in
+  `C:\Repos\FirestoneBot-test-backup\2026-11-26-steam27` e `...\2026-11-27-steam28`.
+- Finché il test non è chiuso, un deploy di main sulla flotta salta Steam-27 e Steam-28.
+- L'altro PC (DESKTOP-ADMIN) è tutto su main.
+
+**Comandi.**
+- Build contro gli assembly della box (il gioco di -27 e -28 è la stessa build, GameAssembly.dll del
+  06/11 11:27):
+  `$env:COMMON_DIR="C:\Program Files (x86)\Steam-17\steamapps\common"; dotnet build C:\Repos\FirestoneBot\src\firebot.csproj -c Release -p:Il2CppAssembliesDir="C:\Sandbox\dmari\SteamB27\drive\C\Program Files (x86)\Steam-27\steamapps\common\Firestone\MelonLoader\Il2CppAssemblies"`
+- Test dei pianificatori: `dotnet test tests\Firebot.TalentEngine.Tests` (96 al 27/11).
+- Deploy su un'istanza di test, con riavvio immediato (l'utente vuole sempre il riavvio fatto da noi,
+  mai lasciato al watchdog):
+  `powershell -ExecutionPolicy Bypass -File tools\Restart\deploy_test.ps1 -Instance 27` (senza
+  `-ExecutionPolicy Bypass` Windows blocca lo script). Con
+  `-ResetTasks treeoflifetask,beaststask` i task elencati partono subito; con `-FullRead` anche la
+  lettura completa di Hall of Heroes.
+- Log: `C:\Sandbox\dmari\SteamB<N>\drive\C\Program Files (x86)\Steam-<N>\steamapps\common\Firestone\MelonLoader\Latest.log`,
+  e `Logs\` per le sessioni precedenti. Il gioco li tiene aperti: vanno letti in condivisione.
+  - `[Task] X finished in Ns` dà la durata di ogni giro;
+  - `From the game: ... - not opening` è un giro deciso dai dati;
+  - `[GameState] mismatch` / `fallback` sono da guardare;
+  - lo stato salvato dei task è in `...\UserData\FirebotPreferences.cfg`, nella box.
+- Dump dell'API del gioco: `tests\GameApi\CoreASM.dll.api.txt` (e `SharedASM`), gitignored e non da
+  committare (il repo è pubblico). Ci sono nomi e tipi di campi e metodi, non i tipi delle proprietà:
+  per quelli si compila una riga di prova e si legge l'errore del compilatore. Un membro statico va
+  chiamato col nome del tipo, `Il2Cpp.X.membro` (il compilatore lo dice con CS0176).
+
+**Il test e il merge.** Si chiude con 12 ore senza problemi dall'ultimo deploy. I criteri sono in
+"Criteri per estendere alla flotta". Se passa, il punto 7 del piano: togliere `GameStateProbe`, merge
+`--no-ff` su main, deploy alla flotta su entrambi i PC, azzerare lo stato dei task cambiati (memoria
+`reset-task-state-on-rollout`: i `next_run_time_internal`; per `hallofheroestask` anche
+`seals_seen = "-"` e `rarity_checked = ""`), aggiornare README e TESTING.md. I controlli orari e la
+valutazione erano cron della sessione: una chat nuova li deve rifare, o controllare a mano.
+
+**Fatto e verificato dal vivo** (dettaglio e numeri in "Stato"):
+- badge, timer e navigazione dal gioco;
+- decidono dai dati: ricerche, esperimenti con l'accelerazione gratuita, spedizioni, missioni, Empower,
+  Oracle's Gift, mail, Path of Glory, eventi, Quests, Personal Tree, Forbidden Knowledge, Bestie
+  (livelli), guardiani (evoluzione, Holy, addestramento), Pharaoh's Vault, Awakening, War Machine
+  Rarity, Daily Missions;
+- Hall of Heroes: sigilli e lettura completa dai dati, 13 eroi su 13 identici allo schermo su -27 e
+  -28;
+- i saldi letti da `CurrencyHandler` invece che dai contatori.
+
+**Nuove funzioni del 27/11, già viste dal vivo su -27 e -28:**
+- **soul stone** (Hall of Heroes, `SpendSoulstones`): il prezzo è in Soul Shards (icona `soulShard64`),
+  30 al livello 1, tetto 2 × la rarità come per il gear. Al primo giro 40 incantesimi per istanza, il
+  massimo per giro: Soul Shards da 2620 a 1270 su -27 e da 2590 a 1270 su -28;
+- **rarità delle Bestie** con le Cobra Keys (`BeastsTask.RaiseRarities`; l'icona si chiama
+  `snakeKey64`): GoldenMonkey su -27, chiavi da 34 a 19;
+- **upgrade degli artefatti** (`AncientArtifactTask.Raise`): la rarità con le Golden Keys, i livelli con
+  le Twilight Hourglass, decisi da `CanIncreaseRarity` / `HaveTheKeysToRarityUp` / `CanIncreaseLevel` /
+  `HaveTheTwilightHourglassToLevelUp`. La schermata si apre solo dal pulsante `actionButtons/artifacts`
+  della Tavern: la navigazione del gioco non la apre, e chiamata dalla Tavern chiude la Tavern. Su -27
+  1 rarità e 14 livelli, su -28 2 rarità e 25 livelli (le valute finiscono quasi a zero: si spende
+  tutto quello che il gioco permette).
+
+**Fatto il 27/11, da vedere al prossimo giro vero:**
+- rarità degli eroi saltata per gli eroi a cui i dati dicono che manca un requisito (`rarity_checked`):
+  al giro delle 12:43 i requisiti dei dati coincidevano con le schede;
+- quest giornaliere (Collector, Gamer, Merchant, Miner) dai dati (`CharacterScreen.DailyQuestFromGame`):
+  il primo giro vero è al reset del 28/11; la riscossione resta a QuestsTask;
+- addestramento dei guardiani: decide dai dati se aprire (alle 12:44 non ha aperto su tutte e due,
+  addestramento in corso e Strange Dust alla riserva).
+
+**Fatto il 27/11 alle 13:28** (deploy su -27 e -28):
+- **Map Missions:** un giro raccoglie tutte le missioni le cui finestre gratuite si sovrappongono. Prima
+  due missioni a 2 minuti l'una dall'altra costavano due giri da 7 s. Senza squadre libere e senza
+  missioni nella finestra non apre la mappa (alle 13:25, 0,1 s);
+- **Collector Quest:** conta i forzieri dai dati (`GearChestHandler`, `JewelChestHandler`,
+  `CelestialChestHandler`, più Mystery Box e Oracle's Gift come valute). A quest fatta e senza niente
+  oltre la riserva non apre l'inventario;
+- **Arena of Kings:** i token da `ArenaOfKingsMech.battleTokensCurrent` (la mia potenza resta letta dal
+  testo: non ho trovato un dato pulito);
+- **Talenti:** non apre se `TalentsHandler.availablePoints` è 0. Il livello del personaggio, che ogni
+  task controlla a ogni giro, viene da `HandlerLoader.CharacterLevel.level`;
+- **Chaos Rift:** non apre se il dio non si può colpire (`ChaosRiftHandler.CanAttackGod` e
+  `ChaosRiftMech.CanAttack(1)`) e se le Dark Runes non bastano per un tomo. Il prezzo vero del tomo
+  (17839, cresce con ogni tomo comprato) lo dà `ChaosRiftShopSuppliesInteraction.GetTomeExchangeCostMultiple()`,
+  che però vale 0 finché il negozio non è stato aperto: il bot ricorda quello visto all'ultima visita,
+  quindi dopo ogni riavvio c'è una visita (13 s) per impararlo.
+
+**Fatto il 27/11 alle 15:00** (deploy su -27 e -28, tutto con lo schermo come riserva):
+- **Oracle Blessings** non apre se nessuna benedizione di `OracleHandler.blessings` ha `CanLevelUp` /
+  `hasAvailableUpgrade`;
+- **Pirate's Prize** non apre se `PirateShipHandler.GetPiratePrizeUnclaimedRewards()` è 0;
+- **Beer Exchange** non apre senza il badge BeerExchange letto dai dati, cioè il controllo del gioco
+  stesso (`NotificationHandler.BeerExchangeCheck`);
+- **Scarab Game, token gratuito**: `ScarabGameHandler.DailyFreePharaohTokenAvailable`;
+- **Daily Store Offers** non apre senza i badge CheckIn o MysteryBox letti dai dati;
+- **Free Pickaxes**: il conteggio da `GuildShopSuppliesSubmenu.freePickaxeState` (generati meno
+  riscossi) si confronta con il negozio a ogni visita; sotto la soglia salta l'apertura dopo una visita
+  che ha confermato la coincidenza;
+- **War Machines** (ferme fino all'albero a 50): non apre con meno di 500 Expedition Tokens;
+- **Arena of Kings**: anche la mia potenza dai dati (`WarMachineHandler.myFormationArenaPower`);
+- **Merchant Quest**: nome e quantità degli oggetti in vendita da `ExoticSellItemInteraction`
+  (`itemName`, `quantityOwned`), non dai testi; il click di vendita resta;
+- **Collector Quest**: le quantità per casella dai dati (`ChestOpening.CountFromGame`);
+- **stage dell'AutoRetreat**: `MainBattle.CurrentStageNumber`;
+- **sfide degli eventi**: i codici del gioco (`eventChallengesProgress` con
+  `CalendarEventsDataHandler.challengeRequirements`, `MiniEventsHandler.activeChallenges`) tradotti
+  nei tipi del bot (`GameState.CalendarChallenges` / `MiniChallenges`). A ogni visita si confrontano con
+  le carte; quando coincidono, senza sfide da riscuotere o da fare e senza valuta dell'evento in più
+  (Decorated Heroes, Trick or Treat), l'evento non si apre;
+- **Formation** apre Party solo per cambiare eroi (prima ogni giorno, anche in dry run), e **Hall of
+  Heroes** prende la formazione da `Heroes.Read()` invece di aprire Party a ogni giro;
+- **bottino della campagna Warfront**: si riscuote ogni 6 ore dall'ultima riscossione
+  (`WFCampaignMissionHandler.lastLootClaimTimestamp` + 6 h coincideva al secondo con il conto alla
+  rovescia dello schermo, su -27 e -28): prima di quell'ora non apre.
+
+**Fatto il 27/11 alle 15:47** (deploy su -27 e -28 alle 15:35-15:47, misurato sui log 11:28-15:20):
+- **Spedizioni:** la fine viene dal gioco (`expeditionData.activeExpeditionStartTime` + `activeExpedition.timeReq`),
+  non dal conto alla rovescia dello schermo, che finiva qualche secondo prima: su -27 alle 12:45 e alle
+  13:32 il bot ha aperto con il claim ancora spento ed è tornato 2 minuti dopo (13:32:14, fine vera
+  13:32:15). Con una spedizione in corso non apre prima della fine (+2 s). Senza spedizioni il
+  rinnovo della lista resta quello dello schermo (17:13:02, il dato non c'è). Al rinnovo: su -27 alle
+  17:13 ExploreTheCatacombs, fine del gioco 18:06:07 contro 18:06:08 dello schermo; su -28 alle 17:14
+  TrainTheRecruits, 18:14:11 tutti e due. Il claim a fine spedizione, visto dal vivo: -27 alle 18:06:12
+  ha riscosso ExploreTheCatacombs e avviato CraftABow (fine 18:53:14 sia dal gioco che dallo schermo),
+  -28 alle 18:14:16 TrainTheRecruits e avviato ExploreTheCatacombs (19:07:18 dal gioco, 19:07:19 dallo
+  schermo). 3,1 s ognuno, nessun "Click ignored", nessun giro a vuoto dopo.
+- **Badge GuardianTraining "non visto":** è il flag `guardianTrainingNotificationSeen` del gioco, in
+  memoria, che ogni riavvio rimette a falso. Da quando Guardian Training decide dai dati (12:44) il
+  badge restava acceso fino alla fine dell'addestramento: su -27 e -28 per tutta la sessione 13:29-14:56.
+  Ora, se il badge è acceso solo per quello, il task usa la scorciatoia del badge e chiude (come Seen
+  Badges, senza cliccare niente dentro): 1,6 s, badge spento, alle 15:39, 15:47 su -27 e 15:48 su -28.
+  Il giro completo di prima costava 10,8 s.
+- **BadgeCooldown:** i 30 minuti valgono solo se il badge del gioco era ancora acceso alla fine del
+  giro; un badge che si accende dopo aspetta 2 minuti. Su -27 Quests aveva deciso "niente da
+  riscuotere" alle 13:33:55, una quest si è completata subito dopo e il badge è rimasto acceso fino alle
+  14:04. Per i badge che il gioco non sa dire (posta, Path of Glory, eventi) resta tutto come prima.
+- **Map Missions, mappa vuota:** non apre se nessuna missione in corso è finita o nella finestra
+  gratuita e le squadre libere non hanno missioni da avviare (`missionsOnMap` con `squadsReq` ≤ libere;
+  il conteggio coincideva con lo schermo su 5 giri, 12/10/8/6/1). Torna al primo tra fine missione e
+  rinnovo (`TimeLeftForNewMissions`: 17:13:07 contro 17:13:03 dello schermo). Su -27 alle 15:48: 6
+  squadre libere, mappa vuota, 0,1 s invece di 2,6 s.
+- **Map Missions, attesa dopo il click su una missione:** il secondo fisso è diventato l'attesa
+  dell'anteprima di quella missione (`PreviewMissionPopup.mapMission`, menu `PreviewMission`) più 0,2 s.
+  La sonda: 0,89 s la prima volta (caricamento), 0,10 s le successive. Su -28 alle 15:49: 1,19 s e
+  0,40 s; giro con uno speed-up e un avvio in 6,7 s, contro 7,3 s alle 15:43. Al rinnovo delle 17:13
+  su -27: 4 missioni avviate (squadre 6 → 0) in 7,2 s, attese 1,19 / 0,40 / 0,40 / 0,40 s.
+
+Minuti di task per ora dalle 15:48 alle 17:06 (78 minuti, senza deploy in mezzo): **-27 0,74, -28 1,73
+(8 giri di Map Missions, 56 s), -26 su main 6,16** (Meteorite 220 s, System Mail 74 s, Empower 73 s).
+Badge in quelle ore: su -27 solo TemplePrestige (16:17-16:25, la regola dell'Empower); su -28 i badge
+del riavvio spenti entro il minuto e TemplePrestige 15:48-15:58. Nessun task ripartito a ripetizione
+con il nuovo `BadgeCooldown`.
+
+Gli eventi non attivi (Mini, Trick or Treat, New Player su -27) e Decorated Heroes finito fanno una
+visita a sessione e poi una ogni 6 ore (`_lastVisit` in memoria), 7-8 s l'una: le visite delle 16:04
+venivano dai deploy delle 15:35-15:46, quelle delle 17:08 dal riavvio programmato delle 17:06, e alle
+17:04 su -27 il giro ha detto "not running - not opening" (0,1 s). Con un riavvio ogni 6 ore sono ~3,5
+s/h per account: lasciato com'è, è la verifica che il dato "non attivo" sia giusto.
+
+Dopo ogni riavvio Experiments fa un giro da 3,3 s senza niente da fare: il badge è il "non visto" degli
+slot fermi (`strangeDustExperimentSeen`, `exoticCoinExperimentSeen`; il bot usa solo il Dragon Blood),
+e aprire l'Alchemist è il modo di spegnerlo. Costa quanto una visita di Seen Badges: lasciato com'è.
+
+Un evento del calendario finito (Decorated Heroes alle 10:00 del 27/11) tiene la carta aperta per il
+suo negozio: i dati dicono "non attivo" e non ha più sfide, quindi lo si visita ogni 6 ore per spendere
+la valuta rimasta. Il confronto delle sfide si fa solo a evento in corso, e quello di "attivo" segnala
+solo il caso sbagliato davvero (dati "attivo" e carta assente). Per le sfide del calendario la regola
+dei livelli (`c` livelli riscossi su `challengeRequirements`) è ancora da confermare con il prossimo
+evento in corso: finché carte e dati non coincidono, le sfide non decidono niente.
+
+**Fatto il 27/11 alle 20:43** (deploy su -27 alle 20:42 e -28 alle 20:43, richieste dell'utente:
+Empower, Talents, Enlighten, Ancient Artifact, ordine delle missioni, addestramento, il resto dei testi):
+- **Talents:** punti disponibili e spesi da `TalentsHandler` (`availablePoints`, `usedTalentPoints`),
+  il contatore solo come riserva e come confronto al primo giro (`talent points`). Il probe di
+  `usedTalentPoints` coincideva con il "speso" del contatore su tutti i giri (-27 225/226, -28 223/224).
+- **Guardian Training:**
+  - Train solo senza addestramento in corso (`TrainingEnd`): prima un click a vuoto a ogni giro che
+    apriva per l'Enlighten;
+  - l'Enlighten in blocco prova solo i passi che la dust paga sopra la riserva (`enlightenmentDustReq` ×
+    passo) e che il gioco offre (`enlightQuantitiesAvailable`): su -28 alle 20:26 il giro non ha
+    illuminato niente e ha premuto il pulsante delle quantità per ~8 s;
+  - il prezzo mostrato viene dal gioco (`enlightenmentDustReq` × `currentEnlightQuantity`) dopo un
+    confronto col testo che coincide, nella stessa sessione (un prezzo sbagliato spende sotto la
+    riserva); fino ad allora il testo.
+- **Ancient Artifact:** se dopo un livello il popup AAModify resta aperto sullo stesso artefatto e
+  modo, il livello seguente è un altro click del suo pulsante (prima ~2,6 s a livello: seleziona,
+  pulsante, popup, conferma, chiudi). Se si chiude, tutto come prima. Il log dice quanti livelli sono
+  passati dal popup aperto e quanto è durato il giro.
+- **Map Missions:** l'ordine delle missioni da avviare viene dalla durata del gioco
+  (`MapMissionInteraction.mapMission.realTimeReq`), il testo del pin solo come riserva, confrontati
+  missione per missione (`map mission duration`). Lo stato di ogni pin (libera, in corso, finita) dai
+  dati (`missionState` e la fine) è per ora solo confrontato con le icone (`map mission state ...`):
+  sbagliarlo lascerebbe una squadra ferma.
+- **Oracle's Gift:** il numero di doni dalla valuta `OraclesGift` (come Collector Quest), il contatore
+  come riserva e confronto.
+- **Miner Quest:** la quantità per colpo del cristallo (`ArcaneCrystalMech.currentHitQuantity`) è solo
+  confrontata col testo, perché sbagliarla spende piccozze.
+- **Empower:** nessun cambio di regola. Il log `[Empower] curve` dice anche cosa farebbe la regola
+  "della crescita" (vedi sotto, "Empower: cosa dicono le curve").
+- **Probe `skips`** (una riga quando cambia): gli upgrade Skip dell'Exotic Merchant partono dallo
+  stage 1200 (Tree2), sopra il muro di -27 e -28 (~1031), quindi oggi non servono. Le ricerche:
+  Firestone Skip Wave 25/25 (25%) e Skip Stage 20/20 (6%), al massimo; Meteorite Skip Wave livello 10
+  (3%) e Skip Stage livello 10 (2%), 800 meteoriti a livello, ~0,2-0,3% a livello.
+
+**Empower: cosa dicono le curve** (`[Empower] curve` e `[Probe] stage` di -27 e -28, 27/11):
+- Una run è ~137 minuti di salita a ~7,5 stage al minuto dallo stage 1 al muro (1024 → 1027 → 1031 su
+  -27), poi il muro. Il ritmo è lo stesso dall'inizio alla fine: lo limita il gioco, non il danno.
+- I Firestones trovati vengono dall'oro della run (`Firestones.firestoneTotalGoldEarnings`,
+  `goldForTheFirstFirestone`). Durante la salita crescono di ~0,4 ordini di grandezza al minuto; al muro
+  l'oro continua ad arrivare e crescono ancora del 7-11% al minuto (-27: 10^219,38 → 10^219,52 dalle
+  18:43 alle 18:48, 10^218,70 → 10^218,93 dalle 16:22 alle 16:27).
+- Il bot fa l'Empower 3-5 minuti dopo il muro. In quel momento il "banco" cresce del 5-6% al minuto
+  (crescita dei trovati × trovati/(posseduti+trovati)), mentre la media della run è 1,1-3%: aspettare
+  al muro rende più che ripartire. Una stima con l'oro lineare al muro dà l'ottimo dopo ~30 minuti di
+  muro, con il banco che cresce ~25% più in fretta per ora; da verificare dal vivo.
+- Visto dal vivo con la riga nuova, -27 alle 21:15 (muro a 1032, stallo alle 21:11:54): trovati da
+  10^219,75 a 10^219,98 in 5 minuti, "last 5 min 6.82%/min vs run average 0.83%/min - would wait". Il
+  bot ha fatto l'Empower lo stesso, con rapporto 2,27, 3 minuti dopo lo stallo. Dopo il ritiro il gioco
+  è in modalità farm (`MainBattle.FarmingWave` True allo stage 1028).
+- Il rapporto all'Empower scende run dopo run (-27: 70 → 15 → 3,7 → 2,3; -28: 24 → 11,7), perché il
+  muro sale poco (1024 → 1027 → 1031 → 1032). Sotto 1 la regola di oggi aspetta al muro che l'oro della
+  farm porti i trovati ai posseduti: allunga da sola il muro, ma solo quando il rapporto è basso.
+- In metà delle run i trovati partono già dal ~15-19% dei posseduti e restano fermi fino al minuto
+  ~105 (es. -27 18:53-20:24, 10^218,77); nelle altre partono da 10^164-169 e salgono subito. Al muro
+  le due curve si equivalgono: per la regola non cambia niente.
+- La regola "della crescita": al muro, Empower quando la crescita del banco nell'ultimo controllo
+  scende sotto la media della run (`ln(1 + trovati/posseduti) / minuti`). Si regola da sola e non ha
+  bisogno che il rapporto arrivi a 1. Il badge TemplePrestige resterebbe acceso più a lungo. Da
+  decidere con l'utente; finché non decide, la riga del log dice solo "would empower" / "would wait".
+
+**Fatto il 27/11 alle 21:36** (deploy su -27 alle 21:35 e -28 alle 21:36):
+- **Map Missions:** lo stato dei pin (libera, in corso, finita) viene dal gioco, le icone come riserva e
+  confronto. Coincidevano su tutti i pin dei 5 giri delle 21:06-21:33 (4 su -27, 1 su -28), e così le
+  durate: l'ordine 41 → 17 minuti su -27, 50 → 17 su -28.
+- **Empower:** la regola "della crescita" c'è, spenta: `[empowertask] empower_rule = "ratio"` (oggi) o
+  `"growth"`. Con `growth`, al muro e col rapporto raggiunto, il bot aspetta (un controllo ogni 5
+  minuti) finché la crescita dell'ultimo controllo batte la media della run; dopo un riavvio al muro
+  aspetta un controllo per avere il confronto. La riga `[Empower] curve` la valuta comunque.
+- **Probe:** `empower` ha anche l'oro della run (`runGold`, da cui vengono i trovati); `abilities` le
+  abilità degli eroi schierati (nome, risorsa, durata, ricarica, descrizione del gioco), una riga
+  quando cambiano.
+
+**Visto nella notte 27-28/11** (dal deploy delle 21:36):
+- Enlighten in blocco (23:07 su -27 e -28): 4 illuminazioni in 5,5 s contro 12,8 s, prezzo del gioco
+  uguale al testo; i giri di solo Train delle 01:13 / 01:24 3,3-3,5 s.
+- Talents (-28 alle 00:54): 1 punto investito, punti del gioco uguali al contatore.
+- Empower: -27 alle 23:32 e 01:53 (muro 1033 tutte e due), -28 alle 01:23 (muro 1011); ogni volta
+  "would wait" (al muro 2,3-5,8%/min contro 0,54-0,59% di media). Il rapporto all'Empower di -27 è
+  sceso a 1,05 e 1,29.
+- Nessun task fallito; solo il fallback noto `research state`.
+
+**Fatto il 28/11 alle 02:53** (deploy su -27 alle 02:52 e -28 alle 02:53, richieste dell'utente):
+- **Empower:** la regola della crescita è quella di default (`empower_rule = "growth"`, scelta
+  dall'utente; su -27 e -28 scritta nel cfg con `deploy_test.ps1 -Set`). Aspetta anche mentre AutoRetreat
+  misura gli stage di farm, e al massimo 90 minuti dopo il muro.
+- **Muro, stage di farm:** al posto dei 5 stage fissi AutoRetreat misura l'oro al minuto (l'oro della
+  run, `SpecialGameStatistics.save.totalGoldThisRun`) per 2 minuti al muro, poi uno stage sotto alla
+  volta finché rende di più (al massimo `retreat_stages`), e torna al migliore. È quello che l'utente
+  fa a mano col tooltip del Barrel of Gold: il gioco ne calcola il valore con
+  `OfflineCalculations.CalculateInventoryItemGold` (oro dell'ondata / tempo per passarla), ma solo
+  per lo stage attuale e non è una lettura pura, quindi si misura.
+- **Formazione, prova su -28:** `[formationtask] scoring = "abilities"` aggiunge al danno quello che le
+  abilità di ogni eroe moltiplicano il danno della squadra (buff di squadra, debuff sul boss: tabella in
+  `FormationPlanner.AbilitySupport`), cercando tra tutte le squadre da 5. Il default resta `damage`.
+  Alle 02:55 su -28: Cirilo, Luana, Benedictus, Burt → Boris, Talia, Solaine, Astrid, leader Muriel,
+  "as planned", ×3,55 su quel punteggio. I muri di -28 prima: 999, 1005, 1006, 1006, 1007, 1011 (+0-6
+  a run); quelli di -27: 1027, 1031, 1032, 1033, 1033. Il cambio è a metà run (minuto 92): gli eroi
+  nuovi partono con meno livelli d'oro.
+- `deploy_test.ps1 -Set "sezione.chiave=valore"` scrive voci del cfg a gioco fermo.
+
+**Formazione: cosa dicono i dati** (`Formation heroes` e `[Probe] abilities`, 27/11):
+- Il danno è quasi tutto di un eroe. -27: Talia 10^184,49 (leader, +0,13), Boris 10^183,38 (~5%), gli
+  altri tre ~10^181,3, 0,05% l'uno. -28: Muriel leader con fattore 10^2,81, gli altri quattro insieme
+  ~0,1%.
+- Quindi negli slot che non sono il "carry" conta solo quello che l'eroe fa alla squadra o al boss,
+  non il suo danno. Il planner sceglie i 5 col danno più alto, le abilità non sono nel modello
+  (FORMATION_PLAN.md, "Stato").
+- Le abilità dal gioco: Boris "Anger" +50% al danno della squadra per 25 s, ricarica 25 s; Talia
+  "Annihilation" +60% danni subiti dal bersaglio per 8 s ogni 15 s; Astrid "Devastating Shot" +60% per
+  7 s, ricarica 1,84 s; Muriel "Rally" +15% velocità d'attacco della squadra. -27 ha già Boris, Talia e
+  Astrid. -28 ha Muriel, Cirilo, Luana e Benedictus (healer) e Burt, con Boris, Talia e Astrid in
+  panchina: con i loro buff il danno sul boss sarebbe circa ×3 (stima, uptime e cumulo da verificare).
+- Proposta per l'utente: tenere il carry (e il leader) per danno e scegliere gli altri slot per i
+  moltiplicatori che danno, dalle abilità del gioco (durata/ricarica). È una scelta di gioco.
+
+Già dai dati senza bisogno di modifiche: **Warfront Campaign** (potenza, missioni e requisiti dal
+gioco, apre solo per una missione da tentare o per cambiare l'equipaggio) e **Blueprints**
+(`BlueprintPlanner` dai dati, non apre senza niente da comprare).
+
+**Guardati e lasciati come sono:**
+- Seen Badges: i badge "visto" li riaccende ogni riavvio, perché il gioco tiene i flag solo in memoria, e
+  scriverli è vietato; costa 3 s al riavvio;
+- Expeditions, Experiments, Research, Map Missions, Oracle Rituals, Quests: decidono già dai dati;
+  quando aprono è per l'azione, che resta un click.
+
+**Prossimi candidati** (dati già trovati):
+- il ritiro degli oggetti distribuiti dalla gilda (`ClaimMemberRewardsFromGuildItems`, Banca di Gilda →
+  Tesoreria): l'utente deve ancora dire se la sua gilda li distribuisce, non toccarlo prima;
+- la regola dei livelli delle sfide del calendario (`CalendarEventChallengeData.c`), da confermare col
+  prossimo evento in corso: oggi le carte e i dati non sono mai stati confrontati a evento attivo;
+- Frostfire, routine di push con le pergamene e vendita delle pergamene: in pausa per scelta
+  dell'utente.
+
+## Come cercare altre ottimizzazioni
+
+Il metodo usato il 26-27/11, passo per passo.
+
+1. **Dove va il tempo.** Dai log delle istanze di test (Steam-27, Steam-28) e di Steam-26 su main, la
+   durata di ogni `[Task] X finished in Ns`, raggruppata per task: numero di giri, totale, media. I giri
+   da 0,1 s sono già decisi dai dati. Contano quelli che aprono una schermata e poi non fanno niente, o
+   che leggono molti testi.
+2. **Cosa legge dallo schermo.** Nel codice del task e del suo modello (`src/GameModel/Features/...`):
+   `new GameText(...)` (testi), `IsVisible()` / `IsClickable()` usati per decidere, scansioni di liste
+   sullo schermo. `grep -rn "new GameText(" src` le trova tutte (73 al 27/11, molte ora solo riserva).
+3. **Il dato del gioco.** In `tests\GameApi\CoreASM.dll.api.txt` (e `SharedASM` per gli enum):
+   - `grep -n "^type NomeTipo$"` dà campi e metodi;
+   - `HandlerLoader` (`GameInitialize.HandlerLoader`, in codice `GameState.H`) e `MenuLoader`
+     (`GameInitialize.MenuLoader`) espongono gli handler e i menu come `prop`;
+   - le valute sono `CurrencyCode` (`GameState.Currency(code)`);
+   - i badge sono `NotificationType` (`GameState.HasBadge`).
+
+   Il dump non ha i tipi delle proprietà: si compila una riga di prova (`int x = H.Qualcosa.prop;`) e
+   l'errore del compilatore dice il tipo, poi si toglie la riga. Un membro statico va scritto
+   `Il2Cpp.Tipo.membro` (errore CS0176 altrimenti).
+4. **REA, se il nome non basta.** REA (npm `rea-agents`, skill `reverse-engineer-anything`, MCP `rea`)
+   rifà il dump dopo un aggiornamento del gioco:
+   `rea inspect-il2cpp-metadata <box>\Firestone_Data\il2cpp_data\Metadata\global-metadata.dat --binary <box>\GameAssembly.dll`,
+   poi `python tests\GameApi\dump_api.py` (istruzioni in testa al file). Va lanciato da PowerShell,
+   perché da Git Bash rovina i percorsi. Per capire cosa fa un metodo (una formula di costo, quando un
+   flag cambia) si può decompilarne il corpo con REA e Ghidra. Più rapido di solito: scrivere il valore
+   nel log accanto a quello dello schermo e guardarli.
+5. **Scrivere la modifica.**
+   - Ogni lettura in `GameState.Get` / `GetRef`; se il dato non si legge, si torna allo schermo.
+   - Il dato nuovo prima si confronta con lo schermo (`GameState.Compare`, o una riga di log con
+     tutti e due).
+   - Lo si usa solo quando coincide. Se può sbagliare in modo costoso (una spesa saltata o doppia),
+     il task si fida dei dati solo dopo una visita in cui coincidevano. Esempi: `seals_seen` e
+     `rarity_checked` in Hall of Heroes, `_trusted` in Free Pickaxes, `_challengesTrusted` negli
+     eventi.
+   - Una spesa si conta solo quando la valuta scende, e il click si ferma se l'icona del prezzo non è
+     quella attesa.
+   - Le righe di log hanno la forma `From the game: ... - not opening.` quando si salta l'apertura.
+6. **Provare.**
+   - Build contro gli assembly della box, poi `tools\Restart\deploy_test.ps1` con `-ResetTasks`
+     (e `-FullRead` per Hall of Heroes), così i task toccati partono subito.
+   - Verifica nei `Latest.log`: `From the game`, `mismatch`, `fallback`, `[FAILED] Task` e le righe di
+     spesa.
+   - Ogni deploy fa ripartire la finestra di 12 ore: va scritto in "Stato".
+
+7. **Il censimento dei badge.** Dopo ogni deploy, per ogni sessione, i badge rimasti accesi a lungo
+   nelle righe `[Rail] Lit` (la memoria `rail-must-be-empty`: un badge acceso a lungo è un bug). Un task
+   che decide dai dati e non apre lascia acceso un badge "non visto" (i flag `*Seen` di
+   `NotificationHandler`, rimessi a falso da ogni riavvio): è così che è saltato fuori GuardianTraining
+   acceso per ore. Anche un giro che non apre fa partire il `BadgeCooldown`, quindi va guardato quanto
+   aspetta un badge che si accende subito dopo.
+
+Guardati il 27/11 pomeriggio (dai log 11:28-15:20 di -27 e -28):
+- il tempo dei task è ~1-1,5 min/h su -27 e -28; quello che resta è quasi tutto azione: Map Missions
+  (speed-up e avvii, ~2 s a missione), soul stone e artefatti (spese vere), Experiments e ricerche;
+- Chaos Rift ed eventi non fanno una visita a ogni riavvio, come diceva questo file: il `NextRunTime`
+  è salvato nel cfg (Chaos Rift 2 giri e gli eventi 3-4 su 9 riavvii dalle 11:28). Non c'è da guadagnare;
+- Oracle Rituals: parte il primo rituale della griglia. Sceglierlo dai dati (premi) è una scelta di gioco,
+  da chiedere all'utente;
+- Map Missions: l'ordine delle missioni viene ancora dai testi dei pin (durata), ma la lettura è
+  istantanea; i dati (`missionsOnMap`: `realTimeReq`, `squadsReq`, `missionInteraction`) basterebbero,
+  il guadagno sarebbe solo di robustezza;
+- testi ancora letti per decidere, senza costo di navigazione: i punti dei Talents (il contatore, c'è
+  `TalentsHandler.availablePoints`/`usedTalentPoints`), il costo dell'Enlighten
+  (`MagicQuartersInfoSubmenu.enlightenmentDustReq` × `currentEnlightQuantity`), i nomi degli oggetti nei
+  negozi degli eventi;
+- Ancient Artifact: ogni livello costa 2,6 s (seleziona, apre AAModify, conferma, chiude); se il popup
+  restasse aperto dopo un livello, i livelli seguenti costerebbero un click. Da provare con una sonda,
+  le Twilight Hourglass arrivano di rado;
+- GuardianHolyUpgrade ha anche lui un flag "non visto" (`guardianHolyUpgradeNotificationSeen`) e il task
+  decide dai dati senza aprire. Su -27 e -28 il badge non si accende mai; su -26 (main) si spegne quando
+  si apre Magic Quarters. Al rollout va guardato nel censimento;
+- Guardian Training: quando apre per l'Enlighten (dust sopra la riserva) clicca Train anche con un
+  addestramento in corso, e il click va a vuoto (un "Click ignored" sul `trainButton` al primo giro di
+  ogni sessione: -27 15:35, -28 15:39 e 17:07). Non spende niente: saltare il click quando
+  `MagicQuarters.TrainingEnd` è nel futuro, al prossimo deploy che serve comunque;
+- AutoRetreat: clicca `goBackStage` 5 volte di fila e 2 vanno a vuoto mentre lo stage cambia (-27 e -28
+  dalle 15:46). Non l'ho toccato io e non costa niente.
+
+## Stato (28/11 02:53, branch `game-state`)
+
+**Il test di 12 ore gira su Steam-27 e, dal 27/11 alle 12:01, anche su Steam-28** (scelta lasciata a
+me dall'utente: un secondo account per più varietà; Steam-26 resta su main come confronto; DLL di main
+di Steam-28 in `C:\Repos\FirestoneBot-test-backup\2026-11-27-steam28`, di main per la flotta in
+`...\2026-11-28-fleet-main`). **È ripartito alle 02:53 (ultimo deploy, -27 alle 02:52 e -28 alle
+02:53) e finisce il 28/11 alle 14:53.** I deploy sono descritti in "Fatto il 28/11 alle 02:53", "Fatto
+il 27/11 alle 20:43" e "alle 21:36", quelli delle 15:35-15:47 in "Fatto il 27/11 alle 15:47", in testa
+al file.
+
+Alle 15:09 era ripartito per la seconda serie di richieste dell'utente:
+- **Eventi.** Su Steam-27 tre eventi (Mini, New Player, Trick or Treat) non sono attivi per l'account,
+  e ogni ora si apriva la lista per scoprirlo: 22 s all'ora. Ora decide il gioco: `MiniEventsHandler`
+  (evento in corso e non bloccato), la lista `calendarEvents` del calendario (dal 12:09: il solo
+  `currentCalendarEvent` diceva di no per Decorated Heroes, che c'era) e `AnniversaryEventHandler`.
+  Con "non attivo" passa ancora una volta ogni 6 ore e dopo ogni avvio, e confronta il proprio dato
+  con la carta trovata.
+- **Quests** non apre le schede senza una quest completata e non riscossa (`QuestHandler`), a meno
+  che il badge sia acceso.
+- **Oracle's Gift** non rifà la visita dopo ogni riavvio: il NextRunTime salvato è già il prossimo reset.
+- **Pharaoh's Vault** (token da girare, Ancient Coins contro `pharaohsVaultCost`), **Awakening**
+  (Arcane Crystals contro `AwakeningMech.awakenCostBasic`) e **War Machine Rarity**
+  (`CanAnyWarmachineRarityUpgrade`, il controllo del gioco stesso) non aprono senza niente da fare.
+- **Hall of Heroes, lettura completa dai dati.** Prima confrontata con lo schermo: 13 eroi su 13 uguali,
+  slot per slot, su Steam-27 e -28. Il tetto di un incantesimo è `enchantsPerRarity` (2) × il numero
+  della rarità (Rare 6, Uncommon 4); `gearTier` conta da 0. Ora la lettura di ogni 24 ore viene dai
+  dati, nell'ordine dell'istantanea; lo schermo resta per un eroe nuovo. Il giro completo è passato da
+  3-5 minuti a 27 s, che sono la rarità degli eroi.
+- Chaos Rift non è toccato: non ho trovato con certezza la valuta dei colpi.
+
+Alle 11:28 era ripartito per le richieste dell'utente su guardiani, Arena of Kings e Hall of Heroes:
+- **Guardian Evolution** non apre Magic Quarters se il gioco (`GuardianDeck`) non ha guardiani pronti
+  a evolvere; se ce ne sono, clicca solo quelli. Prima erano 10-15 s a giro per trovarne nessuno. Alle
+  11:10 aveva Vermilion all'evoluzione 4 e Grace all'1, come legge lo schermo, quindi 0,1 s.
+- **Guardian Holy Upgrade** non apre senza Orbs of Light per il livello più economico.
+- **Guardian Training** confronta il proprio timer (`MagicQuartersInfoSubmenu.lastTrainGuardinaTime` +
+  `TrainCooldownDuration`) con lo schermo prima di usarlo. Alle 11:10 nessun mismatch.
+- **Arena of Kings** legge la potenza degli avversari dal loro `HDSAccount.warMachineArenaPower`, non
+  più dal testo, che dopo un reroll può essere vuoto. Il tempo resta comunque nelle 5 battaglie.
+- **Hall of Heroes** ogni 6 ore guardava i sigilli dei 13 eroi (circa 95 s) per poi non comprare
+  niente. Ora legge dal gioco (`HeroServer`: `gearPower`, incantesimi, `gearSealList`/`jewelSealList`)
+  i sigilli posseduti e il livello che chiedono, e prende i saldi da `CurrencyHandler`. Senza sigilli
+  da usare e senza niente che i saldi comprino non apre; quando apre, visita solo gli eroi con un
+  sigillo usabile. Si fida dei sigilli dei dati solo se coincidono con quelli visti l'ultima volta nelle
+  schede (`seals_seen`): alle 11:29 erano Benedictus Chest 3/6 e Blaze Boots 3/6 in entrambi, quindi
+  0,1 s. `hasSeal` indica il possesso (`quantity` era 0 su tutti), e gli oggetti vanno letti da
+  `heroGears`, perché `gearsDict` è vuoto. La lettura completa di ogni 24 ore confronta i livelli e la potenza del gear dei
+  dati con lo schermo, prima di poterla sostituire. I dati elencano anche gli eroi non posseduti, per
+  questo il controllo è solo che quelli dell'istantanea ci siano tutti.
+- **Daily Missions** (anche su main) rifaceva un giro ogni 5 minuti nella prima ora dopo il reset
+  anche a missioni già fatte: alle 10:01 ne aveva combattute 3, poi 10 giri da 16 s fino alle 11:00.
+  Ora con `HasAvailable` falso non ci riprova.
+- Collector Quest resta com'è: il tempo è l'apertura dei forzieri, già 10 alla volta.
+
+Alle 08:33 era ripartito per Forbidden Knowledge e Beasts, chiesti dall'utente:
+- **Forbidden Knowledge** apriva l'anteprima di ogni nodo delle tre tavole: 40-80 s a giro per non
+  comprare niente. Ora legge dal gioco i tomi di ogni dio, i nodi sotto il tetto della tavola e il
+  costo (1 tomo). Apre solo le tavole dove c'è da comprare, e lì solo i nodi sotto il tetto. Alle 08:34
+  ha trovato 0 tomi per tutti e tre gli dei e ha fatto un giro da 0,1 s.
+- **Beasts** selezionava tutte e 30 le bestie: 25-60 s per 2-3 possedute. Ora le riconosce dal codice
+  di ogni avatar, legge le Soul Embers e il livello più economico, e senza niente da comprare né bestie
+  da liberare non apre. Alle 08:34 aveva 9 Soul Embers contro 10, quindi 0,1 s.
+
+Alle 07:19 era ripartito per il Personal Tree chiesto dall'utente. Ricontrollava ogni 6 ore, così alle 07:21 c'erano 1978 gettoni fermi da prima
+contro i 1700 del nodo successivo. Ora legge gettoni e costo dal gioco ogni 30 minuti e apre l'albero
+solo quando può comprare. L'ordine è prima i rami prioritari, poi il più economico: niente più scaglioni
+di 5. Dati del gioco alle 07:21: albero a 27, `upgradesAllowed` 15, prioritari tutti a 15/15. Costo
+600 + 100 a livello, XP 100 + 10 a livello. Il più economico dà quindi anche più XP per gettone (210 per
+1700 contro 250 per 2100).
+
+Alle 05:46 era ripartito una seconda volta (la prima era alle 04:01) perché i pulsanti degli slot di esperimenti e ricerche si
+aggiornano un momento dopo l'apertura della schermata. Letti subito, mostravano ancora il prezzo in
+gemme dentro la finestra gratuita: esperimento a 2m50s e a 44 s dalla fine, ricerca a 59 s, con giri a
+vuoto ogni 2 minuti fino al badge. Prima l'attesa fissa di 3 s lo nascondeva. Ora, quando i dati dicono
+che uno slot è nella finestra, il bot aspetta (al massimo 5 s) che il pulsante mostri Free o Claim.
+
+La prima partenza era delle 02:25 con il commit `b239ace`. La ripartenza delle 04:01 era per due
+correzioni:
+- `OpenMenu(Alchemist, 0, …)` apriva Transmute, cioè il sottomenu 0 dell'enum. Gli slot degli
+  esperimenti non c'erano e il task ripartiva ogni 2 minuti, finché non si accendeva il badge. Ora la
+  navigazione passa `SubmenuNum.Experiments`.
+- Oracle's Gift: dalle 03:25 l'ultimo claim risultava "prima di oggi" anche con il dono già preso (6 → 6),
+  e il task ripartiva ogni 30 minuti. Ora fa una sola visita per giornata di gioco.
+
+La sonda della fase 0 resta attiva per tutto il test, per la verifica; va tolta prima del merge.
+
+**Fatto e verificato su Steam-27:**
+- **A, badge dal gioco.** `HasNotification` coincide con la barra badge per badge, e `[Rail] Lit` ora
+  viene dal gioco. In 3 ore nessun mismatch.
+- **B, timer dal gioco.** Spedizioni, missioni, esperimenti, ricerca, Engineer, rituale e rinnovo delle
+  quest, tutti confrontati con lo schermo (vedi "Fase 0, risultati").
+- **C, decisioni dai dati:**
+  - Oracle's Gift decide dall'ultimo claim;
+  - Empower decide senza aprire il Temple e registra la curva (`[Empower] curve`);
+  - Meteorite non apre la Library se non c'è niente da comprare;
+  - le due ricerche scelgono il nodo dai dati di ogni nodo, senza aprire anteprime;
+  - le spedizioni scelgono per token all'ora;
+  - Map Missions apre solo le missioni finite o accelerabili gratis;
+  - System Mail parte solo con mail da riscuotere;
+  - Path of Glory non si apre se il gioco conta 0 premi;
+  - gli eventi non si visitano se lo stato delle sfide non è cambiato (al massimo 3 ore);
+  - Enlighten a ×20/×10/×5/×1 col pulsante quantità del gioco.
+- **D, navigazione.** Prima `NavigationControl.OpenMenu`, poi la chiamata HUD, poi i click, e il bot
+  ricorda per ogni menu cosa ha funzionato:
+  - **le chiamate HUD (`AdventureScreen.Open*`) non hanno mai aperto niente;**
+  - `OpenMenu` apre Tavern, ExoticMerchant, WorldMap, Alchemist e ForbiddenKnowledge;
+  - MagicQuarters, Library, TownGuild, Awakening e PirateShip vanno ai click.
+
+  La città e la gilda si aprono solo se servono.
+- **E, attese.** Dopo un click il bot aspetta finché il blocco attività del gioco è spento e la pila
+  dei menu è ferma, da 0,5 a 2 s; se il click non avviene non aspetta.
+- **F, connessione.** **G, errori del server** (Harmony, solo log): nessun errore in 3 ore. **H, build
+  del gioco** all'avvio, con WARNING se cambia.
+- **Watchdog:** chiude con `CloseToMainScreen` quello che resta nella pila dei menu (menus/Achievements
+  sopra Magic Quarters aveva nascosto il HUD per un minuto).
+
+**Fase 0, risultati:**
+- `serverTimeNow` è in secondi Unix (7 s di differenza dall'ora del PC); tutti i timestamp sono in
+  quella unità.
+- I `timeLeft` sono in secondi e si aggiornano anche a schermata chiusa.
+- `HasNotification` e `IsNotificationActive` dicono la stessa cosa. `IsNotificationActive` è statico, e
+  `HasNotification` lancia un'eccezione per un tipo non registrato (`PartyManagement`).
+- I nomi delle ricerche nei dati sono chiavi (`cat1/mana_heroes_`). Il nodo si riconosce dall'oggetto
+  del popup di anteprima (`FirestoneResearchPreviewPopup.firestoneResearch`), e ogni nodo a schermo ha il
+  suo (`FirestoneResearchInteraction.firestoneResearch`).
+- Tutte le spedizioni rendono 0,1 token al secondo; lo spareggio sulle monete prende la più lunga.
+- Dopo i click, l'apertura di un menu tiene attivi i blocchi `MenuInitialization` e `Addressables` per
+  0,7-1,2 s; un click dentro una schermata si assesta in 0,1-0,2 s.
+
+**Velocità.** Steam-27 è passato da 9,7 a **3,43 min/h** di navigazione (23:22-02:09). Nelle stesse ore,
+con main, Steam-26 era a 5,24 e Steam-28 a 9,30.
+
+**Visto durante il test, non è del branch (non si tocca fino al merge):**
+- **`FirestoneResearch.IsUnlocked`** lancia `KeyNotFound '0'` su un nodo. Il nodo viene scartato e la
+  scelta va avanti; c'è un `fallback research state` per sessione.
+- **Il badge di Oracle's Gift** resta acceso dopo la riscossione, come su main (Steam-26: doni 2 → 2).
+  Dopo ogni riavvio il bot fa una sola visita.
+- **Il rinnovo delle settimanali** segnala `mismatch`: lo schermo legge "5d 6h" come 5 giorni e 6 minuti,
+  il valore del gioco è giusto.
+
+**Rimandato (resa bassa, rischio non nullo):**
+- **Hall of Heroes dai dati.** I dati ci sono: `Hero.heroGearItems`, `HeroServer.heroGears` e
+  `jewelsRaw`; poi `GearItem.EnchantLevel`, `enchantCost`, `enchantsPerRarity` e `itemRarity`; gli slot
+  si chiamano come gli enum `GearSlot` e `JewelSlot`. Manca la potenza del gear per eroe e i blocchi
+  dei tier. La lettura completa avviene una volta ogni 24 ore, e ogni click viene già verificato sullo
+  schermo.
+- **Costi letti come testo** (Awakening, Evolution, rarità delle War Machines, quantità di Free
+  Pickaxes): non costano navigazione.
+- **Stage di AutoRetreat dai dati:** gioco e barra coincidono sempre, e la barra non costa niente.
 
 ## Perché: la misura di partenza (Steam-27, 26/11 17:08-22:03)
 
@@ -389,6 +1141,31 @@ Sono cose che il bot oggi non fa. Ognuna va decisa con l'utente prima di scriver
    - **Momento naturale:** quando AutoRetreat riprova il muro (ogni 30 min), prima di risalire. Si usa
      il bottone "usa" dell'oggetto (`ScrollInteraction` / `InventoryItemInteraction`), mai
      `UseTheItemAskServer`.
+   - **Richiesta dell'utente del 28/11:** almeno una volta al giorno, al muro, un push al massimo stage
+     con le tre pergamene (Speed, Damage, Health) e i cinque oggetti (Drums of War, Dragon Armor,
+     Guardian's Rune, Totem of Agony, Totem of Annihilation); poi usare in modo mirato Pouch, Bucket,
+     Crate, Barrel of Gold e Midas Touch, che oggi si accumulano. Vincoli dell'utente: **Midas Touch
+     scarso e prezioso** (con parsimonia, solo quando serve: dal 28/11 il Merchant non lo vende più);
+     **Strange Dust solo per guardiani ed eroi, niente Alchimista**.
+   - **Cosa dicono le guide** (`docs/firestone_guida_F2P.md` "Consumabili di gold, pergamene e routine
+     di push", "Empower e Temple of Eternals"; `docs/guida_steam_completa.md` "Items & Scrolls"):
+     - routine prima dell'Empower (F2P, V5): al massimo, le tre pergamene, spingi ancora e upgrade, un
+       Pouch finché durano, poi Empower;
+     - consumabili d'oro = 5 / 15 / ~30 / 60 minuti di oro allo stage attuale; solo con le pergamene
+       attive, sullo stage ottimale, dal più piccolo (il Pouch sblocca gli special upgrade, il Barrel
+       per ultimo); Drums of War aumenta l'oro dei consumabili;
+     - la guida Steam: i consumabili accorciano il tempo per il muro ma non lo spostano, meglio
+       venderli per upgrade permanenti; la F2P: vendere Barrel e Crate, tenere Pouch e Bucket;
+     - Scroll of Speed ~triplica l'oro dello stage per 60 s; un talento triplica il danno con tutte e
+       tre attive; i totem "da F2P non usarli, o solo al tetto di progressione".
+   - **Cosa dicono i dati** (28/11): i trovati crescono come l'oro della run alla ~0,4
+     (`SpecialGameStatistics.save.totalGoldThisRun`): al muro l'oro arriva lineare, quindi minuti
+     d'oro in più (consumabili, pergamene) fanno crescere i trovati prima dell'Empower; per lo stesso
+     motivo lo stage di farm si sceglie sull'oro al minuto, non sui trovati.
+   - **Stato:** il probe `items` (dal 28/11 04:00) dice quantità, durate e dove sono i pulsanti "usa";
+     il push non c'è ancora. Proposta: un push al giorno al muro, solo su -27/-28 per la prova, ogni
+     consumo confermato dalla quantità che scende; i consumabili d'oro dal Pouch, con le pergamene
+     attive e allo stage di farm scelto; Midas solo se la prova mostra che alza i trovati.
 3. **Premi che il bot non chiede mai.** Nel catalogo delle richieste al server (`SocketFunctions`, 250
    metodi) ci sono claim che nessun task fa:
    - `ClaimMemberRewardsFromGuildItems`: oggetti distribuiti dalla gilda ai membri, menu

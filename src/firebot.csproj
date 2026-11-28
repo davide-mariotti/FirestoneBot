@@ -32,6 +32,9 @@
         <Reference Include="Il2Cppmscorlib">
             <HintPath>$(Il2CppAssembliesDir)\Il2Cppmscorlib.dll</HintPath>
         </Reference>
+        <Reference Include="Il2CppSystem.Core">
+            <HintPath>$(Il2CppAssembliesDir)\Il2CppSystem.Core.dll</HintPath>
+        </Reference>
         <Reference Include="Unity.TextMeshPro">
             <HintPath>$(Il2CppAssembliesDir)\Unity.TextMeshPro.dll</HintPath>
         </Reference>

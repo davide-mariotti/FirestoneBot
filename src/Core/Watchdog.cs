@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.Core;
@@ -34,6 +35,19 @@ public static class Watchdog
                     Logger.Debug($"[Watchdog] Closing popup: {button.FullPath}{ScreenText(screen)}");
                     yield return button.Click();
                 }
+
+        // Whatever no known close button reached - menus/Achievements opened by an evolution over Magic
+        // Quarters hid the HUD for a minute on Steam-27 (27/11 00:55) - goes with the game's own way back.
+        if (GameState.MenuStack is { Length: > 0 } stack)
+        {
+            Logger.Info($"[Watchdog] Still open after the sweep: [{stack}] - back to the main screen.");
+            if (GameState.Get("close to main screen", () =>
+                {
+                    GameState.Core.NavigationControl.CloseToMainScreen();
+                    return true;
+                }) == true)
+                yield return Poll.AfterClick("close to main screen");
+        }
     }
 
     // A game's message says why something was refused, and this is the last chance to read it.

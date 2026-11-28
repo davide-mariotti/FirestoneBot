@@ -1,6 +1,7 @@
 using System.Collections;
 using Firebot.Core;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Guild;
@@ -42,7 +43,7 @@ public static class ArcaneCrystal
     public static IEnumerator Close => new GameButton(Paths.ArcaneCrystalLoc.CloseBtn).Click();
 
     // '.'-grouped past 999, like the other counters.
-    public static int PickaxeCount => (int)new GameText(Paths.ArcaneCrystalLoc.PickaxeCountTxt).GetParsedDoubleAbbreviated();
+    public static int PickaxeCount => (int)GameState.Balance(Il2Cpp.CurrencyCode.Pickaxe, () => new GameText(Paths.ArcaneCrystalLoc.PickaxeCountTxt).GetParsedDoubleAbbreviated());
 
     /// <summary>Pickaxes one click spends: 1 means a single hit, one step of the Miner quest.</summary>
     public static int HitCost => new GameText(Paths.ArcaneCrystalLoc.HitCostTxt).GetParsedInt(-1);

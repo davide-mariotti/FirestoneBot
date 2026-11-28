@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Il2Cpp;
 using UnityEngine;
@@ -17,6 +18,172 @@ namespace Firebot.GameModel.Features.Character;
 /// </summary>
 public static class HallOfHeroes
 {
+    /// <summary>
+    ///     A hero as the game has it (HeroServer), the hall closed: gear power, each gear slot's enchant
+    ///     level (-1 for an empty slot), the level each slot's Seal of Power in hand asks (0 without one,
+    ///     as the Seals tab gives it), and whether a seal can be used now.
+    /// </summary>
+    public sealed record HeroData(int GearPower, int[] GearLevels, int[] GearSeals, int[] JewelSeals, bool SealReady, string SealsHeld)
+    {
+        /// <summary>The snapshot's levels from the game, L and M as the full read writes them: what the full read is checked on.</summary>
+        public string Levels { get; init; }
+
+        /// <summary>Each slot's raw level/enchantsPerRarity/enchantCost/rarity, for the log while Levels is checked.</summary>
+        public string Raw { get; init; }
+
+        /// <summary>The same levels as numbers, Locked/Unavailable included: the full read's rows.</summary>
+        public int[] GearLine { get; init; }
+
+        public int[] JewelLine { get; init; }
+    }
+
+    // The full read's level for a row: L for a locked tier, M for an empty slot, a level the item's rarity
+    // caps or a cost off the table; else the level. The cap is enchantsPerRarity (2) times the rarity's
+    // number: the screen's M on a Rare at 6, an Uncommon at 4, a Common at 2 (27/11, Steam-27 and -28).
+    private static int Level(Tasks.Character.EnchantCategory category, int slot, bool locked, int? level, int? cap, double cost)
+    {
+        if (locked) return Tasks.Character.HeroState.Locked;
+        if (level is not { } l || cap is not { } c || l >= c && l < Tasks.Character.EnchantPlanner.MaxLevel)
+            return Tasks.Character.HeroState.Unavailable;
+        if (l >= Tasks.Character.EnchantPlanner.MaxLevel) return l;
+        return (long)cost == Tasks.Character.EnchantPlanner.Cost(category, slot, l) ? l : Tasks.Character.HeroState.Unavailable;
+    }
+
+    /// <summary>Every hero by name (HeroCode's names are the screen's); null when it can't be read.</summary>
+    public static Dictionary<string, HeroData> FromGame => GameState.GetRef("hall of heroes", () =>
+    {
+        var heroes = new Dictionary<string, HeroData>();
+        foreach (var kv in GameState.H.HeroServerHandler.heroesDict)
+        {
+            var h = kv.Value;
+            var levels = new int[Tasks.Character.HeroState.GearSlots];
+            var gearSeals = new int[Tasks.Character.HeroState.GearSlots];
+            var jewelSeals = new int[Tasks.Character.HeroState.JewelSlots];
+            var ready = false;
+            var held = new List<string>();
+
+            // The worn items by slot: heroGears, as gearsDict read empty (27/11, every slot -1).
+            var items = new GearItem[levels.Length];
+            foreach (var gear in h.heroGears)
+                if (gear != null && (int)gear.gearSlot >= 0 && (int)gear.gearSlot < items.Length)
+                    items[(int)gear.gearSlot] = gear;
+            for (var slot = 0; slot < levels.Length; slot++) levels[slot] = items[slot] == null ? -1 : items[slot].EnchantLevel;
+
+            // A seal in hand is hasSeal: the 27/11 read had quantity 0 on every one.
+            foreach (var seal in h.gearSealList)
+            {
+                var onItem = seal.slot >= 0 && seal.slot < items.Length ? items[seal.slot] : null;
+                if (seal.quantity > 0 || seal.hasSeal)
+                    held.Add($"g{seal.slot}{seal.rarity}({(onItem == null ? "-" : $"{onItem.itemRarity} {onItem.EnchantLevel}")})");
+                if (seal.quantity <= 0 && !seal.hasSeal || onItem == null) continue;
+                var need = Tasks.Character.EnchantPlanner.SealLevel(onItem.itemRarity.ToString(), seal.rarity.ToString());
+                if (need == 0) continue;
+                gearSeals[seal.slot] = need;
+                ready |= levels[seal.slot] >= need;
+            }
+
+            foreach (var seal in h.jewelSealList)
+            {
+                var jewel = seal.slot >= 0 && seal.slot < jewelSeals.Length && h.jewelDict.ContainsKey((JewelSlot)seal.slot)
+                    ? h.jewelDict[(JewelSlot)seal.slot]
+                    : null;
+                if (seal.quantity > 0 || seal.hasSeal)
+                    held.Add($"j{seal.slot}{seal.rarity}({(jewel == null ? "-" : $"{jewel.rarity} {jewel.enchantLevel}")})");
+                if (seal.quantity <= 0 && !seal.hasSeal || jewel == null) continue;
+                var need = Tasks.Character.EnchantPlanner.SealLevel(jewel.rarity.ToString(), seal.rarity.ToString());
+                if (need == 0) continue;
+                jewelSeals[seal.slot] = need;
+                ready |= jewel.enchantLevel >= need;
+            }
+
+            // gearTier counts from 0 (GearTier.Tier1): 2 with tier 3's rows shown (27/11, every hero).
+            var tier = h.gearTier + 1;
+            var raw = new List<string>();
+            var gearLine = new int[levels.Length];
+            for (var slot = 0; slot < gearLine.Length; slot++)
+            {
+                var item = items[slot];
+                gearLine[slot] = Level(Tasks.Character.EnchantCategory.Gear, slot, Tasks.Character.EnchantPlanner.GearTier(slot) > tier,
+                    item?.EnchantLevel, item == null ? null : (int)item.enchantsPerRarity * (int)item.itemRarity, item == null ? 0 : (double)item.enchantCost);
+                raw.Add(item == null ? "-" : $"{item.EnchantLevel}/{(int)item.enchantsPerRarity}/{(double)item.enchantCost:0}/{item.itemRarity}");
+            }
+
+            var jewelLine = new int[jewelSeals.Length];
+            for (var slot = 0; slot < jewelLine.Length; slot++)
+            {
+                var jewel = h.jewelDict.ContainsKey((JewelSlot)slot) ? h.jewelDict[(JewelSlot)slot] : null;
+                jewelLine[slot] = Level(Tasks.Character.EnchantCategory.Jewels, slot, Tasks.Character.EnchantPlanner.JewelTier(slot) > tier,
+                    jewel?.enchantLevel, jewel == null ? null : jewel.enchantsPerRarity * (int)jewel.rarity, jewel?.enchantCost ?? 0);
+                raw.Add(jewel == null ? "-" : $"{jewel.enchantLevel}/{jewel.enchantsPerRarity}/{jewel.enchantCost:0}/{jewel.rarity}");
+            }
+
+            heroes[kv.Key.ToString()] = new HeroData((int)h.gearPower, levels, gearSeals, jewelSeals, ready, string.Join(" ", held))
+                {
+                    Levels = $"t{tier} " + Tasks.Character.EnchantPlanner.Levels(gearLine, jewelLine), Raw = string.Join(" ", raw),
+                    GearLine = gearLine, JewelLine = jewelLine
+                };
+        }
+
+        return heroes;
+    });
+
+    /// <summary>
+    ///     The hero's next rarity requirements as the Rarity tab colours them, from the game:
+    ///     "Gear Items+ Jewels-" (Uncommon asks gear, Rare gear and jewels, Epic on soulstones too).
+    ///     "max" at the top rarity, null when it can't be read.
+    /// </summary>
+    public static string RarityRequirementsFromGame(string name) => GameState.GetRef($"hero rarity {name}", () =>
+    {
+        if (!System.Enum.TryParse<HeroCode>(name, out var code) || !GameState.H.HeroServerHandler.heroesDict.ContainsKey(code)) return null;
+        var h = GameState.H.HeroServerHandler.heroesDict[code];
+        var next = (int)h.heroRarity + 1;
+        if (next > (int)Il2Cpp.Rarity.Celestial) return "max";
+        var parts = new List<string> { "Gear Items" + ((int)h.GetMinimumGearRarity() >= next ? "+" : "-") };
+        if (next >= (int)Il2Cpp.Rarity.Rare) parts.Add("Jewels" + ((int)h.GetMinimumJewelRarity() >= next ? "+" : "-"));
+        if (next >= (int)Il2Cpp.Rarity.Epic) parts.Add("Soulstones" + ((int)h.GetMinimumSoulstoneRarity() >= next ? "+" : "-"));
+        return string.Join(" ", parts);
+    });
+
+    /// <summary>
+    ///     Soulstone enchants the game would allow, by hero: each slot with a stone, below its cap (as
+    ///     gear: enchantsPerRarity times the rarity's number), with its Soul Shard cost. Null when unreadable.
+    /// </summary>
+    public static List<(string Hero, SoulstoneSlot Slot, int Level, double Cost)> SoulstoneCandidates(IEnumerable<string> heroes) =>
+        GameState.GetRef("soulstone candidates", () =>
+        {
+            var list = new List<(string, SoulstoneSlot, int, double)>();
+            foreach (var name in heroes)
+            {
+                if (!System.Enum.TryParse<HeroCode>(name, out var code) || !GameState.H.HeroServerHandler.heroesDict.ContainsKey(code)) continue;
+                var h = GameState.H.HeroServerHandler.heroesDict[code];
+                if (h.soulstoneDict == null) continue;
+                foreach (var kv in h.soulstoneDict)
+                {
+                    var st = kv.Value;
+                    if (st == null || st.rarity == Il2Cpp.Rarity.None || st.enchantCost <= 0) continue;
+                    if (st.enchantLevel >= st.enchantsPerRarity * (int)st.rarity) continue;
+                    list.Add((name, kv.Key, st.enchantLevel, st.enchantCost));
+                }
+            }
+
+            return list;
+        });
+
+    /// <summary>The same from the tab's text: a requirement met is coloured #0FE607.</summary>
+    public static string RarityRequirementsOnScreen(string text)
+    {
+        var parts = new List<string>();
+        foreach (var item in new[] { "Gear Items", "Jewels", "Soulstones" })
+        {
+            var at = text?.IndexOf(item, System.StringComparison.Ordinal) ?? -1;
+            if (at < 0) continue;
+            var colour = text.LastIndexOf("<color=", at, System.StringComparison.Ordinal);
+            parts.Add(item + (colour >= 0 && text.Substring(colour, at - colour).Contains("0FE607") ? "+" : "-"));
+        }
+
+        return string.Join(" ", parts);
+    }
+
     public static IEnumerator Close => new GameButton(Paths.HallOfHeroesLoc.CloseBtn).Click();
 
     public static bool IsOpen => IsShown(Paths.HallOfHeroesLoc.CloseBtn);
@@ -208,7 +375,7 @@ public static class HallOfHeroes
 
         /// <summary>The Contracts counter, -1 when it doesn't read as a number.</summary>
         public static long Contracts =>
-            (long)new GameText(Paths.HallOfHeroesLoc.ContractsTxt).GetParsedDoubleAbbreviated(-1);
+            (long)GameState.Balance(CurrencyCode.Contract, () => new GameText(Paths.HallOfHeroesLoc.ContractsTxt).GetParsedDoubleAbbreviated(-1));
 
         /// <summary>"Common - Cirilo".</summary>
         public static string Current => new GameText(Paths.HallOfHeroesLoc.RaritySubmenuLoc.CurrentTitleTxt).GetParsedText();

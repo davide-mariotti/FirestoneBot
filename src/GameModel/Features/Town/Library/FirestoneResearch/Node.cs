@@ -1,7 +1,10 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.GameModel.Features.Town.Library.FirestoneResearch;
@@ -54,6 +57,30 @@ public class Node : GameElement
 
         yield return new GameButton(parent: child).Click();
     }
+
+    /// <summary>Position of the visible tree among the carousel's trees; -1 when none shows.</summary>
+    public int CurrentTreeIndex => GetChildren().ToList().FindIndex(tree => tree.IsVisible());
+
+    /// <summary>
+    ///     The game's research behind every node of every tree, the hidden trees too, read from each
+    ///     node's FirestoneResearchInteraction instead of opening its preview (GAMESTATE_PLAN.md).
+    ///     Null when they can't be read: the caller then scans the previews as before.
+    /// </summary>
+    public List<(int Tree, int Index, Il2Cpp.FirestoneResearch Research)> ReadNodes(int nodeCount) =>
+        GameState.GetRef("firestone research nodes", () =>
+        {
+            var nodes = new List<(int, int, Il2Cpp.FirestoneResearch)>();
+            var root = Root;
+            for (var t = 0; root != null && t < root.childCount; t++)
+            {
+                var tree = root.GetChild(t);
+                for (var i = 1; i <= nodeCount && i < tree.childCount; i++)
+                    if (tree.GetChild(i).GetComponentInChildren<Il2Cpp.FirestoneResearchInteraction>(true)?.firestoneResearch is { } research)
+                        nodes.Add((t, i, research));
+            }
+
+            return nodes.Count > 0 ? nodes : throw new InvalidOperationException("no research data behind the nodes");
+        });
 
     public IEnumerator NextTree => new GameButton(Paths.MenusLoc.LibraryLoc.NodeLoc.NextTreeBtn).Click();
 

@@ -89,7 +89,7 @@ public abstract class DailyQuestTask : BotTask
         if (before.Listed && before.Target > 0 && (before.Done < before.Target || WorksWhenComplete))
         {
             yield return Work(Math.Max(before.Target - Math.Max(before.Done, 0), 0));
-            yield return CharacterScreen.CheckDailyQuest(QuestName, r => after = r);
+            yield return CharacterScreen.CheckDailyQuest(QuestName, r => after = r, true);
         }
 
         Debug($"[INFO] '{QuestName}' quest: {before.Done}/{before.Target} -> {after.Done}/{after.Target}" +

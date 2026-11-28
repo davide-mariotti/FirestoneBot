@@ -30,6 +30,15 @@ public class GuardianHolyUpgradeTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // Two screens deep (Chaos Rift, Magic Quarters) to find out the orbs don't pay a level.
+        if (MagicQuartersScreen.OrbsOfLight is { } orbs && MagicQuartersScreen.CheapestHolyUpgrade is { } cheapest && orbs < cheapest)
+        {
+            Debug($"[INFO] From the game: {orbs:0} Orbs of Light, cheapest holy damage level " +
+                  $"{(double.IsInfinity(cheapest) ? "-" : cheapest.ToString("0"))} - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
         yield return Notifications.GuardianHolyUpgrade;
 
         yield return TownGuild.Open;

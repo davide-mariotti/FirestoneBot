@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Town.Library.FirestoneResearch;
 using Firebot.GameModel.Primitives;
@@ -29,6 +30,11 @@ public class FirestoneResearchTask : BotTask
         yield return Library.OpenFirestoneResearchTab;
 
         var panel = new ResearchPanel();
+        // The slots' buttons refresh a moment after the screen shows (SpeedUpButton.AnySlotReady).
+        if (GameState.FirestoneResearchEnd is { } due && SpeedUpButton.FreeFrom(due) <= DateTime.Now)
+            yield return Poll.Until(() => SpeedUpButton.AnySlotReady(Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.Root,
+                "researchSlot", Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.SpeedupBtn,
+                Paths.MenusLoc.LibraryLoc.ResearchPanelLoc.ClaimBtn), 50, 0.1f);
         yield return panel.Claim();
 
         // Disabled - a no-op - while no slot is left to buy or the meteorites don't cover it.
@@ -37,14 +43,14 @@ public class FirestoneResearchTask : BotTask
         if (!ResearchPanel.HasEmptySlot)
         {
             Debug("[INFO] No empty slots. Scheduling next run.");
-            NextRunTime = panel.NextRunTime();
+            NextRunTime = NextFromGame(panel.NextRunTime());
             yield return Library.Close;
             yield return TownScreen.Close;
             yield break;
         }
 
         yield return RunSelection();
-        NextRunTime = panel.NextRunTime();
+        NextRunTime = NextFromGame(panel.NextRunTime());
 
         yield return Library.Close;
         yield return TownScreen.Close;
@@ -85,12 +91,18 @@ public class FirestoneResearchTask : BotTask
     {
         var node = new Node();
 
-        while (ResearchPanel.HasEmptySlot)
+        // A bound, not a pace: a start that doesn't take would otherwise loop until the task's timeout.
+        for (var attempt = 0; attempt < 6 && ResearchPanel.HasEmptySlot; attempt++)
         {
             // Starting a research can close the whole screen, so it's reopened before every pick.
             yield return TownScreen.Open;
             yield return TownScreen.OpenLibrary;
             yield return Library.OpenFirestoneResearchTab;
+
+            bool? fromGame = null;
+            yield return PickFromGame(node, result => fromGame = result);
+            if (fromGame == true) continue;
+            if (fromGame == false) yield break;
 
             int? bestPriorityIndex = null;
             int? bestPriorityTreeOffset = null;
@@ -179,5 +191,83 @@ public class FirestoneResearchTask : BotTask
             yield return node.Select(bestIndex.Value);
             if (Preview.IsUnlocked && !Preview.IsMaxed) yield return Preview.Start;
         }
+    }
+
+    /// <summary>The game's first research end (all slots busy), else the panel's; compared when both read.</summary>
+    private static DateTime NextFromGame(DateTime fromScreen)
+    {
+        var fromGame = GameState.FirestoneResearchEnd is { } end ? SpeedUpButton.FreeFrom(end) : (DateTime?)null;
+        GameState.CompareTimes("firestone research next", fromGame, fromScreen);
+        return fromGame ?? fromScreen;
+    }
+
+    // The data's names are keys, so the three types the game names differently go by type.
+    private static int DataRank(Il2Cpp.FirestoneResearch research) => research.firestoneResearchType switch
+    {
+        Il2Cpp.FirestoneResearchType.RainingGold => PriorityRank("Raining Gold"),
+        Il2Cpp.FirestoneResearchType.Prestigious => PriorityRank("Firestone Finder"),
+        Il2Cpp.FirestoneResearchType.FirestoneEffect => PriorityRank("Firestone Effect"),
+        _ => PriorityRank(GameState.KeyName(research.name))
+    };
+
+    /// <summary>
+    ///     The pick from the game's data, every tree at once and no preview opened but the chosen one's
+    ///     (GAMESTATE_PLAN.md): the priorities as before, then the shortest research (decided 26/11) -
+    ///     untouched nodes come first that way, their level-1 time being the shortest. done(true) when
+    ///     one started, false when nothing can start, null to fall back to the preview scan.
+    /// </summary>
+    private IEnumerator PickFromGame(Node node, Action<bool?> done)
+    {
+        var nodes = node.ReadNodes(NodeCount);
+        var candidates = nodes?.Where(n => GameState.Get("research state", () =>
+                n.Research.IsUnlocked && !n.Research.IsMaxLevel() &&
+                n.Research.researchState == Il2Cpp.LibraryMech.ResearchState.Unlocked) == true)
+            .Select(n => (n.Tree, n.Index, n.Research, Rank: DataRank(n.Research)))
+            .OrderBy(n => n.Rank)
+            .ThenBy(n => n.Rank == int.MaxValue ? n.Research.realTimeRequired : 0)
+            .ThenBy(n => n.Tree).ThenBy(n => n.Index)
+            .ToList();
+        if (candidates == null)
+        {
+            done(null);
+            yield break;
+        }
+
+        if (candidates.Count == 0)
+        {
+            Debug("[INFO] From the game: no research can start.");
+            done(false);
+            yield break;
+        }
+
+        var best = candidates[0];
+        var current = node.CurrentTreeIndex;
+        for (var step = 0; step < 6 && current >= 0 && current != best.Tree; step++)
+        {
+            yield return current < best.Tree ? node.NextTree : node.PreviousTree;
+            var moved = node.CurrentTreeIndex;
+            if (moved == current) break;
+            current = moved;
+        }
+
+        yield return node.Select(best.Index);
+        // The preview's own research object, not its name: the data names are keys (27/11).
+        var shown = GameState.FirestoneResearchPreviewed;
+        var same = shown != null && shown.firestoneResearchType == best.Research.firestoneResearchType &&
+                   shown.researchTree == best.Research.researchTree;
+        if (current != best.Tree || !same || !Preview.IsUnlocked || Preview.IsMaxed)
+        {
+            GameState.Compare("research pick", $"tree {best.Tree} #{best.Index} {best.Research.firestoneResearchType}",
+                $"tree {current} {shown?.firestoneResearchType.ToString() ?? "-"} '{Preview.Name}'");
+            yield return Preview.Close;
+            done(null);
+            yield break;
+        }
+
+        Debug($"[INFO] From the game: research '{Preview.Name}' ({best.Research.firestoneResearchType}) tree {best.Tree} #{best.Index}, " +
+              $"level {best.Research.level}/{best.Research.levelCap}, {best.Research.realTimeRequired / 3600:0.#} h" +
+              $"{(best.Rank == int.MaxValue ? "" : $", priority {best.Rank}")}, of {candidates.Count} startable.");
+        yield return Preview.Start;
+        done(true);
     }
 }

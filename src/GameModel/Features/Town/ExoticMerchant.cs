@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Firebot.GameModel.Base;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Firebot.Utilities;
 using Il2Cpp;
@@ -22,7 +23,7 @@ public static class ExoticMerchant
     public static GameElement UpgradesList => new(Paths.ExoticMerchantLoc.UpgradesLoc.UpgradesListRoot);
 
     /// <summary>-1 when unreadable.</summary>
-    public static int CoinCount => (int)new GameText(Paths.ExoticMerchantLoc.CoinCountTxt).GetParsedDoubleAbbreviated(-1);
+    public static int CoinCount => (int)GameState.Balance(Il2Cpp.CurrencyCode.ExoticCoin, () => new GameText(Paths.ExoticMerchantLoc.CoinCountTxt).GetParsedDoubleAbbreviated(-1));
 
     /// <summary>
     ///     Every upgrade showing a price in Exotic Coins, affordable or not (maxed and level-locked ones
@@ -55,9 +56,14 @@ public static class ExoticMerchant
     {
         var items = new List<(string, int)>();
         foreach (var cell in SellCells())
-            items.Add((ItemName(cell), (int)StringUtils.ParseAbbreviated(Text(cell, Paths.ExoticMerchantLoc.SellLoc.ItemQuantityTxt))));
+            items.Add((ItemName(cell), Owned(cell) ?? (int)StringUtils.ParseAbbreviated(Text(cell, Paths.ExoticMerchantLoc.SellLoc.ItemQuantityTxt))));
         return items;
     }
+
+    // The cell's own data (ExoticSellItemInteraction): name and quantity owned, instead of its texts.
+    private static Il2Cpp.ExoticSellItemInteraction Item(Transform cell) => cell.GetComponent<Il2Cpp.ExoticSellItemInteraction>();
+
+    private static int? Owned(Transform cell) => GameState.Get("sell item owned", () => Item(cell).quantityOwned);
 
     /// <summary>Sells one of the named item. False when it isn't on the grid or can't be sold now.</summary>
     public static bool TrySellOne(string itemName)
@@ -91,7 +97,7 @@ public static class ExoticMerchant
 
     // A typographic apostrophe would otherwise miss "Midas' Touch".
     private static string ItemName(Transform cell) =>
-        Text(cell, Paths.ExoticMerchantLoc.SellLoc.ItemNameTxt).Replace('’', '\'');
+        (GameState.GetRef("sell item name", () => Item(cell).itemName) is { Length: > 0 } name ? name : Text(cell, Paths.ExoticMerchantLoc.SellLoc.ItemNameTxt)).Replace('’', '\'');
 
     private static string Text(Transform cell, string path) => cell.Find(path)?.GetComponent<TMP_Text>()?.text ?? "";
 

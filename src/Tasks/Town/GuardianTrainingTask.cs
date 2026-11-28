@@ -32,6 +32,29 @@ public class GuardianTrainingTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The training badge lights for a moment after every start (Steam-27 and -28, 27/11: a 10 s run
+        // after each restart, the training hours from done). The game's timer and the dust say it all.
+        var keep = MagicQuarters.Unlocked?.Any(g => g.readyToEvole) == true ? int.MaxValue : _strangeDustReserve?.Value ?? 10000;
+        var perEnlighten = PerEnlighten;
+        if (MagicQuarters.TrainingEnd is { } end && end > DateTime.Now && perEnlighten > 0 &&
+            (keep == int.MaxValue || StrangeDust - perEnlighten < keep))
+        {
+            // That badge is the game's "not seen since the restart" (guardianTrainingNotificationSeen, in
+            // memory only): left alone it stayed lit for hours (27/11, -27 and -28, 13:29-14:56). Its own
+            // shortcut opens Magic Quarters, which marks it seen; nothing is clicked in there.
+            if (IsNotificationVisible() && TrainingUnseen == true)
+            {
+                yield return Notifications.GuardianTraining;
+                yield return Firebot.Core.Watchdog.ForceClearAll();
+                Debug($"[INFO] Guardian training badge was only unseen: seen now {TrainingUnseen == false}, badge lit {IsNotificationVisible()}.");
+            }
+
+            Debug($"[INFO] From the game: training ends {end:HH:mm:ss}, Strange Dust {StrangeDust:0} " +
+                  $"(reserve {(keep == int.MaxValue ? "kept for an evolution" : keep.ToString())}) - not opening.");
+            NextRunTime = end;
+            yield break;
+        }
+
         yield return Notifications.GuardianTraining;
 
         yield return TownScreen.Open;
@@ -41,18 +64,25 @@ public class GuardianTrainingTask : BotTask
         if (target != null)
         {
             yield return new GameButton(transform: square).Click();
-            yield return MagicQuarters.TrainBtn.Click();
+            // With a training running the button is off: when the run only opened to enlighten, the click
+            // went nowhere (a "Click ignored" each session, -27 and -28 27/11).
+            if (!(MagicQuarters.TrainingEnd > DateTime.Now)) yield return MagicQuarters.TrainBtn.Click();
 
             // The free training goes on to the next guardian, the dust waits for the one evolving first.
             var reserve = evolutionDue ? int.MaxValue : _strangeDustReserve?.Value ?? 10000;
             var dust = StrangeDust;
             var done = 0;
-            yield return EnlightenSelected(_ => StrangeDust - EnlightenmentCost >= reserve, d => done = d);
+            yield return EnlightenSelected(_ => StrangeDust - EnlightenmentCost >= reserve, d => done = d,
+                quantity => PerEnlighten is not { } per || StrangeDust - quantity * per >= reserve);
             if (done > 0)
                 Debug($"[INFO] Enlightened {target.Name} {done} times: Strange Dust {dust:0} -> {StrangeDust:0} (reserve {reserve}).");
         }
 
-        NextRunTime = MagicQuarters.NextRunTime;
+        // The game's timer (it matched the screen on every run on Steam-27 and -28, 27/11), the screen's as the fallback.
+        var fromScreen = MagicQuarters.NextRunTime;
+        var fromGame = MagicQuarters.TrainingEnd;
+        GameState.CompareTimes("guardian training next", fromGame, fromScreen);
+        NextRunTime = fromGame is { } g && g > DateTime.Now ? g : fromScreen;
 
         yield return MagicQuarters.CloseLockedPopup;
         yield return MagicQuarters.Close;
@@ -106,9 +136,29 @@ public class GuardianTrainingTask : BotTask
 
     private static double StrangeDust => GameInitialize.HandlerLoader.CurrencyHandler.GetCurrency(CurrencyCode.StrangeDust).Amount;
 
-    // "20" a click (Steam-0, 30/09); infinite when unreadable, which no reserve check passes.
-    private static double EnlightenmentCost =>
-        new GameText(Paths.MenusLoc.MagicQuartersLoc.EnlightenmentCostTxt).GetParsedDoubleAbbreviated(double.PositiveInfinity);
+    private static bool? TrainingUnseen => GameState.Get("guardian training seen",
+        () => !GameInitialize.HandlerLoader.NotificationHandler.guardianTrainingNotificationSeen.GetDecrypted());
+
+    /// <summary>One enlightenment's Strange Dust (20: 10087 -> 10007 for 4 on Steam-28, 27/11).</summary>
+    private static int? PerEnlighten => GameState.Get("enlightenment cost", () => (int)Info.enlightenmentDustReq);
+
+    private static bool _priceMatched;
+
+    // The price shown, the quantity's ("20" a click, Steam-0 30/09). The game's (one enlightenment times
+    // the quantity) once it has matched the screen this session, as a wrong price spends below the
+    // reserve; the screen's until then. Infinite when unreadable, which no reserve check passes.
+    private static double EnlightenmentCost
+    {
+        get
+        {
+            var game = GameState.Get("enlightenment price", () => (double)Info.enlightenmentDustReq * Info.currentEnlightQuantity);
+            if (_priceMatched && game is { } g) return g;
+            var screen = new GameText(Paths.MenusLoc.MagicQuartersLoc.EnlightenmentCostTxt).GetParsedDoubleAbbreviated(double.PositiveInfinity);
+            GameState.Compare("enlightenment price", game?.ToString("0"), screen.ToString("0"));
+            _priceMatched = game == screen;
+            return screen;
+        }
+    }
 
     /// <summary>
     ///     An event challenge's enlightenments (EventChallengeActions): up to `times` on the guardian in
@@ -136,9 +186,64 @@ public class GuardianTrainingTask : BotTask
     ///     Strange Dust. Stops at the first click the dust doesn't confirm, or at level 10, where the
     ///     button turns off until the evolution (Grace after 41 clicks, Steam-17 26/11).
     /// </summary>
-    private static IEnumerator EnlightenSelected(Func<int, bool> more, Action<int> onDone)
+    private static IEnumerator EnlightenSelected(Func<int, bool> more, Action<int> onDone, Func<int, bool> fits = null)
     {
+        // In bulk (fits given) the game's own quantity button goes x20, then x10, x5 and x1 as the dust
+        // runs short or a bigger step is refused: 78 single clicks took 56 s on Steam-27 (27/11).
+        // EnlightenmentCost is the shown price, the quantity's, so more() keeps the reserve. An event's
+        // exact count stays at x1, and the button is left at x1.
         var done = 0;
+        foreach (var quantity in fits != null ? new[] { 20, 10, 5, 1 } : new[] { 1 })
+        {
+            // Only a step the dust pays for and the game offers: pressing the button through the others
+            // took ~8 s on a run that enlightened nothing (Steam-28, 27/11 20:26).
+            if (fits != null && (!fits(quantity) || quantity != 1 && Offered(quantity) == false)) continue;
+
+            var set = false;
+            yield return SetQuantity(quantity, ok => set = ok);
+            if (!set && quantity != 1) continue;
+            var step = set ? quantity : 1;
+
+            yield return EnlightenAt(step, more, () => done, d => done = d);
+        }
+
+        yield return SetQuantity(1, _ => { });
+        onDone(done);
+    }
+
+    private static Il2Cpp.MagicQuartersInfoSubmenu Info => GameInitialize.MenuLoader.MagicQuartersInfoSubmenu;
+
+    private static int? Quantity => GameState.Get("enlighten quantity", () => Info.currentEnlightQuantity);
+
+    /// <summary>Whether the quantity button offers this step now (enlightQuantitiesAvailable).</summary>
+    private static bool? Offered(int quantity) => GameState.Get("enlighten quantities", () =>
+    {
+        foreach (var q in Info.enlightQuantitiesAvailable)
+            if (q.ToString() == $"EnlightX{quantity}")
+                return true;
+        return false;
+    });
+
+    /// <summary>Presses the game's quantity button until it reads `wanted`; false when it can't.</summary>
+    private static IEnumerator SetQuantity(int wanted, Action<bool> done)
+    {
+        for (var i = 0; i < 5 && Quantity is { } current && current != wanted; i++)
+        {
+            if (GameState.Get("enlighten quantity button", () =>
+                {
+                    Info.changeQuantityButton.onClick.Invoke();
+                    return true;
+                }) != true)
+                break;
+            yield return Poll.AfterClick("enlighten quantity");
+        }
+
+        done(Quantity == wanted);
+    }
+
+    private static IEnumerator EnlightenAt(int step, Func<int, bool> more, Func<int> getDone, Action<int> setDone)
+    {
+        var done = getDone();
         var button = MagicQuarters.EnlightenmentBtn;
         while (more(done) && button.IsClickable())
         {
@@ -157,12 +262,12 @@ public class GuardianTrainingTask : BotTask
                 break;
             }
 
-            done++;
+            // Counted before it's confirmed, as always: a missed click never turns into an extra one.
+            done += step;
+            setDone(done);
             yield return Poll.Until(() => StrangeDust < before);
             if (StrangeDust >= before) break;
         }
-
-        onDone(done);
     }
 
     private int GetGuardianIndex()

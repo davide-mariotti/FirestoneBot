@@ -187,6 +187,10 @@ public static class EnchantPlanner
 
     public static string SafeName(string name) => new(name.Where(c => "|:;,@*".IndexOf(c) < 0).ToArray());
 
+    /// <summary>A hero's levels as the snapshot writes them, "g0,..,g7;j0,..,j5".</summary>
+    public static string Levels(int[] gear, int[] jewels) =>
+        $"{string.Join(",", gear.Select(FormatLevel))};{string.Join(",", jewels.Select(FormatLevel))}";
+
     private static string FormatLevel(int level) => level switch
     {
         HeroState.Locked => "L",

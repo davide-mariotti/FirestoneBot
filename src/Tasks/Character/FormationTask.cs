@@ -6,6 +6,7 @@ using Firebot.Core;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Character;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Utilities;
 using MelonLoader;
 
@@ -32,6 +33,7 @@ public class FormationTask : BotTask
 
     private MelonPreferences_Entry<bool> _dryRun;
     private MelonPreferences_Entry<string> _target;
+    private MelonPreferences_Entry<string> _scoring;
 
     /// <summary>The saved target's heroes, which HallOfHeroesTask invests in first. Empty until the first run.</summary>
     public static HashSet<string> Target { get; private set; } = new();
@@ -43,10 +45,35 @@ public class FormationTask : BotTask
         _dryRun = category.CreateEntry("dry_run", true, "Dry Run",
             "Only logs the best formation and the target. Set false to let the bot change heroes and leader. Default: true.");
 
+        _scoring = category.CreateEntry("scoring", "damage", "Scoring",
+            "'damage' (default): the five with the most damage. 'abilities': the damage plus what each hero's " +
+            "abilities multiply the team's damage by (party buffs, boss debuffs), over every set of five.");
+
         _target = category.CreateEntry("target", "", "Target",
             "(auto-managed, don't edit) - the target team, \"name, name, ... | leader\"; replaced only by one 20% better.");
         Target = TargetNames(_target.Value);
+
+        _forced = category.CreateEntry("forced_hero", "", "Forced Hero",
+            "(auto-managed, don't edit) - the hero put in for a mini-event challenge, taken out when it's done.");
     }
+
+    private MelonPreferences_Entry<string> _forced;
+
+    // The hero an unfinished mini-event challenge wants kills from ("Kill 100 enemies with Luana", Steam-27
+    // 28/11): the game's, once a card named the same hero this session or when it's the one already put in
+    // (a restart, before the visit). None when the game has no such challenge: done, or no event - the
+    // forced hero then comes out (Steam-27 28/11: Luana's done and claimed before the 11:17 restart).
+    private string Wanted => GameState.MiniEventKillHero is { } hero &&
+                             (hero == Tasks.Events.MiniEventTask.KillHeroConfirmed || hero == _forced?.Value)
+        ? hero
+        : null;
+
+    // The Wanted the last run decided on (null before the first run of a session: the saved forced hero).
+    private string _handled;
+
+    // The formation follows such a challenge when it appears and when it's done, not at the daily run.
+    public override bool IsNotificationVisible() => base.IsNotificationVisible() ||
+        (IsEnabled && MeetsLevelRequirement && _forced != null && (Wanted ?? "") != (_handled ?? _forced.Value));
 
     private static HashSet<string> TargetNames(string saved) =>
         saved.Split('|')[0].Split(',').Select(n => n.Trim()).Where(n => n.Length > 0).ToHashSet();
@@ -66,10 +93,27 @@ public class FormationTask : BotTask
         }
 
         double Value(HeroStats h) => h.Offense;
-        var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio);
-        var now = FormationPlanner.Score(read.Heroes, read.InBattle, read.Leader, Value, read.LeaderRatio);
+        // scoring = abilities: the heroes' buffs and debuffs count too (on trial on Steam-28 from 28/11).
+        Func<HeroStats, double> support = string.Equals(_scoring.Value?.Trim(), "abilities", StringComparison.OrdinalIgnoreCase)
+            ? FormationPlanner.AbilitySupport
+            : null;
+        // The challenge's hero goes in (Best keeps the other four as good as they can be); when it's done the
+        // hero put in for it comes out even for less than MinGain.
+        var forcedBefore = _forced.Value;
+        var wanted = Wanted;
+        _handled = wanted ?? "";
+        var required = wanted != null && read.Heroes.Any(h => h.Name == wanted) ? wanted : null;
+        var best = FormationPlanner.Best(read.Heroes, Value, read.LeaderRatio, support, required);
+        var now = FormationPlanner.Score(read.Heroes, read.InBattle, read.Leader, Value, read.LeaderRatio, support);
         var target = FormationPlanner.Best(read.Heroes, h => h.Potential, read.LeaderRatio);
-        var change = FormationPlanner.Beats(best.Score, now, MinGain);
+        var change = required != null
+            ? !read.InBattle.Contains(required)
+            : (forcedBefore.Length > 0 && read.InBattle.Contains(forcedBefore) && !best.Slots.Contains(forcedBefore)) ||
+              FormationPlanner.Beats(best.Score, now, MinGain);
+        _forced.Value = required ?? "";
+        if (required != null || forcedBefore.Length > 0)
+            Debug($"[INFO] Formation: mini-event hero {wanted ?? "-"}{(wanted != null && required == null ? " (not owned)" : "")}, " +
+                  $"forced before {(forcedBefore.Length > 0 ? forcedBefore : "-")}.");
 
         // The saved target stays unless the new one beats it by TargetMinGain on potential.
         var saved = _target.Value.Split('|');
@@ -92,6 +136,9 @@ public class FormationTask : BotTask
         Debug("[INFO] Formation heroes (log10 offense/potential): " + string.Join(", ",
             read.Heroes.OrderByDescending(Value).Select(h => $"{h.Name} {h.Offense:0.00}/{h.Potential:0.00}")));
 
+        // The heroes and the formation above came from the game: the Party screen is only for the swaps.
+        if (!change || _dryRun.Value) yield break;
+
         yield return Party.Open;
         yield return Poll.Until(() => Party.FormationNames().Count >= Party.FormationSize, 16);
         // The deck fills in after the slots (Steam-15, 23/10: read empty right after them).
@@ -99,15 +146,14 @@ public class FormationTask : BotTask
         var deck = Party.DeckSlots();
         Debug($"[INFO] Formation deck: {string.Join(", ", deck.Select(d => d.Portrait + (d.Deployed ? "*" : "")))}.");
 
-        if (change && !_dryRun.Value) yield return Apply(read, best, deck);
+        yield return Apply(read, best, deck);
 
         yield return Party.Close;
-        if (!change || _dryRun.Value) yield break;
 
         Debug($"[INFO] Formation: screens after closing the Party: {Watchdog.DumpActiveScreens()}.");
         var after = Heroes.Read();
         var score = after == null ? double.NaN
-            : FormationPlanner.Score(after.Heroes, after.InBattle, after.Leader, Value, after.LeaderRatio);
+            : FormationPlanner.Score(after.Heroes, after.InBattle, after.Leader, Value, after.LeaderRatio, support);
         Debug(after == null
             ? "[FAILED] Formation: the heroes didn't read after the change."
             : $"[INFO] Formation: after {string.Join(", ", after.InBattle)} (leader {after.Leader}, score {score:0.00}, " +

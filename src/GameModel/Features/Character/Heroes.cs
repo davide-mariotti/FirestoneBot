@@ -66,7 +66,7 @@ public static class Heroes
     }
 
     // Attributes outgrow a double (stage 900+), so everything is compared as log10.
-    private static double Log(ObscuredBigDouble value)
+    internal static double Log(ObscuredBigDouble value)
     {
         BigDouble big = value;
         return big.AbsLog10(); // -Infinity for 0

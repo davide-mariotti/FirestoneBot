@@ -23,7 +23,10 @@ public class EngineerTask : BotTask
         yield return TownScreen.OpenEngineer;
 
         yield return Engineer.Claim;
-        NextRunTime = Engineer.NextRunTime;
+        var fromScreen = Engineer.NextRunTime;
+        var fromGame = GameState.EngineerToolsReady;
+        GameState.CompareTimes("engineer tools", fromGame, fromScreen);
+        NextRunTime = fromGame ?? fromScreen;
 
         yield return Engineer.Close;
         yield return TownScreen.Close;

@@ -26,6 +26,15 @@ public class ScarabGameFreeTokenTask : BotTask
 
     public override IEnumerator Execute()
     {
+        // The game knows whether today's free token is still there.
+        if (!IsNotificationVisible() &&
+            GameState.Get("scarab free token", () => GameState.H.ScarabGameHandler.DailyFreePharaohTokenAvailable) == false)
+        {
+            Debug("[INFO] From the game: today's free token is taken - not opening.");
+            NextRunTime = GameState.NextGameDay ?? DateTime.Now + FallbackRetryDelay;
+            yield break;
+        }
+
         yield return Notifications.ScarabGameShopFreeToken;
         yield return Notifications.ScarabGame;
 

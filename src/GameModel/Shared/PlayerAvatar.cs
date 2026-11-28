@@ -13,6 +13,9 @@ public static class PlayerAvatar
 
     public static void RefreshCachedLevel() => _cachedLevel = ReadCharacterLevel();
 
+    // The game's own level (HandlerLoader.CharacterLevel), the avatar's text as the fallback.
     private static int ReadCharacterLevel() =>
-        new GameText(Paths.BattleLoc.PlayerAvatarLoc.CharacterLevel).GetParsedInt();
+        GameState.Get("character level", () => (int)Il2Cpp.GameInitialize.HandlerLoader.CharacterLevel.level) is { } level and > 0
+            ? level
+            : new GameText(Paths.BattleLoc.PlayerAvatarLoc.CharacterLevel).GetParsedInt();
 }

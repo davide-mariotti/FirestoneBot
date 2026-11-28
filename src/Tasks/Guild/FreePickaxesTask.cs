@@ -39,10 +39,26 @@ public class FreePickaxesTask : BotTask
         );
     }
 
+    // The game's count (FreePickaxeState: generated less claimed), trusted once a visit saw it match the shop.
+    private static int? FromGame => GameState.Get("free pickaxes", () =>
+    {
+        var state = Il2Cpp.GameInitialize.MenuLoader.GuildShopSuppliesSubmenu.freePickaxeState;
+        return state.pickaxesGenerated - state.claimedPickaxes;
+    });
+
+    private static bool _trusted;
+
     public override IEnumerator Execute()
     {
         // Runs only on the badge, never on a timer.
         NextRunTime = DateTime.MaxValue;
+
+        // The badge lights at the first pickaxe; below the threshold the shop was opened to claim nothing.
+        if (_trusted && FromGame is { } waiting && waiting < PickaxeClaimThreshold)
+        {
+            Debug($"[INFO] From the game: {waiting} free pickaxe(s), threshold {PickaxeClaimThreshold} - not opening.");
+            yield break;
+        }
 
         yield return Notifications.FreePickaxes;
         yield return GuildShop.OpenSuppliesTab;
@@ -51,7 +67,10 @@ public class FreePickaxesTask : BotTask
         // and nothing was claimed (02/10, Steam-13: '' read 0.4 s before the shop showed 'x15').
         yield return Poll.Until(() => FreePickaxes.QuantityText != "");
 
-        Debug($"[INFO] Free pickaxes: {FreePickaxes.Quantity} ('{FreePickaxes.QuantityText}'), threshold {PickaxeClaimThreshold}.");
+        var game = FromGame;
+        _trusted = game == FreePickaxes.Quantity;
+        GameState.Compare("free pickaxes", game?.ToString(), FreePickaxes.Quantity.ToString());
+        Debug($"[INFO] Free pickaxes: {FreePickaxes.Quantity} ('{FreePickaxes.QuantityText}'), game {game?.ToString() ?? "-"}, threshold {PickaxeClaimThreshold}.");
         if (FreePickaxes.Quantity >= PickaxeClaimThreshold)
             yield return FreePickaxes.Claim;
 

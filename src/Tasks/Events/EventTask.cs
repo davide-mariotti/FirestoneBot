@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Firebot.Core.Tasks;
 using Firebot.GameModel.Features.Events;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 
 namespace Firebot.Tasks.Events;
@@ -46,8 +48,68 @@ public abstract class EventTask : BotTask
     // A round is ~15 s of event screens plus the actions (a crystal hit ~2 s, a tavern draw ~4 s).
     internal override float? MaxRuntimeSeconds => 600;
 
+    // The game's event state when the last visit had nothing to do (claims included, it's read after),
+    // and since when: an unchanged state means the same visit again, so it's skipped - though never for
+    // longer than MaxQuiet (event currency and StayOnline keep growing on their own).
+    private string _quietSignature;
+    private DateTime _quietSince;
+    private static readonly TimeSpan MaxQuiet = TimeSpan.FromHours(3);
+
+    /// <summary>The game says whether this event runs for the account; null when it can't.</summary>
+    protected abstract bool? RunningFromGame { get; }
+
+    /// <summary>What RunningFromGame is read from, for the log; null when there's nothing more to say.</summary>
+    protected virtual string Describe => null;
+
+    /// <summary>The event's challenges from the game (GameState.CalendarChallenges / MiniChallenges); null for none or unreadable.</summary>
+    protected virtual List<(ChallengeKind Kind, int Done, int Target, bool Claimable)> ChallengesFromGame => null;
+
+    /// <summary>A currency the event's own shop spends, when it has one; growing means a visit has something to buy.</summary>
+    protected virtual double? ShopCurrency => null;
+
+    // The game's challenges matched the cards of a visit: from then on they decide alone.
+    private bool _challengesTrusted;
+    private bool? _running;
+    private double? _shopCurrencySeen;
+
+    // The handled challenges, as the cards and the data both give them: what the two are compared on.
+    private static string Key(IEnumerable<(ChallengeKind Kind, int Done, int Target)> challenges) => string.Join(", ",
+        challenges.Where(c => c.Kind != ChallengeKind.NotHandled).Select(c => $"{c.Kind} {c.Done}/{c.Target}").OrderBy(k => k, StringComparer.Ordinal));
+
+    // A visit still happens this often with the game saying the event doesn't run, and once a session,
+    // so a wrong read shows up as a mismatch instead of an event left unvisited.
+    private static readonly TimeSpan NotRunningRecheck = TimeSpan.FromHours(6);
+    private DateTime? _lastVisit;
+
     public override IEnumerator Execute()
     {
+        var running = RunningFromGame;
+        if (running == false && _lastVisit is { } last && DateTime.Now - last < NotRunningRecheck)
+        {
+            Debug($"[INFO] From the game: not running for this account - not opening.{(Describe is { } d ? $" ({d})" : "")}");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
+        // Nothing to claim, nothing the bot can do and no shop money in since the last visit: the game says so.
+        if (running != false && _challengesTrusted && ChallengesFromGame is { } fromGame &&
+            !fromGame.Any(c => c.Claimable) && !fromGame.Any(c => c.Kind != ChallengeKind.NotHandled && c.Done < c.Target) &&
+            !(ShopCurrency > _shopCurrencySeen))
+        {
+            Debug("[INFO] From the game: no challenge to claim or do, no new event currency - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
+        if (_quietSignature != null && GameState.EventsSignature == _quietSignature && DateTime.Now - _quietSince < MaxQuiet)
+        {
+            Debug("[INFO] The game's event state hasn't moved since a visit with nothing to do - not opening.");
+            NextRunTime = DateTime.Now + RecheckDelay;
+            yield break;
+        }
+
+        _quietSignature = null;
+
         // The Done each kind must show after this run's own steps (progress counts on across tiers).
         // A card behind it is a read taken before the game caught up - acting on it would do the
         // same steps twice.
@@ -59,6 +121,18 @@ public abstract class EventTask : BotTask
             var challenges = new List<(string Text, string Progress)>();
             yield return Visit(challenges, t => title = t);
             if (title == null) yield break;
+
+            // The cards against the game's own challenges (read after the claims, as the cards are),
+            // only while the event runs: a finished one shows no challenge, its data still lists them.
+            if (_running == true && ChallengesFromGame is { } data)
+            {
+                var screen = Key(challenges.Select(c => ChallengeParser.Parse(c.Text, c.Progress)).Select(c => (c.Kind, c.Done, c.Target)));
+                var game = Key(data.Select(c => (c.Kind, c.Done, c.Target)));
+                _challengesTrusted = screen == game;
+                GameState.Compare($"event {GetType().Name} challenges", game, screen);
+            }
+
+            _shopCurrencySeen = ShopCurrency;
 
             // Screens closed: every action navigates on its own.
             var steps = 0;
@@ -89,7 +163,13 @@ public abstract class EventTask : BotTask
                 steps += done;
             }
 
-            if (steps == 0) yield break;
+            if (steps == 0)
+            {
+                _quietSignature = GameState.EventsSignature;
+                _quietSince = DateTime.Now;
+                yield break;
+            }
+
             Debug($"[INFO] Event '{title}': {steps} step(s) done in round {round} - reopening to claim.");
         }
     }
@@ -102,6 +182,18 @@ public abstract class EventTask : BotTask
         string title = null;
         yield return EventManager.OpenEvent(EventNames, t => title = t);
         yield return Poll.Until(() => IsScreenVisible);
+
+        _lastVisit = DateTime.Now;
+        // The free check of the game's word: a card that opened is a running event.
+        // A card the game says isn't running is a finished event's shop, kept open to spend what's left
+        // (Decorated Heroes past its 10:00 end, 27/11): only a running event without its card is wrong.
+        var game = RunningFromGame;
+        _running = game;
+        if (game == true && title == null)
+        {
+            GameState.Compare($"event {GetType().Name} running", "True", "False");
+            Debug($"[INFO] Events from the game: {GameState.CalendarDescribe}.");
+        }
 
         if (IsScreenVisible)
         {

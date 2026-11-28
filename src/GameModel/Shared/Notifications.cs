@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Firebot.GameModel.Base;
@@ -13,8 +14,11 @@ namespace Firebot.GameModel.Shared;
 /// </summary>
 public static class Notifications
 {
-    /// <summary>The badges lit on the rail, whichever task (or none) reads them.</summary>
-    public static string Lit
+    /// <summary>The badges lit, whichever task (or none) reads them: the game's word, the rail's if it can't say.</summary>
+    public static string Lit => GameState.LitBadges ?? RailLit;
+
+    /// <summary>The badges lit on the rail itself, by their game type names where they have one.</summary>
+    public static string RailLit
     {
         get
         {
@@ -22,7 +26,8 @@ public static class Notifications
             var lit = new List<string>();
             for (var i = 0; rail != null && i < rail.childCount; i++)
                 if (rail.GetChild(i).gameObject.activeSelf)
-                    lit.Add(rail.GetChild(i).name);
+                    lit.Add(GameState.BadgeType(rail.GetChild(i).name)?.ToString() ?? rail.GetChild(i).name);
+            lit.Sort(StringComparer.Ordinal);
             return string.Join(", ", lit);
         }
     }

@@ -1,5 +1,6 @@
 using System.Collections;
 using Firebot.GameModel.Primitives;
+using Firebot.GameModel.Shared;
 using Firebot.Infrastructure;
 using Il2Cpp;
 using UnityEngine;
@@ -32,7 +33,7 @@ public static class Awakening
     // The mode the toggle shows ('Manual' / 'Auto'). It stays on after the run ends.
     private static bool AutoOn => GameInitialize.MenuLoader?.AwakeningMech?.autoAwakenOn ?? false;
 
-    private static int Balance => (int)new GameText(Paths.AwakeningLoc.BalanceTxt).GetParsedDoubleAbbreviated(-1);
+    private static int Balance => (int)GameState.Balance(Il2Cpp.CurrencyCode.ArcaneCrystal, () => new GameText(Paths.AwakeningLoc.BalanceTxt).GetParsedDoubleAbbreviated(-1));
 
     /// <summary>
     ///     Selects the biggest multiplier the crystals pay for. A multiplier button stays clickable

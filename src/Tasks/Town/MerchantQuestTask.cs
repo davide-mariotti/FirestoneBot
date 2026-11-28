@@ -23,12 +23,13 @@ public class MerchantQuestTask : DailyQuestTask
     protected override string QuestName => "Merchant";
 
     /// <summary>
-    ///     Sold, by visible name and in this order: Midas' Touch first, then Health and Damage to top up.
-    ///     Never Scroll of Speed - the F2P guide's main gold multiplier - nor anything not listed, like the
-    ///     instant gold and meteorite consumables or a Barrel. An allowlist on purpose: a missing entry
-    ///     costs one daily quest, while a blocklist missing a name could sell a Barrel.
+    ///     Sold, by visible name and in this order: Health and Damage. Never Midas' Touch (scarce and
+    ///     precious, kept for a targeted use: the user, 28/11), never Scroll of Speed - the F2P guide's
+    ///     main gold multiplier - nor anything not listed, like the instant gold and meteorite
+    ///     consumables or a Barrel. An allowlist on purpose: a missing entry costs one daily quest, while
+    ///     a blocklist missing a name could sell a Barrel.
     /// </summary>
-    private static readonly string[] SellOrder = { "Midas' Touch", "Scroll of Health", "Scroll of Damage" };
+    private static readonly string[] SellOrder = { "Scroll of Health", "Scroll of Damage" };
 
     /// <summary>
     ///     The quest only, once SellOrder runs out: battle buffs the bot never uses, dozens on every
