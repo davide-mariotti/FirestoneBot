@@ -52,6 +52,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Engineer**: collects the tools every 6 hours.
 - **Guardian Training**: keeps a guardian training: every unlocked guardian to evolution 5 in order (Vermilion, Grace, Ankaa, Azhar), then every one to 10, then `guardian_index`. Strange Dust above `strange_dust_reserve` (10.000) goes into enlightening the same guardian.
 - **Guardian Evolution**: evolves every guardian whose evolution is available, paid in Strange Dust.
+- **Guardian Rarity**: raises every guardian's rarity its evolution allows (Uncommon at 5, Rare at 10, ...), paid in Contracts, as the game's own check says.
 - **Experiments**: collects finished experiments and starts new ones - Dragon blood only by default (`resource_type`).
 - **Firestone Research** keeps every slot busy and buys new slots when affordable; **Meteorite Research** researches whenever the balance stays above `min_meteorite_reserve`. Both prefer Raining Gold, Firestone Finder and Firestone Effect.
 - **Empower** (Temple of Eternals): resets once this adventure's Firestones match the ones already banked, a +100% gain (`min_reset_ratio`), and the run has hit its wall (AutoRetreat saw the stall): near the top the Firestones found grow about x100 every 5 minutes, so a run that still climbs is worth waiting for.
@@ -59,7 +60,8 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 - **Pirate's Prize**: claims the free track.
 - **Oracle Rituals** (character level 200): claims the finished ritual and starts the next one - one runs at a time, 40 minutes each - which also covers the level-200 daily quest for 2 rituals. **Oracle's Gift**: claims the free daily gift in the Oracle's store. **Oracle Blessings**: spends glyphs on every blessing the game marks as affordable, one level per run while its badge stays lit.
 - **Amulet Shop**: reads the Store's amulet of the day every hour and buys it for 2000 gems when it's worth it, by tier and keeping gems back for the better ones still missing (AMULETS_PLAN.md). Starts in `dry_run`: logs what it would buy and never clicks until `dry_run = false`.
-- **System Mail**: claims every mailbox reward; never deletes mail.
+- **System Mail**: claims every mailbox reward and opens every unread mail; never deletes mail.
+- **Daily Push** (`[dailypushtask]`): once a game day, at the wall after AutoRetreat picks its farm stage, uses the three scrolls, Drums of War, Dragon Armor, Guardian's Rune, both Totems and one gold consumable of each size (never Midas' Touch), then climbs and attacks the boss.
 - **War Machines**: levels every owned war machine, but only once the Personal Tree has reached level 50: both spend the same Expedition Tokens, and the tree comes first. Until then its badge stays lit.
 - **War Machine Rarity**: raises war machine rarity with Tools, in grid order, whenever one is affordable.
 
@@ -95,7 +97,7 @@ them spends gems or real money. The defaults follow the F2P strategy guide in
 **Events**
 
 - **Decorated Heroes** and **New Player Event**: claim challenges, check-ins and milestones, then spend the event currency on Dragon blood, then Meteorites, then Beer.
-- **Mini Event**: every mini-event (Mass Production, Sigils of Prophecy, Stardust... - one runs every 5 days, all on one screen): claims every unlocked day's challenge.
+- **Mini Event**: every mini-event (Mass Production, Sigils of Prophecy, Stardust... - one runs every 5 days, all on one screen): claims every unlocked day's challenge. A "kill N enemies with <hero>" challenge puts that hero in the formation until it's done (Formation).
 - **Event challenges**: Decorated Heroes and the mini-events also do what an actionable challenge is missing - exactly that, tier by tier - then claim it: Arcane Crystal hits and Tavern draws (after that day's Miner and Gamer quests), chests, item sales, Tree of Life and Meteorite research levels, guardian enlightenment (Strange Dust), one Exotic Upgrade, a guild donation. Missions, researches, expeditions and time online are left to the tasks that already do them.
 - Paid tabs are never opened.
 
