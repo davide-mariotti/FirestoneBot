@@ -326,12 +326,18 @@ public class HallOfHeroesTask : BotTask
             return;
         }
 
+        // The screen shows a lock panel for the next locked tier only: a hero at tier 1 reads its tier-3 rows,
+        // and the jewels' tier 2, as empty (M) where the game says locked (L) - Asmondai on Steam-6, 28/11.
+        // Both mean "nothing to enchant", and the planner tells them apart only on tier 2's rows.
+        static string Comparable(string levels) => levels.Replace('L', 'M');
+
         var same = 0;
         foreach (var hero in _heroes)
         {
             var data = _fromGame[hero.Name];
             var game = data.Levels[(data.Levels.IndexOf(' ') + 1)..];
-            if (game == EnchantPlanner.Levels(hero.Gear, hero.Jewels)) same++;
+            if (Comparable(game) == Comparable(EnchantPlanner.Levels(hero.Gear, hero.Jewels)) &&
+                (game.Split(',')[3] == "L") == (hero.Gear[3] == HeroState.Locked)) same++;
             else
             {
                 GameState.Compare($"hero {hero.Name} levels", data.Levels, EnchantPlanner.Levels(hero.Gear, hero.Jewels));
