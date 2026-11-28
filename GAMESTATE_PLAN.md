@@ -64,6 +64,10 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
    "dailypushtask.enabled=true,dailypushtask.mode=on"`), e decidere quanti consumabili d'oro per push
    (oggi uno per tipo: le scorte sono ~200-270 per tipo per account).
 5. **Merchant:** non vende più Midas' Touch.
+6. **Dal 28/11 alle 11:31** (sezione "Fatto il 28/11 alle 10:45"): mini-evento attivo dalle date (Stardust
+   fino all'01/12 10:00), sfida "uccidi N nemici con un eroe" seguita dalla squadra (righe `Formation:
+   mini-event hero`), mail non lette, giri ripetuti di Scarab e Oracle Blessings. Da guardare: che a ogni
+   sfida a eroe finita torni la squadra migliore, e il badge GuardianRarity di -19 (nessun task).
 
 **Dettagli e numeri della notte:** sezione "Fatto il 28/11 alle 05:10" qui sotto.
 
@@ -81,7 +85,14 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
   dentro le sue date (`TimeLibrary.GetDateNowLocal`, `startDate` 0x18, `endDate` 0x20, `levelLocked`
   0x38) e lancia `WaitForServerCountDown` → `SocketFunctions.LoadMiniEvent`. Ora "attivo" è anche un
   evento corrente o prossimo dentro le sue date e non bloccato, come lo vede `UpdateNextEvent`; il
-  "not running" scrive lo stato del gioco (`MiniEventDescribe`), e così ogni visita.
+  "not running" scrive lo stato del gioco (`MiniEventDescribe`), e così ogni visita. **Visto dal vivo
+  dopo il deploy:** anche a caricamento pulito `hasEvent` è False con Stardust corrente (28/11 10:00 →
+  01/12 10:00, livello 30) su tutte le istanze: non vuol dire "evento attivo", la lettura vecchia era
+  sbagliata sempre (il primo evento con la regola dei dati è questo). Ora `running True` ovunque e
+  Stardust si apre; -20 e -21 hanno riscosso la sfida del giorno alla prima visita.
+- **Riavvio di -27 alle 10:43** (il secondo in 4 minuti): il gioco è rimasto sulla schermata di
+  caricamento ("off the server"), il bot l'ha chiuso dopo 5 minuti e alle 10:50 è ripartito bene.
+  Alle 11:00 il riavvio programmato della flotta ha riavviato 17-21 durante il rollout: nessun danno.
 - **Badge rimasti accesi** (censimento delle 10:30): ScarabGameMilestones su 20-24 e 27, PharaohsVault
   su 26 e 28, OracleBlessing su 18, 25, 27; TemplePrestige è la regola della crescita, WarMachines e
   WarmachineUnlocked (-30) restano per scelta dell'utente.
@@ -102,6 +113,26 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
   del più debole dei cinque (`FormationPlanner.Best(..., required)`), lo salva in
   `[formationtask] forced_hero`, e quando la sfida è fatta torna alla squadra migliore anche sotto il
   10% di guadagno. FormationTask parte quando la sfida compare o finisce, non solo alle 10:32.
+  - `heroCode` è il valore di `HeroCode` (Boris 0, Talia 2, Blaze 6, Luana 7, Cirilo 24): le carte
+    coincidevano su -27 (7, Luana), -24 (24, Cirilo) e -29 (0, Boris). Le sfide senza eroe hanno
+    anch'esse 0 (o -1): per questo serve la carta.
+  - Visto dal vivo: -27 alle 10:53 Burt → Luana (danno ×1,00), sfida 100/100 fatta prima delle 11:17;
+    -24 alle 11:13 Luana → Cirilo e Blaze → Boris (la migliore con Cirilo dentro; leader Cirilo, perché
+    con leader ratio -1,80 guida il più debole), ×1,00. Il ripristino dopo un riavvio non partiva (la
+    conferma della carta non c'era più, la sfida era finita): ora "il gioco non ha più una sfida a eroe"
+    basta per togliere l'eroe forzato. -27 alle 11:32: "forced before Luana", Luana → Leo, "as planned".
+  - Le sfide a eroe dei giorni dopo (bloccate alle 11:05): -17 Talia, -18 Boris, -21 Blaze, -22 hero 21.
+  - Le uccisioni contano per chi dà il colpo finale: al muro il danno è del carry (-24: Talia 10^179,3,
+    Cirilo 10^171,2) e Cirilo è rimasto a 0/100 dalle 11:13 alle 11:48, stage 998 in farm; Luana su -27
+    ha fatto 100 in meno di mezz'ora a stage ~150, dove tutti uccidono in un colpo. Quindi una sfida a
+    eroe presa al muro si chiude nei primi stage della run dopo l'Empower: va bene finché l'evento
+    dura 3 giorni. Se serve prima, la regola sarebbe forzare l'eroe solo dopo l'Empower.
+- **Guardiani:** -19 ha evoluto Vermilion (800 Strange Dust) alle 10:54, un minuto dopo il badge.
+  L'evoluzione 5 accende **GuardianRarity** (da -19 alle 11:04): la rarità dei guardiani non ha un
+  task; il gioco la paga con dei contratti (`GuardiansRarityEffectsController.ContractRequirements`,
+  `EvolutionUnlockedRarities`). Spesa nuova: da chiedere all'utente.
+- **Sfide del mini-evento dai dati:** contavano anche quelle già riscosse, che non hanno carta (-17
+  alle 11:04, `game=CrystalHits 4/4 ui=`): ora le saltano, e il confronto con le carte può coincidere.
 
 **Fatto il 28/11 alle 05:10** (notte, mentre l'utente dormiva):
 - **Rollout:** build del branch su Steam-17..31 alle 03:53-04:11, un'istanza alla volta, tutte "up" e con
