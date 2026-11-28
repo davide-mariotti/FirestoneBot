@@ -67,7 +67,8 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
 6. **Dal 28/11 alle 11:31** (sezione "Fatto il 28/11 alle 10:45"): mini-evento attivo dalle date (Stardust
    fino all'01/12 10:00), sfida "uccidi N nemici con un eroe" seguita dalla squadra (righe `Formation:
    mini-event hero`), mail non lette, giri ripetuti di Scarab e Oracle Blessings. Da guardare: che a ogni
-   sfida a eroe finita torni la squadra migliore, e il badge GuardianRarity di -19 (nessun task).
+   sfida a eroe finita torni la squadra migliore. Dalle 12:20 anche `GuardianRarityTask` (rarità dei
+   guardiani coi contratti): da vedere l'attesa dell'animazione (riga "rarity animation waited").
 
 **Dettagli e numeri della notte:** sezione "Fatto il 28/11 alle 05:10" qui sotto.
 
@@ -128,9 +129,19 @@ tornare indietro: `C:\Repos\FirestoneBot-test-backup\2026-11-28-fleet-main`.
     eroe presa al muro si chiude nei primi stage della run dopo l'Empower: va bene finché l'evento
     dura 3 giorni. Se serve prima, la regola sarebbe forzare l'eroe solo dopo l'Empower.
 - **Guardiani:** -19 ha evoluto Vermilion (800 Strange Dust) alle 10:54, un minuto dopo il badge.
-  L'evoluzione 5 accende **GuardianRarity** (da -19 alle 11:04): la rarità dei guardiani non ha un
-  task; il gioco la paga con dei contratti (`GuardiansRarityEffectsController.ContractRequirements`,
-  `EvolutionUnlockedRarities`). Spesa nuova: da chiedere all'utente.
+  L'evoluzione 5 accende **GuardianRarity** (da -19 alle 11:04). **Nuovo `GuardianRarityTask`**
+  (chiesto dall'utente alle 12:00): la rarità costa contratti (`CurrencyCode.Contract`, 30 / 70 / 150
+  / 200 / 250 / 300 / 350) e il tetto viene dall'evoluzione (Uncommon a 5, Rare a 10, ...); Uncommon dà
+  danno del guardiano ×61 e aura ×51 (wiki). Decide con il test del gioco
+  (`MagicQuartersRaritySubmenu.CanUpgrade`, puro, rifatto sui dati: rarità + 1 ≤ Celestial e ≤
+  `GetMaxRarityThatCanUpgradeTo()`, contratti ≥ `ContractRequirements[rarità + 1]`); i pulsanti vengono
+  dagli oggetti del gioco (`MagicQuartersMech.submenusButtonList[Rarity]`,
+  `MagicQuartersRaritySubmenu.rarityButton`), il click solo con un'icona "contract" sotto il pulsante e
+  il guardiano giusto nel sottomenu (`guardianOnPreview`), la spesa contata quando rarità e contratti
+  si muovono. -19 alle 12:16: **Vermilion Common → Uncommon per 30 contratti (260 → 230)**, 5,1 s.
+  L'animazione della rarità nasconde il pulsante di chiusura e il watchdog ha chiuso Magic Quarters:
+  ora si aspetta `MagicQuartersMech.playingRarityUpAnimation`. I contratti servono anche alla rarità
+  degli eroi di Hall of Heroes: li spende chi gira prima.
 - **Sfide del mini-evento dai dati:** contavano anche quelle già riscosse, che non hanno carta (-17
   alle 11:04, `game=CrystalHits 4/4 ui=`): ora le saltano, e il confronto con le carte può coincidere.
 
